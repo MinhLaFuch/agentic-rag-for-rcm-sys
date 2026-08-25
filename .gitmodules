@@ -1,0 +1,9 @@
+[submodule "forked repository/RecAI"]
+	path = forked repository/RecAI
+	url = https://github.com/MinhLaFuch/RecAI.git
+[submodule "forked-repository/AgentCF"]
+	path = forked-repository/AgentCF
+	url = https://github.com/MinhLaFuch/AgentCF-WWW.git
+[submodule "forked-repository/RecAI"]
+	path = forked-repository/RecAI
+	url = https://github.com/MinhLaFuch/RecAI.git
