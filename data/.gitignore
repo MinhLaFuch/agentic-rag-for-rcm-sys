@@ -1,7 +1,0 @@
-# Raw datasets
-raw/*
-!raw/.gitkeep
-
-# Preprocessed datasets
-processed/*
-!processed/.gitkeep

@@ -1,5 +1,5 @@
 from pathlib import Path
-from .._parent_path import find_repo_root
+from .._find_root import find_repo_root
 
 _REPO_ROOT = find_repo_root(__file__)
 _DATA_ROOT = _REPO_ROOT / "data"
