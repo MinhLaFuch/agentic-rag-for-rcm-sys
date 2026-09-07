@@ -62,3 +62,23 @@
 2026-09-07 05:47:13 [INFO] process: Loading games from C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\raw\steam\steam_games.json.gz
 2026-09-07 05:47:17 [INFO] process: Shape of reviews: (7793069, 12)
 2026-09-07 05:47:17 [INFO] process: Shape of games: (32135, 15)
+2026-09-07 08:53:38 [INFO] process: Loading reviews from C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\raw\steam\steam_reviews.json.gz
+2026-09-07 09:07:43 [INFO] process: Loading games from C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\raw\steam\steam_games.json.gz
+2026-09-07 09:07:48 [INFO] process: Shape of reviews: (7793069, 12)
+2026-09-07 09:07:48 [INFO] process: Shape of games: (32135, 15)
+2026-09-07 09:09:01 [INFO] process: Games after dropping missing id/app_name: (32132, 15)
+2026-09-07 09:09:04 [INFO] process: Games after dropping missing id/app_name: (32132, 15)
+2026-09-07 09:09:35 [INFO] process: Keeping first interaction per duplicated review, begin: (7793069, 3)
+2026-09-07 09:09:52 [INFO] process: After keep-first filter: (6889728, 3)
+2026-09-07 09:09:52 [INFO] process: k-core filtering (user_k=5, item_k=5), begin: (6889728, 3)
+2026-09-07 09:10:00 [INFO] process: Iter 0: users 281645/2567538, items 11978/15474
+2026-09-07 09:10:05 [INFO] process: Iter 1: users 281214/281645, items 11961/11978
+2026-09-07 09:10:09 [INFO] process: Iter 2: users 281210/281214, items 11961/11961
+2026-09-07 09:10:14 [INFO] process: Iter 3: users 281210/281210, items 11961/11961
+2026-09-07 09:10:14 [INFO] process: After k-core filter: (3484694, 3)
+2026-09-07 09:10:14 [INFO] process: Mapping user and item ids to contiguous integers
+2026-09-07 09:10:19 [INFO] process: Saved id maps to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\steam\chatbot\map.json
+2026-09-07 09:10:31 [INFO] process: Saved splits to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\steam\chatbot (train=2922274, valid=281210, test=281210, full_history=3203484)
+2026-09-07 09:11:54 [INFO] process: Saved product table (11961 items) to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\steam\chatbot
+2026-09-07 09:12:00 [INFO] process: Saved 900 records to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\steam\chatbot\simulator_test_data_900.jsonl
+2026-09-07 09:12:00 [INFO] process: Pipeline complete.
