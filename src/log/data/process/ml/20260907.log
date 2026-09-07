@@ -1,0 +1,19 @@
+2026-09-07 04:27:27 [INFO] process: Loading movies from C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\raw\ml\movies.dat
+2026-09-07 04:27:27 [INFO] process: Loading ratings from C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\raw\ml\ratings.dat
+2026-09-07 04:28:20 [INFO] process: Shape of movies: (10681, 3)
+2026-09-07 04:28:20 [INFO] process: Shape of ratings: (10000054, 4)
+2026-09-07 04:28:20 [INFO] process: Movies after dropping missing titles: (10681, 3)
+2026-09-07 04:28:20 [INFO] process: Keeping first interaction per duplicated rating, begin: (10000054, 4)
+2026-09-07 04:28:28 [INFO] process: After keep-first filter: (10000054, 4)
+2026-09-07 04:28:28 [INFO] process: Filtering ratings below 3.0, begin: (10000054, 4)
+2026-09-07 04:28:28 [INFO] process: After rating filter: (8242124, 4)
+2026-09-07 04:28:28 [INFO] process: k-core filtering (user_k=5, item_k=5), begin: (8242124, 4)
+2026-09-07 04:28:29 [INFO] process: Iter 0: users 69814/69863, items 9888/10598
+2026-09-07 04:28:30 [INFO] process: Iter 1: users 69814/69814, items 9888/9888
+2026-09-07 04:28:30 [INFO] process: After k-core filter: (8240192, 4)
+2026-09-07 04:28:30 [INFO] process: Mapping user and item ids to contiguous integers
+2026-09-07 04:28:39 [INFO] process: Saved id maps to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\ml\chatbot\map.json
+2026-09-07 04:29:04 [INFO] process: Saved splits to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\ml\chatbot (train=8100564, valid=69814, test=69814, full_history=8170378)
+2026-09-07 04:29:10 [INFO] process: Saved product table (9888 items) to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\ml\chatbot
+2026-09-07 04:29:12 [INFO] process: Saved 900 records to C:\Users\i_am_fuch\Desktop\agentic-rag-for-rcm-sys\data\processed\ml\chatbot\simulator_test_data_900.jsonl
+2026-09-07 04:29:12 [INFO] process: Pipeline complete.
