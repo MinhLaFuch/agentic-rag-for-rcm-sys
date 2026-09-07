@@ -1,17 +1,15 @@
-from pathlib import Path
-from .._find_root import find_repo_root
+# config/data/__init__.py
+from .._paths import PathConfig
 
-_REPO_ROOT = find_repo_root(__file__)
-_DATA_ROOT = _REPO_ROOT / "data"
+_paths = PathConfig(__file__)
 
-RAW_DATA_DIR = _DATA_ROOT / "raw"
-PROCESSED_DATA_DIR = _DATA_ROOT / "processed"
+RAW_DATA_DIR = _paths.raw_dir
+PROCESSED_DATA_DIR = _paths.processed_dir
 
-AMAZON_RAW_DIR = RAW_DATA_DIR / "amazon"
-STEAM_RAW_DIR = RAW_DATA_DIR / "steam"
-MOVIELENS_RAW_DIR = RAW_DATA_DIR / "ml"
+AMAZON_RAW_DIR = _paths.raw("amazon")
+STEAM_RAW_DIR = _paths.raw("steam")
+MOVIELENS_RAW_DIR = _paths.raw("ml")
 
-AMAZON_PROCESSED_DIR = PROCESSED_DATA_DIR / "amazon"
-STEAM_PROCESSED_DIR = PROCESSED_DATA_DIR / "steam"
-MOVIELENS_PROCESSED_DIR = PROCESSED_DATA_DIR / "ml"
-
+AMAZON_PROCESSED_DIR = _paths.processed("amazon")
+STEAM_PROCESSED_DIR = _paths.processed("steam")
+MOVIELENS_PROCESSED_DIR = _paths.processed("ml")

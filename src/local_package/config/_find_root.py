@@ -1,13 +1,14 @@
-# src/config/_parent_path.py
 from pathlib import Path
+from typing import Optional
 
-def find_root(file: str, marker: str = "pyproject.toml") -> Path:
+
+def find_repo_root(file: str, marker: str = "pyproject.toml") -> Optional[Path]:
     """
     Walk up from `file` until a directory containing `marker` is found.
-    Works no matter how deep `file` is nested — no manual parents[N] counting needed.
+    Returns None if not found (instead of raising), so the caller can fall back.
     """
     path = Path(file).resolve()
     for parent in path.parents:
         if (parent / marker).exists():
             return parent
-    raise FileNotFoundError(f"Could not find repo root (no {marker} found above {file})")
+    return None
