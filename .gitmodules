@@ -1,6 +1,3 @@
-[submodule "forked_repository/AgentCF"]
-	path = forked_repository/AgentCF
-	url = https://github.com/MinhLaFuch/AgentCF-WWW.git
 [submodule "forked_repository/RecAI"]
 	path = forked_repository/RecAI
 	url = https://github.com/MinhLaFuch/RecAI.git
