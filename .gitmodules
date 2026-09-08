@@ -4,3 +4,6 @@
 [submodule "forked_repository/RecAI"]
 	path = forked_repository/RecAI
 	url = https://github.com/MinhLaFuch/RecAI.git
+[submodule "forked_repository/BiLLP"]
+	path = forked_repository/BiLLP
+	url = https://github.com/MinhLaFuch/BiLLP.git
