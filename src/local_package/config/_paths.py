@@ -1,42 +1,53 @@
+import os
 from pathlib import Path
+from typing import Literal, Optional, Union
+
 from ._find_root import find_repo_root
 
-"""
-<root>/
-├── pyproject.toml (or any local marker)
-└── resource/
-    ├── data/
-    │   ├── raw/          <- local raw (used when standalone, or forced via shared=False)
-    │   └── processed/
-    └── log/
-        └── data/
-            └── process/
-                ├── amazon/
-                ├── ml/
-                └── steam/
 
-Raw data can come from two places:
-- shared: the main repo's own resource/data/raw (only exists if this file currently
-    sits inside the main repo's tree, detected via `.gitmodules` above it)
-- local: this repo's own resource/data/raw (always exists)
-
-Call `.raw(name, shared=True/False)` to force one explicitly, or leave
-`shared=None` (default) to auto-pick: shared if available, else local.
-"""
+RepositorySource = Literal["main", "forked"]
+SOURCE_ENV_VAR = "LOCAL_PACKAGE_REPOSITORY"
+FORKED_REPOSITORY_ENV_VAR = "LOCAL_PACKAGE_FORKED_REPOSITORY"
 
 class PathConfig:
-    def __init__(self, file: str, local_marker: str = "pyproject.toml", shared_marker: str = ".gitmodules"):
-        local_root = find_repo_root(file, local_marker)
-        if local_root is None:
-            raise FileNotFoundError(f"Could not find {local_marker} above {file}")
+    def __init__(
+        self,
+        file: Union[str, Path],
+        source: Optional[RepositorySource] = None,
+        forked_repository: Optional[Union[str, Path]] = None,
+    ) -> None:
+        main_root = find_repo_root(file)
+        if main_root is None:
+            raise FileNotFoundError(f"Could not find pyproject.toml above {file}")
 
-        shared_root = find_repo_root(file, shared_marker)
-        raw_root = shared_root if shared_root else local_root
+        selected_source = source or os.getenv(SOURCE_ENV_VAR, "main").lower()
+        if selected_source not in {"main", "forked"}:
+            raise ValueError(
+                f"{SOURCE_ENV_VAR} must be 'main' or 'forked', got {selected_source!r}"
+            )
 
-        self.resource_dir = local_root / "resource"
-        self.raw_dir = (raw_root / "data" / "raw") if shared_root else (self.resource_dir / "data" / "raw")
+        self.source: RepositorySource = selected_source
+        if selected_source == "main":
+            repository_root = main_root
+            self.resource_dir = repository_root / "src" / "resource"
+        else:
+            forked_name = forked_repository or os.getenv(
+                FORKED_REPOSITORY_ENV_VAR, "RecAI"
+            )
+            repository_root = main_root / "forked_repository" / Path(forked_name)
+            self.resource_dir = self._find_resource_dir(repository_root)
+
+        self.repository_root = repository_root
+        self.raw_dir = self.resource_dir / "data" / "raw"
         self.processed_dir = self.resource_dir / "data" / "processed"
         self.log_dir = self.resource_dir / "log" / "data" / "process"
+
+    @staticmethod
+    def _find_resource_dir(repository_root: Path) -> Path:
+        for candidate in (repository_root / "resource", repository_root / "src" / "resource"):
+            if candidate.is_dir():
+                return candidate
+        return repository_root / "resource"
 
     def raw(self, dataset_name: str) -> Path:
         return self.raw_dir / dataset_name

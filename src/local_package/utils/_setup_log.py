@@ -1,12 +1,16 @@
 import logging
-from pathlib import Path
-import sys
 import datetime
+import sys
+from pathlib import Path
+from typing import Optional
 
-def setup_logging(name: str = None, 
-                  level: int = logging.INFO, 
-                  to_file: bool = True, 
-                  log_dir: Path = Path()) -> logging.Logger:
+
+def setup_logging(
+    name: Optional[str] = None,
+    level: int = logging.INFO,
+    to_file: bool = True,
+    log_dir: Optional[Path] = None,
+) -> logging.Logger:
     """
     Set up a logger with consistent formatting across notebooks/scripts.
 
@@ -32,7 +36,10 @@ def setup_logging(name: str = None,
 
     if to_file:
         log_dir.mkdir(parents=True, exist_ok=True)
-        log_file = log_dir / f"{datetime.now():%Y%m%d}.log"
+        if log_dir is None:
+            raise ValueError("log_dir is required when to_file=True")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / f"{datetime.datetime.now():%Y%m%d}.log"
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
