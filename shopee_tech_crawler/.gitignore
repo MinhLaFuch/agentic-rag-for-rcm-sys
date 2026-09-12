@@ -1,0 +1,40 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Data outputs (không commit dataset lớn / checkpoint / log lên git)
+data/raw/*
+data/processed/*
+data/checkpoint/*
+data/logs/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/checkpoint/.gitkeep
+!data/logs/.gitkeep
+
+# Selenium / driver artifacts
+*.log
+geckodriver.log
+chromedriver.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
