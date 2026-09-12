@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-src/agentic_rag_for_rcm_sys.egg-info/PKG-INFO
-src/agentic_rag_for_rcm_sys.egg-info/SOURCES.txt
-src/agentic_rag_for_rcm_sys.egg-info/dependency_links.txt
-src/agentic_rag_for_rcm_sys.egg-info/top_level.txt
-src/config/__init__.py
-src/config/data/__init__.py
