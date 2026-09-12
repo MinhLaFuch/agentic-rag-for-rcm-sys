@@ -1,2 +1,4 @@
-config
-data-preprocessing
+data
+local_package
+resource
+shopee_tech_crawler

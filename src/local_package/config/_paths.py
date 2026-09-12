@@ -40,7 +40,9 @@ class PathConfig:
         self.repository_root = repository_root
         self.raw_dir = self.resource_dir / "data" / "raw"
         self.processed_dir = self.resource_dir / "data" / "processed"
+        self.checkpoint_dir = self.resource_dir / "data" / "checkpoint"
         self.log_dir = self.resource_dir / "log" / "data" / "process"
+        self.crawler_log_dir = self.resource_dir / "log"
 
     @staticmethod
     def _find_resource_dir(repository_root: Path) -> Path:

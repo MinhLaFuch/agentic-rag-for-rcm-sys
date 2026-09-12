@@ -1,11 +1,43 @@
+```toml
 [project]
 name = "agentic-rag-for-rcm-sys"
 version = "0.0.1"
 requires-python = ">=3.9,<3.13"
 
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.2.0",
+    "pandas>=2.2.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.1",
+    "pytest>=8.2.0",
+    "requests>=2.31.0",
+    "selenium>=4.20.0",
+    "tenacity>=8.2.3",
+    "webdriver-manager>=4.0.1",
+]
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+```
+
+Then, from your activated `.venv`, install the project:
+
+```bash
+pip install -e .
+```
+
+Or if you want a normal install:
+
+```bash
+pip install .
+```
+
+One thing to note: **`pytest` is usually kept as a development dependency rather than a runtime dependency**. If this is your own application/library, I'd actually recommend separating it into an optional `dev` dependency.

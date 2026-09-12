@@ -64,5 +64,18 @@ export LOCAL_PACKAGE_FORKED_REPOSITORY=RecAI
 The supported source values are `main` and `forked`. A fork may provide its
 data under either `resource/` or `src/resource/`.
 
+### Shopee crawler imports
+
+The crawler is exposed through the shared package:
+
+```python
+from local_package.config import shopee_crawl
+from local_package.config.log import get_logger, setup_logging
+from local_package.crawler import SearchCrawler, build_product_id
+```
+
+The original `shopee_tech_crawler` package remains available as a compatibility
+namespace, while new code should import through `local_package`.
+
 - **Do not** run `pip install -e .` inside the venvs used for `forked_repository/AgentCF` or `forked_repository/RecAI` — those are separate submodules with their own dependency setups and should not be mixed with this package.
 - If you add a new folder under `src/` and want it importable (e.g. `src/utils/`), just add an `__init__.py` inside it — no changes to `pyproject.toml` needed, setuptools will auto-discover it next time you reinstall (`pip install -e .` again).
