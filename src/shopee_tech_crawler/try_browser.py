@@ -1,6 +1,8 @@
-"""Smoke-test BrowserManager against Shopee."""
+from .crawler.browser import BrowserManager
 
-from local_package.crawler import probe_browser
-
-if __name__ == "__main__":
-    raise SystemExit(probe_browser())
+bm = BrowserManager(headless=True)
+driver = bm.start()
+ok = bm.safe_get("https://shopee.vn")
+print("safe_get:", ok)
+print("title:", driver.title)
+bm.close()
