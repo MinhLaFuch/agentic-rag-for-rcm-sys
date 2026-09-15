@@ -1,0 +1,61 @@
+2026-09-15 06:39:19 | INFO     | shopee_tech_crawler.crawler.browser | Browser started (headless=False, window=1920x1080)
+2026-09-15 06:39:19 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-15 06:39:36 | ERROR    | shopee_tech_crawler.crawler.browser | LOGIN_WALL_DETECTED: yêu cầu https://shopee.vn/search nhưng bị redirect sang https://shopee.vn/buyer/login (marker='/buyer/login') — dấu hiệu automation-detection, KHÔNG cố đăng nhập/bypass.
+2026-09-15 06:39:36 | ERROR    | shopee_tech_crawler.crawler.search_crawler | Dừng crawl keyword='laptop' tại page=0 do LOGIN_WALL_DETECTED (automation-detection) — KHÔNG tự động đăng nhập/bypass
+2026-09-15 06:39:36 | INFO     | shopee_tech_crawler.crawler.browser | Debug snapshot đã lưu: screenshot=C:\Users\ph181\Documents\Reposistories\agentic-rag-for-rcm-sys\src\shopee_tech_crawler\data\logs\debug_snapshots\20260915_063936_loginwall_laptop.png html=C:\Users\ph181\Documents\Reposistories\agentic-rag-for-rcm-sys\src\shopee_tech_crawler\data\logs\debug_snapshots\20260915_063936_loginwall_laptop.html current_url=https://shopee.vn/buyer/login?fu_tracking_id=82263c49aa6-229d-4c17-9244-4e9319de20d2&next=https%3A%2F%2Fshopee.vn%2Fsearch%3Fkeyword%3Dlaptop%26page%3D0 title='Đăng nhập tài khoản - Mua sắm Online | Shopee Việt Nam'
+2026-09-15 06:39:36 | INFO     | shopee_tech_crawler.crawler.browser | Debug snapshot đã lưu: screenshot=C:\Users\ph181\Documents\Reposistories\agentic-rag-for-rcm-sys\src\shopee_tech_crawler\data\logs\debug_snapshots\20260915_063936_try_search_laptop.png html=C:\Users\ph181\Documents\Reposistories\agentic-rag-for-rcm-sys\src\shopee_tech_crawler\data\logs\debug_snapshots\20260915_063936_try_search_laptop.html current_url=https://shopee.vn/buyer/login?fu_tracking_id=82263c49aa6-229d-4c17-9244-4e9319de20d2&next=https%3A%2F%2Fshopee.vn%2Fsearch%3Fkeyword%3Dlaptop%26page%3D0 title='Đăng nhập tài khoản - Mua sắm Online | Shopee Việt Nam'
+2026-09-15 06:39:39 | INFO     | shopee_tech_crawler.crawler.browser | Browser closed
+2026-09-15 06:40:03 | INFO     | shopee_tech_crawler.crawler.browser | Browser started (headless=False, window=1920x1080)
+2026-09-15 06:40:03 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='tai nghe bluetooth' page=0 url=https://shopee.vn/search?keyword=tai%20nghe%20bluetooth&page=0
+2026-09-15 06:40:20 | INFO     | shopee_tech_crawler.crawler.browser | scroll_to_bottom: dừng sau 3 lần (chiều cao không đổi)
+2026-09-15 06:40:21 | WARNING  | shopee_tech_crawler.crawler.browser | Không chụp được screenshot debug: Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=153.0.8010.36)
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff6dc2fff25+5ae5]
+	chromedriver!(No symbol) [0x7ff6dc222210]
+	chromedriver!(No symbol) [0x7ff6dc044a9d]
+	chromedriver!(No symbol) [0x7ff6dc01bac2]
+	chromedriver!(No symbol) [0x7ff6dc0d1006]
+	chromedriver!(No symbol) [0x7ff6dc0ef9ad]
+	chromedriver!(No symbol) [0x7ff6dc092202]
+	chromedriver!(No symbol) [0x7ff6dc093013]
+	chromedriver!GetHandleVerifier [0x7ff6dc724231+429df1]
+	chromedriver!GetHandleVerifier [0x7ff6dc74fce7+4558a7]
+	chromedriver!GetHandleVerifier [0x7ff6dc74413e+449cfe]
+	chromedriver!GetHandleVerifier [0x7ff6dc3fc9ce+10258e]
+	chromedriver!(No symbol) [0x7ff6dc230545]
+	chromedriver!(No symbol) [0x7ff6dc22b6a4]
+	chromedriver!(No symbol) [0x7ff6dc22b834]
+	chromedriver!(No symbol) [0x7ff6dc21601c]
+	KERNEL32!BaseThreadInitThunk [0x7ffd6a50cd87+17]
+	ntdll!RtlUserThreadStart [0x7ffd6b74caec+2c]
+
+2026-09-15 06:40:21 | WARNING  | shopee_tech_crawler.crawler.browser | Không lưu được HTML debug: Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=153.0.8010.36)
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff6dc2fff25+5ae5]
+	chromedriver!(No symbol) [0x7ff6dc222210]
+	chromedriver!(No symbol) [0x7ff6dc044a9d]
+	chromedriver!(No symbol) [0x7ff6dc01bac2]
+	chromedriver!(No symbol) [0x7ff6dc0d1006]
+	chromedriver!(No symbol) [0x7ff6dc0ef9ad]
+	chromedriver!(No symbol) [0x7ff6dc092202]
+	chromedriver!(No symbol) [0x7ff6dc093013]
+	chromedriver!GetHandleVerifier [0x7ff6dc724231+429df1]
+	chromedriver!GetHandleVerifier [0x7ff6dc74fce7+4558a7]
+	chromedriver!GetHandleVerifier [0x7ff6dc74413e+449cfe]
+	chromedriver!GetHandleVerifier [0x7ff6dc3fc9ce+10258e]
+	chromedriver!(No symbol) [0x7ff6dc230545]
+	chromedriver!(No symbol) [0x7ff6dc22b6a4]
+	chromedriver!(No symbol) [0x7ff6dc22b834]
+	chromedriver!(No symbol) [0x7ff6dc21601c]
+	KERNEL32!BaseThreadInitThunk [0x7ffd6a50cd87+17]
+	ntdll!RtlUserThreadStart [0x7ffd6b74caec+2c]
+
+2026-09-15 06:40:24 | INFO     | shopee_tech_crawler.crawler.browser | Browser closed
+2026-09-15 06:40:26 | INFO     | shopee_tech_crawler.crawler.browser | Browser started (headless=True, window=1920x1080)
+2026-09-15 06:40:26 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-15 06:40:42 | INFO     | shopee_tech_crawler.crawler.browser | scroll_to_bottom: dừng sau 3 lần (chiều cao không đổi)
+2026-09-15 06:41:08 | WARNING  | shopee_tech_crawler.crawler.browser | Timeout chờ danh sách element: (css selector, li.shopee-search-item-result__item)
