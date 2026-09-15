@@ -11,18 +11,16 @@ env/
 # Environment variables
 .env
 
-# Data outputs (không commit dataset lớn / checkpoint / log lên git)
+# Data outputs (không commit dataset lớn / checkpoint)
 data/raw/*
 data/processed/*
 data/checkpoint/*
-data/logs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/checkpoint/.gitkeep
-!data/logs/.gitkeep
 
 # Selenium / driver artifacts
-*.log
+
 geckodriver.log
 chromedriver.log
 

@@ -1,0 +1,106 @@
+2026-09-11 03:04:44 | INFO     | shopee_tech_crawler.test | import OK, class loaded: <class 'crawler.browser.BrowserManager'>
+2026-09-11 03:05:01 | INFO     | shopee_tech_crawler.crawler.browser | scroll_to_bottom: dừng sau 6 lần (chiều cao không đổi)
+2026-09-11 03:05:01 | ERROR    | shopee_tech_crawler.crawler.browser | CAPTCHA_DETECTED tại https://shopee.vn/search?keyword=laptop (marker='verify')
+2026-09-11 03:27:41 | ERROR    | shopee_tech_crawler.crawler.browser | CAPTCHA_DETECTED tại https://shopee.vn (marker='verify you are human', title='Security check', context=...'<html><body>please verify you are human before continuing</body></html>'...)
+2026-09-11 03:31:28 | ERROR    | shopee_tech_crawler.crawler.browser | CAPTCHA_DETECTED tại https://shopee.vn (marker='verify you are human', title='Security check', context=...'please verify you are human before continuing'...)
+2026-09-11 03:31:28 | ERROR    | shopee_tech_crawler.crawler.browser | CAPTCHA_DETECTED tại https://shopee.vn (widget iframe recaptcha/hcaptcha render trên DOM)
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='laptop' page=0: 2 sản phẩm parse thành công
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=1 url=https://shopee.vn/search?keyword=laptop&page=1
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='laptop' — dừng phân trang
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 2 sản phẩm discovered
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-11 03:41:54 | ERROR    | shopee_tech_crawler.crawler.search_crawler | Dừng crawl keyword='laptop' tại page=0 do CAPTCHA_DETECTED
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-11 03:41:54 | WARNING  | shopee_tech_crawler.crawler.search_crawler | Card không có href hợp lệ, bỏ qua
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='laptop' page=0: 1 sản phẩm parse thành công
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=1 url=https://shopee.vn/search?keyword=laptop&page=1
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='laptop' — dừng phân trang
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 1 sản phẩm discovered
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='laptop' page=0: 1 sản phẩm parse thành công
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=1 url=https://shopee.vn/search?keyword=laptop&page=1
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='laptop' — dừng phân trang
+2026-09-11 03:41:54 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 1 sản phẩm discovered
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='laptop' page=0: 1 sản phẩm parse thành công
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=1 url=https://shopee.vn/search?keyword=laptop&page=1
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='laptop' — dừng phân trang
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 1 sản phẩm discovered
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='laptop' page=0: 1 sản phẩm parse thành công
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=1 url=https://shopee.vn/search?keyword=laptop&page=1
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='laptop' — dừng phân trang
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 1 sản phẩm discovered
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='tai nghe' page=0 url=https://shopee.vn/search?keyword=tai%20nghe&page=0
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | keyword='tai nghe' page=0: 1 sản phẩm parse thành công
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='tai nghe' page=1 url=https://shopee.vn/search?keyword=tai%20nghe&page=1
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=1 cho keyword='tai nghe' — dừng phân trang
+2026-09-12 01:59:33 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='tai nghe': tổng 1 sản phẩm discovered
+2026-09-12 02:43:30 | ERROR    | shopee_tech_crawler.crawler.browser | LOGIN_WALL_DETECTED: yêu cầu https://shopee.vn/search nhưng bị redirect sang https://shopee.vn/buyer/login (marker='/buyer/login') — dấu hiệu automation-detection, KHÔNG cố đăng nhập/bypass.
+2026-09-12 02:44:53 | ERROR    | shopee_tech_crawler.crawler.browser | LOGIN_WALL_DETECTED: yêu cầu https://shopee.vn/search nhưng bị redirect sang https://shopee.vn/buyer/login (marker='/buyer/login') — dấu hiệu automation-detection, KHÔNG cố đăng nhập/bypass.
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | warm_up: GET https://shopee.vn -> status=200, cookies nhận được=[]
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | search API: keyword='laptop' page=0 status=200 content-type=application/json
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | warm_up: GET https://shopee.vn -> status=403, cookies nhận được=[]
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | search API: keyword='laptop' page=0 status=403 content-type=application/json
+2026-09-12 02:52:59 | WARNING  | shopee_tech_crawler.crawler.api_client | search API trả status=403 cho keyword='laptop' page=0, body[:300]='Forbidden'
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | warm_up: GET https://shopee.vn -> status=200, cookies nhận được=[]
+2026-09-12 02:52:59 | INFO     | shopee_tech_crawler.crawler.api_client | search API: keyword='laptop' page=0 status=200 content-type=application/json
+2026-09-12 02:52:59 | WARNING  | shopee_tech_crawler.crawler.api_client | search API không trả JSON hợp lệ cho keyword='laptop' page=0, body[:300]='<html>not json</html>'
+2026-09-12 02:52:59 | WARNING  | shopee_tech_crawler.crawler.api_client | warm_up thất bại (thử gọi API trực tiếp): simulated network blip
+2026-09-12 02:52:59 | WARNING  | shopee_tech_crawler.crawler.retry | search lỗi lần 1/3 (simulated network blip), retry sau 1.5s
+2026-09-12 02:53:00 | INFO     | shopee_tech_crawler.crawler.api_client | search API: keyword='laptop' page=0 status=200 content-type=application/json
+2026-09-12 11:00:32 | INFO     | shopee_tech_crawler.crawler.browser | Browser started (headless=False, window=1920x1080)
+2026-09-12 11:00:32 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler: keyword='laptop' page=0 url=https://shopee.vn/search?keyword=laptop&page=0
+2026-09-12 11:00:50 | INFO     | shopee_tech_crawler.crawler.browser | scroll_to_bottom: dừng sau 4 lần (chiều cao không đổi)
+2026-09-12 11:01:11 | WARNING  | shopee_tech_crawler.crawler.browser | Timeout chờ danh sách element: (css selector, li.shopee-search-item-result__item)
+2026-09-12 11:01:11 | INFO     | shopee_tech_crawler.crawler.search_crawler | Không còn sản phẩm ở page=0 cho keyword='laptop' — dừng phân trang
+2026-09-12 11:01:11 | INFO     | shopee_tech_crawler.crawler.search_crawler | SearchCrawler hoàn tất keyword='laptop': tổng 0 sản phẩm discovered
+2026-09-12 11:01:11 | INFO     | shopee_tech_crawler.crawler.browser | Debug snapshot đã lưu: screenshot=D:\DACNTT\src\shopee_tech_crawler_phase1\shopee_tech_crawler\data\logs\debug_snapshots\20260912_110111_try_search_laptop.png html=D:\DACNTT\src\shopee_tech_crawler_phase1\shopee_tech_crawler\data\logs\debug_snapshots\20260912_110111_try_search_laptop.html current_url=https://shopee.vn/verify/traffic?anti_bot_tracking_id=gqRjZGVrxHSFomtptTE0MjUxOnRyYWNraW5nX2lkX2tleaJrdtEAAqRhbGdv0gAAAGSjZGVrwKJjdMRAAAAADMPc0R2hCGactn2nr9DcAFBQpHMoHjAbjrdsrt_pSEAwvu3D4ZqEQ0V0kSHM0Nn9K_1xVJ0eNyntbq4tnqpjaXBoZXJ0ZXh0xQO4AAAADCdZ7QqlTBH2jE0mNTRgiZ-8CYtkJTZ3oXBSwL7xlX-IjqILJXMPrEBjH9pmWlC10THJlksrtHLgA7esiDZFNRRqJQ-YqypFreratfwJUXTX90QPMa90V0EaV8VPsm7hk0ARdKE4YBM9o90Q5EoDNPJ7yofWoSjbbAEGk91CnPt2Xwf2liU78fHfVW5zsasYysD_3fsNpDetFwMn-SIleFk1BcQpEFTj6wqYceq2g7bSFNmjQP0S3iX2wb45S8C5PF831MAZ-ATo-97yRywPnU5mFQRe_7VjTVZu9eilWjiVV3NxDfZZApCexKGs1qR6ykk9bTV47B6Xkq0V2-vRm38nnCQBrQtt7dfTzp6mXIAJshdgvbaOEoPQD4FujFWLZE15XdQ0CI4KODwJr3LP3bixBNrNpupdA-o0-Cz_pTT-Qx1thyYB5GzU-bFqLA56p3EfcDO-UL5zif_3xcBOYQWCQXP628pP8DV7rut72An2zb_6FhLIMUDZDAn9aQKZbs8omkBQlhuRVGWJFyo2Zw-A9DZnJoBr_ot89x8R8VIEtvaU3MwSJlKuquI67mbFAFHg_KXFPLfCUKzcbhCrFeo5fI06hjuW7F-bRrH9Qq1dIOK480nJyGVBblJYLdCSttyqmu2oG6YHZsfROHUKwfNLTzalWmQFFoxflmCKJ4CMB6XFUUT5Z4yTgsKVcT0sVCITYj4Bs52ajbowImi8WEUbeXAhC5g3Jy6BovD2M1AffclVR7ChEoQNiE5wdNJ-O1iCRNVJ878mLXYxSyOnBKTm2K_vAcuh2_WNVkqmdYpc3PsRcOA2ByMc4ueNdDSRVHg78BUMt1G_35kve-I1bvFiKcdJR4gH7d46EMXmUwmQAeUxmcN3AMCafY4ucR4ESnmRJL1IeeecywAAjbdpN44ZxUtnDsky_XIGHKftDZAUMj0ruRjSrI0Wwg5J5ILj-g5nZ_wLlpB82IQav3WNRGYBkPZrqtBCbNjA09-zryGyBn6oQPbyQaXY8W9PtVBoXT8_imSH9sKlPtWhOS2dkivR5P7hliqVN4_ms-hC31oxKfuF0f6fDT64MaZdwnCr9a3sUjYZ9V_YCy2fWrJR-nYqWxFejhq2K-dE0I0ouSDS1NCXWbM582ZnSDJhW5aNTQecE5CWXKn7Z5TQhV6-7xYp3zN5mycdLA5bjoddTBVNDRNXh6qVuRJTfLsSsyLOteKRPk_5T9TyFvpPaDyziLJhGOTSqtZApvgi_hNHxKqunAc9sA&app_key=mfreyJidXNpbmVzcyI6IkNhcnQiLCJtZnIiOiIwIiwibWZyX2NhcHRjaGEiOiIiLCJwb3BfdXAiOmZhbHNlfQ.PC&client_id=&is_initial=true&next=https%3A%2F%2Fshopee.vn%2Fsearch%3Fkeyword%3Dlaptop%26page%3D0%26is_from_login%3Dtrue&redirect_type=2&scene=crawler_item&should_replace_history=true title='laptop giá tốt Tháng 9, 2026 | Mua ngay | Shopee Việt Nam'
+2026-09-12 11:01:13 | INFO     | shopee_tech_crawler.crawler.browser | Browser closed
+2026-09-12 11:05:04 | INFO     | shopee_tech_crawler.crawler.browser | Browser started (headless=False, window=1920x1080)
+2026-09-12 11:05:54 | WARNING  | shopee_tech_crawler.crawler.browser | Không chụp được screenshot debug: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff61735e035+5745]
+	chromedriver!(No symbol) [0x7ff617286a90]
+	chromedriver!(No symbol) [0x7ff6170b5b66]
+	chromedriver!(No symbol) [0x7ff617101ec3]
+	chromedriver!(No symbol) [0x7ff6171394d2]
+	chromedriver!(No symbol) [0x7ff61713333a]
+	chromedriver!(No symbol) [0x7ff617132ae3]
+	chromedriver!(No symbol) [0x7ff61707ddbb]
+	chromedriver!(No symbol) [0x7ff61707e412]
+	chromedriver!(No symbol) [0x7ff61707e9d5]
+	chromedriver!GetHandleVerifier [0x7ff617772f8b+41a69b]
+	chromedriver!GetHandleVerifier [0x7ff6177a0132+447842]
+	chromedriver!GetHandleVerifier [0x7ff617793e7e+43b58e]
+	chromedriver!GetHandleVerifier [0x7ff617453f5e+fb66e]
+	chromedriver!(No symbol) [0x7ff61729419c]
+	chromedriver!(No symbol) [0x7ff61707d157]
+	chromedriver!GetHandleVerifier [0x7ff6177fe798+4a5ea8]
+	KERNEL32!BaseThreadInitThunk [0x7ff80735cd87+17]
+	ntdll!RtlUserThreadStart [0x7ff808d8caec+2c]
+
+2026-09-12 11:05:54 | WARNING  | shopee_tech_crawler.crawler.browser | Không lưu được HTML debug: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff61735e035+5745]
+	chromedriver!(No symbol) [0x7ff617286a90]
+	chromedriver!(No symbol) [0x7ff6170b5b66]
+	chromedriver!(No symbol) [0x7ff617101ec3]
+	chromedriver!(No symbol) [0x7ff6171394d2]
+	chromedriver!(No symbol) [0x7ff61713333a]
+	chromedriver!(No symbol) [0x7ff617132ae3]
+	chromedriver!(No symbol) [0x7ff61707ddbb]
+	chromedriver!(No symbol) [0x7ff61707e412]
+	chromedriver!(No symbol) [0x7ff61707e9d5]
+	chromedriver!GetHandleVerifier [0x7ff617772f8b+41a69b]
+	chromedriver!GetHandleVerifier [0x7ff6177a0132+447842]
+	chromedriver!GetHandleVerifier [0x7ff617793e7e+43b58e]
+	chromedriver!GetHandleVerifier [0x7ff617453f5e+fb66e]
+	chromedriver!(No symbol) [0x7ff61729419c]
+	chromedriver!(No symbol) [0x7ff61707d157]
+	chromedriver!GetHandleVerifier [0x7ff6177fe798+4a5ea8]
+	KERNEL32!BaseThreadInitThunk [0x7ff80735cd87+17]
+	ntdll!RtlUserThreadStart [0x7ff808d8caec+2c]
+
+2026-09-12 11:05:56 | INFO     | shopee_tech_crawler.crawler.browser | Browser closed
