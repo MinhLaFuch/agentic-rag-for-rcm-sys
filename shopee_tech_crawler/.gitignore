@@ -15,7 +15,7 @@ env/
 data/raw/*
 data/processed/*
 data/checkpoint/*
-data/logs/debug_snapshots
+data/logs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/checkpoint/.gitkeep
