@@ -4,9 +4,6 @@
 [submodule "forked_repository/BiLLP"]
 	path = forked_repository/BiLLP
 	url = https://github.com/MinhLaFuch/BiLLP.git
-[submodule "forked_repository/TAIRA"]
-	path = forked_repository/TAIRA
-	url = https://github.com/MinhLaFuch/TAIRA.git
 [submodule "forked_repository/ECPO"]
 	path = forked_repository/ECPO
 	url = https://github.com/MinhLaFuch/ECPO.git
