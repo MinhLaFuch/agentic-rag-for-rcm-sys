@@ -6,4 +6,4 @@
 | [4] | [MovieLens 10M](https://grouplens.org/datasets/movielens/10m/)| 2009 |
 | [5] | Steam ([Review](http://cseweb.ucsd.edu/~wckang/steam_reviews.json.gz), [Metadata](http://cseweb.ucsd.edu/~wckang/steam_games.json.)) | 2018 |
 | [6] | [Tiki](https://www.kaggle.com/datasets/michaelminhpham/vietnamese-tiki-e-commerce-dataset) | 2023 |
-| [7] | [Tiki](https://www.kaggle.com/datasets/michaelminhpham/vietnamese-tiki-e-commerce-dataset) | 2023 |
+| [7] | [linh222/face_cleanser_recommendation_dataset](https://github.com/linh222/face_cleanser_recommendation_dataset) | 2023 |
