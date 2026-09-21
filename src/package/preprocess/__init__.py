@@ -2,4 +2,4 @@
 
 from ._process_pipeline import ProcessPipeline
 
-all = ["ProcessPipeline"]
+__all__ = ["ProcessPipeline"]

@@ -1,91 +1,115 @@
-"""Amazon Reviews 2023 -> 4 standard files.
-
-Flow: load -> merge -> k-core -> assign idx -> leave-one-out split -> save.
-"""
+"""Notebook-compatible Amazon Reviews preprocessing pipeline."""
 from __future__ import annotations
+
+import logging
 
 import pandas as pd
 
-from notebook.pipeline.preprocess import leave_one_out_split
-from package.utils.data import get_amazon_category
-from package.utils.log import AMAZON_PROCESS_LOG_DIR
-from package.utils import setup_logging
-from package.preprocess._export import write_outputs
+from package.config.data import get_amazon_category
+from package.config.log import AMAZON_PROCESS_LOG_DIR
+from package.utils import LogHelper
+from package.utils._export import write_jsonl, write_outputs
 
-from .utils._assign_index import assign_idx
-from .utils._kcore_filter import kcore_filter
-from .utils._leave_one_out import leave_one_out
-from .utils._load_df import load_meta_df, load_review_df, merge_df
+from ._assign_index import assign_idx
+from ._k_core_filter import keep_first_filter, kcore_filter, low_rating_filter
+from ._leave_one_out import leave_one_out_split
+from ._loader import load_reviews_and_metadata
 
-logger = setup_logging(__name__, log_dir=AMAZON_PROCESS_LOG_DIR)
+logger = LogHelper(
+    "process", level=logging.INFO, log_dir=AMAZON_PROCESS_LOG_DIR
+).logger
 
 
 class ProcessPipeline:
-    """Preprocess one Amazon category, e.g. ProcessPipeline("beauty").run()."""
+    """Run the same stages and produce the same artifacts as process.ipynb."""
 
-    def __init__(self, category: str, min_interactions: int = 5):
-        self.category = get_amazon_category(category)  # "beauty" -> All_Beauty
-        self.min_interactions = min_interactions
-        self.out_dir = self.category.processed_dir
+    def __init__(
+        self,
+        category: str,
+        rating_threshold: float = 3.0,
+        user_k: int = 5,
+        item_k: int = 5,
+        min_interactions: int | None = None,
+        simulator_sample_n: int = 900,
+        seed: int = 2024,
+        max_history_len: int = 10,
+        max_title_len: int = 50,
+    ):
+        self.category = get_amazon_category(category)
+        self.rating_threshold = rating_threshold
+        self.user_k = min_interactions if min_interactions is not None else user_k
+        self.item_k = min_interactions if min_interactions is not None else item_k
+        self.simulator_sample_n = simulator_sample_n
+        self.seed = seed
+        self.max_history_len = max_history_len
+        self.max_title_len = max_title_len
+        self.out_dir = self.category.processed_dir / "chatbot"
+        self.review_df: pd.DataFrame | None = None
+        self.meta_df: pd.DataFrame | None = None
+        self.user_map: dict = {}
+        self.item_map: dict = {}
 
-        self.reviews: pd.DataFrame | None = None
-        self.meta: pd.DataFrame | None = None
-        self.canonical: pd.DataFrame | None = None
-        
-        self.user2idx: dict | None = None
-        self.item2idx: dict | None = None
-
-    # ---- steps -------------------------------------------------------
     def load(self) -> "ProcessPipeline":
-        """1a. Load reviews and metadata separately."""
-        self.reviews = load_review_df(self.category)
-        self.meta = load_meta_df(self.category)
-        logger.info("reviews: %s, meta: %s", self.reviews.shape, self.meta.shape)
+        self.review_df, self.meta_df = load_reviews_and_metadata(self.category, logger)
+        logger.info("Loaded reviews: %s", self.review_df.shape)
+        logger.info("Loaded metadata: %s", self.meta_df.shape)
         return self
 
-    def merge(self) -> "ProcessPipeline":
-        """1b. Merge reviews with metadata into the canonical table."""
-        if self.reviews is None or self.meta is None:
-            raise RuntimeError("Call load() before merge().")
-        self.canonical = merge_df(self.reviews, self.meta)
-        logger.info("%d rows after merging review+metadata", len(self.canonical))
+    def filter(self) -> "ProcessPipeline":
+        df = self._require_reviews("filter")
+        df = keep_first_filter(df)
+        logger.info("After keep-first filter: %s", df.shape)
+        df = low_rating_filter(df, self.rating_threshold)
+        logger.info("After rating filter: %s", df.shape)
+        self.review_df = kcore_filter(df, self.user_k, self.item_k)
+        logger.info("After k-core filter: %s", self.review_df.shape)
         return self
 
     def filter_kcore(self) -> "ProcessPipeline":
-        """2. Iterative k-core filter on users and items."""
-        df = self._require_canonical("filter_kcore")
-        self.canonical = kcore_filter(df, self.min_interactions)
-        logger.info(
-            "%d rows after k-core (>= %d)", len(self.canonical), self.min_interactions
-        )
-        return self
+        """Backward-compatible name for the complete filtering stage."""
+        return self.filter()
 
     def index_and_split(self) -> "ProcessPipeline":
-        """3. Assign contiguous user/item idx, then leave-one-out split by time."""
-        df = self._require_canonical("index_and_split")
-        df, self.user2idx, self.item2idx = assign_idx(df)
-        self.canonical = leave_one_out_split(df)
-        logger.info("%d users, %d items", len(self.user2idx), len(self.item2idx))
-        logger.info("split counts:\n%s", self.canonical["split"].value_counts())
+        df = self._require_reviews("index_and_split")
+        df, self.user_map, self.item_map = assign_idx(df)
+        self.user2idx, self.item2idx = self.user_map, self.item_map
+        train, valid, test, history = leave_one_out_split(df)
+        self.splits = train, valid, test, history
+        self.review_df = df
         return self
 
     def save(self) -> "ProcessPipeline":
-        """4. Write interactions / item_lookup parquet + user2idx / item2idx json."""
-        df = self._require_canonical("save")
-        if self.user2idx is None or self.item2idx is None:
+        if not hasattr(self, "splits"):
             raise RuntimeError("Call index_and_split() before save().")
-        self.out_dir.mkdir(parents=True, exist_ok=True)
-        write_outputs(df, self.user2idx, self.item2idx, str(self.out_dir))
-        logger.info("Saved to %s: %s", self.out_dir, sorted(p.name for p in self.out_dir.iterdir()))
+        train, valid, test, history = self.splits
+        products = write_outputs(
+            train, valid, test, history, self.meta_df, self.user_map, self.item_map, self.out_dir
+        )
+        product_titles = products.set_index("id")["title"].fillna("").map(
+            lambda title: str(title)[: self.max_title_len]
+        )
+        user_history = history.groupby("user_id")["item_id"].agg(list)
+        sample_n = min(self.simulator_sample_n, len(test))
+        sampled = test.sample(sample_n, random_state=self.seed).copy()
+        sampled["history"] = sampled["user_id"].map(
+            lambda user: "; ".join(
+                product_titles[item]
+                for item in user_history.get(user, [])[-self.max_history_len:]
+                if item in product_titles
+            )
+        )
+        sampled["target"] = sampled["item_id"].map(product_titles).fillna("")
+        write_jsonl(
+            sampled[["history", "target"]].to_dict("records"),
+            self.out_dir / f"simulator_test_data_{sample_n}.jsonl",
+        )
+        logger.info("Pipeline complete: %s", self.out_dir)
         return self
 
     def run(self) -> "ProcessPipeline":
-        """Run all four steps in order."""
-        logger.info("Processing category=%s (min_interactions=%d)", self.category.name, self.min_interactions)
-        return self.load().merge().filter_kcore().index_and_split().save()
+        return self.load().filter().index_and_split().save()
 
-    # ---- helpers -----------------------------------------------------
-    def _require_canonical(self, step: str) -> pd.DataFrame:
-        if self.canonical is None:
-            raise RuntimeError(f"Call merge() before {step}().")
-        return self.canonical
+    def _require_reviews(self, step: str) -> pd.DataFrame:
+        if self.review_df is None:
+            raise RuntimeError(f"Call load() before {step}().")
+        return self.review_df
