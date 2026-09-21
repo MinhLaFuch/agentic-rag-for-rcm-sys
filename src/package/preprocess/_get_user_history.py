@@ -1,11 +1,13 @@
-"""Lấy lịch sử item của 1 user từ bảng interactions đã xử lý."""
+"""Return a user's chronological history from notebook-compatible data."""
 import pandas as pd
 
 
-def get_user_history(interactions: pd.DataFrame, user_idx: int, split: str | None = "train") -> list[int]:
-    # split="train": lịch sử "user đã biết" (agent, backend train)
-    # split=None: lấy toàn bộ, kể cả val/test — chỉ dùng khi debug/kiểm tra, không dùng lúc train/eval
-    df = interactions[interactions.user_idx == user_idx]
-    if split is not None:
-        df = df[df.split == split]
-    return df.sort_values("timestamp")["item_idx"].tolist()
+def get_user_history(
+    interactions: pd.DataFrame, user_idx: int, split: str | None = "train"
+) -> list[int]:
+    user_column = "user_id" if "user_id" in interactions else "user_idx"
+    item_column = "item_id" if "item_id" in interactions else "item_idx"
+    df = interactions[interactions[user_column] == user_idx]
+    if split is not None and "split" in interactions:
+        df = df[df["split"] == split]
+    return df.sort_values("timestamp")[item_column].tolist()

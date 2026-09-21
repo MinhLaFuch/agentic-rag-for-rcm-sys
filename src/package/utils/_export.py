@@ -1,25 +1,42 @@
-"""Tách bảng canonical ra 4 file chuẩn cho pipeline."""
+"""Exports for the notebook-compatible preprocessing pipeline."""
+from __future__ import annotations
+
 import json
-import os
+from pathlib import Path
 
 import pandas as pd
 
 
-def write_outputs(canonical: pd.DataFrame, user2idx: dict, item2idx: dict, out_dir: str) -> None:
-    interactions = canonical[["user_idx", "item_idx", "timestamp", "split"]]
-    interactions.to_parquet(os.path.join(out_dir, "interactions.parquet"), index=False)
+def write_jsonl(records: list[dict], path: Path) -> None:
+    with path.open("w", encoding="utf-8") as stream:
+        for record in records:
+            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-    item_lookup = (
-        canonical[["item_idx", "title", "average_rating", "rating_number", "categories"]]
-        .drop_duplicates(subset=["item_idx"])
-        .rename(columns={"average_rating": "avg_rating"})
-    )
-    item_lookup["categories"] = item_lookup["categories"].apply(
-        lambda c: " ".join(str(x).replace(" ", "_") for x in c) if isinstance(c, (list, tuple)) else ""
-    )
-    item_lookup.to_parquet(os.path.join(out_dir, "item_lookup.parquet"), index=False)
 
-    with open(os.path.join(out_dir, "user2idx.json"), "w") as f:
-        json.dump(user2idx, f)
-    with open(os.path.join(out_dir, "item2idx.json"), "w") as f:
-        json.dump(item2idx, f)
+def write_outputs(
+    train: pd.DataFrame,
+    valid: pd.DataFrame,
+    test: pd.DataFrame,
+    history: pd.DataFrame,
+    meta_df: pd.DataFrame,
+    user_map: dict,
+    item_map: dict,
+    out_dir: Path,
+) -> pd.DataFrame:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train.to_csv(out_dir / "train.tsv", index=False)
+    valid.to_csv(out_dir / "valid.tsv", index=False)
+    test.to_csv(out_dir / "test.tsv", index=False)
+    history.to_csv(out_dir / "user_history.tsv", index=False)
+    (out_dir / "map.json").write_text(
+        json.dumps({"item": item_map, "user": user_map}), encoding="utf-8"
+    )
+
+    products = meta_df[meta_df["item_id"].isin(item_map)].drop_duplicates("item_id").copy()
+    products["item_id"] = products["item_id"].map(item_map)
+    counts = history.groupby("user_id")["item_id"].agg(list).explode().value_counts()
+    products = products.rename(columns={"item_id": "id"})
+    products["visited_num"] = products["id"].map(counts).fillna(0).astype(int)
+    products.to_feather(out_dir / "products.ftr")
+    products.to_csv(out_dir / "products.csv", index=False, sep="|")
+    return products
