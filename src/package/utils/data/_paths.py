@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 from ._amazon import AmazonCategory
-
+from ._config import RAW_DIR, PROCESSED_DIR
 
 def _tokens(text: str) -> set[str]:
     """'All_Beauty' / 'all beauty' / 'all-beauty' -> {'all', 'beauty'}."""
@@ -52,3 +52,12 @@ def resolve_category(query: str, raw_dir: Path, processed_dir: Path) -> AmazonCa
         meta_file=meta_file,
         processed_dir=processed_dir / name,
     )
+
+def list_amazon_categories() -> list[str]:
+    """All category folders available under the Amazon raw directory."""
+    return list_categories(RAW_DIR)
+
+
+def get_amazon_category(category: str) -> AmazonCategory:
+    """Look up a category by name, e.g. get_amazon_category("beauty") -> All_Beauty."""
+    return resolve_category(category, RAW_DIR, PROCESSED_DIR)
