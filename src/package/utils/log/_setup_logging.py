@@ -5,11 +5,6 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional, Set, Union
 
-_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-_configured_loggers: Set[str] = set()
-
-
 def setup_logging(
     name: Optional[str] = None,
     level: int = logging.INFO,
@@ -51,51 +46,7 @@ def setup_logging(
     return logger
 
 
-def get_logger(
-    name: str,
-    *,
-    parent: str = "local_package.crawler",
-    log_dir: Optional[Path] = None,
-    log_file: Optional[Union[str, Path]] = None,
-    level: int = logging.INFO,
-    rotating: bool = True,
-) -> logging.Logger:
-    """Return a child logger under a once-configured parent."""
-    if parent not in _configured_loggers:
-        setup_logging(
-            parent,
-            level=level,
-            to_file=log_file is not None or log_dir is not None,
-            log_dir=log_dir,
-            log_file=log_file,
-            rotating=rotating,
-        )
-        _configured_loggers.add(parent)
-    return logging.getLogger(name)
 
-
-def log_crawl_summary(
-    logger: logging.Logger,
-    *,
-    keywords: list,
-    pages: int,
-    discovered: int,
-    crawled: int,
-    success: int,
-    failed: int,
-    duplicate: int,
-    elapsed_seconds: float,
-) -> None:
-    logger.info("========== CRAWL SUMMARY ==========")
-    logger.info("Keywords: %s", ", ".join(keywords))
-    logger.info("Pages: %s", pages)
-    logger.info("Products discovered: %s", discovered)
-    logger.info("Products crawled: %s", crawled)
-    logger.info("Success: %s", success)
-    logger.info("Failed: %s", failed)
-    logger.info("Duplicate: %s", duplicate)
-    logger.info("Elapsed time: %.1fs", elapsed_seconds)
-    logger.info("====================================")
 
 
 def _build_file_handler(

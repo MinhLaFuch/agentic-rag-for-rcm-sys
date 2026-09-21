@@ -1,8 +1,8 @@
 import logging
 import os
 
-from .._paths import PathConfig
-from ...utils import get_logger as _get_logger
+from ..path._paths import PathConfig
+from . import get_logger as _get_logger
 from ...utils import setup_logging
 
 _paths = PathConfig(__file__)

@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def leave_one_out_split(df: pd.DataFrame) -> pd.DataFrame:
+def leave_one_out(df: pd.DataFrame) -> pd.DataFrame:
     # Cần user_idx → phải chạy sau assign_idx
     df = df.sort_values(["user_idx", "timestamp"]).copy()
     rank_from_end = df.groupby("user_idx").cumcount(ascending=False)

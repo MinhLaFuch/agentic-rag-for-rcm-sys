@@ -1,6 +1,7 @@
 # config/data/__init__.py
-from .._paths import PathConfig
-from ._amazon import AmazonCategory, list_categories, resolve_category
+from ..path._paths import PathConfig
+from ._amazon import AmazonCategory
+from ._paths import list_categories, resolve_category
 
 _paths = PathConfig(__file__)
 

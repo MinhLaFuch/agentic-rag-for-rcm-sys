@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, cast
 
 from ._find_root import find_repo_root
 
@@ -21,12 +21,14 @@ class PathConfig:
             raise FileNotFoundError(f"Could not find pyproject.toml above {file}")
 
         selected_source = source or os.getenv(SOURCE_ENV_VAR, "main").lower()
+        
         if selected_source not in {"main", "forked"}:
             raise ValueError(
                 f"{SOURCE_ENV_VAR} must be 'main' or 'forked', got {selected_source!r}"
             )
 
-        self.source: RepositorySource = selected_source
+        self.source = cast(RepositorySource, selected_source)
+        
         if selected_source == "main":
             repository_root = main_root
             self.resource_dir = repository_root / "src" / "resource"

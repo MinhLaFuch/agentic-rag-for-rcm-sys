@@ -1,20 +1,21 @@
 """Amazon Reviews 2023 -> 4 standard files.
 
-Flow: load + merge -> k-core -> assign idx -> leave-one-out split -> save.
+Flow: load -> merge -> k-core -> assign idx -> leave-one-out split -> save.
 """
 from __future__ import annotations
 
 import pandas as pd
 
-from package.config.data import get_amazon_category, AMAZON_RAW_DIR
-from package.config.log import AMAZON_PROCESS_LOG_DIR
+from notebook.pipeline.preprocess import leave_one_out_split
+from package.utils.data import get_amazon_category
+from package.utils.log import AMAZON_PROCESS_LOG_DIR
 from package.utils import setup_logging
-from package.utils._export import write_outputs
+from package.preprocess._export import write_outputs
 
-from ._assign_index import assign_idx
-from ._k_core_filter import kcore_filter
-from ._leave_one_out import leave_one_out_split
-from ._loader import load_canonical_table
+from .utils._assign_index import assign_idx
+from .utils._kcore_filter import kcore_filter
+from .utils._leave_one_out import leave_one_out
+from .utils._load_df import load_meta_df, load_review_df, merge_df
 
 logger = setup_logging(__name__, log_dir=AMAZON_PROCESS_LOG_DIR)
 
@@ -27,14 +28,26 @@ class ProcessPipeline:
         self.min_interactions = min_interactions
         self.out_dir = self.category.processed_dir
 
+        self.reviews: pd.DataFrame | None = None
+        self.meta: pd.DataFrame | None = None
         self.canonical: pd.DataFrame | None = None
+        
         self.user2idx: dict | None = None
         self.item2idx: dict | None = None
 
     # ---- steps -------------------------------------------------------
     def load(self) -> "ProcessPipeline":
-        """1. Load + merge reviews with metadata."""
-        self.canonical = load_canonical_table(self.category.name, str(AMAZON_RAW_DIR))
+        """1a. Load reviews and metadata separately."""
+        self.reviews = load_review_df(self.category)
+        self.meta = load_meta_df(self.category)
+        logger.info("reviews: %s, meta: %s", self.reviews.shape, self.meta.shape)
+        return self
+
+    def merge(self) -> "ProcessPipeline":
+        """1b. Merge reviews with metadata into the canonical table."""
+        if self.reviews is None or self.meta is None:
+            raise RuntimeError("Call load() before merge().")
+        self.canonical = merge_df(self.reviews, self.meta)
         logger.info("%d rows after merging review+metadata", len(self.canonical))
         return self
 
@@ -69,10 +82,10 @@ class ProcessPipeline:
     def run(self) -> "ProcessPipeline":
         """Run all four steps in order."""
         logger.info("Processing category=%s (min_interactions=%d)", self.category.name, self.min_interactions)
-        return self.load().filter_kcore().index_and_split().save()
+        return self.load().merge().filter_kcore().index_and_split().save()
 
     # ---- helpers -----------------------------------------------------
     def _require_canonical(self, step: str) -> pd.DataFrame:
         if self.canonical is None:
-            raise RuntimeError(f"Call load() before {step}().")
+            raise RuntimeError(f"Call merge() before {step}().")
         return self.canonical
