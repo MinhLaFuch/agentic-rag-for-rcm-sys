@@ -38,3 +38,17 @@ def test_streaming_stats_avg_rating(synthetic_review_file):
     stats = compute_interaction_stats_streaming(str(synthetic_review_file))
     expected_avg = (5.0 + 4.0 + 3.0 + 4.0 + 3.0) / 5
     assert stats.rating_sum / stats.num_interactions == pytest.approx(expected_avg)
+
+
+def test_streaming_stats_supports_uncompressed_jsonl(tmp_path):
+    path = tmp_path / "review_test.jsonl"
+    path.write_text(
+        '{"user_id": "u1", "parent_asin": "i1", "rating": 5, "timestamp": 100}\n',
+        encoding="utf-8",
+    )
+
+    stats = compute_interaction_stats_streaming(path)
+
+    assert stats.num_interactions == 1
+    assert stats.num_users == 1
+    assert stats.num_items == 1

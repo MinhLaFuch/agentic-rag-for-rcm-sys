@@ -1,17 +1,3 @@
-"""
-Nếu file review đầy đủ quá lớn để upload lên chat (Video_Games có khoảng
-4.6M review, dự kiến vài trăm MB đến hơn 1GB nén — lớn hơn nhiều so với
-metadata 100MB bạn đã gửi), dùng script này để lấy một sample ngẫu nhiên
-nhưng vẫn giữ tính đại diện, đủ để kiểm tra schema + chạy EDA sơ bộ.
-
-CHẠY TRÊN MÁY CỦA BẠN (sau khi đã tải file bằng
-scripts/download_review_data.sh):
-
-    python scripts/sample_review_data.py \
-        --input data/raw/Video_Games/review_Video_Games.jsonl.gz \
-        --output data/raw/Video_Games/review_Video_Games_sample.jsonl.gz \
-        --sample-size 200000
-"""
 
 from __future__ import annotations
 

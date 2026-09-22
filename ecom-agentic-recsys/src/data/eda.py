@@ -2,19 +2,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
+import gzip
+import json
+from collections import Counter
 
 @dataclass
 class StreamingInteractionStats:
-    """
-    Giống InteractionStats nhưng tính bằng streaming (không load toàn bộ
-    file vào RAM cùng lúc) — dùng cho file review lớn (Video_Games có
-    ~4.6M dòng) chạy trên máy người dùng, không cần pandas load hết.
-    """
-
+    
     num_interactions: int = 0
     num_users: int = 0
     num_items: int = 0
@@ -24,24 +22,16 @@ class StreamingInteractionStats:
     interactions_per_user: dict = field(default_factory=dict)
 
 
-def compute_interaction_stats_streaming(path: str) -> "StreamingInteractionStats":
-    """
-    Đọc file review .jsonl.gz thật (schema: user_id, parent_asin, rating,
-    timestamp, title, text, helpful_vote, verified_purchase) theo dòng,
-    không load hết vào RAM. Phù hợp chạy trên máy người dùng với file
-    lớn (ví dụ Video_Games ~4.6M review) mà không cần upload file lên chat.
-
-    Sau khi chạy, in kết quả và paste lại cho Claude để cập nhật docs.
-    """
-    import gzip
-    import json
-    from collections import Counter
+def compute_interaction_stats_streaming(path: str | Path) -> "StreamingInteractionStats":
 
     user_counts: Counter = Counter()
     item_ids: set = set()
     stats = StreamingInteractionStats()
 
-    with gzip.open(path, "rt", encoding="utf-8") as f:
+    review_path = Path(path)
+    open_file = gzip.open if review_path.suffix == ".gz" else open
+
+    with open_file(review_path, "rt", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -77,7 +67,6 @@ def print_streaming_stats_report(stats: "StreamingInteractionStats") -> None:
     denom = stats.num_users * stats.num_items
     sparsity = 1.0 - (stats.num_interactions / denom) if denom else float("nan")
 
-    print("=== INTERACTION EDA REPORT (paste toàn bộ phần dưới lại cho Claude) ===")
     print(f"num_interactions: {stats.num_interactions}")
     print(f"num_users: {stats.num_users}")
     print(f"num_items: {stats.num_items}")
