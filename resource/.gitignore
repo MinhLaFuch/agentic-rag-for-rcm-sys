@@ -1,15 +1,16 @@
-# Ignore data file but not the folder
-# --- resource/raw ---
-resource/raw/**
-!resource/raw/**/
-!resource/raw/**/.gitkeep
+# --- raw: ignore every subfolder's contents, keep .gitkeep (README.md & raw/.gitkeep untouched) ---
+raw/*/**
+!raw/*/**/
+!raw/*/**/.gitkeep
 
-# --- resource/local/processed ---
-resource/local/processed/**
-!resource/local/processed/**/
-!resource/local/processed/**/.gitkeep
+# --- local/processed: ignore contents, keep .gitkeep ---
+local/processed/**
+!local/processed/**/
+!local/processed/**/.gitkeep
 
-# --- resource/recai/processed ---
-resource/recai/processed/**
-!resource/recai/processed/**/
-!resource/recai/processed/**/.gitkeep
+# --- recai/processed: ignore contents, keep .gitkeep ---
+recai/processed/**
+!recai/processed/**/
+!recai/processed/**/.gitkeep
+
+# local/log and recai/log are intentionally NOT listed — stay fully tracked
