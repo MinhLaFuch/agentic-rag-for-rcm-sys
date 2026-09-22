@@ -1,0 +1,31 @@
+# Data config (mục V, XX). DOMAIN phải được set qua biến môi trường, ví dụ:
+#   DOMAIN=Video_Games python scripts/run_eda.py
+# KHÔNG được đặt giá trị domain cố định trong business logic.
+
+domain: "${DOMAIN}"
+raw_review_config: "raw_review_${DOMAIN}"
+raw_meta_config: "raw_meta_${DOMAIN}"
+
+dataset_source: "McAuley-Lab/Amazon-Reviews-2023"
+
+paths:
+  raw_dir: "data/raw/${DOMAIN}"
+  cleaned_dir: "data/cleaned/${DOMAIN}"
+  filtered_dir: "data/filtered/${DOMAIN}"
+  mapped_dir: "data/mapped/${DOMAIN}"
+  splits_dir: "data/splits/${DOMAIN}"
+
+cleaning:
+  min_review_length_chars: 1
+  drop_duplicate_reviews: true
+
+filtering:
+  # k-core filtering — giá trị thật sẽ chốt ở Phase 2 sau EDA, đây là default placeholder
+  min_user_interactions: 5
+  min_item_interactions: 5
+
+split:
+  strategy: "temporal"   # bắt buộc theo mục VI — không dùng random split
+  train_ratio: 0.8
+  validation_ratio: 0.1
+  test_ratio: 0.1
