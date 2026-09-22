@@ -1,10 +1,5 @@
-from package.utils.path._paths import PathConfig
+"""Amazon raw lives in shared `resource/raw`. Processed defaults to `resource/local/processed`."""
+from ..path import processed_dir, raw_dir
 
-
-DATA_ROOT = PathConfig(__file__)
-
-RAW_DIR = DATA_ROOT.raw()
-PROCESSED_DIR = DATA_ROOT.processed()
-
-AMAZON_RAW_DIR = RAW_DIR / "amazon"
-AMAZON_PROCESSED_DIR = PROCESSED_DIR / "amazon"
+RAW_DIR = raw_dir()
+PROCESSED_DIR = processed_dir()

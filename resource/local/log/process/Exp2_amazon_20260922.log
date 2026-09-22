@@ -1,0 +1,11 @@
+2026-09-22 15:30:46 [INFO] process: Loading cached data from C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\raw\All_Beauty\reviews.tsv
+2026-09-22 15:30:51 [INFO] process: Loading cached data from C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\raw\All_Beauty\meta.tsv
+2026-09-22 15:30:55 [INFO] process: Shape of reviews: (701444, 4)
+2026-09-22 15:30:55 [INFO] process: Shape of meta: (112578, 5)
+2026-09-22 15:30:57 [INFO] process: After keep-first filter: (693847, 4)
+2026-09-22 15:30:57 [INFO] process: After rating filter: (550401, 4)
+2026-09-22 15:30:57 [INFO] process: After k-core filter: (1888, 4)
+2026-09-22 15:30:57 [INFO] process: Saved id maps to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty\map.json
+2026-09-22 15:30:57 [INFO] process: Saved splits to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty (train=1492, valid=198, test=198, full_history=1690)
+2026-09-22 15:30:57 [INFO] process: Saved product table (280 items) to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty
+2026-09-22 15:30:57 [INFO] process: Pipeline complete: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty\simulator_test_data_198.jsonl

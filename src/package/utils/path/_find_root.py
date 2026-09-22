@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Optional, Union
+from ._config import MARKER
 
-
-def find_repo_root(file: Union[str, Path], marker: str = "pyproject.toml") -> Optional[Path]:
+def find_repo_root(file: Union[str, Path], marker: str = MARKER) -> Optional[Path]:
     """
     Walk up from `file` until a directory containing `marker` is found.
     Returns None if not found (instead of raising), so the caller can fall back.
