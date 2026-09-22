@@ -9,7 +9,7 @@ from ._leave_one_out import (
     split_leave_one_out_seq,
     user_histories,
 )
-from ._loader import load_reviews_and_metadata
+from package.utils.data import load_reviews_and_metadata
 
 __all__ = [
     "assign_idx",

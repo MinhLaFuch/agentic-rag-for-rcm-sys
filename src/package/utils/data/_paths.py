@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from ._config import PROCESSED_DIR, RAW_DIR
+from ..path import raw_dir
 
 
 def _tokens(text: str) -> set[str]:
@@ -11,12 +11,12 @@ def _tokens(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", text.lower()))
 
 
-def list_categories(raw_dir: Path | None = None) -> list[str]:
-    """Names of all category folders under `raw_dir` (defaults to RAW_DIR)."""
-    raw_dir = raw_dir or RAW_DIR
-    if not raw_dir.is_dir():
-        raise FileNotFoundError(f"Raw data directory not found: {raw_dir}")
-    return sorted(p.name for p in raw_dir.iterdir() if p.is_dir())
+def list_categories(root: Path | None = None) -> list[str]:
+    """Category folder names under `resource/raw`."""
+    root = root or raw_dir()
+    if not root.is_dir():
+        raise FileNotFoundError(f"Raw data directory not found: {root}")
+    return sorted(p.name for p in root.iterdir() if p.is_dir())
 
 
 def category_name(query: str) -> str:
@@ -34,27 +34,3 @@ def category_name(query: str) -> str:
     if len(matches) > 1:
         raise ValueError(f"{query!r} is ambiguous, it matches {matches}. Be more specific.")
     return matches[0]
-
-
-def raw_dir(query: str) -> Path:
-    return RAW_DIR / category_name(query)
-
-
-def review_file(query: str) -> Path:
-    name = category_name(query)
-    path = raw_dir(query) / f"{name}.jsonl.gz"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing review file for category {name!r}: {path}")
-    return path
-
-
-def meta_file(query: str) -> Path:
-    name = category_name(query)
-    path = raw_dir(query) / f"meta_{name}.jsonl.gz"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing meta file for category {name!r}: {path}")
-    return path
-
-
-def processed_dir(query: str) -> Path:
-    return PROCESSED_DIR / category_name(query)

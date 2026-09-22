@@ -6,7 +6,16 @@ from pathlib import Path
 
 import pandas as pd
 
+from package.utils.data import category_name
+from package.utils.path import processed_dir
+
 from ._leave_one_out import user_histories
+
+
+def _out_dir(category: str, workspace: str | None = None) -> Path:
+    path = processed_dir(workspace, category_name(category))
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def write_jsonl(records: list[dict], path: Path) -> None:
@@ -16,10 +25,11 @@ def write_jsonl(records: list[dict], path: Path) -> None:
             stream.write("\n")
 
 
-def write_id_maps(item_map: dict, user_map: dict, out_dir: Path) -> Path:
+def write_id_maps(
+    item_map: dict, user_map: dict, category: str, workspace: str | None = None
+) -> Path:
     """Section 5: `map.json`."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / "map.json"
+    path = _out_dir(category, workspace) / "map.json"
     with path.open("w", encoding="utf-8") as stream:
         json.dump({"item": item_map, "user": user_map}, stream)
     return path
@@ -30,24 +40,27 @@ def write_splits(
     valid: pd.DataFrame,
     test: pd.DataFrame,
     history: pd.DataFrame,
-    out_dir: Path,
-) -> None:
+    category: str,
+    workspace: str | None = None,
+) -> Path:
     """Section 6: `train.tsv`, `valid.tsv`, `test.tsv`, `user_history.tsv`."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    train.to_csv(out_dir / "train.tsv", index=None)
-    valid.to_csv(out_dir / "valid.tsv", index=None)
-    test.to_csv(out_dir / "test.tsv", index=None)
-    history.to_csv(out_dir / "user_history.tsv", index=None)
+    out = _out_dir(category, workspace)
+    train.to_csv(out / "train.tsv", index=None)
+    valid.to_csv(out / "valid.tsv", index=None)
+    test.to_csv(out / "test.tsv", index=None)
+    history.to_csv(out / "user_history.tsv", index=None)
+    return out
 
 
 def write_products(
     meta_df: pd.DataFrame,
     item_map: dict,
     history: pd.DataFrame,
-    out_dir: Path,
+    category: str,
+    workspace: str | None = None,
 ) -> pd.DataFrame:
     """Section 7: `products.ftr` and `products.csv`."""
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out = _out_dir(category, workspace)
     products = meta_df[meta_df["item_id"].isin(item_map.keys())]
     products = products.drop_duplicates(subset=["item_id"], keep="first").reset_index(drop=True)
     products = products.copy()
@@ -55,8 +68,8 @@ def write_products(
     item_count = user_histories(history).explode().value_counts()
     products = products.rename(columns={"item_id": "id"})
     products["visited_num"] = products["id"].map(item_count).fillna(0).astype(int)
-    products.to_feather(out_dir / "products.ftr")
-    products.to_csv(out_dir / "products.csv", index=None, sep="|")
+    products.to_feather(out / "products.ftr")
+    products.to_csv(out / "products.csv", index=None, sep="|")
     return products
 
 
@@ -64,7 +77,8 @@ def write_simulator_jsonl(
     test: pd.DataFrame,
     history: pd.DataFrame,
     products: pd.DataFrame,
-    out_dir: Path,
+    category: str,
+    workspace: str | None = None,
     sample_n: int = 900,
     seed: int = 2024,
     max_history_len: int = 10,
@@ -83,7 +97,7 @@ def write_simulator_jsonl(
             id2title[item] for item in histories.get(user, [])[-max_history_len:]
         )
     )
-    sampled["target"] = sampled["item_id"].map(lambda item: indexed.loc[item].title)
-    path = out_dir / f"simulator_test_data_{sample_n}.jsonl"
+    sampled["target"] = sampled["item_id"].map(indexed["title"])
+    path = _out_dir(category, workspace) / f"simulator_test_data_{sample_n}.jsonl"
     write_jsonl(sampled[["history", "target"]].to_dict("records"), path)
     return path

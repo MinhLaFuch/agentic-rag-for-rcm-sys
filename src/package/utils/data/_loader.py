@@ -8,18 +8,21 @@ from pathlib import Path
 
 import pandas as pd
 
-from package.utils.data import meta_file, raw_dir, review_file
-from package.utils.log import PROCESS_LOG_DIR, setup_logging
+from package.utils.path import raw_dir
+from package.utils.log import experiment_log_path, setup_logging
+
+from ._paths import category_name
 
 _LOGGER = None
 
 
-def _logger(logger):
+def _logger(logger, workspace: str | None = None):
     global _LOGGER
     if logger is not None:
         return logger
     if _LOGGER is None:
-        _LOGGER = setup_logging("process", log_dir=PROCESS_LOG_DIR)
+        log_path = experiment_log_path("process", "amazon_preprocess", workspace=workspace)
+        _LOGGER = setup_logging("process", log_file=log_path)
     return _LOGGER
 
 
@@ -62,6 +65,7 @@ def load_reviews_and_metadata(
     category: str,
     logger=None,
     max_description_sentences: int = 2,
+    workspace: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Load + clean review and metadata tables for one category (jsonl.gz -> cached tsv -> cleaned).
@@ -70,10 +74,16 @@ def load_reviews_and_metadata(
     first `categories` entry, rename `parent_asin` -> `item_id`, and keep only reviews
     whose item survived the meta cleaning.
     """
-    logger = _logger(logger)
-    category_raw_dir = raw_dir(category)
-    reviews = _read_cached_jsonl(review_file(category), category_raw_dir / "reviews.tsv", logger)
-    meta = _read_cached_jsonl(meta_file(category), category_raw_dir / "meta.tsv", logger)
+    logger = _logger(logger, workspace)
+    name = category_name(category)
+    raw = raw_dir(name)
+    reviews_path = raw / f"{name}.jsonl.gz"
+    meta_path = raw / f"meta_{name}.jsonl.gz"
+    for path in (reviews_path, meta_path):
+        if not path.exists():
+            raise FileNotFoundError(f"Missing file for category {name!r}: {path}")
+    reviews = _read_cached_jsonl(reviews_path, raw / "reviews.tsv", logger)
+    meta = _read_cached_jsonl(meta_path, raw / "meta.tsv", logger)
 
     meta = meta[meta["title"].notna()].copy()
     meta["description"] = meta.get("description", pd.Series(index=meta.index)).apply(

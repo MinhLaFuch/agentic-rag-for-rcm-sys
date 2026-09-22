@@ -1,13 +1,12 @@
 from ._config import PROCESSED_DIR, RAW_DIR
-from ._paths import category_name, list_categories, meta_file, processed_dir, raw_dir, review_file
+from ._loader import iter_jsonl_gz, load_reviews_and_metadata
+from ._paths import category_name, list_categories
 
 __all__ = [
     "PROCESSED_DIR",
     "RAW_DIR",
     "category_name",
+    "iter_jsonl_gz",
     "list_categories",
-    "meta_file",
-    "processed_dir",
-    "raw_dir",
-    "review_file",
+    "load_reviews_and_metadata",
 ]
