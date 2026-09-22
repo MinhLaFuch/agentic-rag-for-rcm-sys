@@ -1,5 +1,5 @@
 """Backward-compatible wrapper for the shared package rerank baseline."""
-from package.recommender.rerank import rerank
+from recommender.rerank import rerank
 
 if __name__ == "__main__":
     candidates = [{"item_idx": 2, "title": "Bass String", "category": "Bass", "score": 0.007}]
