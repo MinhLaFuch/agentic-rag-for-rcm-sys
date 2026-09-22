@@ -1,0 +1,25 @@
+# Model config (mục VIII, XX). Model sequential cụ thể CHƯA được chốt
+# ở Phase 0/1 — giá trị dưới đây là placeholder, sẽ được xác định ở Phase 5
+# dựa trên EDA thật (xem docs/decisions.md D-004).
+
+baselines:
+  - name: random
+  - name: popularity
+  - name: item_knn
+    params:
+      k: 20
+  - name: bpr_mf
+    params:
+      embedding_dim: 64
+      learning_rate: 0.001
+      epochs: 20
+
+sequential:
+  # model_name sẽ được chốt ở Phase 5 (candidate: SASRec, BERT4Rec...)
+  model_name: "TBD_PHASE_5"
+  max_sequence_length: 50
+  embedding_dim: 64
+  negative_samples: 1
+  batch_size: 256
+  learning_rate: 0.001
+  epochs: 50
