@@ -1,15 +1,13 @@
-# config/data/__init__.py
-from ..path._paths import PathConfig
-from ._amazon import AmazonCategory
-from ._paths import list_categories, resolve_category
-from ._config import AMAZON_RAW_DIR, AMAZON_PROCESSED_DIR
-
+from ._config import PROCESSED_DIR, RAW_DIR
+from ._paths import category_name, list_categories, meta_file, processed_dir, raw_dir, review_file
 
 __all__ = [
-    "PathConfig",
-    "AmazonCategory",
+    "PROCESSED_DIR",
+    "RAW_DIR",
+    "category_name",
     "list_categories",
-    "resolve_category",
-    "AMAZON_RAW_DIR",
-    "AMAZON_PROCESSED_DIR",
+    "meta_file",
+    "processed_dir",
+    "raw_dir",
+    "review_file",
 ]

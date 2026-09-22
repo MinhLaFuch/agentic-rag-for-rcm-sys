@@ -1,30 +1,27 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
-from ._amazon import AmazonCategory
-from ._config import RAW_DIR, PROCESSED_DIR
+
+from ._config import PROCESSED_DIR, RAW_DIR
+
 
 def _tokens(text: str) -> set[str]:
     """'All_Beauty' / 'all beauty' / 'all-beauty' -> {'all', 'beauty'}."""
     return set(re.findall(r"[a-z0-9]+", text.lower()))
 
 
-def list_categories(raw_dir: Path) -> list[str]:
-    """Names of all category folders under the Amazon raw directory."""
+def list_categories(raw_dir: Path | None = None) -> list[str]:
+    """Names of all category folders under `raw_dir` (defaults to RAW_DIR)."""
+    raw_dir = raw_dir or RAW_DIR
     if not raw_dir.is_dir():
-        raise FileNotFoundError(f"Amazon raw directory not found: {raw_dir}")
+        raise FileNotFoundError(f"Raw data directory not found: {raw_dir}")
     return sorted(p.name for p in raw_dir.iterdir() if p.is_dir())
 
 
-def resolve_category(query: str, raw_dir: Path, processed_dir: Path) -> AmazonCategory:
-    """
-    Find the category folder that matches `query`.
-
-    Matching order (case-insensitive, ignores _ - and spaces):
-      1. exact match:  "all_beauty" -> All_Beauty
-      2. token match:  "beauty"     -> All_Beauty (query words all appear in the folder name)
-    Raises ValueError if nothing matches or the query is ambiguous.
-    """
-    folders = list_categories(raw_dir)
+def category_name(query: str) -> str:
+    """'beauty' -> 'All_Beauty'. Raises if nothing matches or the name is ambiguous."""
+    folders = list_categories()
     query_tokens = _tokens(query)
     if not query_tokens:
         raise ValueError("Category must not be empty.")
@@ -33,31 +30,31 @@ def resolve_category(query: str, raw_dir: Path, processed_dir: Path) -> AmazonCa
     matches = exact or [f for f in folders if query_tokens <= _tokens(f)]
 
     if not matches:
-        raise ValueError(f"No Amazon category matches {query!r}. Available: {folders}")
+        raise ValueError(f"No category matches {query!r}. Available: {folders}")
     if len(matches) > 1:
         raise ValueError(f"{query!r} is ambiguous, it matches {matches}. Be more specific.")
-
-    name = matches[0]
-    category_dir = raw_dir / name
-    review_file = category_dir / f"{name}.jsonl.gz"
-    meta_file = category_dir / f"meta_{name}.jsonl.gz"
-    for f in (review_file, meta_file):
-        if not f.exists():
-            raise FileNotFoundError(f"Missing file for category {name!r}: {f}")
-
-    return AmazonCategory(
-        name=name,
-        raw_dir=category_dir,
-        review_file=review_file,
-        meta_file=meta_file,
-        processed_dir=processed_dir / name,
-    )
-
-def list_amazon_categories() -> list[str]:
-    """All category folders available under the Amazon raw directory."""
-    return list_categories(RAW_DIR)
+    return matches[0]
 
 
-def get_amazon_category(category: str) -> AmazonCategory:
-    """Look up a category by name, e.g. get_amazon_category("beauty") -> All_Beauty."""
-    return resolve_category(category, RAW_DIR, PROCESSED_DIR)
+def raw_dir(query: str) -> Path:
+    return RAW_DIR / category_name(query)
+
+
+def review_file(query: str) -> Path:
+    name = category_name(query)
+    path = raw_dir(query) / f"{name}.jsonl.gz"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing review file for category {name!r}: {path}")
+    return path
+
+
+def meta_file(query: str) -> Path:
+    name = category_name(query)
+    path = raw_dir(query) / f"meta_{name}.jsonl.gz"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing meta file for category {name!r}: {path}")
+    return path
+
+
+def processed_dir(query: str) -> Path:
+    return PROCESSED_DIR / category_name(query)

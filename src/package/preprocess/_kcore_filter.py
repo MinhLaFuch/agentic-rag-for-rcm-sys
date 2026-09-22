@@ -12,8 +12,9 @@ def low_rating_filter(df: pd.DataFrame, rating_threshold: float = 3.0) -> pd.Dat
 
 
 def kcore_filter(
-    df: pd.DataFrame, user_k: int = 5, item_k: int = 5, max_iter: int = 20
+    df: pd.DataFrame, user_k: int = 5, item_k: int | None = None, max_iter: int = 20
 ) -> pd.DataFrame:
+    item_k = user_k if item_k is None else item_k
     df = df.copy()
     previous = (len(df["user_id"].unique()), len(df["item_id"].unique()))
     for _ in range(max_iter):

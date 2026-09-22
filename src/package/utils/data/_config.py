@@ -1,10 +1,5 @@
-from package.utils.path._paths import PathConfig
+"""Where Amazon raw/processed data lives on disk: resource/data/{raw,processed}/<category>."""
+from ..path import processed_dir, raw_dir
 
-
-DATA_ROOT = PathConfig(__file__)
-
-RAW_DIR = DATA_ROOT.raw()
-PROCESSED_DIR = DATA_ROOT.processed()
-
-AMAZON_RAW_DIR = RAW_DIR / "amazon"
-AMAZON_PROCESSED_DIR = PROCESSED_DIR / "amazon"
+RAW_DIR = raw_dir(__file__)
+PROCESSED_DIR = processed_dir(__file__)

@@ -1,7 +1,6 @@
 """Map raw user and item identifiers to the notebook's 1-based IDs."""
 import pandas as pd
 
-
 def assign_idx(df: pd.DataFrame) -> tuple[pd.DataFrame, dict, dict]:
     user2idx = {user: index for index, user in enumerate(df["user_id"].unique(), 1)}
     item2idx = {item: index for index, item in enumerate(df["item_id"].unique(), 1)}

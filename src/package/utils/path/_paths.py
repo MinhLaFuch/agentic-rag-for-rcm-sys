@@ -1,63 +1,74 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from typing import Literal, Optional, Union, cast
 
 from ._find_root import find_repo_root
+from ._submodule import submodule_name
+
+RESOURCE_DIR_ENV_VAR = "LOCAL_PACKAGE_RESOURCE_DIR"
 
 
-RepositorySource = Literal["main", "forked"]
-SOURCE_ENV_VAR = "LOCAL_PACKAGE_REPOSITORY"
-FORKED_REPOSITORY_ENV_VAR = "LOCAL_PACKAGE_FORKED_REPOSITORY"
+def resource_dir(start: str | Path = __file__) -> Path:
+    """
+    Where `resource/` lives for the repo `start` runs in.
 
-class PathConfig:
-    def __init__(
-        self,
-        file: Union[str, Path],
-        source: Optional[RepositorySource] = None,
-        forked_repository: Optional[Union[str, Path]] = None,
-    ) -> None:
-        main_root = find_repo_root(file)
-        if main_root is None:
-            raise FileNotFoundError(f"Could not find pyproject.toml above {file}")
+    - Inside a forked-repo submodule (`forked_repository/<name>/...`, declared in the
+      host's `.gitmodules`): `host_root/resource/<name>` — so every forked repo's
+      output lands under the host, namespaced by its own folder name, instead of
+      scattered across each submodule's own checkout.
+    - Inside the host repo itself: `host_root/resource`.
+    - No `.gitmodules` found anywhere above `start` (repo checked out standalone, no
+      host around it): falls back to that repo's own `pyproject.toml` root.
 
-        selected_source = source or os.getenv(SOURCE_ENV_VAR, "main").lower()
-        
-        if selected_source not in {"main", "forked"}:
-            raise ValueError(
-                f"{SOURCE_ENV_VAR} must be 'main' or 'forked', got {selected_source!r}"
-            )
+    Set LOCAL_PACKAGE_RESOURCE_DIR to override outright (e.g. this package vendored as
+    a submodule with no pyproject.toml of its own, where root detection can't tell it
+    apart from the host repo).
+    """
+    override = os.getenv(RESOURCE_DIR_ENV_VAR)
+    if override:
+        return Path(override)
 
-        self.source = cast(RepositorySource, selected_source)
-        
-        if selected_source == "main":
-            repository_root = main_root
-            self.resource_dir = repository_root / "src" / "resource"
-        else:
-            forked_name = forked_repository or os.getenv(
-                FORKED_REPOSITORY_ENV_VAR, "RecAI"
-            )
-            repository_root = main_root / "forked_repository" / Path(forked_name)
-            self.resource_dir = self._find_resource_dir(repository_root)
+    start_path = Path(start).resolve()
 
-        self.repository_root = repository_root
-        self.raw_dir = self.resource_dir / "data" / "raw"
-        self.processed_dir = self.resource_dir / "data" / "processed"
-        self.checkpoint_dir = self.resource_dir / "data" / "checkpoint"
-        self.log_dir = self.resource_dir / "log" / "data" / "process"
-        self.crawler_log_dir = self.resource_dir / "log"
+    host_root = find_repo_root(start_path, marker=".gitmodules")
+    if host_root is not None:
+        name = submodule_name(host_root, start_path)
+        return host_root / "resource" / name if name else host_root / "resource"
 
-    @staticmethod
-    def _find_resource_dir(repository_root: Path) -> Path:
-        for candidate in (repository_root / "resource", repository_root / "src" / "resource"):
-            if candidate.is_dir():
-                return candidate
-        return repository_root / "resource"
+    root = find_repo_root(start_path)
+    if root is None:
+        raise FileNotFoundError(f"Could not find pyproject.toml above {start}")
+    return root / "resource"
 
-    def raw(self, dataset_name: str) -> Path:
-        return self.raw_dir / dataset_name
 
-    def processed(self, dataset_name: str) -> Path:
-        return self.processed_dir / dataset_name
+def raw_dir(start: str | Path = __file__) -> Path:
+    return resource_dir(start) / "data" / "raw"
 
-    def log(self, dataset_name: str) -> Path:
-        return self.log_dir / dataset_name
+
+def processed_dir(start: str | Path = __file__) -> Path:
+    return resource_dir(start) / "data" / "processed"
+
+
+def checkpoint_dir(start: str | Path = __file__) -> Path:
+    return resource_dir(start) / "data" / "checkpoint"
+
+
+def log_root(start: str | Path = __file__) -> Path:
+    return resource_dir(start) / "log" / "data" / "process"
+
+
+def crawler_log_dir(start: str | Path = __file__) -> Path:
+    return resource_dir(start) / "log"
+
+
+def dataset_raw_dir(dataset: str, start: str | Path = __file__) -> Path:
+    return raw_dir(start) / dataset
+
+
+def dataset_processed_dir(dataset: str, start: str | Path = __file__) -> Path:
+    return processed_dir(start) / dataset
+
+
+def dataset_log_dir(dataset: str, start: str | Path = __file__) -> Path:
+    return log_root(start) / dataset
