@@ -45,10 +45,10 @@ def write_splits(
 ) -> Path:
     """Section 6: `train.tsv`, `valid.tsv`, `test.tsv`, `user_history.tsv`."""
     out = _out_dir(category, workspace)
-    train.to_csv(out / "train.tsv", index=None)
-    valid.to_csv(out / "valid.tsv", index=None)
-    test.to_csv(out / "test.tsv", index=None)
-    history.to_csv(out / "user_history.tsv", index=None)
+    train.to_csv(out / "train.tsv", index=False)
+    valid.to_csv(out / "valid.tsv", index=False)
+    test.to_csv(out / "test.tsv", index=False)
+    history.to_csv(out / "user_history.tsv", index=False)
     return out
 
 
@@ -69,7 +69,7 @@ def write_products(
     products = products.rename(columns={"item_id": "id"})
     products["visited_num"] = products["id"].map(item_count).fillna(0).astype(int)
     products.to_feather(out / "products.ftr")
-    products.to_csv(out / "products.csv", index=None, sep="|")
+    products.to_csv(out / "products.csv", index=False, sep="|")
     return products
 
 
