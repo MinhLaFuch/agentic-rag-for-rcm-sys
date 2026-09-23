@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from data.train.mapping import (
+from package.data.train.mapping import (
     apply_id_mapping,
     build_id_mappings,
     load_mappings,

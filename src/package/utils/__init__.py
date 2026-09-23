@@ -1,6 +1,8 @@
 """Shared utility helpers for paths, logs, and data loading."""
 
-from .log import DATE_FORMAT, LOG_FORMAT, experiment_log_path, setup_logging
+from package.utils.log import DATE_FORMAT, LOG_FORMAT, experiment_log_path
+
+from .log import setup_logging
 from .path import (
     DEFAULT_WORKSPACE,
     RESOURCE_DIR_ENV_VAR,

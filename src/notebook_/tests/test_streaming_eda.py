@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from data.train.mapping import compute_interaction_stats_streaming
+from package.data.train.mapping import compute_interaction_stats_streaming
 
 
 @pytest.fixture

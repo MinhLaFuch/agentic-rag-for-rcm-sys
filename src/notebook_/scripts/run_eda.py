@@ -1,6 +1,6 @@
 from src.config.loader import load_config
 from src.data.acquire import download_domain_reviews
-from src.data.eda import compute_interaction_stats
+from package.data.eda import compute_interaction_stats
 
 
 def main() -> None:

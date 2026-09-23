@@ -1,6 +1,6 @@
-from agent.config.loader import load_config
-from agent.llm.base import LLMMessage
-from agent.llm.factory import build_llm_provider
+from package.agent.config.loader import load_config
+from package.agent.llm.base import LLMMessage
+from package.agent.llm.factory import build_llm_provider
 
 
 def main() -> None:

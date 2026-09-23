@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils.path import raw_dir
+from package.utils.path import raw_dir
 
 def list_categories(root: Path | None = None) -> list[str]:
     """Category folder names under `resource/raw`."""

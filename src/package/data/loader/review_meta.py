@@ -1,6 +1,7 @@
+from package.data.utils import resolve_category
 import pandas as pd
-from ..utils import resolve_category, read_cached_jsonl, parse_list
-from ..loader import join_description
+from ..utils import read_cached_jsonl, parse_list
+from . import join_description
 from ...utils import raw_dir
 
 def load_reviews_and_metadata(

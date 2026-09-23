@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from data.utils import get_config
+from package.data.utils import get_config
 import pandas as pd
 
 def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:

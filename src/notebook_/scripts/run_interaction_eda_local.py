@@ -1,6 +1,6 @@
 import argparse
 
-from src.data.eda import compute_interaction_stats_streaming, print_streaming_stats_report
+from package.data.eda import compute_interaction_stats_streaming, print_streaming_stats_report
 
 
 def main() -> None:

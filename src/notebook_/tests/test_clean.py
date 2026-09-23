@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from data.preprocess import clean_interactions
-from data.utils import load_reviews_and_metadata
+from package.data.utils import load_reviews_and_metadata
 
 
 @pytest.fixture

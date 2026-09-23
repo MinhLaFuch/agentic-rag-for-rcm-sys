@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 
-from agent.config.loader import load_config
+from package.agent.config.loader import load_config
 from data.clean import clean_interactions
 from data.filter import kcore_filter
 from data import check_no_duplicate_across_splits
