@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from ..path import raw_dir
+from ...utils.path import raw_dir
 
 
 def _tokens(text: str) -> set[str]:

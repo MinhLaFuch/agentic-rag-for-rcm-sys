@@ -6,11 +6,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils.data.loader import category_name
+from data.utils.loader import category_name
 from utils.path.paths import processed_dir
 
-from .leave_one_out import user_histories
-
+from data.train import user_history
 
 def _out_dir(category: str, workspace: str | None = None) -> Path:
     path = processed_dir(workspace, category_name(category))
@@ -65,7 +64,7 @@ def write_products(
     products = products.drop_duplicates(subset=["item_id"], keep="first").reset_index(drop=True)
     products = products.copy()
     products["item_id"] = products["item_id"].map(item_map)
-    item_count = user_histories(history).explode().value_counts()
+    item_count = user_history(history).explode().value_counts()
     products = products.rename(columns={"item_id": "id"})
     products["visited_num"] = products["id"].map(item_count).fillna(0).astype(int)
     products.to_feather(out / "products.ftr")
@@ -89,7 +88,7 @@ def write_simulator_jsonl(
     id2title = {
         item_id: str(row.title)[:max_title_len] for item_id, row in indexed.iterrows()
     }
-    histories = user_histories(history)
+    histories = user_history(history)
     sample_n = min(sample_n, len(test))
     sampled = test.sample(sample_n, random_state=seed).copy()
     sampled["history"] = sampled["user_id"].map(

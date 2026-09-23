@@ -2,7 +2,7 @@
 
 from utils.log import DATE_FORMAT, LOG_FORMAT, experiment_log_path
 
-from .data import (
+from ..data.utils import (
     OPTIONAL_COLUMNS,
     PROCESSED_DIR,
     RAW_DIR,

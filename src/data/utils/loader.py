@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils.path import raw_dir
-from package.utils.log import setup_logging
-from utils.log import experiment_log_path
+from ...utils.path import raw_dir
+from ...utils.log import setup_logging
+from ...utils.log import experiment_log_path
 
 from .paths import category_name
 from .config import REQUIRED_COLUMNS, OPTIONAL_COLUMNS
