@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import json
@@ -40,20 +38,32 @@ def apply_id_mapping(
 
 
 def save_mappings(
-    user2id: dict[str, int], item2id: dict[str, int], output_dir: str | Path
+    user2id: dict[str, int], item2id: dict[str, int], mapping_dir: str
 ) -> None:
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    with open(output_dir / "user2id.json", "w", encoding="utf-8") as f:
+    """Save ID mappings to JSON files in the specified directory."""
+    mapping_path = Path(mapping_dir)
+    mapping_path.mkdir(parents=True, exist_ok=True)
+
+    with open(mapping_path / "user2id.json", "w") as f:
         json.dump(user2id, f)
-    with open(output_dir / "item2id.json", "w", encoding="utf-8") as f:
+
+    with open(mapping_path / "item2id.json", "w") as f:
         json.dump(item2id, f)
 
 
-def load_mappings(input_dir: str | Path) -> tuple[dict[str, int], dict[str, int]]:
-    input_dir = Path(input_dir)
-    with open(input_dir / "user2id.json", "r", encoding="utf-8") as f:
+def load_mappings(mapping_dir: str) -> tuple[dict[str, int], dict[str, int]]:
+    """Load ID mappings from JSON files in the specified directory."""
+    mapping_path = Path(mapping_dir)
+
+    with open(mapping_path / "user2id.json", "r") as f:
         user2id = json.load(f)
-    with open(input_dir / "item2id.json", "r", encoding="utf-8") as f:
+
+    with open(mapping_path / "item2id.json", "r") as f:
         item2id = json.load(f)
+
     return user2id, item2id
+
+
+
+
+

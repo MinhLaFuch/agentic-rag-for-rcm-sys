@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from data.utils import REQUIRED_COLUMNS, OPTIONAL_COLUMNS
+from data.utils import get_config
 import pandas as pd
 
 def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -15,13 +15,14 @@ def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     (yêu cầu "ghi log số lượng record trước/sau" ở mục IV data pipeline).
     """
     report: dict = {"num_input": len(df)}
+    required_col, _ = get_config()
 
-    missing_required = set(REQUIRED_COLUMNS) - set(df.columns)
+    missing_required = set(required_col) - set(df.columns)
     if missing_required:
         raise ValueError(f"DataFrame missing required columns: {missing_required}")
 
     before_na = len(df)
-    df = df.dropna(subset=REQUIRED_COLUMNS)
+    df = df.dropna(subset=required_col)
     report["num_dropped_missing_required_fields"] = before_na - len(df)
 
     before_dup = len(df)

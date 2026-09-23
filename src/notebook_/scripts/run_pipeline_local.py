@@ -1,15 +1,16 @@
 import argparse
+import os
 
-from src.config.loader import load_config
-from src.data.clean import clean_interactions, load_reviews_dataframe
-from src.data.eda import k_core_filter
-from src.data.leakage_check import (
-    check_no_duplicate_across_splits,
-    check_profile_snapshot,
-    check_split_temporal_order,
-)
-from src.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
-from src.data.temporal_split import compute_temporal_cutoffs, temporal_split
+import pandas as pd
+
+from agent.config.loader import load_config
+from data.clean import clean_interactions
+from data.filter import kcore_filter
+from data import check_no_duplicate_across_splits
+from data.leakage.profile_snapshot import check_profile_snapshot
+from data.leakage.split import check_split_temporal_order
+from data.train.mapping import apply_id_mapping, build_id_mappings, save_mappings
+from data.train.temporal_split import compute_temporal_cutoffs, temporal_split
 
 
 def main() -> None:
@@ -34,9 +35,7 @@ def main() -> None:
     log(f"=== REPORT (domain={domain}) ===")
 
     # 1. Load
-    df = load_reviews_dataframe(
-        args.review_path, columns=["user_id", "parent_asin", "rating", "timestamp"]
-    )
+    df = pd.read_parquet(args.review_path)
     log(f"step=load raw_rows={len(df)}")
 
     # 2. Clean
@@ -52,7 +51,7 @@ def main() -> None:
     before_filter = len(df)
     before_users = df["user_id"].nunique()
     before_items = df["parent_asin"].nunique()
-    df = k_core_filter(df, min_user_interactions=min_user, min_item_interactions=min_item)
+    df = kcore_filter(df, user_k=min_user, item_k=min_item)
     log(
         f"step=k_core_filter (min_user={min_user}, min_item={min_item}) "
         f"rows_before={before_filter} rows_after={len(df)} "
@@ -82,7 +81,7 @@ def main() -> None:
         f"train_rows={len(train)} val_rows={len(validation)} test_rows={len(test)}"
     )
 
-    # 6. Leakage check 
+    # 6. Leakage check
     try:
         check_split_temporal_order(train, validation, test)
         check_no_duplicate_across_splits(train, validation, test)
@@ -97,8 +96,6 @@ def main() -> None:
 
     # 7. Save splits
     splits_dir = f"data/splits/{domain}"
-    import os
-
     os.makedirs(splits_dir, exist_ok=True)
     train.to_parquet(f"{splits_dir}/train.parquet", index=False)
     validation.to_parquet(f"{splits_dir}/validation.parquet", index=False)
@@ -112,8 +109,6 @@ def _print_final(report_lines: list[str]) -> None:
     # Keep this marker ASCII-only: Windows consoles using cp1252 can otherwise
     # raise UnicodeEncodeError after the pipeline has already saved its outputs.
     print("=== END REPORT ===")
-    return
-    print("=== END PHASE 3 REPORT (paste toàn bộ báo cáo trên lại cho Claude) ===")
 
 
 if __name__ == "__main__":

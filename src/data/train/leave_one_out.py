@@ -14,6 +14,9 @@ from __future__ import annotations
 import pandas as pd
 from .user_history import user_histories, get_user_history
 
+# Backward compatibility alias
+user_history = user_histories
+
 def split_leave_one_out_seq(
     data: pd.DataFrame,
     user_col: str = "user_id",

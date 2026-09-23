@@ -1,9 +1,8 @@
 
-
 from __future__ import annotations
 
 import pandas as pd
-from .leakage_error import LeakageError
+from ._leakage_error import LeakageError
 
 
 def duplicate_check(
@@ -34,3 +33,6 @@ def duplicate_check(
             f"train∩test={len(overlap_train_test)}, "
             f"val∩test={len(overlap_val_test)}"
         )
+
+# Alias for backward compatibility
+check_no_duplicate_across_splits = duplicate_check

@@ -1,5 +1,5 @@
 import pandas as pd
-from .leakage_error import LeakageError
+from ._leakage_error import LeakageError
 
 
 def check_split_temporal_order(

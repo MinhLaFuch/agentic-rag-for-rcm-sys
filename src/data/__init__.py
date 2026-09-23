@@ -1,58 +1,29 @@
 """Data processing and EDA utilities."""
 
-from data.preprocess import assign_idx, clean_interactions, compute_temporal_cutoffs, keep_first_filter, leave_one_out_split, low_rating_filter, write_id_maps, write_jsonl, write_products, write_simulator_jsonl, write_splits
+from .clean import clean_interactions
+from .filter import kcore_filter
+from .leakage._leakage_error import LeakageError
+from .leakage.dup_split import duplicate_check
+from .leakage.profile_snapshot import check_profile_snapshot
+from .leakage.split import check_split_temporal_order
+from .train.mapping import apply_id_mapping, build_id_mappings, load_mappings, save_mappings
+from .train.temporal_split import compute_temporal_cutoffs, temporal_split
 
-from .eda import (
-    InteractionStats,
-    LeakageError,
-    MetadataStats,
-    StreamingInteractionStats,
-    apply_id_mapping,
-    build_id_mappings,
-    check_no_duplicate_across_splits,
-    check_profile_snapshot,
-    check_split_temporal_order,
-    compute_interaction_stats,
-    compute_interaction_stats_streaming,
-    compute_metadata_stats,
-    k_core_filter,
-    load_mappings,
-    print_streaming_stats_report,
-    save_mappings,
-    segment_users,
-)
-from .preprocess import (
-    temporal_split,
-)
+# Backward compatibility alias
+check_no_duplicate_across_splits = duplicate_check
 
 __all__ = [
-    "InteractionStats",
-    "LeakageError",
-    "MetadataStats",
-    "StreamingInteractionStats",
     "apply_id_mapping",
-    "assign_idx",
     "build_id_mappings",
     "check_no_duplicate_across_splits",
     "check_profile_snapshot",
     "check_split_temporal_order",
     "clean_interactions",
-    "compute_interaction_stats",
-    "compute_interaction_stats_streaming",
-    "compute_metadata_stats",
     "compute_temporal_cutoffs",
-    "k_core_filter",
-    "keep_first_filter",
-    "leave_one_out_split",
+    "duplicate_check",
+    "kcore_filter",
+    "LeakageError",
     "load_mappings",
-    "low_rating_filter",
-    "print_streaming_stats_report",
     "save_mappings",
-    "segment_users",
     "temporal_split",
-    "write_id_maps",
-    "write_jsonl",
-    "write_products",
-    "write_simulator_jsonl",
-    "write_splits",
 ]
