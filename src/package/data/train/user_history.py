@@ -1,6 +1,6 @@
 import pandas as pd
 
-def user_histories(df: pd.DataFrame) -> pd.Series:
+def user_history(df: pd.DataFrame) -> pd.Series:
     """item_id list per user, in time order."""
     user_col = "user_id" if "user_id" in df.columns else "user_idx"
     item_col = "item_id" if "item_id" in df.columns else "item_idx"

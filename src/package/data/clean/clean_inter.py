@@ -1,8 +1,7 @@
-
 from __future__ import annotations
 
 from pathlib import Path
-from package.data.utils import get_config
+from package.data.utils import REVIEW_SCHEMA
 import pandas as pd
 
 def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -15,7 +14,7 @@ def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     (yêu cầu "ghi log số lượng record trước/sau" ở mục IV data pipeline).
     """
     report: dict = {"num_input": len(df)}
-    required_col, _ = get_config()
+    required_col = list(REVIEW_SCHEMA.required)
 
     missing_required = set(required_col) - set(df.columns)
     if missing_required:

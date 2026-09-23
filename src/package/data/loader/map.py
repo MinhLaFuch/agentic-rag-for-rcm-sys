@@ -1,5 +1,6 @@
-from pathlib import Path
 import json
+from pathlib import Path
+
 
 def load_mappings(input_dir: str | Path) -> tuple[dict[str, int], dict[str, int]]:
     input_dir = Path(input_dir)

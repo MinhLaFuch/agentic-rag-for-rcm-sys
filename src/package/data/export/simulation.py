@@ -1,13 +1,14 @@
-import pandas as pd
+import logging
 from pathlib import Path
-from .jsonl import write_jsonl
-from ..train import user_history
 
-def _out_dir(category: str, workspace: str | None = None) -> Path:
-    """Helper function to determine output directory."""
-    if workspace:
-        return Path(workspace) / "processed" / category
-    return Path("data/processed") / category
+import pandas as pd
+
+from ..train import user_history
+from .jsonl import write_jsonl
+from .layout import ExportDirs, ensure_dir
+
+log = logging.getLogger(__name__)
+
 
 def write_simulator_jsonl(
     test: pd.DataFrame,
@@ -25,7 +26,7 @@ def write_simulator_jsonl(
     id2title = {
         item_id: str(row.title)[:max_title_len] for item_id, row in indexed.iterrows()
     }
-    histories = user_history(history)
+    histories = user_history.user_history(history)
     sample_n = min(sample_n, len(test))
     sampled = test.sample(sample_n, random_state=seed).copy()
     sampled["history"] = sampled["user_id"].map(
@@ -34,8 +35,8 @@ def write_simulator_jsonl(
         )
     )
     sampled["target"] = sampled["item_id"].map(indexed["title"])
-    out_dir = _out_dir(category, workspace)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = ensure_dir(ExportDirs(category, workspace).processed)
     path = out_dir / f"simulator_test_data_{sample_n}.jsonl"
     write_jsonl(sampled[["history", "target"]].to_dict("records"), path)
+    log.info("Wrote %d simulator rows to %s", sample_n, path)
     return path

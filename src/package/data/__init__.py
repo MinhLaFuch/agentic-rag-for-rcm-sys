@@ -1,7 +1,7 @@
 """Data processing and EDA utilities."""
 
 from .clean import clean_interactions
-from .filter import kcore_filter
+from .export.filter import kcore_filter
 from .leakage._leakage_error import LeakageError
 from .leakage.dup_split import duplicate_check
 from .leakage.profile_snapshot import check_profile_snapshot
