@@ -58,7 +58,7 @@ def resolve_workspace(workspace: str | None = None) -> str:
     """
     raw = workspace if workspace is not None else os.getenv(WORKSPACE_ENV_VAR)
     name = (raw or DEFAULT_WORKSPACE).strip()
-    if not name or name in SHARED_RESOURCE_NAMES or Path(name).name != name:
+    if not name or name in SHARED_RESOURCE_NAMES or name in {".", ".."} or Path(name).name != name:
         raise ValueError(
             "workspace must be a single folder under resource/ besides 'raw' "
             f"(e.g. 'local' or 'recai'), got {name!r}"

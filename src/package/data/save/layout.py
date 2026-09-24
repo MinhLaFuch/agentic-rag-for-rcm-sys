@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from ...utils import workspace_dir
+from ...utils.path import workspace_dir
 
 
 def ensure_dir(path: Path) -> Path:

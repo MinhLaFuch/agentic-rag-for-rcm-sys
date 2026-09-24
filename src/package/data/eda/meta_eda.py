@@ -35,7 +35,7 @@ def meta_eda(path: Path, limit: int | None = None) -> MetadataStats:
             stats.category_counter[cat] += 1
 
         rating_number = record.get("rating_number")
-        if isinstance(rating_number, (int, float)):
+        if isinstance(rating_number, int):
             stats.rating_number_sum += rating_number
 
         avg_rating = record.get("average_rating")

@@ -21,7 +21,7 @@ def write_products(
     products = products.drop_duplicates(subset=["item_id"], keep="first").reset_index(drop=True)
     products = products.copy()
     products["item_id"] = products["item_id"].map(item_map)
-    item_count = user_history.user_history(history).explode().value_counts()
+    item_count = user_history(history).explode().value_counts()
     products = products.rename(columns={"item_id": "id"})
     products["visited_num"] = products["id"].map(item_count).fillna(0).astype(int)
     products.to_feather(out / "products.ftr")

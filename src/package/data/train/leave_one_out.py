@@ -12,10 +12,7 @@ items from that history — same as `notebook/process/process.ipynb` section 6:
 from __future__ import annotations
 
 import pandas as pd
-from .user_history import user_histories, get_user_history
-
-# Backward compatibility alias
-user_history = user_histories
+from .user_history import user_history, get_user_history
 
 def split_leave_one_out_seq(
     data: pd.DataFrame,

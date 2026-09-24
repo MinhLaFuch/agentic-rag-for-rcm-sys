@@ -26,7 +26,7 @@ def write_simulator_jsonl(
     id2title = {
         item_id: str(row.title)[:max_title_len] for item_id, row in indexed.iterrows()
     }
-    histories = user_history.user_history(history)
+    histories = user_history(history)
     sample_n = min(sample_n, len(test))
     sampled = test.sample(sample_n, random_state=seed).copy()
     sampled["history"] = sampled["user_id"].map(

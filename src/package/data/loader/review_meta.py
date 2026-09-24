@@ -4,7 +4,7 @@ import logging
 
 import pandas as pd
 
-from ...utils import raw_dir
+from ...utils.path import raw_dir
 from ..utils import REVIEW_SCHEMA, parse_list, read_cached_jsonl, resolve_category
 from .join_description import join_description
 
