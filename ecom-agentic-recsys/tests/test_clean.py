@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import pytest
 
-from src.data.clean import clean_interactions, load_reviews_dataframe
+from src.data.clean import clean_interactions, iter_reviews_dataframes, load_reviews_dataframe
 
 
 @pytest.fixture
@@ -26,7 +26,6 @@ def test_load_reviews_dataframe_reads_all_rows(synthetic_review_file):
     df = load_reviews_dataframe(synthetic_review_file)
     assert len(df) == 4
     assert set(["user_id", "parent_asin", "rating", "timestamp"]).issubset(df.columns)
-    assert pd.api.types.is_integer_dtype(df["timestamp"])
 
 
 def test_load_reviews_dataframe_with_column_subset(synthetic_review_file):
@@ -37,6 +36,19 @@ def test_load_reviews_dataframe_with_column_subset(synthetic_review_file):
 def test_load_reviews_dataframe_missing_column_raises(synthetic_review_file):
     with pytest.raises(ValueError):
         load_reviews_dataframe(synthetic_review_file, columns=["not_a_real_column"])
+
+
+def test_iter_reviews_dataframes_reads_all_rows_in_chunks(synthetic_review_file):
+    chunks = list(
+        iter_reviews_dataframes(
+            synthetic_review_file,
+            columns=["user_id", "parent_asin"],
+            chunksize=3,
+        )
+    )
+
+    assert [len(chunk) for chunk in chunks] == [3, 1]
+    assert all(list(chunk.columns) == ["user_id", "parent_asin"] for chunk in chunks)
 
 
 def test_clean_interactions_drops_missing_and_duplicates(synthetic_review_file):

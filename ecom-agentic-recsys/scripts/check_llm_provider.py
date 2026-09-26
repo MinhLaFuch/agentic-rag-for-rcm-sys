@@ -1,3 +1,10 @@
+"""
+Script kiểm tra thủ công: load configs/agent.yaml thật và gọi LLMProvider
+tương ứng. Dùng để verify bằng mắt trước khi tin tưởng test tự động.
+
+Chạy: python scripts/check_llm_provider.py
+"""
+
 from src.config.loader import load_config
 from src.llm.base import LLMMessage
 from src.llm.factory import build_llm_provider

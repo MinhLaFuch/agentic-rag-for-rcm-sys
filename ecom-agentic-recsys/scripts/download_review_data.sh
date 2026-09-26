@@ -1,16 +1,18 @@
 # Chạy:
 #   bash scripts/download_review_data.sh Video_Games
+#   bash scripts/download_review_data.sh Toys_and_Games
+#   bash scripts/download_review_data.sh Electronics
 #
 # Nếu muốn domain khác, xem danh sách đầy đủ tại:
 #   https://amazon-reviews-2023.github.io/
 
 set -euo pipefail
 
-DOMAIN="${Video_Games}"
+DOMAIN="Electronics"
 OUT_DIR="data/raw/${DOMAIN}"
 mkdir -p "${OUT_DIR}"
 
-REVIEW_URL="https://datarepo.eng.ucsd.edu/mcauley_group/data/amazon_2023/raw/review_categories/${DOMAIN}.jsonl.gz"
+REVIEW_URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/${DOMAIN}.jsonl.gz"
 OUT_FILE="${OUT_DIR}/review_${DOMAIN}.jsonl.gz"
 
 echo "Downloading: ${REVIEW_URL}"

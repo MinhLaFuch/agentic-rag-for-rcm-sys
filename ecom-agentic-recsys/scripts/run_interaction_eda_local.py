@@ -1,3 +1,9 @@
+"""
+Cách dùng:
+    PYTHONPATH=. python scripts/run_interaction_eda_local.py \
+        --path /duong/dan/toi/review_Video_Games.jsonl.gz
+"""
+
 import argparse
 
 from src.data.eda import compute_interaction_stats_streaming, print_streaming_stats_report

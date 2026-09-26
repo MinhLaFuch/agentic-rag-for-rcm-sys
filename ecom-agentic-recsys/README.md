@@ -3,7 +3,6 @@
 Research-grade project: Traditional RecSys + Sequential Recommendation + Retrieval + LLM-powered Agentic Recommendation trên một domain của Amazon Reviews 2023.
 
 Xem `docs/` để hiểu đầy đủ ngữ cảnh trước khi đọc code:
-
 - `docs/research_review.md` — các paper nền tảng đã research
 - `docs/architecture.md` — kiến trúc hệ thống + agent (4 module Profile/Memory/Planning/Action)
 - `docs/data_specification.md` — schema Amazon Reviews 2023, temporal split, leakage rule
@@ -17,7 +16,8 @@ Xem `docs/` để hiểu đầy đủ ngữ cảnh trước khi đọc code:
 - **Phase 0 — Research & Specification:** hoàn thành.
 - **Phase 1 — Repository & Environment:** hoàn thành (13/13 test).
 - **Phase 2 — Dataset Acquisition & EDA:** hoàn thành. Domain chính thức: `Video_Games`. Phát hiện quan trọng: 72.21% user chỉ có 1 interaction (cold-start-dominant), sparsity 99.9988%.
-- **Phase 3 — Data Pipeline:** code hoàn thành + đã test end-to-end với dữ liệu synthetic (45/45 test pass), **CHƯA chạy trên dữ liệu thật đầy đủ** (cần chạy trên máy người dùng — xem `scripts/run_pipeline_local.py`).
+- **Phase 3 — Data Pipeline:** code hoàn thành + test end-to-end với dữ liệu synthetic (53/53 test pass), **CHƯA chạy trên dữ liệu Video_Games thật đầy đủ**.
+- **Multi-domain (D-010):** đã mở rộng sang `Toys_and_Games` + `Electronics`. Namespaced item ID, merge pipeline, cold-start-mitigation logic đã code + verify bằng test thật (synthetic). **CHƯA chạy trên dữ liệu Amazon thật của 2 domain mới** (cần người dùng tải).
 - **Phase 4+:** chưa thực hiện.
 
 ## Cài đặt
@@ -40,14 +40,26 @@ Scripts trong `scripts/` cần `PYTHONPATH=.` (pytest tự set qua `pyproject.to
 PYTHONPATH=. python scripts/check_llm_provider.py
 ```
 
-## Chạy Phase 3 pipeline trên dữ liệu thật
+## Chạy Phase 3 pipeline trên dữ liệu thật của bạn
 
 ```bash
 DOMAIN=Video_Games PYTHONPATH=. python scripts/run_phase3_pipeline_local.py \
     --review-path /duong/dan/toi/review_Video_Games.jsonl.gz
 ```
-
 Pipeline: clean → k-core filter (min_user=5, min_item=5 theo `configs/data.yaml`) → ID mapping → temporal split (80/10/10) → leakage check (3 loại check, dừng pipeline nếu fail) → lưu `data/mapped/`, `data/splits/`. Paste toàn bộ output console lại cho Claude để cập nhật docs với số liệu thật.
+
+## Chạy Multi-domain pipeline (Video_Games + Toys_and_Games + Electronics)
+
+```bash
+bash scripts/download_review_data.sh Toys_and_Games
+bash scripts/download_review_data.sh Electronics
+
+PYTHONPATH=. python scripts/run_multidomain_pipeline_local.py \
+    --domain Video_Games=data/raw/Video_Games/review_Video_Games.jsonl.gz \
+    --domain Toys_and_Games=data/raw/Toys_and_Games/review_Toys_and_Games.jsonl.gz \
+    --domain Electronics=data/raw/Electronics/review_Electronics.jsonl.gz
+```
+Item id được namespace `"{domain}::{parent_asin}"`; `user_id` giữ nguyên (global) để tận dụng lợi ích giảm cold-start khi gộp domain (xem `docs/decisions.md` D-010). Có thể chạy với 2 domain nếu chưa tải đủ cả 3.
 
 ## Cấu trúc thư mục
 
@@ -77,7 +89,7 @@ experiments/     # kết quả từng experiment (config, metrics, logs)
 docs/            # xem trên
 ```
 
-## Nguyên tắc bắt buộc
+## Nguyên tắc bắt buộc (không được vi phạm)
 
 1. LLM không thay thế ranking/retrieval model chuyên biệt — chỉ dùng cho planning, reranking (Top-K giới hạn), explanation.
 2. Không random split cho interaction data — chỉ temporal split (`train < validation < test`).

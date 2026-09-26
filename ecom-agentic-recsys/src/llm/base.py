@@ -1,4 +1,12 @@
+"""
+LLMProvider abstraction (spec mục XXI).
 
+Business logic (agent, tools, reranking, explanation) chỉ được phép phụ thuộc
+vào interface `LLMProvider` này, KHÔNG được import trực tiếp SDK của một
+provider cụ thể (openai, anthropic, ollama...). Điều này cho phép thay đổi
+backend (local LLM / OpenAI-compatible API / Ollama / vLLM / Cloud API) mà
+không phải sửa agent/tool logic.
+"""
 
 from __future__ import annotations
 
