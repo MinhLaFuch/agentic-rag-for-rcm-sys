@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.data.leakage_check import (
+from package.data.leakage_check import (
     LeakageError,
     check_no_duplicate_across_splits,
     check_profile_snapshot,

@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 import time
 
-from src.llm.base import LLMMessage, LLMProvider, LLMResponse
+from package.llm.base import LLMMessage, LLMProvider, LLMResponse
 
 
 class MockLLMProvider(LLMProvider):

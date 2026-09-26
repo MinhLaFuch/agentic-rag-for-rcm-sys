@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.llm.base import LLMProvider
-from src.llm.providers.mock import MockLLMProvider
-from src.llm.providers.openai_compatible import OpenAICompatibleProvider
+from package.llm.base import LLMProvider
+from package.llm.providers.mock import MockLLMProvider
+from package.llm.providers.openai_compatible import OpenAICompatibleProvider
 
 _SUPPORTED_PROVIDERS = {"mock", "openai_compatible"}
 

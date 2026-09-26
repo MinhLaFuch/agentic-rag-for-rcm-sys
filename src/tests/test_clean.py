@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import pytest
 
-from src.data.clean import clean_interactions, load_reviews_dataframe
+from package.data.clean import clean_interactions, load_reviews_dataframe
 
 
 @pytest.fixture

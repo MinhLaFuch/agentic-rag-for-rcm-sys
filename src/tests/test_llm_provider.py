@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from src.llm.base import LLMMessage, LLMProvider
-from src.llm.factory import build_llm_provider
-from src.llm.providers.mock import MockLLMProvider
+from package.llm.base import LLMMessage, LLMProvider
+from package.llm.factory import build_llm_provider
+from package.llm.providers.mock import MockLLMProvider
 
 
 def test_mock_provider_is_llm_provider_subclass():

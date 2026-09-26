@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from src.data.metadata_eda import compute_metadata_stats
+from package.data.metadata_eda import compute_metadata_stats
 
 
 @pytest.fixture

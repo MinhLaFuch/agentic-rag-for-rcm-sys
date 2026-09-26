@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from src.config.loader import ConfigError, load_config
+from package.config.loader import ConfigError, load_config
 
 
 def test_load_config_with_domain_env(monkeypatch):

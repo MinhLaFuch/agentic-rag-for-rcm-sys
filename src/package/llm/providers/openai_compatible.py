@@ -23,7 +23,7 @@ import time
 import urllib.error
 import urllib.request
 
-from src.llm.base import LLMMessage, LLMProvider, LLMProviderError, LLMResponse
+from package.llm.base import LLMMessage, LLMProvider, LLMProviderError, LLMResponse
 
 
 class OpenAICompatibleProvider(LLMProvider):
