@@ -16,9 +16,10 @@ Xem `docs/` để hiểu đầy đủ ngữ cảnh trước khi đọc code:
 - **Phase 0 — Research & Specification:** hoàn thành.
 - **Phase 1 — Repository & Environment:** hoàn thành (13/13 test).
 - **Phase 2 — Dataset Acquisition & EDA:** hoàn thành. Domain chính thức: `Video_Games`. Phát hiện quan trọng: 72.21% user chỉ có 1 interaction (cold-start-dominant), sparsity 99.9988%.
-- **Phase 3 — Data Pipeline:** code hoàn thành + test end-to-end với dữ liệu synthetic (53/53 test pass), **CHƯA chạy trên dữ liệu Video_Games thật đầy đủ**.
-- **Multi-domain (D-010):** đã mở rộng sang `Toys_and_Games` + `Electronics`. Namespaced item ID, merge pipeline, cold-start-mitigation logic đã code + verify bằng test thật (synthetic). **CHƯA chạy trên dữ liệu Amazon thật của 2 domain mới** (cần người dùng tải).
-- **Phase 4+:** chưa thực hiện.
+- **Phase 3 — Data Pipeline:** đã chạy hoàn chỉnh trên dữ liệu thật multi-domain: clean → merge/k-core → ID mapping → temporal split → leakage checks.
+- **Multi-domain (D-010):** đã chạy trên `Video_Games`, `Toys_and_Games`, và `Electronics`; split nằm tại `data/splits/multi_domain/`.
+- **Phase 4 — Baseline recommenders:** Popularity đã chạy trên split multi-domain; metrics tại `experiments/phase4_baselines/metrics.json`. ItemKNN đã implement và sẵn sàng tune qua validation, nhưng cần RAM đủ cho ma trận sparse item-item.
+- **Phase 5+:** chưa thực hiện.
 
 ## Cài đặt
 
@@ -60,6 +61,17 @@ PYTHONPATH=. python scripts/run_multidomain_pipeline_local.py \
     --domain Electronics=data/raw/Electronics/review_Electronics.jsonl.gz
 ```
 Item id được namespace `"{domain}::{parent_asin}"`; `user_id` giữ nguyên (global) để tận dụng lợi ích giảm cold-start khi gộp domain (xem `docs/decisions.md` D-010). Có thể chạy với 2 domain nếu chưa tải đủ cả 3.
+
+## Chạy Phase 4 baselines
+
+```bash
+PYTHONPATH=. python scripts/run_phase4_baselines.py --skip-item-knn
+```
+
+Lệnh trên chạy Popularity và lưu metrics tại
+`experiments/phase4_baselines/metrics.json`. Bỏ `--skip-item-knn` để tune
+ItemKNN (`k=20,50`) theo NDCG@10 trên validation, refit bằng train+validation,
+rồi báo cáo test. ItemKNN exact có thể cần nhiều RAM trên dataset multi-domain.
 
 ## Cấu trúc thư mục
 
