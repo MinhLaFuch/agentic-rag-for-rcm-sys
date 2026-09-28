@@ -6,7 +6,7 @@ Cách dùng:
 
 import argparse
 
-from src.data.eda import compute_interaction_stats_streaming, print_streaming_stats_report
+from data.eda.eda import compute_interaction_stats_streaming, print_streaming_stats_report
 
 
 def main() -> None:

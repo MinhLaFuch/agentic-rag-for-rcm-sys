@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.data.domain_registry import (
+from data.domain.domain_registry import (
     domain_breakdown,
     merge_domains,
     namespaced_item_id,

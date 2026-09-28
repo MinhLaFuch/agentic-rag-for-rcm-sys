@@ -17,39 +17,6 @@ REQUIRED ACTION: chạy script này trên máy có internet đầy đủ (hoặc
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
-
-import pandas as pd
-
-
-def download_domain_reviews(domain: str, cache_dir: str | Path | None = None) -> pd.DataFrame:
-    """
-    Tải review data thật cho một domain từ McAuley-Lab/Amazon-Reviews-2023.
-
-    Trả về DataFrame với các cột: user_id, parent_asin, rating, timestamp,
-    title, text, helpful_vote, verified_purchase (đúng schema đã xác nhận
-    ở docs/data_specification.md §1.1).
-    """
-    from datasets import load_dataset  # import cục bộ để module load được dù chưa cài datasets
-
-    ds = load_dataset(
-        "McAuley-Lab/Amazon-Reviews-2023",
-        f"raw_review_{domain}",
-        cache_dir=str(cache_dir) if cache_dir else None,
-    )
-    df = ds["full"].to_pandas()
-    return df[
-        [
-            "user_id",
-            "parent_asin",
-            "rating",
-            "timestamp",
-            "title",
-            "text",
-            "helpful_vote",
-            "verified_purchase",
-        ]
-    ]
 
 
 def download_domain_reviews_direct(
@@ -86,15 +53,3 @@ def download_domain_reviews_direct(
             out_file.write(chunk)
 
     return output_path
-
-
-
-    """Tải item metadata thật cho một domain."""
-    from datasets import load_dataset
-
-    ds = load_dataset(
-        "McAuley-Lab/Amazon-Reviews-2023",
-        f"raw_meta_{domain}",
-        cache_dir=str(cache_dir) if cache_dir else None,
-    )
-    return ds["full"].to_pandas()

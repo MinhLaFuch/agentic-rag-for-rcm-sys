@@ -9,8 +9,8 @@ chạy được ngay khi chạy trên máy có internet:
 """
 
 from src.config.loader import load_config
-from src.data.acquire import download_domain_reviews
-from src.data.eda import compute_interaction_stats
+from data.loader.acquire import download_domain_reviews
+from data.eda.eda import compute_interaction_stats
 
 
 def main() -> None:
