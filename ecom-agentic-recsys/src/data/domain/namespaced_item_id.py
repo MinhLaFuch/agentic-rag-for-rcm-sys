@@ -18,8 +18,6 @@ from __future__ import annotations
 
 from .._config import ITEM_ID_SEPARATOR
 
+
 def namespaced_item_id(domain: str, parent_asin: str) -> str:
     return f"{domain}{ITEM_ID_SEPARATOR}{parent_asin}"
-
-
-__all__ = ["ITEM_ID_SEPARATOR", "namespaced_item_id"]

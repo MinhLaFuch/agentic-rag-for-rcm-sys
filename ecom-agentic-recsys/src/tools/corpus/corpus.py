@@ -18,7 +18,7 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from data.domain import namespaced_item_id
+from data.domain import namespaced_item_id, ITEM_ID_SEPARATOR
 from src.tools.base import ToolInputError
 from .._config import *
 

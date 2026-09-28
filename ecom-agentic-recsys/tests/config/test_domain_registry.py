@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from data.domain import (
+    ITEM_ID_SEPARATOR,
     domain_breakdown,
     merge_domains,
     namespaced_item_id,
@@ -37,14 +38,14 @@ def toys_games_df():
 
 
 def test_namespaced_item_id_format():
-    assert namespaced_item_id("Video_Games", "ASIN_X") == "Video_Games::ASIN_X"
+    assert namespaced_item_id("Video_Games", "ASIN_X") == f"Video_Games{ITEM_ID_SEPARATOR}ASIN_X"
 
 
 def test_tag_domain_adds_correct_columns(video_games_df):
     tagged = tag_domain(video_games_df, "Video_Games")
     assert (tagged["domain"] == "Video_Games").all()
     assert list(tagged["original_item_id"]) == ["ASIN_X", "ASIN_Y"]
-    assert list(tagged["parent_asin"]) == ["Video_Games::ASIN_X", "Video_Games::ASIN_Y"]
+    assert list(tagged["parent_asin"]) == [f"Video_Games{ITEM_ID_SEPARATOR}ASIN_X", f"Video_Games{ITEM_ID_SEPARATOR}ASIN_Y"]
     # user_id KHÔNG bị đổi (thiết kế có chủ đích — global user id)
     assert list(tagged["user_id"]) == ["u1", "u2"]
 
@@ -66,10 +67,10 @@ def test_merge_domains_prevents_id_collision(video_games_df, toys_games_df):
     merged = merge_domains([tagged_vg, tagged_tg])
 
     namespaced_ids = set(merged["parent_asin"])
-    assert "Video_Games::ASIN_X" in namespaced_ids
-    assert "Toys_and_Games::ASIN_X" in namespaced_ids
+    assert f"Video_Games{ITEM_ID_SEPARATOR}ASIN_X" in namespaced_ids
+    assert f"Toys_and_Games{ITEM_ID_SEPARATOR}ASIN_X" in namespaced_ids
     # 2 item id namespaced phải KHÁC NHAU dù raw asin giống nhau
-    assert "Video_Games::ASIN_X" != "Toys_and_Games::ASIN_X"
+    assert f"Video_Games{ITEM_ID_SEPARATOR}ASIN_X" != f"Toys_and_Games{ITEM_ID_SEPARATOR}ASIN_X"
     # tổng số dòng đúng bằng tổng 2 domain (không mất/nhân đôi dữ liệu)
     assert len(merged) == len(video_games_df) + len(toys_games_df)
 
