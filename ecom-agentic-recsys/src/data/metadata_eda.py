@@ -1,12 +1,3 @@
-"""
-EDA cho item metadata (Phase 2, phần metadata — KHÔNG phải interaction
-data, xem module riêng src/data/eda.py cho interaction).
-
-Streaming, không load toàn bộ file vào RAM một lúc (mục XXVI — code
-phải scale được, tránh việc "chạy được trên máy Claude" nhưng vỡ trên
-máy thật với RAM hạn chế hơn).
-"""
-
 from __future__ import annotations
 
 import gzip

@@ -1,13 +1,3 @@
-"""
-Config loader (mục XX): mọi giá trị cấu hình (dataset path, domain, model
-name, top_k, batch size, LLM settings...) PHẢI đọc từ file YAML trong
-configs/, không hard-code trong code.
-
-Hỗ trợ interpolation đơn giản dạng ``${VAR_NAME}`` được thay bằng biến
-môi trường tương ứng (ví dụ ``${DOMAIN}``), để domain có thể được set
-qua ``DOMAIN=Video_Games python ...`` mà không cần sửa file yaml.
-"""
-
 from __future__ import annotations
 
 import os

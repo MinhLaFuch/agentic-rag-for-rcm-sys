@@ -1,11 +1,3 @@
-"""
-Factory tạo LLMProvider từ config (mục XX, XXI).
-
-Agent/tool code chỉ nên gọi `build_llm_provider(config)`, không tự
-`import` provider cụ thể. Điều này giữ đúng nguyên tắc: business logic
-không phụ thuộc trực tiếp vào một provider.
-"""
-
 from __future__ import annotations
 
 from typing import Any

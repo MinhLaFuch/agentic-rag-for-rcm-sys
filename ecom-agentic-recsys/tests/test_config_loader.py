@@ -36,3 +36,17 @@ def test_evaluation_config_has_experiment_matrix():
     config = load_config("evaluation")
     assert "E9_full_system" in config["experiment_matrix"]
     assert len(config["experiment_matrix"]) == 10
+    assert config["segment_thresholds"]["sparse_max_history"] == 4
+
+
+def test_baseline_model_config_matches_runner_schema():
+    config = load_config("model")["baselines"]
+    assert config["seed"] == 42
+    assert config["item_knn"]["k"] == 20
+    assert config["bpr_mf"]["epochs"] == 20
+
+
+def test_baseline_tuning_config_uses_validation_selection_metric():
+    config = load_config("model")["tuning"]
+    assert config["selection_metric"] == "ndcg@10"
+    assert config["item_knn"]["k"] == [10, 20, 50, 100]

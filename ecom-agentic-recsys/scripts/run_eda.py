@@ -1,13 +1,3 @@
-"""
-Script Phase 2: tải dữ liệu thật cho DOMAIN và in báo cáo EDA cơ bản.
-
-Trạng thái hiện tại: BLOCKED trong container (huggingface.co bị chặn ở
-tầng network — xem docs/limitations.md). Script này đã viết đúng, sẽ
-chạy được ngay khi chạy trên máy có internet:
-
-    DOMAIN=Video_Games PYTHONPATH=. python scripts/run_eda.py
-"""
-
 from src.config.loader import load_config
 from src.data.acquire import download_domain_reviews
 from src.data.eda import compute_interaction_stats

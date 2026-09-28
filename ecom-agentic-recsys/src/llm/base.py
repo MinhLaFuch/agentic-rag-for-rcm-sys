@@ -1,13 +1,3 @@
-"""
-LLMProvider abstraction (spec mục XXI).
-
-Business logic (agent, tools, reranking, explanation) chỉ được phép phụ thuộc
-vào interface `LLMProvider` này, KHÔNG được import trực tiếp SDK của một
-provider cụ thể (openai, anthropic, ollama...). Điều này cho phép thay đổi
-backend (local LLM / OpenAI-compatible API / Ollama / vLLM / Cloud API) mà
-không phải sửa agent/tool logic.
-"""
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -17,7 +7,6 @@ from typing import Any
 
 @dataclass
 class LLMMessage:
-    """Một message trong hội thoại gửi tới LLM."""
 
     role: str  # "system" | "user" | "assistant"
     content: str
@@ -25,8 +14,6 @@ class LLMMessage:
 
 @dataclass
 class LLMResponse:
-    """Kết quả trả về từ LLMProvider — chuẩn hoá giữa các backend khác nhau."""
-
     text: str
     raw: Any = None
     prompt_tokens: int | None = None
@@ -42,13 +29,6 @@ class LLMProviderError(RuntimeError):
 
 
 class LLMProvider(ABC):
-    """
-    Interface bắt buộc cho mọi LLM backend.
-
-    Mọi implementation (mock, openai-compatible, ollama, vllm...) phải
-    kế thừa class này và implement đầy đủ các method abstract.
-    """
-
     provider_name: str = "base"
 
     @abstractmethod
