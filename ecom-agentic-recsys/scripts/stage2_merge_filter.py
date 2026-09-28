@@ -2,10 +2,10 @@ import argparse
 import os
 
 from src.config.loader import load_config
-from data.clean.clean import clean_interactions
-from data.domain.domain_registry import domain_breakdown, merge_domains, tag_domain
-from data.loader.dtypes import estimate_memory_usage_mb, optimize_interaction_dtypes
-from data.eda.eda import k_core_filter
+from data.clean import clean_interactions
+from data.domain import domain_breakdown, merge_domains, tag_domain
+from data.loader import estimate_memory_usage_mb, optimize_interaction_dtypes
+from data.filter import k_core_filter
 
 os.environ.setdefault("DOMAIN", "multi_domain_placeholder")
 

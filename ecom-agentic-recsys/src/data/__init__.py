@@ -1,6 +1,7 @@
 import clean
 import domain
 import eda
+import filter
 import leakage
 import loader
 import mapping
@@ -10,6 +11,7 @@ __all__ = [
     "clean",
     "domain",
     "eda",
+    "filter",
     "leakage",
     "loader",
     "mapping",

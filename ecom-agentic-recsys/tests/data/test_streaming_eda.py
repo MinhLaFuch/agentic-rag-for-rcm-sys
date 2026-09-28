@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from data.eda.eda import compute_interaction_stats_streaming
+from data.eda import compute_interaction_stats_streaming
 
 
 @pytest.fixture
