@@ -10,11 +10,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.llm.base import LLMProvider
-from src.llm.providers.mock import MockLLMProvider
-from src.llm.providers.openai_compatible import OpenAICompatibleProvider
+from .base import LLMProvider
+from .providers.mock import MockLLMProvider
+from .providers.openai_compatible import OpenAICompatibleProvider
 
-_SUPPORTED_PROVIDERS = {"mock", "openai_compatible"}
+from ._config import SUPPORTED_PROVIDERS
 
 
 def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
@@ -29,10 +29,10 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
     llm_config = config.get("llm", {})
     provider_name = llm_config.get("provider", "mock")
 
-    if provider_name not in _SUPPORTED_PROVIDERS:
+    if provider_name not in SUPPORTED_PROVIDERS:
         raise ValueError(
             f"Unknown LLM provider '{provider_name}'. "
-            f"Supported: {sorted(_SUPPORTED_PROVIDERS)}"
+            f"Supported: {sorted(SUPPORTED_PROVIDERS)}"
         )
 
     if provider_name == "mock":

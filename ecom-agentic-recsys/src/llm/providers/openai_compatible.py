@@ -23,8 +23,9 @@ import time
 import urllib.error
 import urllib.request
 
-from src.llm.base import LLMMessage, LLMProvider, LLMProviderError, LLMResponse
-
+from ..base import LLMProvider
+from .._dataclass import LLMMessage, LLMResponse
+from .._error import LLMProviderError
 
 class OpenAICompatibleProvider(LLMProvider):
     provider_name = "openai_compatible"

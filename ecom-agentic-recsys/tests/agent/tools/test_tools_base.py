@@ -2,7 +2,7 @@
 
 import json
 
-from src.recommenders.baselines import ItemKNNRecommender
+from tools.recommenders.baselines import ItemKNNRecommender
 from src.tools import BaselineScorer, ItemCFTool, QueryTool, RecoModelTool, SQLTool, ToolCallLogger
 from tests.tools_helpers import EL_D, VG_A, VG_B
 
