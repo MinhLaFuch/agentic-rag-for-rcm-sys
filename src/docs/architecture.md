@@ -45,19 +45,21 @@ Theo Peng et al. 2025, agent trong RecSys cần 4 module: **Profile, Memory, Pla
 
 ### 3.1 Danh sách Tool (Action layer) — theo mục IV của spec
 
+> **Cập nhật multi-domain (D-010):** mọi tool thao tác trên item/candidate giờ nhận thêm tham số **optional** `domain: str | None`. `None` = tìm kiếm trên toàn bộ domain đã bật (`configs/data.yaml.domains`); chỉ định domain cụ thể = giới hạn phạm vi. Item id nội bộ luôn ở dạng namespaced (`"{domain}::{parent_asin}"`) — tool không được tự parse chuỗi này để suy ra domain, phải dùng `src/data/domain_registry.py` (tránh string-parsing rải rác khắp codebase).
+
 | Tool | Input | Output | Ghi chú |
 |---|---|---|---|
-| `UserProfileTool` | user_id, timestamp t | structured profile tại thời điểm ≤ t | Bắt buộc tuân leakage rule |
-| `InteractionHistoryTool` | user_id, window | list interaction (item_id, ts, rating) | Chỉ trả dữ liệu ≤ t |
-| `CandidateRetrievalTool` | user representation | Top-N candidate ids | Gọi retrieval layer, có cache |
-| `SequentialRecommendationTool` | user sequence | ranked candidate ids + score | Gọi sequential model đã train |
-| `SemanticSearchTool` | query text / profile embedding | relevant product ids + snippet | Giới hạn Top-K, không trả full corpus |
-| `ProductMetadataTool` | item_id | title, category, price, brand, attributes | Đọc từ item store |
-| `SimilarItemTool` | item_id | similar item ids | Dựa trên embedding hoặc co-purchase |
-| `PopularityTool` | domain/category | top popular items | Baseline fallback (cold-start) |
+| `UserProfileTool` | user_id, timestamp t | structured profile tại thời điểm ≤ t | Bắt buộc tuân leakage rule; profile giờ có thể tổng hợp **cross-domain** (ví dụ: "user thường mua game hành động + đồ chơi mô hình") |
+| `InteractionHistoryTool` | user_id, window | list interaction (item_id, ts, rating, **domain**) | Chỉ trả dữ liệu ≤ t; thêm cột domain vào output |
+| `CandidateRetrievalTool` | user representation, `domain: str \| None` | Top-N candidate ids (namespaced) | Gọi retrieval layer, có cache; nếu `domain=None`, hợp nhất candidate từ nhiều domain (cần chiến lược weighting — **chưa quyết định, để Phase 6**) |
+| `SequentialRecommendationTool` | user sequence (có thể cross-domain) | ranked candidate ids + score | Model chuyên biệt — quyết định có train 1 model chung cho 3 domain hay 3 model riêng thuộc Phase 5 |
+| `SemanticSearchTool` | query text / profile embedding, `domain: str \| None` | relevant product ids + snippet | Giới hạn Top-K, không trả full corpus |
+| `ProductMetadataTool` | item_id (namespaced) | title, category, price, brand, attributes, **domain** | Đọc từ item store; phải tự tách domain từ namespaced id qua `domain_registry`, không parse string tay |
+| `SimilarItemTool` | item_id (namespaced) | similar item ids (**có thể khác domain** — đây chính là cross-sell: gợi ý tai nghe Electronics cho người mua game) | Dựa trên embedding hoặc co-purchase |
+| `PopularityTool` | domain/category (`domain: str \| None`) | top popular items | Baseline fallback (cold-start); nếu domain=None, trả top phổ biến toàn hệ thống |
 | `RankingTool` | candidate set + features | scored list | Model chuyên biệt, không phải LLM |
-| `RerankingTool` | Top-20 candidates + user context | Top-5/10 với structured JSON `{item_id, score, reasons}` | Đây là nơi duy nhất LLM "ranking", với input đã bị giới hạn cứng |
-| `MemoryTool` | user_id, operation | memory record(s) | CRUD-like, có prune/forget |
+| `RerankingTool` | Top-20 candidates + user context | Top-5/10 với structured JSON `{item_id, score, reasons, domain}` | LLM cần biết domain của mỗi candidate để không so sánh sai lệch (giá game vs giá tai nghe khác thang) |
+| `MemoryTool` | user_id, operation | memory record(s) | CRUD-like, có prune/forget; preference memory nên lưu riêng theo domain nhưng cho phép query cross-domain |
 | `ExplanationTool` | recommendation + evidence | explanation text có trích dẫn evidence | Không hallucinate spec sản phẩm |
 
 ### 3.2 Agent workflow (single-agent baseline — Phase 8)

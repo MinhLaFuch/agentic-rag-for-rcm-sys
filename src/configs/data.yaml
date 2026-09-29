@@ -6,6 +6,21 @@ domain: "${DOMAIN}"
 raw_review_config: "raw_review_${DOMAIN}"
 raw_meta_config: "raw_meta_${DOMAIN}"
 
+# Multi-domain (bổ sung — xem docs/decisions.md D-010).
+# Danh sách domain thật sự bật trong hệ thống. Đây là danh sách tĩnh
+# (không dùng ${DOMAIN} interpolation) vì multi-domain cần load NHIỀU
+# domain cùng lúc, không phải chọn 1 domain như workflow single-domain
+# ở trên (vẫn giữ nguyên để tương thích ngược với Phase 2-3 script cũ).
+domains:
+  - name: "Video_Games"
+    role: "primary"
+  - name: "Toys_and_Games"
+    role: "secondary"
+    adjacency: "audience"      # bổ trợ theo đối tượng khách hàng
+  - name: "Electronics"
+    role: "secondary"
+    adjacency: "functional"    # bổ trợ theo chức năng sản phẩm (accessory/hardware)
+
 dataset_source: "McAuley-Lab/Amazon-Reviews-2023"
 
 paths:

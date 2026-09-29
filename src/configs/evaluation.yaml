@@ -10,6 +10,12 @@ recommendation_metrics:
     - mrr_at_k
     - map_at_k
 
+# Phân khúc dùng trong offline evaluator. Với k-core 5/5, user có 1–4
+# tương tác trong tập fit vẫn được xem là sparse; từ 5 trở lên là warm.
+# User không có history trong tập fit được evaluator gán là cold.
+segment_thresholds:
+  sparse_max_history: 4
+
 optional_metrics:
   - coverage
   - catalog_coverage
@@ -30,10 +36,9 @@ agent_metrics:
   - estimated_cost
 
 user_segments:
+  - cold
   - warm
-  - new
-  - sparse_history
-  - evolving_interest
+  - sparse
 
 experiment_matrix:
   - E0_random

@@ -189,3 +189,27 @@ REQUIRED ACTION: xem Phase 3 — sẽ cung cấp script chạy local tương t�
 - `BLOCKED`: chưa tải thật dataset → **Đã resolve** (§1.3, §11).
 - `BLOCKED`: chưa xác định ngưỡng cụ thể cho "sparse" và "evolving-interest" → **Đã resolve một phần**: median=1 interaction/user trong dữ liệu thật gợi ý `sparse_threshold` hợp lý là 2-4; "evolving-interest" vẫn BLOCKED, cần dữ liệu category theo thời gian, chưa làm ở Phase 2.
 - **REQUIRED ACTION còn lại**: chạy k-core filtering thật 2 chiều ở Phase 3 để biết chính xác kích thước tập "warm" sau lọc.
+
+## 14. Multi-domain (bổ sung — D-010)
+
+Hệ thống mở rộng từ 1 domain sang 3: `Video_Games` (primary), `Toys_and_Games`, `Electronics` (secondary). Chi tiết lý do và bằng chứng ở `docs/decisions.md` D-010.
+
+**Quy tắc ID:**
+- `user_id`: giữ nguyên, KHÔNG namespace (global across category trên Amazon).
+- `parent_asin` → namespaced thành `"{domain}::{parent_asin}"` khi vào pipeline chung (xem `src/data/domain_registry.py`), tránh ID collision giữa domain.
+
+**Pipeline multi-domain** (`scripts/run_multidomain_pipeline_local.py`): load+clean từng domain riêng → `tag_domain()` → `merge_domains()` → dedupe lại toàn cục → k-core filter **trên dữ liệu đã gộp** → ID mapping toàn cục → temporal split toàn cục → leakage check → save.
+
+**Đã verify bằng test thật (không chỉ lý thuyết):** chạy `scripts/run_multidomain_pipeline_local.py` với dữ liệu giả 2 domain, kết quả: user chỉ có 3 interaction/domain (không đạt ngưỡng warm=5 riêng lẻ) nhưng đạt ngưỡng sau khi gộp (3+3=6) — log thật: `per_domain_warm_users={'Video_Games': 0, 'Toys_and_Games': 0} combined_warm_users=10`.
+
+**BLOCKED:**
+```
+BLOCKED: chưa tải file review thật cho Toys_and_Games và Electronics
+REASON: cần người dùng tải (giống quy trình đã làm với Video_Games)
+REQUIRED ACTION: 
+  bash scripts/download_review_data.sh Toys_and_Games
+  bash scripts/download_review_data.sh Electronics
+  Sau đó chạy scripts/run_multidomain_pipeline_local.py với cả 3 file,
+  paste report lại để có số liệu cold-start-mitigation thật trên dữ
+  liệu Amazon thật (không phải synthetic).
+```

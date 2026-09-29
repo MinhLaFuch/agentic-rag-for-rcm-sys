@@ -18,8 +18,8 @@ from __future__ import annotations
 import json
 import time
 
-from package.llm.base import LLMMessage, LLMProvider, LLMResponse
-
+from ..base import LLMProvider
+from .._dataclass import LLMMessage, LLMResponse
 
 class MockLLMProvider(LLMProvider):
     provider_name = "mock"

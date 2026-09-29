@@ -10,40 +10,14 @@ qua ``DOMAIN=Video_Games python ...`` mà không cần sửa file yaml.
 
 from __future__ import annotations
 
-import os
-import re
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-_ENV_VAR_PATTERN = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
-
-CONFIG_DIR = Path(__file__).resolve().parents[2] / "configs"
-
-
-class ConfigError(RuntimeError):
-    pass
-
-
-def _interpolate_env(value: Any) -> Any:
-    if isinstance(value, str):
-        def _replace(match: re.Match) -> str:
-            var_name = match.group(1)
-            if var_name not in os.environ:
-                raise ConfigError(
-                    f"Config references ${{{var_name}}} but env var "
-                    f"'{var_name}' is not set."
-                )
-            return os.environ[var_name]
-
-        return _ENV_VAR_PATTERN.sub(_replace, value)
-    if isinstance(value, dict):
-        return {k: _interpolate_env(v) for k, v in value.items()}
-    if isinstance(value, list):
-        return [_interpolate_env(v) for v in value]
-    return value
-
+from ._error import ConfigError
+from ._config import CONFIG_DIR
+from ._helper import _interpolate_env
 
 def load_config(name: str, config_dir: Path | None = None) -> dict[str, Any]:
     """

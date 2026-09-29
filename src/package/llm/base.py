@@ -1,37 +1,19 @@
+"""
+LLMProvider abstraction (spec mục XXI).
 
+Business logic (agent, tools, reranking, explanation) chỉ được phép phụ thuộc
+vào interface `LLMProvider` này, KHÔNG được import trực tiếp SDK của một
+provider cụ thể (openai, anthropic, ollama...). Điều này cho phép thay đổi
+backend (local LLM / OpenAI-compatible API / Ollama / vLLM / Cloud API) mà
+không phải sửa agent/tool logic.
+"""
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+
 from typing import Any
-
-
-@dataclass
-class LLMMessage:
-    """Một message trong hội thoại gửi tới LLM."""
-
-    role: str  # "system" | "user" | "assistant"
-    content: str
-
-
-@dataclass
-class LLMResponse:
-    """Kết quả trả về từ LLMProvider — chuẩn hoá giữa các backend khác nhau."""
-
-    text: str
-    raw: Any = None
-    prompt_tokens: int | None = None
-    completion_tokens: int | None = None
-    latency_seconds: float | None = None
-    provider_name: str = ""
-    model_name: str = ""
-    metadata: dict = field(default_factory=dict)
-
-
-class LLMProviderError(RuntimeError):
-    """Lỗi chung khi gọi LLM provider (timeout, auth, rate limit...)."""
-
+from ._dataclass import LLMMessage, LLMResponse
 
 class LLMProvider(ABC):
     """
