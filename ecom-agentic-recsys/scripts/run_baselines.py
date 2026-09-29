@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from tools.evaluation.recommendation_metrics import evaluate_ranking
-from tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from src.tools.evaluation.recommendation_metrics import evaluate_ranking
+from src.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
 
 
 def _read_split(path: Path) -> pd.DataFrame:

@@ -2,13 +2,13 @@ import argparse
 import os
 
 from src.config.loader import load_config
-from data.leakage import (
+from src.data.leakage import (
     check_no_duplicate_across_splits,
     check_profile_snapshot,
     check_split_temporal_order,
 )
-from data.mapping import apply_id_mapping, build_id_mappings, save_mappings
-from data.split import compute_temporal_cutoffs, temporal_split
+from src.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
+from src.data.split import compute_temporal_cutoffs, temporal_split
 
 os.environ.setdefault("DOMAIN", "multi_domain_placeholder")
 

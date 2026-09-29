@@ -55,11 +55,11 @@ class SQLTool(Tool):
         limit: int = 100,
     ) -> dict[str, Any]:
         filters = filters or {}
-        unknown = set(filters) - _FILTER_KEYS
+        unknown = set(filters) - FILTER_KEYS
         if unknown:
-            raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(_FILTER_KEYS)}")
-        if order_by not in _ORDER_COLUMNS:
-            raise ToolInputError(f"order_by must be one of {sorted(_ORDER_COLUMNS)}")
+            raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
+        if order_by not in ORDER_COLUMNS:
+            raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
         limit = check_top_k(limit)
 
         where, params = self._compile(filters)

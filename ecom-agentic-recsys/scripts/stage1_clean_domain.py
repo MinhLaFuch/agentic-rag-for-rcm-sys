@@ -8,8 +8,8 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from data.clean import clean_interactions, iter_reviews_dataframes
-from data.loader import estimate_memory_usage_mb
+from src.data.clean import clean_interactions, iter_reviews_dataframes
+from src.data.loader import estimate_memory_usage_mb
 
 
 def main() -> None:

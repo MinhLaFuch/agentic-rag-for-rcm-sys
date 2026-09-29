@@ -1,11 +1,17 @@
-import corpus
-import sql_query
-import ranking
-import retrieval
+from . import corpus
+from . import evaluation
+from . import ranking
+from . import recommenders
+from . import retrieval
+from . import score
+from . import sql_query
 
 __all__ = [
     "corpus",
-    "sql_query",
+    "evaluation",
     "ranking",
-    "retrieval"
+    "recommenders",
+    "retrieval",
+    "score",
+    "sql_query"
 ]

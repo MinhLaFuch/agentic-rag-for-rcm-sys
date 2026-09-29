@@ -1,11 +1,11 @@
-import clean
-import domain
-import eda
-import filter
-import leakage
-import loader
-import mapping
-import split
+from . import clean
+from . import domain
+from . import eda
+from . import filter
+from . import leakage
+from . import loader
+from . import mapping
+from . import split
 
 __all__ = [
     "clean",
