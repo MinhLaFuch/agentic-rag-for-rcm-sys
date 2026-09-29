@@ -1,0 +1,25 @@
+2026-09-22 15:30:02 [INFO] process: No tsv cache found, parsing raw jsonl.gz files
+2026-09-22 15:30:23 [INFO] process: Shape of reviews: (701528, 10)
+2026-09-22 15:30:23 [INFO] process: Shape of meta: (112590, 14)
+2026-09-22 15:30:23 [INFO] process: Meta after dropping missing titles: (112590, 14)
+2026-09-22 15:30:24 [INFO] process: Keeping first interaction per duplicated review, begin: (701528, 4)
+2026-09-22 15:30:25 [INFO] process: After keep-first filter: (693929, 4)
+2026-09-22 15:30:25 [INFO] process: Filtering ratings below 3.0, begin: (693929, 4)
+2026-09-22 15:30:25 [INFO] process: After rating filter: (550473, 4)
+2026-09-22 15:30:25 [INFO] process: k-core filtering (user_k=5, item_k=5), begin: (550473, 4)
+2026-09-22 15:30:26 [INFO] process: Iter 0: users 1197/503701, items 644/97187
+2026-09-22 15:30:26 [INFO] process: Iter 1: users 365/1197, items 425/644
+2026-09-22 15:30:26 [INFO] process: Iter 2: users 277/365, items 357/425
+2026-09-22 15:30:26 [INFO] process: Iter 3: users 238/277, items 318/357
+2026-09-22 15:30:26 [INFO] process: Iter 4: users 220/238, items 298/318
+2026-09-22 15:30:26 [INFO] process: Iter 5: users 207/220, items 284/298
+2026-09-22 15:30:26 [INFO] process: Iter 6: users 200/207, items 280/284
+2026-09-22 15:30:26 [INFO] process: Iter 7: users 198/200, items 280/280
+2026-09-22 15:30:26 [INFO] process: Iter 8: users 198/198, items 280/280
+2026-09-22 15:30:26 [INFO] process: After k-core filter: (1888, 4)
+2026-09-22 15:30:26 [INFO] process: Mapping user and item ids to contiguous integers
+2026-09-22 15:30:26 [INFO] process: Saved id maps to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty\map.json
+2026-09-22 15:30:26 [INFO] process: Saved splits to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty (train=1492, valid=198, test=198, full_history=1690)
+2026-09-22 15:30:26 [INFO] process: Saved product table (280 items) to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty
+2026-09-22 15:30:26 [INFO] process: Saved 198 records to C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\resource\local\processed\All_Beauty\simulator_test_data_198.jsonl
+2026-09-22 15:30:26 [INFO] process: Pipeline complete.

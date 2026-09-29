@@ -1,0 +1,29 @@
+[project]
+name = "ecom-agentic-recsys"
+version = "0.0.1"
+description = "Agentic recommendation system on Amazon Reviews 2023 (research-grade project)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas>=3.0.0,<3.1.0",
+    "numpy>=2.5.0,<2.6.0",
+    "PyYAML>=6.0.2,<6.1.0",
+    "scipy>=1.14.0,<1.19.0",
+    "pyarrow>=18.0.0,<19.0.0",
+    "datasets>=4.8.0,<5.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.0,<9.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=68,<75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["package*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

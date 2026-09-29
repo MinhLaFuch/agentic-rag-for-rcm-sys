@@ -1,0 +1,18 @@
+# Research Matrix
+
+Phân biệt rõ: **reported by paper** (paper tự báo cáo) / **implemented in this project** (đã code trong repo này) / **our experimental result** (đã tự chạy và có số liệu). Không ghi "paper says better" nếu chưa tự kiểm tra bằng experiment (mục XXV).
+
+| Component | Method | Paper | Repository | Reason for adoption | Expected benefit (reported by paper) | Actual result (our experiment) |
+|---|---|---|---|---|---|---|
+| Agent architecture (4-module) | Profile / Memory / Planning / Action | Peng et al. 2025 (EMNLP Findings, arXiv:2502.10050) | survey, no code | Cấu trúc module hoá cho phép audit riêng leakage/memory (mục VI, XI) | Paper báo cáo cải thiện interpretability và interaction — chưa có số liệu định lượng thống nhất trong survey | **Chưa chạy** — implement ở Phase 8 |
+| Single-agent tool-use workflow | LLM = brain, recommender = tool, memory bus, plan-first | Huang et al. 2023/2024 — InteRecAgent / RecAI (Microsoft) | `github.com/microsoft/RecAI` (MIT) | Khớp trực tiếp với mục IV, XII của spec; license cho phép tái sử dụng pattern | Paper báo cáo InteRecAgent outperform general-purpose LLM trên vài public dataset (không phải Amazon Reviews 2023) | **Chưa chạy** — implement ở Phase 8, phải tự đo trên domain đã chọn, không copy số liệu paper |
+| Multi-agent (nếu dùng) | Manager / User-Item Analyst / Reflector / Searcher / Task Interpreter | Wang et al. 2024 — MACRec (SIGIR) | `github.com/wzf2000/MACRec` (license chưa xác minh) | Reference roles cho Phase 10, KHÔNG mặc định bật (mục XIII) | Paper báo cáo cải thiện qua reflection loop trên vài recommendation task | **Chưa chạy** — chỉ nghiên cứu ở Phase 10 sau ablation single-agent |
+| RAG failure-mode constraints | Giới hạn Top-K, tránh context overload/spurious grounding | Lin et al. 2026 (arXiv:2607.04433) | survey, no code | Cơ sở trực tiếp cho constraint "không nhồi toàn bộ dataset/memory vào prompt" (mục X, XI, XIV) | Paper chỉ ra RAG có 3 failure mode nếu không kiểm soát retrieval | **Implemented in this project**: `configs/retrieval.yaml.semantic_retrieval.max_context_items=20`, `configs/agent.yaml.reranking.input_top_k=20` |
+| LLMProvider abstraction | Interface thay thế được nhiều backend | — (kỹ thuật engineering chuẩn, không phải nghiên cứu paper) | — | mục XXI yêu cầu business logic không phụ thuộc 1 provider | — | **Implemented in this project**: `src/llm/base.py`, `src/llm/factory.py`, đã unit test pass (11/11, Phase 1) |
+| Sequential recommendation model | TBD | TBD Phase 5 | TBD | Chưa chọn — cần EDA thật trước (mục VIII) | TBD | **Chưa chạy** |
+| Interaction EDA (Video_Games) | Streaming JSONL stats trên file thật do người dùng chạy local | — (engineering) | — | Cần biết sparsity/phân phối interaction trước khi chốt k-core threshold và thiết kế cold-start path | — | **Actual result (our EDA, đã chạy thật 22/9, do người dùng chạy local + paste report)**: 2,766,656 user, 137,249 item, sparsity 99.9988%, 72.21% user chỉ có 1 interaction, chỉ 4.26% user ≥5 interaction; xem `data_specification.md` §11 |
+| Item metadata completeness (Video_Games) | Streaming JSONL stats | — (engineering, không phải paper) | — | Cần biết % missing price/description/features trước khi thiết kế fallback cho ConstraintFilteringTool | — | **Actual result (our EDA, đã chạy thật 21/9)**: 137,269 item; thiếu price 54.83%, thiếu description 37.69%, thiếu features 28.77%, thiếu store 3.18%; avg rating_number 244.31; xem `data_specification.md` §1.3 |
+
+## Quy ước cập nhật bảng này
+- Mỗi khi một component chuyển từ "chưa chạy" sang có kết quả thật, cột "Actual result" phải ghi số liệu cụ thể + link tới `experiments/exp_XXX/`.
+- Không xoá dòng cũ, chỉ update trạng thái, để giữ audit trail cho toàn bộ project.
