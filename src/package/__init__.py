@@ -2,7 +2,7 @@ from . import agents
 from . import api
 from . import config
 from . import data
-from . import embeddings
+from .data import embeddings
 from . import features
 from . import inference
 from . import llm

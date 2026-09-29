@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tools.evaluation.recommendation_metrics import evaluate_ranking
-from tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from package.tools.evaluation import evaluate_ranking
+from package.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
 
 
 def _train() -> pd.DataFrame:

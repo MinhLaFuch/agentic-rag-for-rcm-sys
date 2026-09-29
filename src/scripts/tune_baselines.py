@@ -14,12 +14,12 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.run_baselines import build_model
-from src.config.loader import load_config
-from src.data.interactions import build_interaction_matrix
-from src.evaluation.evaluator import EvaluationResult, evaluate_recommender
-from src.evaluation.experiment_log import next_experiment_dir, save_experiment
-from src.evaluation.tuning import merge_model_params, parameter_grid
-from src.utils.console import ensure_utf8_stdout
+from package.config.loader import load_config
+from package.tools.evaluation.evaluator import EvaluationResult, evaluate_recommender
+from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
+from package.tools.evaluation.tuning import merge_model_params, parameter_grid
+from package.tools.recommenders import build_interaction_matrix
+from package.utils.console import ensure_utf8_stdout
 
 
 def _serialize_result(result: EvaluationResult, fit_seconds: float) -> dict:

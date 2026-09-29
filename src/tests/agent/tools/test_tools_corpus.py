@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.tools import ItemCorpus, QueryTool
+from package.tools import ItemCorpus, QueryTool
 from tests.tools_helpers import EL_A, VG_A, VG_B, VG_C
 
 

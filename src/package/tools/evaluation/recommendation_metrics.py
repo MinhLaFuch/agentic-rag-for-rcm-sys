@@ -4,17 +4,12 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
-from typing import Protocol
 
 import pandas as pd
 
 
-class Recommender(Protocol):
-    def recommend(self, user_idx: int, top_k: int) -> list[int]: ...
-
-
 def evaluate_ranking(
-    model: Recommender, interactions: pd.DataFrame, k_values: list[int]
+    model, interactions: pd.DataFrame, k_values: list[int]
 ) -> dict[str, float]:
     """Macro-average metrics over users with at least one held-out item."""
     if not k_values or min(k_values) <= 0:

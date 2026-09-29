@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from data.split import compute_temporal_cutoffs, temporal_split
+from package.data.split import compute_temporal_cutoffs, temporal_split
 
 
 @pytest.fixture

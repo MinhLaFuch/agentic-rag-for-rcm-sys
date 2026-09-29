@@ -1,4 +1,4 @@
-from src.tools import SQLTool
+from package.tools import SQLTool
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 

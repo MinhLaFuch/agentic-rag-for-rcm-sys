@@ -7,8 +7,8 @@ from typing import Any, Sequence
 import numpy as np
 from scipy import sparse
 
-from package.tools.base import MAX_CANDIDATES, Tool, ToolCallLogger, ToolInputError, check_top_k
-from package.tools.corpus import ItemCorpus
+from ..base import MAX_CANDIDATES, Tool, ToolCallLogger, ToolInputError, check_top_k
+from ..corpus import ItemCorpus
 
 
 class ItemCFTool(Tool):

@@ -5,8 +5,8 @@ from dataclasses import dataclass
 import numpy as np
 import scipy.sparse as sp
 
-from src.evaluation.metrics import ranking_metrics_at_k
-from src.recommenders.base import Recommender
+from .metrics import ranking_metrics_at_k
+from ..recommenders.base import Recommender
 
 
 @dataclass

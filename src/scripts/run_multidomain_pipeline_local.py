@@ -7,17 +7,17 @@ import os
 # an toàn nếu người dùng chưa set DOMAIN.
 os.environ.setdefault("DOMAIN", "multi_domain_placeholder")
 
-from src.config.loader import load_config
-from src.data.clean import clean_interactions, load_reviews_dataframe
-from src.data.domain_registry import domain_breakdown, merge_domains, tag_domain
-from src.data.eda import k_core_filter
-from src.data.leakage_check import (
+from package.config.loader import load_config
+from package.data.clean import clean_interactions, load_reviews_dataframe
+from package.data.domain import domain_breakdown, merge_domains, tag_domain
+from package.data.filter import k_core_filter
+from package.data.leakage import (
     check_no_duplicate_across_splits,
     check_profile_snapshot,
     check_split_temporal_order,
 )
-from src.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
-from src.data.temporal_split import compute_temporal_cutoffs, temporal_split
+from package.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
+from package.data.split import compute_temporal_cutoffs, temporal_split
 
 
 def parse_domain_arg(value: str) -> tuple[str, str]:

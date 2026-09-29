@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from src.recommenders.base import Recommender
+from .base import Recommender
 
 
 class PopularityRecommender(Recommender):

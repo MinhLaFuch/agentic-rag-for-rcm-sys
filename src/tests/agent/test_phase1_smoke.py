@@ -4,9 +4,9 @@ config -> factory -> provider hoạt động được từ đầu đến cuối,
 chỉ test từng unit riêng lẻ.
 """
 
-from src.config.loader import load_config
-from src.llm.base import LLMMessage
-from src.llm.factory import build_llm_provider
+from package.config.loader import load_config
+from package.llm.base import LLMMessage
+from package.llm.factory import build_llm_provider
 
 
 def test_end_to_end_agent_config_to_llm_call(monkeypatch):

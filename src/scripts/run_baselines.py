@@ -8,17 +8,19 @@ import time
 
 import pandas as pd
 
-from src.config.loader import load_config
-from src.data.interactions import build_interaction_matrix
-from src.evaluation.evaluator import evaluate_recommender
-from src.evaluation.experiment_log import next_experiment_dir, save_experiment
-from src.recommenders.base import Recommender
-from src.recommenders.bpr_mf import BPRMFRecommender
-from src.recommenders.fallback import FallbackRecommender
-from src.recommenders.item_knn import ItemKNNRecommender
-from src.recommenders.popularity import PopularityRecommender
-from src.recommenders.random_rec import RandomRecommender
-from src.utils.console import ensure_utf8_stdout
+from package.config.loader import load_config
+from package.tools.evaluation.evaluator import evaluate_recommender
+from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
+from package.tools.recommenders import (
+    BPRMFRecommender,
+    FallbackRecommender,
+    ItemKNNRecommender,
+    PopularityRecommender,
+    RandomRecommender,
+    Recommender,
+    build_interaction_matrix,
+)
+from package.utils.console import ensure_utf8_stdout
 
 ALL_MODELS = ["random", "popularity", "item_knn", "bpr_mf"]
 

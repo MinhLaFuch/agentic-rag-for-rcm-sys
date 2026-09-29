@@ -1,6 +1,6 @@
 import pytest
 
-from src.tools import QueryTool
+from package.tools import QueryTool
 from tests.tools_helpers import VG_A
 
 

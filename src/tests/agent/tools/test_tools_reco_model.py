@@ -1,5 +1,5 @@
-from tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
-from src.tools import BaselineScorer, ItemCFTool, RecoModelTool, SQLTool
+from package.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from package.tools import BaselineScorer, ItemCFTool, RecoModelTool, SQLTool
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 

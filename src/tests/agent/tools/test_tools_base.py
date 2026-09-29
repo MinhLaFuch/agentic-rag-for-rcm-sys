@@ -2,8 +2,8 @@
 
 import json
 
-from tools.recommenders.baselines import ItemKNNRecommender
-from src.tools import BaselineScorer, ItemCFTool, QueryTool, RecoModelTool, SQLTool, ToolCallLogger
+from package.tools.recommenders.baselines import ItemKNNRecommender
+from package.tools import BaselineScorer, ItemCFTool, QueryTool, RecoModelTool, SQLTool, ToolCallLogger
 from tests.tools_helpers import EL_D, VG_A, VG_B
 
 

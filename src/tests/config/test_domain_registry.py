@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from data.domain import (
+from package.data.domain import (
     ITEM_ID_SEPARATOR,
     domain_breakdown,
     merge_domains,

@@ -8,9 +8,8 @@ src/data/acquire.py và docs/limitations.md).
 import pandas as pd
 import pytest
 
-from data.eda import compute_interaction_stats
-from data.filter import k_core_filter
-from data.eda import segment_users
+from package.data.eda import compute_interaction_stats, segment_users
+from package.data.filter import k_core_filter
 
 
 @pytest.fixture
