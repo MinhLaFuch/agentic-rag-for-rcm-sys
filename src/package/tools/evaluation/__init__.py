@@ -1,4 +1,5 @@
-from .evaluator import EvaluationResult, evaluate_recommender
+from ._dataclass import EvaluationResult
+from .evaluator import evaluate_recommender
 from .experiment_log import next_experiment_dir, save_experiment
 from .metrics import ranking_metrics_at_k
 from .recommendation_metrics import evaluate_ranking

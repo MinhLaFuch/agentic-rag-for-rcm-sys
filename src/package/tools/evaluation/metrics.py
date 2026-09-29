@@ -1,3 +1,5 @@
+"""Ranking metrics computation for recommendation evaluation."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -6,6 +8,7 @@ import numpy as np
 def ranking_metrics_at_k(
     hits: np.ndarray, num_relevant: np.ndarray, k: int
 ) -> dict[str, np.ndarray]:
+    """Compute ranking metrics at k for multiple users."""
     if hits.ndim != 2 or hits.shape[1] < k:
         raise ValueError(f"hits must be (U, >=k={k}), got {hits.shape}")
     if np.any(num_relevant <= 0):

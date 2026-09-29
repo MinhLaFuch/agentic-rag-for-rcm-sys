@@ -1,4 +1,4 @@
-"""Ranking metrics for implicit-feedback recommendation experiments."""
+"""Alternative ranking metrics for baseline recommendation evaluation."""
 
 from __future__ import annotations
 

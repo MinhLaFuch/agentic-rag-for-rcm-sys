@@ -12,6 +12,7 @@ import yaml
 
 
 def _git_commit() -> str | None:
+    """Get current git commit hash if available."""
     try:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5
@@ -22,6 +23,7 @@ def _git_commit() -> str | None:
 
 
 def hardware_info() -> dict[str, Any]:
+    """Get hardware and platform information."""
     return {
         "platform": platform.platform(),
         "python": platform.python_version(),
@@ -30,6 +32,7 @@ def hardware_info() -> dict[str, Any]:
 
 
 def next_experiment_dir(root: str | Path = "experiments") -> Path:
+    """Generate the next experiment directory name."""
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     existing = [
@@ -50,6 +53,7 @@ def save_experiment(
     runtime_seconds: float,
     notes: str = "",
 ) -> Path:
+    """Save experiment results to directory with config, metrics, and README."""
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=False)  # không ghi đè experiment cũ
 

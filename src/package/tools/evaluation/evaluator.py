@@ -1,27 +1,14 @@
-from __future__ import annotations
+"""Main recommender evaluation logic."""
 
-from dataclasses import dataclass
+from __future__ import annotations
 
 import numpy as np
 import scipy.sparse as sp
 
+from ._dataclass import EvaluationResult
+from ._helper import assign_segments
 from .metrics import ranking_metrics_at_k
 from ..recommenders.base import Recommender
-
-
-@dataclass
-class EvaluationResult:
-    overall: dict[str, float]
-    by_segment: dict[str, dict[str, float]]
-    num_users: dict[str, int]
-    catalog_coverage: dict[str, float]
-    target_item_seen_ratio: float
-
-
-def assign_segments(history_sizes: np.ndarray, sparse_max: int) -> np.ndarray:
-    return np.where(
-        history_sizes == 0, "cold", np.where(history_sizes <= sparse_max, "sparse", "warm")
-    )
 
 
 def evaluate_recommender(
@@ -33,6 +20,8 @@ def evaluate_recommender(
     batch_elements: int = 20_000_000,
 ) -> EvaluationResult:
     """
+    Evaluate a recommender model on target data with exclusion matrix.
+
     model    : đã fit trên dữ liệu 'fit'
     exclude  : ma trận item đã thấy cần loại (thường = dữ liệu fit)
     target   : ground-truth (val hoặc test), cùng shape

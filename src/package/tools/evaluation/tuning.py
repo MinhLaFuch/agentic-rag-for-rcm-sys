@@ -1,4 +1,4 @@
-"""Small, deterministic helpers for validation-only hyperparameter search."""
+"""Hyperparameter tuning utilities for validation-only search."""
 
 from __future__ import annotations
 
