@@ -1,0 +1,18 @@
+# Retrieval config (mục IX, X, XX).
+
+candidate_retrieval:
+  top_n: 100
+  strategy: "hybrid"   # collaborative | embedding | semantic | hybrid
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+
+semantic_retrieval:
+  # embedding_model sẽ được chốt ở Phase 6 sau khi so sánh vài lựa chọn
+  embedding_model: "TBD_PHASE_6"
+  index_backend: "faiss"
+  top_k: 20
+  max_context_items: 20   # giới hạn cứng — không đưa toàn bộ dataset vào prompt
+
+deterministic_filter:
+  # filter theo constraint cứng (budget, category...) trước khi vào LLM rerank
+  enabled: true

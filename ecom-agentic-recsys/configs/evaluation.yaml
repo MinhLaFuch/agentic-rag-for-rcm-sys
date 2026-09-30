@@ -1,0 +1,48 @@
+# Evaluation config (mục XVI, XVII, XX).
+
+recommendation_metrics:
+  k_values: [5, 10, 20]
+  metrics:
+    - precision_at_k
+    - recall_at_k
+    - hit_rate_at_k
+    - ndcg_at_k
+    - mrr_at_k
+    - map_at_k
+
+optional_metrics:
+  - coverage
+  - catalog_coverage
+  - novelty
+  - diversity
+  - serendipity
+
+agent_metrics:
+  - task_success
+  - constraint_satisfaction
+  - recommendation_relevance
+  - explanation_faithfulness
+  - memory_retrieval_quality
+  - tool_selection_accuracy
+  - num_tool_calls
+  - latency_seconds
+  - token_usage
+  - estimated_cost
+
+user_segments:
+  - warm
+  - new
+  - sparse_history
+  - evolving_interest
+
+experiment_matrix:
+  - E0_random
+  - E1_popularity
+  - E2_collaborative_baseline
+  - E3_sequential_baseline
+  - E4_hybrid_retrieval
+  - E5_sequential_plus_retrieval
+  - E6_sequential_plus_agent
+  - E7_sequential_memory_agent
+  - E8_sequential_retrieval_agent_rerank
+  - E9_full_system
