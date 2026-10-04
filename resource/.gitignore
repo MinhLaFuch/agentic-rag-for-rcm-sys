@@ -1,7 +1,6 @@
 # --- raw: ignore every subfolder's contents, keep .gitkeep (README.md & raw/.gitkeep untouched) ---
-raw/*/**
-!raw/*/**/
-!raw/*/**/.gitkeep
+raw/*
+!raw/.gitkeep
 
 # --- local/processed: ignore contents, keep .gitkeep ---
 local/processed/**
