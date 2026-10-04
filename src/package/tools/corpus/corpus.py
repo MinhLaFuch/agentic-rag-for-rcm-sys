@@ -18,9 +18,9 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from ...data.domain import namespaced_item_id, ITEM_ID_SEPARATOR
+from ...data import namespaced_item_id, ITEM_ID_SEPARATOR
 from ..base import ToolInputError
-from .._config import *
+from .._config import ITEM_COLUMNS, MAX_QUERY_ROWS, SCHEMA_HINT, SQL_TIME_BUDGET_SECONDS
 
 
 

@@ -8,6 +8,7 @@ error=...) instead of raising, so the agent can react; real bugs still raise.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from abc import ABC, abstractmethod
@@ -19,6 +20,12 @@ from typing import Any, Sequence
 import numpy as np
 
 from ._config import MAX_CANDIDATES
+
+
+def _hash_input(kwargs: dict[str, Any]) -> str:
+    """Stable hash of input kwargs for deduplication."""
+    normalized = json.dumps(kwargs, sort_keys=True, default=str)
+    return hashlib.sha256(normalized.encode()).hexdigest()[:16]
 
 
 class ToolInputError(ValueError):

@@ -1,11 +1,13 @@
 import pandas as pd
 import pytest
 
-from package.data.domain import (
+from package.data import (
     ITEM_ID_SEPARATOR,
+    namespaced_item_id,
+)
+from package.data.domain import (
     domain_breakdown,
     merge_domains,
-    namespaced_item_id,
     tag_domain,
 )
 

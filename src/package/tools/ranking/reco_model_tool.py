@@ -28,6 +28,8 @@ class RecoModelTool(Tool):
     }
     """
 
+    name = "RecoModelTool"
+
     def __init__(
         self,
         scorer: CandidateScorer,

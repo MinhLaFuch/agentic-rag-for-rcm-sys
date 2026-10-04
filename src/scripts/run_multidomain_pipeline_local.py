@@ -9,7 +9,8 @@ os.environ.setdefault("DOMAIN", "multi_domain_placeholder")
 
 from package.config.loader import load_config
 from package.data.clean import clean_interactions, load_reviews_dataframe
-from package.data.domain import domain_breakdown, merge_domains, tag_domain
+from package.data import tag_domain
+from package.data.domain import domain_breakdown, merge_domains
 from package.data.filter import k_core_filter
 from package.data.leakage import (
     check_no_duplicate_across_splits,

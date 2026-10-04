@@ -3,7 +3,8 @@ import os
 
 from package.config.loader import load_config
 from package.data.clean import clean_interactions
-from package.data.domain import domain_breakdown, merge_domains, tag_domain
+from package.data import tag_domain
+from package.data.domain import domain_breakdown, merge_domains
 from package.data.loader import estimate_memory_usage_mb, optimize_interaction_dtypes
 from package.data.filter import k_core_filter
 
