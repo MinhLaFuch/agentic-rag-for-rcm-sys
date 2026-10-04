@@ -49,6 +49,7 @@ desktop.ini
 *.log
 !experiments/
 !experiments/**/*.log
+resource
 
 # Secrets and local credentials
 *.pem
