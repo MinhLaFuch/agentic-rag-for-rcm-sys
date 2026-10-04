@@ -50,6 +50,7 @@ desktop.ini
 !experiments/
 !experiments/**/*.log
 resource
+configs/llm.yaml
 
 # Secrets and local credentials
 *.pem

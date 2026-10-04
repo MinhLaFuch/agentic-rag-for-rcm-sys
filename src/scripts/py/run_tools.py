@@ -37,7 +37,7 @@ from package.data.mapping import load_mappings
 from package.tools.corpus import ItemCorpus
 from package.tools.ranking.item_cf_tool import ItemCFTool
 from package.tools.ranking.reco_model_tool import RecoModelTool
-from package.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools.score import BaselineScorer
 from package.tools.sql_query.query_tool import QueryTool
 from package.tools.sql_query.sql_tool import SQLTool

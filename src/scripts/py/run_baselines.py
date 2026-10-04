@@ -13,7 +13,7 @@ import pandas as pd
 from package.config import get_data_paths, load_config
 from package.data.split import infer_matrix_shape, load_splits
 from package.tools.evaluation.evaluator import evaluate_recommender
-from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
+from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.recommenders import build_interaction_matrix, build_model
 from package.utils.console import ensure_utf8_stdout
 

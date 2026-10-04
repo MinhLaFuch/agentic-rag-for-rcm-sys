@@ -1,4 +1,5 @@
-from .scorers import BaselineScorer, CandidateScorer
+from .baseline_scorer import BaselineScorer
+from .candidate_scorer import CandidateScorer
 
 __all__ = [
     "BaselineScorer",

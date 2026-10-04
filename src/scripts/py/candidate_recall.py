@@ -42,7 +42,7 @@ from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import ItemCFTool, ItemCorpus, SemanticSearchTool
 from package.tools.base import MAX_CANDIDATES, ToolCallLogger
-from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
+from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.recommenders import ItemKNNRecommender, build_interaction_matrix
 from package.utils.console import ensure_utf8_stdout
 

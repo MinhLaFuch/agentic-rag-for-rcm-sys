@@ -1,8 +1,6 @@
-from .baselines import (
-    ItemKNNRecommender,
-    PopularityRecommender,
-    build_interaction_matrix,
-)
+from .baseline_popularity import PopularityRecommender
+from .baseline_item_knn import ItemKNNRecommender
+from .build_interaction_matrix import build_interaction_matrix
 from .base import Recommender
 from .bpr_mf import BPRMFRecommender
 from .factory import ALL_MODELS, build_model
