@@ -17,13 +17,14 @@ def main() -> None:
     parser.add_argument("--review-path", required=True)
     args = parser.parse_args()
 
-    config = load_config("data")
-    domain = config["domain"]
-    min_user = config["filtering"]["min_user_interactions"]
-    min_item = config["filtering"]["min_item_interactions"]
-    train_ratio = config["split"]["train_ratio"]
-    val_ratio = config["split"]["validation_ratio"]
-    test_ratio = config["split"]["test_ratio"]
+    filtering_config = load_config("filtering")
+    min_user = filtering_config["filtering"]["min_user_interactions"]
+    min_item = filtering_config["filtering"]["min_item_interactions"]
+    split_config = load_config("split")
+    train_ratio = split_config["split"]["train_ratio"]
+    val_ratio = split_config["split"]["validation_ratio"]
+    test_ratio = split_config["split"]["test_ratio"]
+    domain = "single_domain"  # Placeholder for single domain runs
 
     report_lines: list[str] = []
 
@@ -61,7 +62,7 @@ def main() -> None:
     )
 
     if len(df) == 0:
-        log("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — ngưỡng min_user/min_item quá cao so với dữ liệu thật. Cần giảm ngưỡng trong configs/data.yaml.")
+        log("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — ngưỡng min_user/min_item quá cao so với dữ liệu thật. Cần giảm ngưỡng trong configs/filtering.yaml.")
         _print_final(report_lines)
         return
 

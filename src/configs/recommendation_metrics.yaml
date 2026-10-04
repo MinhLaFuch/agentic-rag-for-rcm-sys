@@ -1,0 +1,11 @@
+# Recommendation metrics config (mục XVI, XVII, XX).
+
+recommendation_metrics:
+  k_values: [5, 10, 20]
+  metrics:
+    - precision_at_k
+    - recall_at_k
+    - hit_rate_at_k
+    - ndcg_at_k
+    - mrr_at_k
+    - map_at_k

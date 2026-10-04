@@ -1,0 +1,6 @@
+# Cleaning config (mục V, XX).
+
+cleaning:
+  min_review_length_chars: 1
+  drop_duplicate_reviews: true
+  chunk_size: 250000     # số review xử lý mỗi lần ở stage 1; giảm nếu hết RAM

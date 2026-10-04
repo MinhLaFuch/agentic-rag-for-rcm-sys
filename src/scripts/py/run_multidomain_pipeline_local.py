@@ -1,7 +1,7 @@
 import argparse
 import os
 
-# data.yaml có field domain/paths dùng ${DOMAIN} interpolation cho
+# domains.yaml có field domains dùng ${DOMAIN} interpolation cho
 # workflow single-domain (Phase 2-3). Multi-domain không dùng field đó,
 # nhưng loader vẫn cần env var để parse toàn bộ file — set placeholder
 # an toàn nếu người dùng chưa set DOMAIN.
@@ -41,12 +41,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    config = load_config("data")
-    min_user = config["filtering"]["min_user_interactions"]
-    min_item = config["filtering"]["min_item_interactions"]
-    train_ratio = config["split"]["train_ratio"]
-    val_ratio = config["split"]["validation_ratio"]
-    test_ratio = config["split"]["test_ratio"]
+    filtering_config = load_config("filtering")
+    min_user = filtering_config["filtering"]["min_user_interactions"]
+    min_item = filtering_config["filtering"]["min_item_interactions"]
+    split_config = load_config("split")
+    train_ratio = split_config["split"]["train_ratio"]
+    val_ratio = split_config["split"]["validation_ratio"]
+    test_ratio = split_config["split"]["test_ratio"]
 
     report_lines: list[str] = []
 
@@ -100,7 +101,7 @@ def main() -> None:
     )
 
     if len(filtered) == 0:
-        log("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — kiểm tra lại ngưỡng trong configs/data.yaml")
+        log("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — kiểm tra lại ngưỡng trong configs/filtering.yaml")
         print("=== END REPORT ===")
         return
 

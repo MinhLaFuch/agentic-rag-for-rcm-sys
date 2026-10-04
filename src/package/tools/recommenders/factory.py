@@ -1,4 +1,4 @@
-"""Dựng recommender baseline từ config (``model.yaml → baselines``)."""
+"""Dựng recommender baseline từ config (``baselines.yaml → baselines``)."""
 
 from __future__ import annotations
 

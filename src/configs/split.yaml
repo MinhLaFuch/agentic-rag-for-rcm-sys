@@ -1,0 +1,7 @@
+# Split config (mục VI, XX).
+
+split:
+  strategy: "temporal"   # bắt buộc theo mục VI — không dùng random split
+  train_ratio: 0.8
+  validation_ratio: 0.1
+  test_ratio: 0.1

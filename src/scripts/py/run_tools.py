@@ -1,7 +1,7 @@
 """
 Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
-Needs (paths come from configs/data.yaml, default tag = run_tag):
+Needs (paths come from configs/data_paths.yaml, default tag = run_tag.yaml):
   - resource/splits/<tag>/{train,validation}.parquet   (stage 3)
   - resource/mapped/<tag>/{user2id,item2id}.json       (stage 3)
   - resource/raw/meta_<Domain>.jsonl.gz per domain     (raw metadata; domains whose
@@ -91,17 +91,17 @@ def load_meta(meta_args: list[tuple[str, str]], wanted: dict[str, set[str]]) -> 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
+    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append",
-                    help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong data.yaml).")
+                    help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml).")
     ap.add_argument("--model", choices=["knn", "popularity"], default="knn",
                     help="knn needs a lot of RAM on big data; popularity is a light fallback")
-    ap.add_argument("--neighbors", type=int, help="mặc định: baselines.item_knn.k trong model.yaml")
+    ap.add_argument("--neighbors", type=int, help="mặc định: baselines.item_knn.k trong baselines.yaml")
     ap.add_argument("--eval-users", type=int, default=200)
     ap.add_argument("--negatives", type=int, default=99)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
-    args.neighbors = args.neighbors or load_config("model")["baselines"]["item_knn"]["k"]
+    args.neighbors = args.neighbors or load_config("baselines")["baselines"]["item_knn"]["k"]
     data_paths = get_data_paths(args.tag)
     args.splits_dir, args.mapping_dir = str(data_paths.splits_dir), str(data_paths.mapped_dir)
     meta_args = []

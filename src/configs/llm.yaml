@@ -1,0 +1,8 @@
+# LLM config (mục IV, XII, XIV, XX, XXI).
+# reference architecture: InteRecAgent/RecAI (xem docs/decisions.md D-003b)
+
+provider: "mock"       # mock | openai_compatible — đổi sang openai_compatible khi có endpoint thật (Phase 8)
+model: "mock-0"
+base_url: null         # ví dụ: "http://localhost:8000/v1" cho vLLM/Ollama, hoặc "https://api.openai.com/v1"
+api_key: null          # để trống nếu server local không cần auth; KHÔNG commit key thật vào file này
+timeout_seconds: 30.0

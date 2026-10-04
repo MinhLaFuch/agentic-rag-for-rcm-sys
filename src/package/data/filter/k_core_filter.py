@@ -20,7 +20,7 @@ def k_core_filter(
 ) -> pd.DataFrame:
     """
     Lặp lại việc loại user/item có ít hơn ngưỡng interaction cho đến khi
-    ổn định (đúng khái niệm k-core filtering nêu ở configs/data.yaml).
+    ổn định (đúng khái niệm k-core filtering nêu ở configs/filtering.yaml).
     """
     df = interactions.copy()
     for _ in range(max_iterations):

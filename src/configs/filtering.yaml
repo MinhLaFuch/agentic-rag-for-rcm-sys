@@ -1,0 +1,6 @@
+# Filtering config (mục V, XX).
+# k-core filtering — giá trị thật sẽ chốt ở Phase 2 sau EDA, đây là default placeholder
+
+filtering:
+  min_user_interactions: 5
+  min_item_interactions: 5

@@ -1,0 +1,13 @@
+# Tuning config (mục VIII, XX).
+# Chọn cấu hình chỉ bằng validation; không dùng test cho hyperparameter search.
+
+tuning:
+  selection_metric: "ndcg@10"
+  models: [popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
+  item_knn:
+    k: [10, 20, 50, 100]
+  bpr_mf:
+    embedding_dim: [32, 64]
+    learning_rate: [0.001, 0.005]
+    reg: [0.001, 0.01]
+    epochs: [20]

@@ -22,18 +22,18 @@ def main() -> None:
     ensure_utf8_stdout()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
-    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data.yaml.")
+    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
+    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data_paths.yaml.")
     parser.add_argument("--eval-on", choices=["validation", "test"], default="validation")
-    parser.add_argument("--models", help="Mặc định: baselines.models trong model.yaml.")
-    parser.add_argument("--ks", default=None, help="vd: 5,10,20 (mac dinh lay tu evaluation.yaml)")
+    parser.add_argument("--models", help="Mặc định: baselines.models trong baselines.yaml.")
+    parser.add_argument("--ks", default=None, help="vd: 5,10,20 (mac dinh lay tu recommendation_metrics.yaml)")
     parser.add_argument("--experiments-dir", default="experiments")
     args = parser.parse_args()
 
-    model_cfg = load_config("model")["baselines"]
-    eval_cfg = load_config("evaluation")
+    model_cfg = load_config("baselines")["baselines"]
+    eval_cfg = load_config("recommendation_metrics")
     ks = [int(x) for x in args.ks.split(",")] if args.ks else eval_cfg["recommendation_metrics"]["k_values"]
-    sparse_max = eval_cfg["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = args.models.split(",") if args.models else model_cfg["models"]
     model_names = [m.strip() for m in model_names if m.strip()]
     splits_dir = args.splits_dir or str(get_data_paths(args.tag).splits_dir)

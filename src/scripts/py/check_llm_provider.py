@@ -4,7 +4,7 @@ from package.llm.factory import build_llm_provider
 
 
 def main() -> None:
-    config = load_config("agent")
+    config = load_config("llm")
     provider = build_llm_provider(config)
     print(f"Provider: {provider.provider_name}")
     print(f"Health check: {provider.health_check()}")

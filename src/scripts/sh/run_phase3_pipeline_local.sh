@@ -6,7 +6,7 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-export DOMAIN="Video_Games"   # data.yaml reads ${DOMAIN}; also decides output folders
+export DOMAIN="Video_Games"   # for single-domain workflow (reads ${DOMAIN})
 REVIEW_PATH="resource/raw/${DOMAIN}.jsonl.gz"
 # ====================================================
 "$PYTHON" scripts/py/run_phase3_pipeline_local.py --review-path "$REVIEW_PATH"

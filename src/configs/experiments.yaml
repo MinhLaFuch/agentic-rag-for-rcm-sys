@@ -1,0 +1,13 @@
+# Experiment matrix config (mục XVI, XVII, XX).
+
+experiments:
+  - E0_random
+  - E1_popularity
+  - E2_collaborative_baseline
+  - E3_sequential_baseline
+  - E4_hybrid_retrieval
+  - E5_sequential_plus_retrieval
+  - E6_sequential_plus_agent
+  - E7_sequential_memory_agent
+  - E8_sequential_retrieval_agent_rerank
+  - E9_full_system

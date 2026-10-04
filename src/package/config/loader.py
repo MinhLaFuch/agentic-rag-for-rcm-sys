@@ -22,7 +22,8 @@ from ._helper import _interpolate_env
 def load_config(name: str, config_dir: Path | None = None) -> dict[str, Any]:
     """
     Load một file config theo tên (không cần đuôi .yaml), ví dụ:
-        load_config("data") -> đọc configs/data.yaml
+        load_config("domains") -> đọc configs/domains.yaml
+        load_config("baselines") -> đọc configs/baselines.yaml
     Ném ConfigError nếu file không tồn tại hoặc thiếu env var cần thiết.
     """
     directory = config_dir or CONFIG_DIR

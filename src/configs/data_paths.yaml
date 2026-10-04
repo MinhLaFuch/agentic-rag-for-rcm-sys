@@ -1,0 +1,8 @@
+# Data paths config (mục V, XX).
+
+paths:
+  raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
+  cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
+  filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
+  mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
+  splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)

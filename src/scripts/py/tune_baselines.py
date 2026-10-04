@@ -35,24 +35,23 @@ def _serialize_result(result: EvaluationResult, fit_seconds: float) -> dict:
 def main() -> None:
     ensure_utf8_stdout()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
-    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data.yaml.")
-    parser.add_argument("--models", help="Mặc định: tuning.models trong model.yaml.")
+    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
+    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data_paths.yaml.")
+    parser.add_argument("--models", help="Mặc định: tuning.models trong tuning.yaml.")
     parser.add_argument("--ks", default=None)
     parser.add_argument("--selection-metric", default=None, help="Mặc định lấy tuning.selection_metric")
     parser.add_argument("--run-final-test", action="store_true", help="Refit cấu hình thắng với train+validation rồi đánh giá test một lần.")
     parser.add_argument("--experiments-dir", default="experiments")
     args = parser.parse_args()
 
-    model_config = load_config("model")
-    base_config = model_config["baselines"]
-    tuning_config = model_config["tuning"]
-    evaluation_config = load_config("evaluation")
-    ks = [int(value) for value in args.ks.split(",")] if args.ks else evaluation_config["recommendation_metrics"]["k_values"]
+    base_config = load_config("baselines")["baselines"]
+    tuning_config = load_config("tuning")["tuning"]
+    recommendation_metrics = load_config("recommendation_metrics")
+    ks = [int(value) for value in args.ks.split(",")] if args.ks else recommendation_metrics["recommendation_metrics"]["k_values"]
     metric = args.selection_metric or tuning_config["selection_metric"]
     if metric not in {f"{name}@{k}" for name in ("precision", "recall", "hit_rate", "ndcg", "mrr", "map") for k in ks}:
         raise ValueError(f"selection metric '{metric}' is not available for ks={ks}")
-    sparse_max = evaluation_config["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = args.models.split(",") if args.models else tuning_config["models"]
     model_names = [name.strip() for name in model_names if name.strip()]
     allowed = {"popularity", "item_knn", "bpr_mf"}

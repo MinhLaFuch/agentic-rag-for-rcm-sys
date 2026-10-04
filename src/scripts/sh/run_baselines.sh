@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chạy baseline trên splits của stage 3. Models/ks/seed: model.yaml, evaluation.yaml.
+# Chạy baseline trên splits của stage 3. Models/ks/seed: baselines.yaml, recommendation_metrics.yaml.
 #   bash scripts/sh/run_baselines.sh
 #   bash scripts/sh/run_baselines.sh --eval-on test --models popularity,item_knn
 #   TAG=vg_toys bash scripts/sh/run_baselines.sh

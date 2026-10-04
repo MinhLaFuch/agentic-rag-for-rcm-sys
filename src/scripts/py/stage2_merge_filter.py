@@ -16,9 +16,9 @@ def main() -> None:
     parser.add_argument(
         "--domain",
         action="append",
-        help="Tên domain (phải đã chạy Stage 1). Lặp lại cho mỗi domain; mặc định: tất cả trong data.yaml.",
+        help="Tên domain (phải đã chạy Stage 1). Lặp lại cho mỗi domain; mặc định: tất cả trong domains.yaml.",
     )
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml). Stage 3 phải dùng cùng tag.")
+    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml). Stage 3 phải dùng cùng tag.")
     parser.add_argument("--force", action="store_true", help="Ghi đè output cũ nếu có.")
     parser.add_argument(
         "--cold-start-report",
@@ -27,11 +27,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    config = load_config("data")
-    min_user = config["filtering"]["min_user_interactions"]
-    min_item = config["filtering"]["min_item_interactions"]
-    domains = args.domain or get_domains(config)
-    paths = get_data_paths(args.tag, config)
+    filtering_config = load_config("filtering")
+    min_user = filtering_config["filtering"]["min_user_interactions"]
+    min_item = filtering_config["filtering"]["min_item_interactions"]
+    domains = args.domain or get_domains()
+    paths = get_data_paths(args.tag)
     output_path = paths.filtered_path
 
     if output_path.exists() and not args.force:
@@ -88,7 +88,7 @@ def main() -> None:
     del merged
 
     if len(filtered) == 0:
-        sys.exit("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/data.yaml")
+        sys.exit("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/filtering.yaml")
 
     filtered = optimize_interaction_dtypes(filtered)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,5 +102,5 @@ if __name__ == "__main__":
 
 # NẾU VẪN OOM Ở STAGE NÀY:
 # - Giảm số domain load cùng lúc: chạy với 2 domain trước (TAG riêng), rồi thêm domain thứ 3.
-# - Tăng tạm filtering.min_user_interactions / min_item_interactions trong configs/data.yaml
+# - Tăng tạm filtering.min_user_interactions / min_item_interactions trong configs/filtering.yaml
 #   để loại bớt dữ liệu sớm hơn.

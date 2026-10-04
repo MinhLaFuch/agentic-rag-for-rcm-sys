@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage 1: clean từng domain lần lượt (domain: data.yaml → domains; chunk: cleaning.chunk_size).
+# Stage 1: clean từng domain lần lượt (domain: domains.yaml → domains; chunk: cleaning.chunk_size).
 # Lỗi ở một domain không làm dừng các domain còn lại.
 #   bash scripts/sh/stage1_clean_domain.sh                 # tất cả domain
 #   DOMAINS="Video_Games Electronics" bash scripts/sh/stage1_clean_domain.sh
@@ -7,8 +7,8 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 parse_flags "$@"
 load_domains
-RAW_DIR="$(cfg data.paths.raw_dir)"
-CLEANED_DIR="$(cfg data.paths.cleaned_dir)"
+RAW_DIR="$(cfg data_paths.paths.raw_dir)"
+CLEANED_DIR="$(cfg data_paths.paths.cleaned_dir)"
 
 DONE=(); SKIPPED=(); FAILED=()
 

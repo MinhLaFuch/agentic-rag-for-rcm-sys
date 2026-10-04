@@ -1,0 +1,7 @@
+# Candidate retrieval config (mục IX, X, XX).
+
+candidate_retrieval:
+  top_n: 100
+  strategy: "hybrid"   # collaborative | embedding | semantic | hybrid
+  cache_enabled: true
+  cache_ttl_seconds: 3600

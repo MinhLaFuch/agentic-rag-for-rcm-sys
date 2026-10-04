@@ -16,12 +16,12 @@ from package.data.loader import estimate_memory_usage_mb
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True)
-    parser.add_argument("--review-path", help="Mặc định: <raw_dir>/<domain>.jsonl.gz trong data.yaml")
-    parser.add_argument("--output-dir", help="Mặc định: cleaned_dir trong data.yaml")
+    parser.add_argument("--review-path", help="Mặc định: <raw_dir>/<domain>.jsonl.gz trong data_paths.yaml")
+    parser.add_argument("--output-dir", help="Mặc định: cleaned_dir trong data_paths.yaml")
     parser.add_argument(
         "--chunk-size",
         type=int,
-        help="Số review đọc và xử lý mỗi lần (mặc định: cleaning.chunk_size trong data.yaml).",
+        help="Số review đọc và xử lý mỗi lần (mặc định: cleaning.chunk_size trong cleaning.yaml).",
     )
     parser.add_argument("--force", action="store_true", help="Xóa output cũ (nếu có) và chạy lại.")
     args = parser.parse_args()
@@ -31,7 +31,7 @@ def main() -> None:
 
     paths = get_data_paths()
     review_path = Path(args.review_path) if args.review_path else paths.review_path(args.domain)
-    chunk_size = args.chunk_size or load_config("data")["cleaning"]["chunk_size"]
+    chunk_size = args.chunk_size or load_config("cleaning")["cleaning"]["chunk_size"]
     if not review_path.exists():
         raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{args.domain}' về trước.")
 

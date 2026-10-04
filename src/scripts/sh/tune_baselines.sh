@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tune baseline chỉ bằng validation (grid: model.yaml → tuning). --run-final-test: refit bản thắng
+# Tune baseline chỉ bằng validation (grid: tuning.yaml → tuning). --run-final-test: refit bản thắng
 # trên train+val rồi chấm TEST đúng một lần — chỉ dùng sau khi đã xem kết quả validation.
 #   bash scripts/sh/tune_baselines.sh
 #   bash scripts/sh/tune_baselines.sh --models item_knn --selection-metric recall@20

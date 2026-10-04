@@ -1,7 +1,7 @@
 """
 EDA interaction trên review thô đã tải về (resource/raw/<Domain>.jsonl.gz), đọc theo dòng.
 
-    PYTHONPATH=. python scripts/py/run_eda.py                      # mọi domain trong data.yaml
+    PYTHONPATH=. python scripts/py/run_eda.py                      # mọi domain trong domains.yaml
     PYTHONPATH=. python scripts/py/run_eda.py --domain Video_Games
     PYTHONPATH=. python scripts/py/run_eda.py --path /duong/dan/review_Video_Games.jsonl.gz
 """
@@ -15,7 +15,7 @@ from package.data.eda import compute_interaction_stats_streaming, print_streamin
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--domain", action="append", help="Lặp lại cho nhiều domain (mặc định: tất cả trong data.yaml)."
+        "--domain", action="append", help="Lặp lại cho nhiều domain (mặc định: tất cả trong domains.yaml)."
     )
     parser.add_argument("--path", help="Chạy thẳng trên một file .jsonl.gz, bỏ qua --domain.")
     args = parser.parse_args()

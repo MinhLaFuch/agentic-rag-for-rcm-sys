@@ -19,15 +19,13 @@ from ._config import SUPPORTED_PROVIDERS
 
 def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
     """
-    config kỳ vọng có dạng (xem configs/agent.yaml):
-        llm:
-          provider: mock | openai_compatible
-          model: <model name>
-          base_url: <chỉ cần cho openai_compatible>
-          api_key: <chỉ cần cho openai_compatible, có thể để trống với local server>
+    config kỳ vọng có dạng (xem configs/llm.yaml):
+        provider: mock | openai_compatible
+        model: <model name>
+        base_url: <chỉ cần cho openai_compatible>
+        api_key: <chỉ cần cho openai_compatible, có thể để trống với local server>
     """
-    llm_config = config.get("llm", {})
-    provider_name = llm_config.get("provider", "mock")
+    provider_name = config.get("provider", "mock")
 
     if provider_name not in SUPPORTED_PROVIDERS:
         raise ValueError(

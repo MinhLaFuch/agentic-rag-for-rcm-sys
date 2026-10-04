@@ -1,7 +1,7 @@
 """
-Đường dẫn dữ liệu của pipeline, đọc từ ``configs/data.yaml``.
+Đường dẫn dữ liệu của pipeline, đọc từ ``configs/data_paths.yaml`` và ``configs/run_tag.yaml``.
 
-Layout (gốc là ``resource/``, đổi trong data.yaml → paths):
+Layout (gốc là ``resource/``, đổi trong data_paths.yaml → paths):
 
     resource/raw/<Domain>.jsonl.gz            review thô (tải về tay / download_review_data.sh)
     resource/raw/meta_<Domain>.jsonl.gz       metadata item thô
@@ -10,7 +10,7 @@ Layout (gốc là ``resource/``, đổi trong data.yaml → paths):
     resource/mapped/<tag>/{user2id,item2id}.json             stage 3
     resource/splits/<tag>/{train,validation,test}.parquet    stage 3
 
-``tag`` là tên một lần chạy (mặc định ``run_tag`` trong data.yaml), để thử
+``tag`` là tên một lần chạy (mặc định ``tag`` trong run_tag.yaml), để thử
 2 domain mà không ghi đè bản chạy đủ.
 """
 
@@ -48,15 +48,20 @@ class DataPaths:
 
 
 def get_domains(config: dict[str, Any] | None = None) -> list[str]:
-    """Tên các domain bật trong data.yaml (giữ thứ tự khai báo)."""
-    config = config or load_config("data")
+    """Tên các domain bật trong domains.yaml (giữ thứ tự khai báo)."""
+    config = config or load_config("domains")
     return [d["name"] for d in config["domains"]]
 
 
 def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None) -> DataPaths:
-    config = config or load_config("data")
-    tag = tag or config["run_tag"]
-    paths = config["paths"]
+    if config is None:
+        tag_config = load_config("run_tag")
+        tag = tag or tag_config["tag"]
+        paths_config = load_config("data_paths")
+        paths = paths_config["paths"]
+    else:
+        tag = tag or config["tag"]
+        paths = config["paths"]
 
     def root(key: str) -> Path:
         return PROJECT_ROOT / paths[key]

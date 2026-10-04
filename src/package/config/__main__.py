@@ -2,11 +2,11 @@
 In một giá trị trong configs/ ra stdout — để các script .sh đọc config
 thay vì hard-code.
 
-    python -m package.config data.domains        # mỗi domain một dòng
-    python -m package.config data.run_tag
-    python -m package.config data.paths.raw_dir
+    python -m package.config domains.domains        # mỗi domain một dòng
+    python -m package.config run_tag.tag
+    python -m package.config data_paths.paths.raw_dir
 
-Phần đầu của key là tên file yaml (data, model, retrieval, ...).
+Phần đầu của key là tên file yaml (domains, run_tag, data_paths, baselines, ...).
 List of dict có field ``name`` được in ra theo ``name``.
 """
 

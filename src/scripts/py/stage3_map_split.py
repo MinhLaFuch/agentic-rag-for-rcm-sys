@@ -15,15 +15,15 @@ from package.data.split import compute_temporal_cutoffs, temporal_split
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml). Phải khớp Stage 2.")
+    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml). Phải khớp Stage 2.")
     parser.add_argument("--force", action="store_true", help="Ghi đè splits cũ nếu có.")
     args = parser.parse_args()
 
-    config = load_config("data")
-    train_ratio = config["split"]["train_ratio"]
-    val_ratio = config["split"]["validation_ratio"]
-    test_ratio = config["split"]["test_ratio"]
-    paths = get_data_paths(args.tag, config)
+    split_config = load_config("split")
+    train_ratio = split_config["split"]["train_ratio"]
+    val_ratio = split_config["split"]["validation_ratio"]
+    test_ratio = split_config["split"]["test_ratio"]
+    paths = get_data_paths(args.tag)
 
     print(f"=== STAGE 3: ID mapping + temporal split + leakage check (tag={paths.tag}) ===")
 
