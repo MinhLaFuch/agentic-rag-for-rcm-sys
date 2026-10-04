@@ -14,4 +14,4 @@ EXPERIMENTS_DIR="experiments"
 # ====================================================
 ARGS=(--splits-dir "$SPLITS_DIR" --eval-on "$EVAL_ON" --models "$MODELS" --experiments-dir "$EXPERIMENTS_DIR")
 [[ -n "$KS" ]] && ARGS+=(--ks "$KS")
-"$PYTHON" scripts/run_baselines.py "${ARGS[@]}"
+"$PYTHON" scripts/py/run_baselines.py "${ARGS[@]}"

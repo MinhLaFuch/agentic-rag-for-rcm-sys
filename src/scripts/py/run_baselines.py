@@ -1,5 +1,5 @@
 """
-    PYTHONPATH=. python scripts/run_baselines.py \
+    PYTHONPATH=. python scripts/py/run_baselines.py \
         --splits-dir data/splits/multi_domain --eval-on validation
 """
 

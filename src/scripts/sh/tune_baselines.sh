@@ -17,4 +17,4 @@ ARGS=(--splits-dir "$SPLITS_DIR" --models "$MODELS" --experiments-dir "$EXPERIME
 [[ -n "$KS" ]] && ARGS+=(--ks "$KS")
 [[ -n "$SELECTION_METRIC" ]] && ARGS+=(--selection-metric "$SELECTION_METRIC")
 [[ "$RUN_FINAL_TEST" == true ]] && ARGS+=(--run-final-test)
-"$PYTHON" scripts/tune_baselines.py "${ARGS[@]}"
+"$PYTHON" scripts/py/tune_baselines.py "${ARGS[@]}"

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Run from anywhere: the script cd-s to the project root (the folder containing package/ and scripts/).
-set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
-export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
-PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
-
-# Uses configs/agent.yaml (no CLI args). Edit that file to change provider/model.
-"$PYTHON" scripts/check_llm_provider.py

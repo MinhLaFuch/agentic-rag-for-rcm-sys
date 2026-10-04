@@ -1,7 +1,7 @@
 """Validation-only Phase 4 tuning, with an optional one-time final test run.
 
 Example:
-    PYTHONPATH=. python scripts/tune_baselines.py \
+    PYTHONPATH=. python scripts/py/tune_baselines.py \
         --splits-dir data/splits/Video_Games
 """
 
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from scripts.run_baselines import build_model
+from run_baselines import build_model  # sibling file in scripts/py/
 from package.config.loader import load_config
 from package.tools.evaluation.evaluator import EvaluationResult, evaluate_recommender
 from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment

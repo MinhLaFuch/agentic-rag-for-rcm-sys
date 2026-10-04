@@ -9,7 +9,7 @@ Needs:
 
 Run from the project root:
 
-    python scripts/run_tools.py \
+    python scripts/py/run_tools.py \
         --meta Video_Games=data/raw/Video_Games/meta_Video_Games.jsonl.gz \
         --meta Electronics=data/raw/Electronics/meta_Electronics.jsonl.gz
 
@@ -26,7 +26,7 @@ import time
 import traceback
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import numpy as np

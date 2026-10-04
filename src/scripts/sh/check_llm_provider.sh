@@ -5,7 +5,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
-# ===================== EDIT ME =====================
-export DOMAIN="Video_Games"   # data.yaml reads ${DOMAIN}
-# ====================================================
-"$PYTHON" scripts/run_eda.py
+# Uses configs/agent.yaml (no CLI args). Edit that file to change provider/model.
+"$PYTHON" scripts/py/check_llm_provider.py

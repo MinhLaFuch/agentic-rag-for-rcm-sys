@@ -1,6 +1,6 @@
 """
 Cách dùng:
-    PYTHONPATH=. python scripts/run_interaction_eda_local.py \
+    PYTHONPATH=. python scripts/py/run_interaction_eda_local.py \
         --path /duong/dan/toi/review_Video_Games.jsonl.gz
 """
 

@@ -6,10 +6,12 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-FILTERED_PATH="data/filtered/multi_domain/interactions.parquet"
-MAPPING_DIR="data/mapped/multi_domain"
-SPLITS_DIR="data/splits/multi_domain"
+DOMAIN="Video_Games"
+REVIEW_PATH="data/raw/${DOMAIN}/review_${DOMAIN}.jsonl.gz"
+OUTPUT_DIR="data/cleaned"
+CHUNK_SIZE=250000             # lower it if you run out of RAM
 # ====================================================
-"$PYTHON" scripts/stage3_map_split.py \
-  --filtered-path "$FILTERED_PATH" \
-  --mapping-dir "$MAPPING_DIR" --splits-dir "$SPLITS_DIR"
+# NOTE: aborts if ${OUTPUT_DIR}/${DOMAIN}/interactions.parquet already exists.
+"$PYTHON" scripts/py/stage1_clean_domain.py \
+  --domain "$DOMAIN" --review-path "$REVIEW_PATH" \
+  --output-dir "$OUTPUT_DIR" --chunk-size "$CHUNK_SIZE"

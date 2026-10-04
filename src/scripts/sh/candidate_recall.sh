@@ -23,7 +23,7 @@ EXPERIMENTS_DIR="experiments/candidate_recall"
 # ====================================================
 ARGS=()
 for m in "${META[@]}"; do ARGS+=(--meta "$m"); done
-"$PYTHON" scripts/candidate_recall.py "${ARGS[@]}" \
+"$PYTHON" scripts/py/candidate_recall.py "${ARGS[@]}" \
   --splits-dir "$SPLITS_DIR" --mapping-dir "$MAPPING_DIR" \
   --eval-on "$EVAL_ON" --n "$BUDGETS" --per-segment "$PER_SEGMENT" \
   --seed-items "$SEED_ITEMS" --query-items "$QUERY_ITEMS" \

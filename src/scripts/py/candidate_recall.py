@@ -19,7 +19,7 @@ Where the semantic query comes from (there are no real user queries offline, so 
 
 Segments follow the evaluator: cold = 0 fit interactions, sparse = 1..sparse_max, warm = more.
 
-    python scripts/candidate_recall.py \
+    python scripts/py/candidate_recall.py \
         --splits-dir data/splits/Video_Games --mapping-dir data/mapped/Video_Games \
         --meta Video_Games=data/raw/Video_Games/meta_Video_Games.jsonl.gz
 """

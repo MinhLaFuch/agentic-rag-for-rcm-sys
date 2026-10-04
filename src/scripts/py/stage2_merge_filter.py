@@ -86,5 +86,5 @@ if __name__ == "__main__":
 #   kết quả, rồi thêm domain thứ 3 sau nếu máy đủ RAM).
 # - Tăng ngưỡng min_user_interactions/min_item_interactions tạm thời để
 #   loại bớt dữ liệu sớm hơn (đổi trong configs/data.yaml).
-# - Cân nhắc dùng scripts/sample_review_data.py để lấy sample trước khi
+# - Cân nhắc dùng scripts/py/sample_review_data.py để lấy sample trước khi
 #   chạy Stage 1, giảm kích thước ngay từ đầu.

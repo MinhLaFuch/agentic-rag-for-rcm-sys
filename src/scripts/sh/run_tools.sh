@@ -20,7 +20,7 @@ SEED=0
 # ====================================================
 ARGS=()
 for m in "${META[@]}"; do ARGS+=(--meta "$m"); done
-"$PYTHON" scripts/run_tools.py "${ARGS[@]}" \
+"$PYTHON" scripts/py/run_tools.py "${ARGS[@]}" \
   --splits-dir "$SPLITS_DIR" --mapping-dir "$MAPPING_DIR" \
   --model "$MODEL" --neighbors "$NEIGHBORS" \
   --eval-users "$EVAL_USERS" --negatives "$NEGATIVES" --seed "$SEED"

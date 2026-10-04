@@ -6,12 +6,13 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-DOMAIN="Video_Games"
-REVIEW_PATH="data/raw/${DOMAIN}/review_${DOMAIN}.jsonl.gz"
-OUTPUT_DIR="data/cleaned"
-CHUNK_SIZE=250000             # lower it if you run out of RAM
+# Format: Name=path   (comment a line out to drop that domain)
+DOMAINS=(
+  "Video_Games=data/raw/Video_Games/review_Video_Games.jsonl.gz"
+  "Toys_and_Games=data/raw/Toys_and_Games/review_Toys_and_Games.jsonl.gz"
+  "Electronics=data/raw/Electronics/review_Electronics.jsonl.gz"
+)
 # ====================================================
-# NOTE: aborts if ${OUTPUT_DIR}/${DOMAIN}/interactions.parquet already exists.
-"$PYTHON" scripts/stage1_clean_domain.py \
-  --domain "$DOMAIN" --review-path "$REVIEW_PATH" \
-  --output-dir "$OUTPUT_DIR" --chunk-size "$CHUNK_SIZE"
+ARGS=()
+for d in "${DOMAINS[@]}"; do ARGS+=(--domain "$d"); done
+"$PYTHON" scripts/py/run_multidomain_pipeline_local.py "${ARGS[@]}"

@@ -6,12 +6,10 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-INPUT="data/raw/Electronics/review_Electronics.jsonl.gz"
-OUTPUT="data/raw/Electronics_sample/review_Electronics.jsonl.gz"
-SAMPLE_SIZE=200000
-SEED=42
+FILTERED_PATH="data/filtered/multi_domain/interactions.parquet"
+MAPPING_DIR="data/mapped/multi_domain"
+SPLITS_DIR="data/splits/multi_domain"
 # ====================================================
-mkdir -p "$(dirname "$OUTPUT")"
-"$PYTHON" scripts/sample_review_data.py \
-  --input "$INPUT" --output "$OUTPUT" \
-  --sample-size "$SAMPLE_SIZE" --seed "$SEED"
+"$PYTHON" scripts/py/stage3_map_split.py \
+  --filtered-path "$FILTERED_PATH" \
+  --mapping-dir "$MAPPING_DIR" --splits-dir "$SPLITS_DIR"

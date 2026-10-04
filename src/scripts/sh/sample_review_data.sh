@@ -6,13 +6,12 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-# Format: Name=path   (comment a line out to drop that domain)
-DOMAINS=(
-  "Video_Games=data/raw/Video_Games/review_Video_Games.jsonl.gz"
-  "Toys_and_Games=data/raw/Toys_and_Games/review_Toys_and_Games.jsonl.gz"
-  "Electronics=data/raw/Electronics/review_Electronics.jsonl.gz"
-)
+INPUT="data/raw/Electronics/review_Electronics.jsonl.gz"
+OUTPUT="data/raw/Electronics_sample/review_Electronics.jsonl.gz"
+SAMPLE_SIZE=200000
+SEED=42
 # ====================================================
-ARGS=()
-for d in "${DOMAINS[@]}"; do ARGS+=(--domain "$d"); done
-"$PYTHON" scripts/run_multidomain_pipeline_local.py "${ARGS[@]}"
+mkdir -p "$(dirname "$OUTPUT")"
+"$PYTHON" scripts/py/sample_review_data.py \
+  --input "$INPUT" --output "$OUTPUT" \
+  --sample-size "$SAMPLE_SIZE" --seed "$SEED"
