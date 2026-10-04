@@ -1,5 +1,5 @@
 """
-Run the src/tools on your REAL data (stage 3 outputs + raw item metadata).
+Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
 Needs:
   - data/splits/multi_domain/{train,validation}.parquet   (stage 3)
@@ -9,7 +9,7 @@ Needs:
 
 Run from the project root:
 
-    python scripts/real_tools_check.py \
+    python scripts/run_tools.py \
         --meta Video_Games=data/raw/Video_Games/meta_Video_Games.jsonl.gz \
         --meta Electronics=data/raw/Electronics/meta_Electronics.jsonl.gz
 
@@ -32,17 +32,17 @@ sys.path.insert(0, str(ROOT))
 import numpy as np
 import pandas as pd
 
-from src.data.loader import iter_jsonl_gz
-from src.data.mapping import load_mappings
-from src.tools.corpus import ItemCorpus
-from src.tools.ranking.item_cf_tool import ItemCFTool
-from src.tools.ranking.reco_model_tool import RecoModelTool
-from src.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
-from src.tools.score import BaselineScorer
-from src.tools.sql_query.query_tool import QueryTool
-from src.tools.sql_query.sql_tool import SQLTool
+from package.data.loader import iter_jsonl_gz
+from package.data.mapping import load_mappings
+from package.tools.corpus import ItemCorpus
+from package.tools.ranking.item_cf_tool import ItemCFTool
+from package.tools.ranking.reco_model_tool import RecoModelTool
+from package.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from package.tools.score import BaselineScorer
+from package.tools.sql_query.query_tool import QueryTool
+from package.tools.sql_query.sql_tool import SQLTool
 
-LOG_PATH = ROOT / "experiments" / "real_tools_check.log"  # fixed location, overwritten each run
+LOG_PATH = ROOT / "experiments" / "run_tools.log"  # fixed location, overwritten each run
 
 
 class _Tee:
