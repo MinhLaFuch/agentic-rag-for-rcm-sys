@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
-# Run from anywhere: the script cd-s to the project root (the folder containing package/ and scripts/).
-set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
-export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
-PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
+# Stage 3: ID mapping + temporal split + leakage check (MỘT lần chạy trên output của Stage 2).
+#   bash scripts/sh/stage3_map_split.sh
+#   TAG=vg_toys bash scripts/sh/stage3_map_split.sh      # TAG phải khớp Stage 2
+#   bash scripts/sh/stage3_map_split.sh --force
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+parse_flags "$@"
+resolve_tag
+FILTERED_PATH="$(cfg data.paths.filtered_dir)/${TAG}/interactions.parquet"
+SPLITS_DIR="$(cfg data.paths.splits_dir)/${TAG}"
 
-# ===================== EDIT ME =====================
-FILTERED_PATH="data/filtered/multi_domain/interactions.parquet"
-MAPPING_DIR="data/mapped/multi_domain"
-SPLITS_DIR="data/splits/multi_domain"
-# ====================================================
-"$PYTHON" scripts/py/stage3_map_split.py \
-  --filtered-path "$FILTERED_PATH" \
-  --mapping-dir "$MAPPING_DIR" --splits-dir "$SPLITS_DIR"
+[[ -f "$FILTERED_PATH" ]] || { echo "MISSING Stage 2 output: ${FILTERED_PATH} (run stage2_merge_filter.sh with the same TAG)"; exit 1; }
+
+if [[ -f "${SPLITS_DIR}/train.parquet" && "$FORCE" != true ]]; then
+  echo "SKIP: splits already exist in ${SPLITS_DIR} (use --force to redo)"
+  exit 0
+fi
+
+"$PYTHON" scripts/py/stage3_map_split.py --tag "$TAG" ${PASS_ARGS[@]+"${PASS_ARGS[@]}"} ${FORCE_ARGS[@]+"${FORCE_ARGS[@]}"}
+echo "Stage 3 OK -> ${SPLITS_DIR}"

@@ -1,21 +1,42 @@
 #!/usr/bin/env bash
-# Run from anywhere: the script cd-s to the project root (the folder containing package/ and scripts/).
-set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
-export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
-PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
+# Tải review + metadata thô của mọi domain trong configs/data.yaml về resource/raw/.
+# Resume được nếu bị ngắt giữa chừng; bỏ qua file đã có.
+#   bash scripts/sh/download_review_data.sh              # review + meta, tất cả domain
+#   bash scripts/sh/download_review_data.sh --no-meta    # chỉ review
+#   DOMAINS="Video_Games" bash scripts/sh/download_review_data.sh
+#   bash scripts/sh/download_review_data.sh --force      # tải lại từ đầu
+source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
+parse_flags "$@"
+load_domains
 
-# ===================== EDIT ME =====================
-DOMAIN="Video_Games"          # Video_Games | Toys_and_Games | Electronics | ...
-OUT_ROOT="data/raw"
-# ====================================================
-OUT_DIR="${OUT_ROOT}/${DOMAIN}"
-mkdir -p "${OUT_DIR}"
-URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/${DOMAIN}.jsonl.gz"
-OUT_FILE="${OUT_DIR}/review_${DOMAIN}.jsonl.gz"
+GET_META=true
+for a in ${PASS_ARGS[@]+"${PASS_ARGS[@]}"}; do
+  [[ "$a" == "--no-meta" ]] && GET_META=false
+done
 
-echo "Downloading: ${URL}"
-echo "Output:      ${OUT_FILE}"
-curl -L --fail -C - -o "${OUT_FILE}" "${URL}"
-ls -lh "${OUT_FILE}"
-echo "Review count:"; zcat "${OUT_FILE}" | wc -l
+RAW_DIR="$(cfg data.paths.raw_dir)"
+REVIEW_URL="$(cfg data.download.review_url)"
+META_URL="$(cfg data.download.meta_url)"
+mkdir -p "$RAW_DIR"
+
+fetch() {  # fetch <url> <out_file>
+  local url="$1" out="$2"
+  if [[ -f "$out" && "$FORCE" != true ]]; then
+    echo "SKIP: $out already exists (use --force to redownload)"
+    return 0
+  fi
+  [[ "$FORCE" == true ]] && rm -f "$out" "${out}.part"
+  echo "Downloading: $url"
+  curl -L --fail -C - -o "${out}.part" "$url"
+  mv "${out}.part" "$out"
+  ls -lh "$out"
+}
+
+for DOMAIN in "${DOMAIN_LIST[@]}"; do
+  echo
+  echo "################ Download: ${DOMAIN} ################"
+  fetch "${REVIEW_URL//\{domain\}/$DOMAIN}" "${RAW_DIR}/${DOMAIN}.jsonl.gz"
+  if [[ "$GET_META" == true ]]; then
+    fetch "${META_URL//\{domain\}/$DOMAIN}" "${RAW_DIR}/meta_${DOMAIN}.jsonl.gz"
+  fi
+done

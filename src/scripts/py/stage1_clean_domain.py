@@ -8,6 +8,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from package.config import get_data_paths, load_config
 from package.data.clean import clean_interactions, iter_reviews_dataframes
 from package.data.loader import estimate_memory_usage_mb
 
@@ -15,28 +16,35 @@ from package.data.loader import estimate_memory_usage_mb
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--domain", required=True)
-    parser.add_argument("--review-path", required=True)
-    parser.add_argument("--output-dir", default="data/cleaned")
+    parser.add_argument("--review-path", help="Mặc định: <raw_dir>/<domain>.jsonl.gz trong data.yaml")
+    parser.add_argument("--output-dir", help="Mặc định: cleaned_dir trong data.yaml")
     parser.add_argument(
         "--chunk-size",
         type=int,
-        default=250_000,
-        help="Số review đọc và xử lý mỗi lần (mặc định: 250000).",
+        help="Số review đọc và xử lý mỗi lần (mặc định: cleaning.chunk_size trong data.yaml).",
     )
+    parser.add_argument("--force", action="store_true", help="Xóa output cũ (nếu có) và chạy lại.")
     args = parser.parse_args()
 
-    if args.chunk_size <= 0:
+    if args.chunk_size is not None and args.chunk_size <= 0:
         parser.error("--chunk-size phải là số nguyên dương")
 
-    print(f"=== STAGE 1: clean domain={args.domain}, chunk_size={args.chunk_size} ===")
+    paths = get_data_paths()
+    review_path = Path(args.review_path) if args.review_path else paths.review_path(args.domain)
+    chunk_size = args.chunk_size or load_config("data")["cleaning"]["chunk_size"]
+    if not review_path.exists():
+        raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{args.domain}' về trước.")
 
-    output_dir = Path(args.output_dir) / args.domain
+    print(f"=== STAGE 1: clean domain={args.domain}, chunk_size={chunk_size} ===")
+
+    output_root = Path(args.output_dir) if args.output_dir else paths.cleaned_dir
+    output_dir = output_root / args.domain
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "interactions.parquet"
     if output_path.exists():
-        raise FileExistsError(
-            f"{output_path} đã tồn tại. Xóa/đổi tên file cũ trước khi chạy lại để tránh ghi đè."
-        )
+        if not args.force:
+            raise FileExistsError(f"{output_path} đã tồn tại. Dùng --force để chạy lại và ghi đè.")
+        output_path.unlink()
 
     db_fd, db_name = tempfile.mkstemp(prefix="stage1_dedupe_", suffix=".sqlite", dir=output_dir)
     os.close(db_fd)
@@ -66,9 +74,9 @@ def main() -> None:
 
         for chunk_number, raw_chunk in enumerate(
             iter_reviews_dataframes(
-                args.review_path,
+                review_path,
                 columns=["user_id", "parent_asin", "rating", "timestamp"],
-                chunksize=args.chunk_size,
+                chunksize=chunk_size,
             ),
             start=1,
         ):
@@ -98,7 +106,7 @@ def main() -> None:
             for output_chunk in pd.read_sql_query(
                 "SELECT user_id, parent_asin, rating, timestamp FROM interactions",
                 connection,
-                chunksize=args.chunk_size,
+                chunksize=chunk_size,
             ):
                 output_chunk["rating"] = output_chunk["rating"].astype("float32")
                 table = pa.Table.from_pandas(output_chunk, preserve_index=False)

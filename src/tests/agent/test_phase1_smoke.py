@@ -27,14 +27,13 @@ def test_end_to_end_agent_config_to_llm_call(monkeypatch):
     assert response.provider_name == "mock"
 
 
-def test_end_to_end_data_config_with_domain(monkeypatch):
-    monkeypatch.setenv("DOMAIN", "Video_Games")
+def test_end_to_end_data_config():
     data_config = load_config("data")
     retrieval_config = load_config("retrieval")
     evaluation_config = load_config("evaluation")
 
-    # Domain phải propagate đúng, không hard-code (mục V, XX)
-    assert data_config["domain"] == "Video_Games"
+    # Domain đến từ data.yaml, không hard-code trong logic (mục V, XX)
+    assert data_config["domains"][0]["name"] == "Video_Games"
     # Constraint chống context overload phải tồn tại (mục X, XIV)
     assert retrieval_config["semantic_retrieval"]["max_context_items"] <= 20
     # Experiment matrix phải có đủ 10 cấu hình theo kế hoạch Phase 0

@@ -1,17 +1,16 @@
 """
 Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
-Needs:
-  - data/splits/multi_domain/{train,validation}.parquet   (stage 3)
-  - data/mapped/multi_domain/{user2id,item2id}.json       (stage 3)
-  - one meta_<Domain>.jsonl.gz per domain                 (raw metadata, same
-    files the metadata EDA used, e.g. data/raw/Video_Games/meta_Video_Games.jsonl.gz)
+Needs (paths come from configs/data.yaml, default tag = run_tag):
+  - resource/splits/<tag>/{train,validation}.parquet   (stage 3)
+  - resource/mapped/<tag>/{user2id,item2id}.json       (stage 3)
+  - resource/raw/meta_<Domain>.jsonl.gz per domain     (raw metadata; domains whose
+    file is missing are skipped, and with none the corpus comes from stage 3 output only)
 
 Run from the project root:
 
-    python scripts/py/run_tools.py \
-        --meta Video_Games=data/raw/Video_Games/meta_Video_Games.jsonl.gz \
-        --meta Electronics=data/raw/Electronics/meta_Electronics.jsonl.gz
+    PYTHONPATH=. python scripts/py/run_tools.py
+    PYTHONPATH=. python scripts/py/run_tools.py --tag vg_toys --domain Video_Games
 
 Only train is used to fit the model and validation is used to check it, so
 nothing here touches the test split.
@@ -32,7 +31,8 @@ sys.path.insert(0, str(ROOT))
 import numpy as np
 import pandas as pd
 
-from package.data.loader import iter_jsonl_gz
+from package.config import get_data_paths, get_domains, load_config
+from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.tools.corpus import ItemCorpus
 from package.tools.ranking.item_cf_tool import ItemCFTool
@@ -61,8 +61,6 @@ class _Tee:
             st.flush()
 
 
-META_FIELDS = ["parent_asin", "title", "store", "price", "average_rating", "rating_number", "main_category", "categories"]
-
 failures: list[str] = []
 
 
@@ -88,36 +86,31 @@ def show_result(name: str, result, preview_key: str, n: int = 3) -> None:
 
 def load_meta(meta_args: list[tuple[str, str]], wanted: dict[str, set[str]]) -> pd.DataFrame:
     """Stream each metadata file, keeping only items that appear in the splits."""
-    frames = []
-    for domain, path in meta_args:
-        keep = wanted.get(domain, set())
-        rows = []
-        t0 = time.time()
-        for rec in iter_jsonl_gz(path):
-            asin = rec.get("parent_asin")
-            if asin in keep:
-                rows.append({k: rec.get(k) for k in META_FIELDS})
-        df = pd.DataFrame(rows, columns=META_FIELDS)
-        df["domain"] = domain
-        print(f"  {domain}: kept {len(df)} of {len(keep)} split items ({time.time() - t0:.0f}s)")
-        frames.append(df)
-    return pd.concat(frames, ignore_index=True)
+    return load_item_metadata(meta_args, keep=lambda domain, asin: asin in wanted.get(domain, ()))
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--splits-dir", default="data/splits/multi_domain")
-    ap.add_argument("--mapping-dir", default="data/mapped/multi_domain")
-    ap.add_argument("--meta", action="append", default=[],
-                    help="Domain=path/to/meta_Domain.jsonl.gz (repeat). Omit to use stage 3 output only.")
+    ap.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
+    ap.add_argument("--domain", action="append",
+                    help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong data.yaml).")
     ap.add_argument("--model", choices=["knn", "popularity"], default="knn",
                     help="knn needs a lot of RAM on big data; popularity is a light fallback")
-    ap.add_argument("--neighbors", type=int, default=20)
+    ap.add_argument("--neighbors", type=int, help="mặc định: baselines.item_knn.k trong model.yaml")
     ap.add_argument("--eval-users", type=int, default=200)
     ap.add_argument("--negatives", type=int, default=99)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
-    meta_args = [tuple(m.split("=", 1)) for m in args.meta]
+    args.neighbors = args.neighbors or load_config("model")["baselines"]["item_knn"]["k"]
+    data_paths = get_data_paths(args.tag)
+    args.splits_dir, args.mapping_dir = str(data_paths.splits_dir), str(data_paths.mapped_dir)
+    meta_args = []
+    for domain in args.domain or get_domains():
+        meta_path = data_paths.meta_path(domain)
+        if meta_path.exists():
+            meta_args.append((domain, str(meta_path)))
+        else:
+            print(f"  note: {meta_path} not found; skipping metadata for {domain}")
     has_meta = bool(meta_args)
     rng = random.Random(args.seed)
 
@@ -139,7 +132,7 @@ def main() -> None:
         section("Build item corpus from raw metadata")
         missing_meta_domains = set(wanted) - {d for d, _ in meta_args}
         if missing_meta_domains:
-            print(f"  note: no --meta given for {sorted(missing_meta_domains)}; those items won't be in the corpus")
+            print(f"  note: no meta file for {sorted(missing_meta_domains)}; those items won't be in the corpus")
         meta = load_meta(meta_args, wanted)
         corpus = ItemCorpus.from_dataframe(meta)
         check("corpus built", len(meta) > 0, f"{len(meta):,} items, domains={corpus.domains()}")

@@ -1,24 +1,23 @@
 """Validation-only Phase 4 tuning, with an optional one-time final test run.
 
 Example:
-    PYTHONPATH=. python scripts/py/tune_baselines.py \
-        --splits-dir data/splits/Video_Games
+    PYTHONPATH=. python scripts/py/tune_baselines.py
+    PYTHONPATH=. python scripts/py/tune_baselines.py --tag vg_toys --run-final-test
 """
 
 from __future__ import annotations
 
 import argparse
 import time
-from pathlib import Path
 
 import pandas as pd
 
-from run_baselines import build_model  # sibling file in scripts/py/
-from package.config.loader import load_config
+from package.config import get_data_paths, load_config
+from package.data.split import infer_matrix_shape, load_splits
 from package.tools.evaluation.evaluator import EvaluationResult, evaluate_recommender
 from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
 from package.tools.evaluation.tuning import merge_model_params, parameter_grid
-from package.tools.recommenders import build_interaction_matrix
+from package.tools.recommenders import build_interaction_matrix, build_model
 from package.utils.console import ensure_utf8_stdout
 
 
@@ -33,22 +32,12 @@ def _serialize_result(result: EvaluationResult, fit_seconds: float) -> dict:
     }
 
 
-def _load_splits(splits_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, int, int]:
-    columns = ["user_idx", "item_idx"]
-    train, validation, test = (
-        pd.read_parquet(splits_dir / filename, columns=columns)
-        for filename in ("train.parquet", "validation.parquet", "test.parquet")
-    )
-    num_users = int(max(frame["user_idx"].max() for frame in (train, validation, test))) + 1
-    num_items = int(max(frame["item_idx"].max() for frame in (train, validation, test))) + 1
-    return train, validation, test, num_users, num_items
-
-
 def main() -> None:
     ensure_utf8_stdout()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--splits-dir", required=True)
-    parser.add_argument("--models", default="popularity,item_knn,bpr_mf")
+    parser.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
+    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data.yaml.")
+    parser.add_argument("--models", help="Mặc định: tuning.models trong model.yaml.")
     parser.add_argument("--ks", default=None)
     parser.add_argument("--selection-metric", default=None, help="Mặc định lấy tuning.selection_metric")
     parser.add_argument("--run-final-test", action="store_true", help="Refit cấu hình thắng với train+validation rồi đánh giá test một lần.")
@@ -64,13 +53,16 @@ def main() -> None:
     if metric not in {f"{name}@{k}" for name in ("precision", "recall", "hit_rate", "ndcg", "mrr", "map") for k in ks}:
         raise ValueError(f"selection metric '{metric}' is not available for ks={ks}")
     sparse_max = evaluation_config["segment_thresholds"]["sparse_max_history"]
-    model_names = [name.strip() for name in args.models.split(",") if name.strip()]
+    model_names = args.models.split(",") if args.models else tuning_config["models"]
+    model_names = [name.strip() for name in model_names if name.strip()]
     allowed = {"popularity", "item_knn", "bpr_mf"}
     unknown = set(model_names) - allowed
     if unknown:
         raise ValueError(f"Tuning supports only {sorted(allowed)}, got {sorted(unknown)}")
 
-    train, validation, test, num_users, num_items = _load_splits(Path(args.splits_dir))
+    splits_dir = args.splits_dir or str(get_data_paths(args.tag).splits_dir)
+    train, validation, test = load_splits(splits_dir)
+    num_users, num_items = infer_matrix_shape(train, validation, test)
     train_matrix = build_interaction_matrix(train, num_users, num_items)
     validation_matrix = build_interaction_matrix(validation, num_users, num_items)
     print(f"=== PHASE 4 TUNING (selection={metric}) ===")
@@ -97,7 +89,7 @@ def main() -> None:
     assert best is not None
     metrics: dict = {"selection_metric": metric, "validation_trials": trials, "selected": best}
     dataset_info = {
-        "splits_dir": args.splits_dir,
+        "splits_dir": splits_dir,
         "num_users": num_users,
         "num_items": num_items,
         "train_interactions": int(train_matrix.nnz),

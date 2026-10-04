@@ -1,11 +1,4 @@
-"""
-EDA functions cho interaction data (Phase 2, mục V/VI/XVIII).
-
-Các hàm ở đây là pure function trên pandas DataFrame, KHÔNG tự tải dữ
-liệu — vì vậy có thể unit test bằng dữ liệu synthetic (để verify logic
-đúng), tách biệt hoàn toàn với việc dữ liệu thật có tải được hay không
-(xem src/data/acquire.py — hiện đang BLOCKED do network).
-"""
+"""In báo cáo EDA từ StreamingInteractionStats."""
 
 from __future__ import annotations
 
@@ -15,12 +8,12 @@ from ._dataclass import StreamingInteractionStats
 
 
 def print_streaming_stats_report(stats: "StreamingInteractionStats") -> None:
-    """In báo cáo dễ đọc — người dùng copy toàn bộ output này gửi lại Claude."""
+    """In báo cáo interaction EDA ra stdout."""
     counts = np.array(list(stats.interactions_per_user.values()))
     denom = stats.num_users * stats.num_items
     sparsity = 1.0 - (stats.num_interactions / denom) if denom else float("nan")
 
-    print("=== INTERACTION EDA REPORT (paste toàn bộ phần dưới lại cho Claude) ===")
+    print("=== INTERACTION EDA REPORT ===")
     print(f"num_interactions: {stats.num_interactions}")
     print(f"num_users: {stats.num_users}")
     print(f"num_items: {stats.num_items}")

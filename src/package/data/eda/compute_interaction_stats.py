@@ -1,10 +1,6 @@
 """
-EDA functions cho interaction data (Phase 2, mục V/VI/XVIII).
-
-Các hàm ở đây là pure function trên pandas DataFrame, KHÔNG tự tải dữ
-liệu — vì vậy có thể unit test bằng dữ liệu synthetic (để verify logic
-đúng), tách biệt hoàn toàn với việc dữ liệu thật có tải được hay không
-(xem src/data/acquire.py — hiện đang BLOCKED do network).
+EDA cho interaction data trên pandas DataFrame đã nằm trong RAM (vd parquet đã clean).
+Pure function, không tự đọc dữ liệu — dễ unit test bằng dữ liệu synthetic.
 """
 
 from __future__ import annotations

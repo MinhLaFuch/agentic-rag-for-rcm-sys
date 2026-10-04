@@ -8,9 +8,9 @@ PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/
 # ===================== EDIT ME =====================
 # Format: Name=path   (comment a line out to drop that domain)
 DOMAINS=(
-  "Video_Games=data/raw/Video_Games/review_Video_Games.jsonl.gz"
-  "Toys_and_Games=data/raw/Toys_and_Games/review_Toys_and_Games.jsonl.gz"
-  "Electronics=data/raw/Electronics/review_Electronics.jsonl.gz"
+  "Video_Games=resource/raw/Video_Games.jsonl.gz"
+  "Toys_and_Games=resource/raw/Toys_and_Games.jsonl.gz"
+  "Electronics=resource/raw/Electronics.jsonl.gz"
 )
 # ====================================================
 ARGS=()

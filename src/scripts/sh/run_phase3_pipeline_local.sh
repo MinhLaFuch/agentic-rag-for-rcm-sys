@@ -7,6 +7,6 @@ PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/
 
 # ===================== EDIT ME =====================
 export DOMAIN="Video_Games"   # data.yaml reads ${DOMAIN}; also decides output folders
-REVIEW_PATH="data/raw/${DOMAIN}/review_${DOMAIN}.jsonl.gz"
+REVIEW_PATH="resource/raw/${DOMAIN}.jsonl.gz"
 # ====================================================
 "$PYTHON" scripts/py/run_phase3_pipeline_local.py --review-path "$REVIEW_PATH"

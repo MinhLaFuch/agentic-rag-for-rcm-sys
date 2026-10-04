@@ -6,12 +6,12 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-INPUT="data/raw/Electronics/review_Electronics.jsonl.gz"
-OUTPUT="data/raw/Electronics_sample/review_Electronics.jsonl.gz"
+DOMAIN="Video_Games"
+INPUT="resource/raw/${DOMAIN}.jsonl.gz"
+OUTPUT="resource/raw/${DOMAIN}_sample.jsonl.gz"
 SAMPLE_SIZE=200000
 SEED=42
 # ====================================================
-mkdir -p "$(dirname "$OUTPUT")"
 "$PYTHON" scripts/py/sample_review_data.py \
   --input "$INPUT" --output "$OUTPUT" \
   --sample-size "$SAMPLE_SIZE" --seed "$SEED"

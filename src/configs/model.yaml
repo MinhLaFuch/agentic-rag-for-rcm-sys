@@ -3,8 +3,9 @@
 # dựa trên EDA thật (xem docs/decisions.md D-004).
 
 baselines:
-  # Schema được dùng bởi scripts/run_baselines.py.
+  # Schema được dùng bởi scripts/py/run_baselines.py.
   seed: 42
+  models: [random, popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
   popularity_fallback: true
   item_knn:
     k: 20
@@ -20,6 +21,7 @@ baselines:
 tuning:
   # Chọn cấu hình chỉ bằng validation; không dùng test cho hyperparameter search.
   selection_metric: "ndcg@10"
+  models: [popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
   item_knn:
     k: [10, 20, 50, 100]
   bpr_mf:

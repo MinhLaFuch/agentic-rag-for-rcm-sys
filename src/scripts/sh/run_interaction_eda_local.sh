@@ -6,6 +6,6 @@ export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"   # e.g. PYTHON=.venv/Scripts/python bash scripts/sh/xxx.sh
 
 # ===================== EDIT ME =====================
-REVIEW_PATH="data/raw/Video_Games/review_Video_Games.jsonl.gz"
+REVIEW_PATH="resource/raw/Video_Games.jsonl.gz"
 # ====================================================
 "$PYTHON" scripts/py/run_interaction_eda_local.py --path "$REVIEW_PATH"

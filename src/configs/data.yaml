@@ -1,16 +1,9 @@
-# Data config (mục V, XX). DOMAIN phải được set qua biến môi trường, ví dụ:
-#   DOMAIN=Video_Games python scripts/run_eda.py
-# KHÔNG được đặt giá trị domain cố định trong business logic.
+# Data config (mục V, XX).
+# Dữ liệu thô tải về máy rồi đặt trong resource/raw/ (xem scripts/sh/download_review_data.sh),
+# không đọc qua HuggingFace.
 
-domain: "${DOMAIN}"
-raw_review_config: "raw_review_${DOMAIN}"
-raw_meta_config: "raw_meta_${DOMAIN}"
-
-# Multi-domain (bổ sung — xem docs/decisions.md D-010).
-# Danh sách domain thật sự bật trong hệ thống. Đây là danh sách tĩnh
-# (không dùng ${DOMAIN} interpolation) vì multi-domain cần load NHIỀU
-# domain cùng lúc, không phải chọn 1 domain như workflow single-domain
-# ở trên (vẫn giữ nguyên để tương thích ngược với Phase 2-3 script cũ).
+# Danh sách domain bật trong hệ thống (xem docs/decisions.md D-010).
+# Thứ tự ở đây là thứ tự các script .sh lặp qua.
 domains:
   - name: "Video_Games"
     role: "primary"
@@ -21,18 +14,26 @@ domains:
     role: "secondary"
     adjacency: "functional"    # bổ trợ theo chức năng sản phẩm (accessory/hardware)
 
-dataset_source: "McAuley-Lab/Amazon-Reviews-2023"
+# Tên một lần chạy multi-domain. Stage 2/3 ghi vào <filtered|mapped|splits>_dir/<run_tag>/.
+# Thử ít domain hơn? Chạy với TAG=vg_toys để không ghi đè bản chạy đủ.
+run_tag: "multi_domain"
 
 paths:
-  raw_dir: "data/raw/${DOMAIN}"
-  cleaned_dir: "data/cleaned/${DOMAIN}"
-  filtered_dir: "data/filtered/${DOMAIN}"
-  mapped_dir: "data/mapped/${DOMAIN}"
-  splits_dir: "data/splits/${DOMAIN}"
+  raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
+  cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
+  filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
+  mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
+  splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
+
+download:
+  # {domain} được thay bằng tên domain.
+  review_url: "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/{domain}.jsonl.gz"
+  meta_url: "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_{domain}.jsonl.gz"
 
 cleaning:
   min_review_length_chars: 1
   drop_duplicate_reviews: true
+  chunk_size: 250000     # số review xử lý mỗi lần ở stage 1; giảm nếu hết RAM
 
 filtering:
   # k-core filtering — giá trị thật sẽ chốt ở Phase 2 sau EDA, đây là default placeholder

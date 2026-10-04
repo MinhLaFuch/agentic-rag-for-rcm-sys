@@ -19,9 +19,11 @@ Where the semantic query comes from (there are no real user queries offline, so 
 
 Segments follow the evaluator: cold = 0 fit interactions, sparse = 1..sparse_max, warm = more.
 
-    python scripts/py/candidate_recall.py \
-        --splits-dir data/splits/Video_Games --mapping-dir data/mapped/Video_Games \
-        --meta Video_Games=data/raw/Video_Games/meta_Video_Games.jsonl.gz
+Reads splits/mappings from resource/ (see data.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
+Defaults for budgets, sample sizes, etc. live in configs/retrieval.yaml → candidate_recall.
+
+    PYTHONPATH=. python scripts/py/candidate_recall.py --eval-on validation
+    PYTHONPATH=. python scripts/py/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
 """
 
 from __future__ import annotations
@@ -29,23 +31,21 @@ from __future__ import annotations
 import argparse
 import time
 from itertools import islice
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pq
 
-from package.config.loader import load_config
+from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
-from package.data.loader import iter_jsonl_gz
+from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
+from package.data.split import load_splits
 from package.tools import ItemCFTool, ItemCorpus, SemanticSearchTool
 from package.tools.base import MAX_CANDIDATES, ToolCallLogger
 from package.tools.evaluation.experiment_log import next_experiment_dir, save_experiment
 from package.tools.recommenders import ItemKNNRecommender, build_interaction_matrix
 from package.utils.console import ensure_utf8_stdout
 
-META_FIELDS = ["parent_asin", "title", "store", "price", "average_rating", "rating_number", "main_category", "categories"]
 SEGMENTS = ("cold", "sparse", "warm")
 SOURCES = ("popularity", "item_cf", "semantic", "union_rr", "union_all")
 
@@ -53,21 +53,13 @@ SOURCES = ("popularity", "item_cf", "semantic", "union_rr", "union_all")
 # ----------------------------------------------------------------------------- data
 
 
-def load_meta(meta_args: list[tuple[str, str]], item2id: dict[str, int], namespaced: bool) -> pd.DataFrame:
+def load_meta(meta_files: list[tuple[str, str]], item2id: dict[str, int], namespaced: bool) -> pd.DataFrame:
     """Metadata rows for items that exist in the mapping (same key rule as the splits)."""
-    frames = []
-    for domain, path in meta_args:
-        rows = []
-        for rec in iter_jsonl_gz(path):
-            asin = rec.get("parent_asin")
-            key = namespaced_item_id(domain, asin) if namespaced else asin
-            if key in item2id:
-                rows.append({k: rec.get(k) for k in META_FIELDS})
-        df = pd.DataFrame(rows, columns=META_FIELDS)
-        df["domain"] = domain
-        print(f"  {domain}: kept {len(df):,} items with metadata")
-        frames.append(df)
-    return pd.concat(frames, ignore_index=True)
+
+    def in_mapping(domain: str, asin: str) -> bool:
+        return (namespaced_item_id(domain, asin) if namespaced else asin) in item2id
+
+    return load_item_metadata(meta_files, keep=in_mapping)
 
 
 def item_text_tables(meta: pd.DataFrame, item2id: dict[str, int], namespaced: bool):
@@ -119,18 +111,32 @@ def sample_users(seg_of: dict[int, str], per_segment: int, rng: np.random.Genera
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--splits-dir", required=True)
-    ap.add_argument("--mapping-dir", required=True)
-    ap.add_argument("--meta", action="append", default=[], required=True, help="Domain=path/to/meta_Domain.jsonl.gz")
+    ap.add_argument("--tag", help="Tên lần chạy (mặc định: run_tag trong data.yaml).")
+    ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong data.yaml)")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
-    ap.add_argument("--n", default="50,100,200", help="candidate budgets, comma separated")
-    ap.add_argument("--per-segment", type=int, default=1000, help="max users sampled per segment")
-    ap.add_argument("--seed-items", type=int, default=10, help="recent fit items used as ItemCF seeds")
-    ap.add_argument("--query-items", type=int, default=3, help="recent fit items whose titles form the history query")
-    ap.add_argument("--neighbors", type=int, default=20, help="ItemKNN k (match model.yaml)")
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--experiments-dir", default="experiments/candidate_recall")
+    ap.add_argument("--n", help="candidate budgets, comma separated (mặc định: candidate_recall.budgets)")
+    ap.add_argument("--per-segment", type=int, help="max users sampled per segment")
+    ap.add_argument("--seed-items", type=int, help="recent fit items used as ItemCF seeds")
+    ap.add_argument("--query-items", type=int, help="recent fit items whose titles form the history query")
+    ap.add_argument("--neighbors", type=int, help="ItemKNN k (mặc định: baselines.item_knn.k)")
+    ap.add_argument("--seed", type=int, help="mặc định: baselines.seed")
+    ap.add_argument("--experiments-dir", help="mặc định: experiments/<candidate_recall.experiments_subdir>")
     args = ap.parse_args()
+
+    # CLI > configs/retrieval.yaml (candidate_recall) / model.yaml (baselines)
+    cfg = load_config("retrieval")["candidate_recall"]
+    baselines = load_config("model")["baselines"]
+    args.n = args.n or ",".join(str(b) for b in cfg["budgets"])
+    args.per_segment = args.per_segment or cfg["per_segment"]
+    args.seed_items = args.seed_items or cfg["seed_items"]
+    args.query_items = args.query_items or cfg["query_items"]
+    args.neighbors = args.neighbors or baselines["item_knn"]["k"]
+    args.seed = baselines["seed"] if args.seed is None else args.seed
+    args.experiments_dir = args.experiments_dir or f"experiments/{cfg['experiments_subdir']}"
+
+    data_paths = get_data_paths(args.tag)
+    args.splits_dir = str(data_paths.splits_dir)
+    meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
 
     budgets = sorted(int(x) for x in args.n.split(","))
     n_max = max(budgets)
@@ -139,15 +145,9 @@ def main() -> None:
     t_start = time.time()
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py)
-    splits = Path(args.splits_dir)
-    def read(name: str) -> pd.DataFrame:
-        path = splits / f"{name}.parquet"
-        wanted = ["user_idx", "item_idx", "timestamp"]
-        return pd.read_parquet(path, columns=[c for c in wanted if c in pq.ParquetFile(path).schema.names])
-
-    train, val, test = read("train"), read("validation"), read("test")
+    train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
     fit_df, target_df = (train, val) if args.eval_on == "validation" else (pd.concat([train, val]), test)
-    user2id, item2id = load_mappings(args.mapping_dir)
+    user2id, item2id = load_mappings(data_paths.mapped_dir)
     id2item = {v: k for k, v in item2id.items()}
     num_users, num_items = len(user2id), len(item2id)
     namespaced = any(ITEM_ID_SEPARATOR in k for k in islice(item2id, 1000))
@@ -166,13 +166,13 @@ def main() -> None:
 
     # ---- corpus + tools
     print("Build corpus")
-    meta = load_meta([tuple(m.split("=", 1)) for m in args.meta], item2id, namespaced)
+    meta = load_meta(meta_files, item2id, namespaced)
     corpus = ItemCorpus.from_dataframe(meta)
     title_of, cats_of = item_text_tables(meta, item2id, namespaced)
     coverage = len(title_of) / num_items
     print(f"  metadata covers {coverage:.1%} of mapped items")
     if coverage < 0.5:
-        raise SystemExit("Less than half of mapped items have metadata: check --meta paths / id format")
+        raise SystemExit("Less than half of mapped items have metadata: check resource/raw/meta_<Domain>.jsonl.gz / id format")
 
     print("Fit ItemKNN on fit data")
     knn = ItemKNNRecommender(args.neighbors).fit(fit_matrix)
