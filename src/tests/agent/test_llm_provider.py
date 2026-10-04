@@ -40,15 +40,15 @@ def test_mock_provider_json_mode_returns_valid_json():
 
 
 def test_factory_builds_mock_provider_by_default():
-    provider = build_llm_provider({"llm": {"provider": "mock"}})
+    provider = build_llm_provider({"provider": "mock"})
     assert isinstance(provider, MockLLMProvider)
 
 
 def test_factory_rejects_unknown_provider():
     with pytest.raises(ValueError):
-        build_llm_provider({"llm": {"provider": "not_a_real_provider"}})
+        build_llm_provider({"provider": "not_a_real_provider"})
 
 
 def test_factory_requires_base_url_and_model_for_openai_compatible():
     with pytest.raises(ValueError):
-        build_llm_provider({"llm": {"provider": "openai_compatible"}})
+        build_llm_provider({"provider": "openai_compatible"})

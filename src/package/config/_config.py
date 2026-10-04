@@ -1,3 +1,5 @@
+"""Configuration constants for config module."""
+
 import re
 from pathlib import Path
 

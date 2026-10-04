@@ -37,8 +37,8 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
         return MockLLMProvider()
 
     if provider_name == "openai_compatible":
-        base_url = llm_config.get("base_url")
-        model = llm_config.get("model")
+        base_url = config.get("base_url")
+        model = config.get("model")
         if not base_url or not model:
             raise ValueError(
                 "openai_compatible provider requires 'base_url' and 'model' in config"
@@ -46,8 +46,8 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
         return OpenAICompatibleProvider(
             base_url=base_url,
             model=model,
-            api_key=llm_config.get("api_key"),
-            timeout_seconds=llm_config.get("timeout_seconds", 30.0),
+            api_key=config.get("api_key"),
+            timeout_seconds=config.get("timeout_seconds", 30.0),
         )
 
     raise AssertionError("unreachable")

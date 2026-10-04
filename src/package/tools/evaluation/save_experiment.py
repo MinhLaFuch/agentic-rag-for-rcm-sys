@@ -1,46 +1,14 @@
 from __future__ import annotations
 
 import json
-import os
-import platform
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-
-def _git_commit() -> str | None:
-    """Get current git commit hash if available."""
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5
-        )
-        return out.stdout.strip() if out.returncode == 0 else None
-    except (OSError, subprocess.SubprocessError):
-        return None
-
-
-def hardware_info() -> dict[str, Any]:
-    """Get hardware and platform information."""
-    return {
-        "platform": platform.platform(),
-        "python": platform.python_version(),
-        "cpu_count": os.cpu_count(),
-    }
-
-
-def next_experiment_dir(root: str | Path = "experiments") -> Path:
-    """Generate the next experiment directory name."""
-    root = Path(root)
-    root.mkdir(parents=True, exist_ok=True)
-    existing = [
-        int(p.name.split("_")[1])
-        for p in root.glob("exp_*")
-        if p.is_dir() and p.name.split("_")[1].isdigit()
-    ]
-    return root / f"exp_{(max(existing) + 1 if existing else 1):03d}"
+from ._helper import _git_commit
+from .hardware_info import hardware_info
 
 
 def save_experiment(
@@ -55,7 +23,7 @@ def save_experiment(
 ) -> Path:
     """Save experiment results to directory with config, metrics, and README."""
     out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=False)  # không ghi đè experiment cũ
+    out.mkdir(parents=True, exist_ok=False)
 
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),

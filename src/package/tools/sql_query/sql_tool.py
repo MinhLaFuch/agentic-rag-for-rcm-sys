@@ -13,6 +13,7 @@ from typing import Any
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 from .._config import FILTER_KEYS, ITEM_COLUMNS, MAX_CANDIDATES, ORDER_COLUMNS
+from ._helper import _as_list
 
 class SQLTool(Tool):
     """
@@ -142,7 +143,3 @@ class SQLTool(Tool):
             params += ex
 
         return " AND ".join(clauses), params
-
-
-def _as_list(value: Any) -> list[Any]:
-    return list(value) if isinstance(value, (list, tuple, set)) else [value]

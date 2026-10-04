@@ -1,28 +1,11 @@
-"""
-Candidate scorers used by RecoModelTool.
-
-`CandidateScorer` is the interface a model must satisfy to rank a given candidate
-set for a user; swap in SASRec / BPR later by implementing it.
-"""
+"""Baseline scorer implementation using popularity and item-item similarity."""
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Any
 
 import numpy as np
 from scipy import sparse
-
-
-class CandidateScorer(Protocol):
-    """Anything that can score a given candidate set for a user (swap in SASRec/BPR later)."""
-
-    name: str
-
-    def is_known_user(self, user_idx: int) -> bool: ...
-    def seen_items(self, user_idx: int) -> set[int]: ...
-    def score(self, user_idx: int, item_idxs: np.ndarray) -> np.ndarray:
-        """Higher = better. Unknown users must still get a fallback score."""
-        ...
 
 
 class BaselineScorer:

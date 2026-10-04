@@ -1,10 +1,14 @@
-from .baselines import build_interaction_matrix
+from .baselines import (
+    ItemKNNRecommender,
+    PopularityRecommender,
+    build_interaction_matrix,
+)
 from .base import Recommender
 from .bpr_mf import BPRMFRecommender
 from .factory import ALL_MODELS, build_model
 from .fallback import FallbackRecommender
-from .item_knn import ItemKNNRecommender
-from .popularity import PopularityRecommender
+from .item_knn import ItemKNNRecommender as ItemKNNRecommenderABC
+from .popularity import PopularityRecommender as PopularityRecommenderABC
 from .random_rec import RandomRecommender
 
 __all__ = [
@@ -17,4 +21,6 @@ __all__ = [
     "ItemKNNRecommender",
     "PopularityRecommender",
     "RandomRecommender",
+    "ItemKNNRecommenderABC",
+    "PopularityRecommenderABC",
 ]

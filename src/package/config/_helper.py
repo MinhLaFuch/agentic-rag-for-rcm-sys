@@ -1,3 +1,5 @@
+"""Helper functions for config module."""
+
 import re, os
 
 from typing import Any

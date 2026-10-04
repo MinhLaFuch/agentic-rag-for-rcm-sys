@@ -1,3 +1,5 @@
+"""Configuration constants for tools module."""
+
 SQL_TIME_BUDGET_SECONDS = 5.0
 
 
