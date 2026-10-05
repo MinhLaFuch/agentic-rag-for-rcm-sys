@@ -7,9 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
-
-SPLIT_NAMES = ("train", "validation", "test")
-
+from ._config import SPLIT_NAMES
 
 def load_splits(
     splits_dir: str | Path, columns: Sequence[str] = ("user_idx", "item_idx")

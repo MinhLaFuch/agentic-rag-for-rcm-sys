@@ -7,14 +7,12 @@ from . import leakage
 from . import loader
 from . import mapping
 from . import split
-from .domain import namespaced_item_id, tag_domain
+from . import domain
 
 __all__ = [
     "ITEM_ID_SEPARATOR",
     "REQUIRED_COLUMNS",
     "OPTIONAL_COLUMNS",
-    "namespaced_item_id",
-    "tag_domain",
     "clean",
     "domain",
     "eda",
@@ -23,4 +21,5 @@ __all__ = [
     "loader",
     "mapping",
     "split",
+    "domain"
 ]

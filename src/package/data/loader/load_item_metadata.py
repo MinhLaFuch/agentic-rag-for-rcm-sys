@@ -11,17 +11,7 @@ from collections.abc import Callable, Iterable
 import pandas as pd
 
 from .iter_jsonl_gz import iter_jsonl_gz
-
-META_FIELDS = [
-    "parent_asin",
-    "title",
-    "store",
-    "price",
-    "average_rating",
-    "rating_number",
-    "main_category",
-    "categories",
-]
+from ._config import META_FIELDS
 
 
 def load_item_metadata(
@@ -40,7 +30,7 @@ def load_item_metadata(
         rows = []
         for record in iter_jsonl_gz(path):
             asin = record.get("parent_asin")
-            if keep is None or keep(domain, asin):
+            if keep is None or (keep(domain, asin) if asin else False):
                 rows.append({k: record.get(k) for k in fields})
         df = pd.DataFrame(rows, columns=fields)
         df["domain"] = domain

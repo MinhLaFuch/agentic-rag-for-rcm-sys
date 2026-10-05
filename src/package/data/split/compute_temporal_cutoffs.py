@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import pandas as pd
 
-
 def compute_temporal_cutoffs(
     df: pd.DataFrame,
     train_ratio: float = 0.8,

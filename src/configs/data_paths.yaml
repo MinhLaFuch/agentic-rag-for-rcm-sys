@@ -6,3 +6,4 @@ paths:
   filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
   mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
   splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
+  log: "resource/logs"               # logs/<run_tag>/*.log

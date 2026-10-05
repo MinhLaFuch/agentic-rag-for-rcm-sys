@@ -4,7 +4,6 @@ import json
 
 from ..tools.base import Tool
 
-
 def build_tool_prompt(tools: list[Tool]) -> str:
     lines = []
     for t in tools:

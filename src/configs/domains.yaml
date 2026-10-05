@@ -7,7 +7,5 @@ domains:
     role: "primary"
   - name: "Toys_and_Games"
     role: "secondary"
-    adjacency: "audience"      # bổ trợ theo đối tượng khách hàng
   - name: "Electronics"
     role: "secondary"
-    adjacency: "functional"    # bổ trợ theo chức năng sản phẩm (accessory/hardware)

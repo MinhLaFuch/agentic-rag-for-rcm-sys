@@ -1,6 +1,0 @@
-# Download config (mục V, XX).
-# {domain} được thay bằng tên domain.
-
-download:
-  review_url: "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/{domain}.jsonl.gz"
-  meta_url: "https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_{domain}.jsonl.gz"

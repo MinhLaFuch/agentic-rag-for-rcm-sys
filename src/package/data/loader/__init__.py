@@ -1,10 +1,9 @@
 from .estimate_memory_usage_mb import estimate_memory_usage_mb
 from .iter_jsonl_gz import iter_jsonl_gz
-from .load_item_metadata import META_FIELDS, load_item_metadata
+from .load_item_metadata import load_item_metadata
 from .optimize_interaction_dtypes import optimize_interaction_dtypes
 
 __all__ = [
-    "META_FIELDS",
     "estimate_memory_usage_mb",
     "iter_jsonl_gz",
     "load_item_metadata",

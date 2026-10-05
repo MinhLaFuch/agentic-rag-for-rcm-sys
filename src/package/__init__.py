@@ -3,9 +3,13 @@ from . import data
 from . import llm
 from . import tools
 from . import utils
-from .agents import PlanExecutor, Type1Agent, build_tool_prompt
-from .llm import LLMMessage
-from .memory import MemoryTool
+from . import agents
+from . import api
+from . import embeddings
+from . import sequential
+from . import features
+from . import inference
+from . import memory
 
 __all__ = [
     "config",
@@ -13,9 +17,11 @@ __all__ = [
     "llm",
     "tools",
     "utils",
-    "PlanExecutor",
-    "Type1Agent",
-    "build_tool_prompt",
-    "LLMMessage",
-    "MemoryTool",
+    "agents",
+    "api",
+    "embeddings",
+    "sequential",
+    "features",
+    "inference",
+    "memory"
 ]
