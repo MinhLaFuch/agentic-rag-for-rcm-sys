@@ -38,4 +38,4 @@ ORDER_COLUMNS = {"rating_number", "average_rating", "price"}
 
 MAX_QUERY_ROWS = 100  # QueryTool returns item info to the agent -> keep it small
 
-MAX_CANDIDATES = 1000  # SQLTool / ItemCFTool candidate pools (candidate_retrieval.yaml top_n=100)
+MAX_CANDIDATES = 1000  # SQLTool / ItemCFTool candidate pools 

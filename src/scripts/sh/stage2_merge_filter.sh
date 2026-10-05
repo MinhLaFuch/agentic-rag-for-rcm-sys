@@ -7,8 +7,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 parse_flags "$@"
 load_domains
 resolve_tag
-CLEANED_DIR="$(cfg data.paths.cleaned_dir)"
-OUT_FILE="$(cfg data.paths.filtered_dir)/${TAG}/interactions.parquet"
+CLEANED_DIR="$(cfg data_paths.paths.cleaned_dir)"
+OUT_FILE="$(cfg data_paths.paths.filtered_dir)/${TAG}/interactions.parquet"
 
 # Dừng sớm (trước khi nạp gì vào RAM) nếu thiếu output của Stage 1.
 missing=0

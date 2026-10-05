@@ -76,7 +76,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 request, timeout=self._timeout_seconds
             ) as resp:
                 body = json.loads(resp.read().decode("utf-8"))
-        except (urllib.error.URLError, urllib.error.HTTPError) as exc:
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:  # HTTPError là con của URLError; TimeoutError nổ lúc resp.read(); JSONDecodeError khi body không phải JSON
             raise LLMProviderError(f"LLM request failed: {exc}") from exc
         latency = time.monotonic() - start
 

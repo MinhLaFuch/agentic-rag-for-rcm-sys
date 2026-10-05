@@ -43,7 +43,8 @@ from package.data.split import load_splits
 from package.tools import ItemCFTool, ItemCorpus, SemanticSearchTool
 from package.tools.base import MAX_CANDIDATES, ToolCallLogger
 from package.tools.evaluation import next_experiment_dir, save_experiment
-from package.tools.recommenders import ItemKNNRecommender, build_interaction_matrix
+from package.tools.recommenders import build_interaction_matrix
+from package.tools.recommenders.item_knn import ItemKNNRecommender  # bản nhận ma trận (khác bản baseline_item_knn nhận DataFrame)
 from package.utils.console import ensure_utf8_stdout
 
 SEGMENTS = ("cold", "sparse", "warm")

@@ -30,7 +30,7 @@ Stage đã có output thì bị bỏ qua; thêm `--force` để làm lại.
 
 `run_baselines.sh`, `tune_baselines.sh`, `candidate_recall.sh`, `run_tools.sh`, `check_llm_provider.sh`.
 Tham số nằm trong các file YAML atomics: `baselines.yaml`, `tuning.yaml`, `recommendation_metrics.yaml`,
-`segment_thresholds.yaml`, `candidate_recall.yaml`, `llm.yaml`, `reranking.yaml`, `memory.yaml`, v.v.
+`segment_thresholds.yaml`, `candidate_recall.yaml`, `llm.yaml`.
 
 ## Biến môi trường
 

@@ -28,17 +28,8 @@ def test_load_config_file_not_found():
         load_config("does_not_exist")
 
 
-def test_agent_config_does_not_require_domain():
+def test_llm_config_loads_independently_of_domain():
     # llm.yaml không tham chiếu DOMAIN nên phải load được độc lập
     llm_config = load_config("llm")
-    reranking_config = load_config("reranking")
-    multi_agent_config = load_config("multi_agent")
-    assert llm_config["provider"] == "mock"
-    assert reranking_config["input_top_k"] == 20
-    assert multi_agent_config["enabled"] is False
-
-
-def test_evaluation_config_has_experiment_matrix():
-    experiments_config = load_config("experiments")
-    assert "E9_full_system" in experiments_config["experiments"]
-    assert len(experiments_config["experiments"]) == 10
+    assert llm_config["provider"] in {"mock", "openai_compatible"}
+    assert llm_config["model"]

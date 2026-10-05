@@ -6,8 +6,8 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 parse_flags "$@"
 resolve_tag
-FILTERED_PATH="$(cfg data.paths.filtered_dir)/${TAG}/interactions.parquet"
-SPLITS_DIR="$(cfg data.paths.splits_dir)/${TAG}"
+FILTERED_PATH="$(cfg data_paths.paths.filtered_dir)/${TAG}/interactions.parquet"
+SPLITS_DIR="$(cfg data_paths.paths.splits_dir)/${TAG}"
 
 [[ -f "$FILTERED_PATH" ]] || { echo "MISSING Stage 2 output: ${FILTERED_PATH} (run stage2_merge_filter.sh with the same TAG)"; exit 1; }
 
