@@ -3,9 +3,8 @@ OpenAICompatibleProvider — implementation cho bất kỳ server tương thích
 OpenAI Chat Completions API (OpenAI thật, vLLM `--api openai`, Ollama
 `/v1/chat/completions`, LM Studio...).
 
-Trạng thái Phase 1: implementation tồn tại và có unit test với HTTP mock,
-nhưng CHƯA gọi thật tới bất kỳ endpoint nào (không có API key/server
-trong môi trường hiện tại).
+Trạng thái Phase 1: implementation hoàn chỉnh; smoke test dùng monkeypatch
+urlopen để chạy offline — không cần API key hay server thật trong CI.
 
 BLOCKED:
 REASON: chưa có endpoint LLM thật (API key hoặc local server) trong môi

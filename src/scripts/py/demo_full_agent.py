@@ -1,12 +1,13 @@
 """
 Demo: đăng ký đủ 5 tool vào PlanExecutor (LLM <-> tools <-> data qua memory).
-Dùng MockLLMProvider để chạy không cần API key — đổi sang OpenAICompatibleProvider
-khi có OPENAI_API_KEY/OPENAI_API_BASE thật (xem package/llm/factory.py).
+Dùng build_llm_provider(load_config("llm")) để tạo provider từ configs/llm.yaml.
+Khi có LLM_API_KEY và endpoint thật, chạy script này trực tiếp với data thật.
 """
 from __future__ import annotations
 
 from package.agents.plan_executor import PlanExecutor
-from package.llm.providers.mock import MockLLMProvider
+from package.config.loader import load_config
+from package.llm.factory import build_llm_provider
 from package.memory.memory_tool import MemoryTool
 from package.tools.ranking.item_cf_tool import ItemCFTool
 from package.tools.ranking.reco_model_tool import RecoModelTool

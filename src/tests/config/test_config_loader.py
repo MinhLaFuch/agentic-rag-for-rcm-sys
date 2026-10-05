@@ -37,7 +37,7 @@ def test_load_config_file_not_found():
 def test_llm_config_loads_independently_of_domain():
     # llm.yaml không tham chiếu DOMAIN nên phải load được độc lập
     llm_config = load_config("llm")
-    assert llm_config["provider"] in {"mock", "openai_compatible"}
+    assert llm_config["provider"] == "openai_compatible"
     assert llm_config["model"]
 
 

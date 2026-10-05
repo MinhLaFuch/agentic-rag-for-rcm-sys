@@ -8,7 +8,7 @@ Mọi thư mục của project được định nghĩa MỘT lần trong `config
 đường dẫn bằng tay trong code/script.
 
 ```
-resource/raw/<Domain>.jsonl.gz, meta_<Domain>.jsonl.gz     tải về (download_review_data.sh)
+resource/raw/<Domain>.jsonl.gz, meta_<Domain>.jsonl.gz     tải về thủ công (đặt vào resource/raw/ trước khi chạy stage 1)
 resource/cleaned/<Domain>/interactions.parquet             stage 1
 resource/filtered/<tag>/interactions.parquet               stage 2
 resource/mapped/<tag>/{user2id,item2id}.json               stage 3
@@ -25,7 +25,6 @@ tests/logs/*.log                                           log của test (tests
 
 | Script | Việc |
 |---|---|
-| `download_review_data.sh` | tải review + meta của mọi domain (`--no-meta` để bỏ meta) |
 | `stage1_clean_domain.sh` | clean từng domain (lặp qua `domains.yaml → domains`) |
 | `stage2_merge_filter.sh` | gộp domain + k-core (`--cold-start-report` để so sánh warm user) |
 | `stage3_map_split.sh` | ID mapping + temporal split + leakage check |

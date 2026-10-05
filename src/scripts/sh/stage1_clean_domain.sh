@@ -18,7 +18,7 @@ for DOMAIN in "${DOMAIN_LIST[@]}"; do
   echo "################ Stage 1: ${DOMAIN} ################"
 
   if [[ ! -f "$REVIEW_PATH" ]]; then
-    echo "MISSING input: ${REVIEW_PATH} (bash scripts/sh/download_review_data.sh)"
+    echo "MISSING input: ${REVIEW_PATH} — đặt file .jsonl.gz vào resource/raw/ trước khi chạy stage 1"
     FAILED+=("$DOMAIN"); continue
   fi
 

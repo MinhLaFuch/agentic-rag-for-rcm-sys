@@ -18,7 +18,7 @@ class LLMProvider(ABC):
     """
     Interface bắt buộc cho mọi LLM backend.
 
-    Mọi implementation (mock, openai-compatible, ollama, vllm...) phải
+    Mọi implementation (openai-compatible, ollama, vllm...) phải
     kế thừa class này và implement đầy đủ các method abstract.
     """
 
