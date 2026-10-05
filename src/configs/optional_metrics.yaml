@@ -1,8 +1,0 @@
-# Optional metrics config (mục XVI, XVII, XX).
-
-metrics:
-  - coverage
-  - catalog_coverage
-  - novelty
-  - diversity
-  - serendipity

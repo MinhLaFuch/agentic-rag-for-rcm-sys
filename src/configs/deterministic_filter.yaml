@@ -1,5 +1,0 @@
-# Deterministic filter config (mục IX, X, XX).
-# filter theo constraint cứng (budget, category...) trước khi vào LLM rerank
-
-deterministic_filter:
-  enabled: true

@@ -1,5 +1,0 @@
-# Reranking config (mục XIV).
-
-input_top_k: 20        # LLM chỉ nhận Top-20, không nhận toàn bộ catalog (mục XIV)
-output_top_k: 10
-require_json_output: true

@@ -1,6 +1,0 @@
-# User segments config (mục XVI, XVII, XX).
-
-segments:
-  - cold
-  - warm
-  - sparse

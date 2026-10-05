@@ -1,8 +1,0 @@
-# Semantic retrieval config (mục IX, X, XX).
-# embedding_model sẽ được chốt ở Phase 6 sau khi so sánh vài lựa chọn
-
-semantic_retrieval:
-  embedding_model: "TBD_PHASE_6"
-  index_backend: "faiss"
-  top_k: 20
-  max_context_items: 20   # giới hạn cứng — không đưa toàn bộ dataset vào prompt

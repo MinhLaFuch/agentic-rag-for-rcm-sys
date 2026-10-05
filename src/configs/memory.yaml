@@ -1,8 +1,0 @@
-# Memory config (mục XI).
-
-max_records_per_retrieve: 10   # không nhồi toàn bộ memory vào context (mục XI)
-types:
-  - short_term
-  - long_term
-  - preference
-  - interaction
