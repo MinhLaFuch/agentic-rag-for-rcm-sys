@@ -5,7 +5,7 @@ khi có OPENAI_API_KEY/OPENAI_API_BASE thật (xem package/llm/factory.py).
 """
 from __future__ import annotations
 
-from package.agents.planner import PlanExecutor
+from package.agents.plan_executor import PlanExecutor
 from package.llm.providers.mock import MockLLMProvider
 from package.memory.memory_tool import MemoryTool
 from package.tools.ranking.item_cf_tool import ItemCFTool
