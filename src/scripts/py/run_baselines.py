@@ -27,7 +27,7 @@ def main() -> None:
     parser.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     parser.add_argument("--models", help="Mặc định: baselines.models trong baselines.yaml.")
     parser.add_argument("--ks", default=None, help="vd: 5,10,20 (mac dinh lay tu recommendation_metrics.yaml)")
-    parser.add_argument("--experiments-dir", default="experiments")
+    parser.add_argument("--experiments-dir", help="Mặc định: experiments_dir trong data_paths.yaml.")
     args = parser.parse_args()
 
     model_cfg = load_config("baselines")["baselines"]
@@ -36,7 +36,8 @@ def main() -> None:
     sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = args.models.split(",") if args.models else model_cfg["models"]
     model_names = [m.strip() for m in model_names if m.strip()]
-    splits_dir = args.splits_dir or str(get_data_paths(args.tag).splits_dir)
+    paths = get_data_paths(args.tag)
+    splits_dir = args.splits_dir or str(paths.splits_dir)
 
     train, val, test = load_splits(splits_dir)
     num_users, num_items = infer_matrix_shape(train, val, test)
@@ -89,7 +90,7 @@ def main() -> None:
         )
 
     exp_dir = save_experiment(
-        next_experiment_dir(args.experiments_dir),
+        next_experiment_dir(args.experiments_dir or paths.experiments_dir),
         config={"models": model_names, "ks": ks, "sparse_max": sparse_max, "baselines": model_cfg},
         metrics=all_metrics,
         seed=model_cfg.get("seed", 42),

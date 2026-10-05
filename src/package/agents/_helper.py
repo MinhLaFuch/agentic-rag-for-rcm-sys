@@ -2,7 +2,7 @@
 from typing import Any
 import re
 import json
-from ._config import _REF
+from ._schema import _REF
 
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:

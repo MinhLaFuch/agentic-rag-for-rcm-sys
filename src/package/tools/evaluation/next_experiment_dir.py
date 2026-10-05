@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def next_experiment_dir(root: str | Path = "experiments") -> Path:
-    """Generate the next experiment directory name."""
+def next_experiment_dir(root: str | Path) -> Path:
+    """Generate the next experiment directory name under ``root`` (use ``get_data_paths().experiments_dir``)."""
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     existing = [

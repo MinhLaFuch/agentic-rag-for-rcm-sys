@@ -7,14 +7,12 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 parse_flags "$@"
 load_domains
-RAW_DIR="$(cfg data_paths.paths.raw_dir)"
-CLEANED_DIR="$(cfg data_paths.paths.cleaned_dir)"
 
 DONE=(); SKIPPED=(); FAILED=()
 
 for DOMAIN in "${DOMAIN_LIST[@]}"; do
-  REVIEW_PATH="${RAW_DIR}/${DOMAIN}.jsonl.gz"
-  OUT_FILE="${CLEANED_DIR}/${DOMAIN}/interactions.parquet"
+  REVIEW_PATH="$(data_path "review_path:${DOMAIN}")"
+  OUT_FILE="$(data_path "cleaned_path:${DOMAIN}")"
 
   echo
   echo "################ Stage 1: ${DOMAIN} ################"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .._config import MAX_CANDIDATES
+from .._limits import MAX_CANDIDATES
 from ._error import ToolInputError
 
 

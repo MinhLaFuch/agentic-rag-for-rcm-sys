@@ -14,6 +14,9 @@ Run from the project root:
 
 Only train is used to fit the model and validation is used to check it, so
 nothing here touches the test split.
+
+Everything printed is also written to <log_dir>/run_tools.log (data_paths.yaml → paths.log_dir, i.e.
+resource/logs/<tag>/): it is a tool-validation log, not an experiment result, so it does not go in experiments/.
 """
 
 from __future__ import annotations
@@ -25,15 +28,17 @@ import time
 import traceback
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[2]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
 sys.path.insert(0, str(ROOT))
 
 import numpy as np
 import pandas as pd
 
-from package.config import get_data_paths, get_domains, load_config
+from package.config import DataPaths, get_data_paths, get_domains, load_config
+from package.data import ITEM_ID_SEPARATOR
 from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
+from package.data.split import split_path
 from package.tools.corpus import ItemCorpus
 from package.tools.ranking.item_cf_tool import ItemCFTool
 from package.tools.ranking.reco_model_tool import RecoModelTool
@@ -41,8 +46,6 @@ from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools.score import BaselineScorer
 from package.tools.sql_query.query_tool import QueryTool
 from package.tools.sql_query.sql_tool import SQLTool
-
-LOG_PATH = ROOT / "experiments" / "run_tools.log"  # fixed location, overwritten each run
 
 
 class _Tee:
@@ -89,7 +92,7 @@ def load_meta(meta_args: list[tuple[str, str]], wanted: dict[str, set[str]]) -> 
     return load_item_metadata(meta_args, keep=lambda domain, asin: asin in wanted.get(domain, ()))
 
 
-def main() -> None:
+def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append",
@@ -102,7 +105,10 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
     args.neighbors = args.neighbors or load_config("baselines")["baselines"]["item_knn"]["k"]
-    data_paths = get_data_paths(args.tag)
+    return args
+
+
+def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     args.splits_dir, args.mapping_dir = str(data_paths.splits_dir), str(data_paths.mapped_dir)
     meta_args = []
     for domain in args.domain or get_domains():
@@ -116,13 +122,12 @@ def main() -> None:
 
     # ------------------------------------------------------------------ data
     section("Load stage 3 outputs")
-    splits = Path(args.splits_dir)
     cols = ["user_idx", "item_idx", "domain", "original_item_id", "parent_asin"]
-    train = pd.read_parquet(splits / "train.parquet", columns=cols)
-    val = pd.read_parquet(splits / "validation.parquet", columns=cols)
+    train = pd.read_parquet(split_path(args.splits_dir, "train"), columns=cols)  # test split is deliberately never read
+    val = pd.read_parquet(split_path(args.splits_dir, "validation"), columns=cols)
     user2id, item2id = load_mappings(args.mapping_dir)
     print(f"  train={len(train):,} validation={len(val):,} users={len(user2id):,} items={len(item2id):,}")
-    check("item2id keys are namespaced 'Domain::asin'", all("::" in k for k in list(item2id)[:1000]))
+    check("item2id keys are namespaced 'Domain::asin'", all(ITEM_ID_SEPARATOR in k for k in list(item2id)[:1000]))
 
     all_items = pd.concat([train, val])[["domain", "original_item_id", "parent_asin"]].drop_duplicates("parent_asin")
     wanted = {d: set(g["original_item_id"]) for d, g in all_items.groupby("domain")}
@@ -248,16 +253,23 @@ def main() -> None:
     print("All real-data checks passed.")
 
 
-if __name__ == "__main__":
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_PATH, "w", encoding="utf-8") as log_file:
+def main() -> None:
+    args = parse_args()
+    data_paths = get_data_paths(args.tag)
+    log_path = data_paths.log_dir / "run_tools.log"  # overwritten each run
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(log_path, "w", encoding="utf-8") as log_file:
         real_out, real_err = sys.stdout, sys.stderr
         sys.stdout, sys.stderr = _Tee(real_out, log_file), _Tee(real_err, log_file)
         try:
-            print(f"log -> {LOG_PATH}")
-            main()
+            print(f"log -> {log_path}")
+            run(args, data_paths)
         except Exception:
             traceback.print_exc()  # goes to the terminal AND the log
             sys.exit(1)
         finally:
             sys.stdout, sys.stderr = real_out, real_err
+
+
+if __name__ == "__main__":
+    main()

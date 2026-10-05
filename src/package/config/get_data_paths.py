@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from ._config import PROJECT_ROOT
+from ._constants import PROJECT_ROOT
 from ._dataclass import DataPaths
 from .loader import load_config
 
@@ -28,4 +28,6 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
         filtered_dir=root("filtered_dir") / tag,
         mapped_dir=root("mapped_dir") / tag,
         splits_dir=root("splits_dir") / tag,
+        log_dir=root("log_dir") / tag,
+        experiments_dir=root("experiments_dir"),
     )

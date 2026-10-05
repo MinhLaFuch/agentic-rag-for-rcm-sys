@@ -1,59 +1,19 @@
-# Python bytecode and tool caches
+# Python bytecode / caches
 __pycache__/
 *.py[cod]
-*$py.class
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.pyre/
-.hypothesis/
-.tox/
-.nox/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-
-# Virtual environments and local Python build artifacts
 .venv/
-venv/
-env/
-ENV/
+
+# Pipeline data and pipeline/tool logs: everything under paths.* in configs/data_paths.yaml (except experiments_dir)
+resource/
+
+# Test logs written by tests/run_*.sh / run_*.bat
+tests/logs/
+
+# Experiment results (experiments/exp_NNN/{config.yaml,metrics.json,README.md}) are tracked on purpose;
+# only stray logs are ignored. Add `experiments/` here if you decide results should not be versioned.
+experiments/**/*.log
+
+# Secrets: never commit credentials (configs/llm.yaml reads LLM_API_KEY from the environment)
 .env
-.env.*
-!.env.example
-build/
-dist/
-*.egg-info/
-.eggs/
-*.egg
-
-# Local datasets and pipeline outputs (large and reproducible)
-/data/*
-!/data/.gitkeep
-
-# Jupyter checkpoints
-.ipynb_checkpoints/
-
-# Editor and operating-system files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Local logs are ignored by default, except experiment logs that document runs.
-*.log
-!experiments/
-!experiments/**/*.log
-resource
-configs/llm.yaml
-
-# Secrets and local credentials
-*.pem
 *.key
-credentials.json
-secrets.json

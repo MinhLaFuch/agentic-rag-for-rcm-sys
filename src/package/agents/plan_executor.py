@@ -7,7 +7,7 @@ from typing import Any
 from ..llm import LLMMessage, LLMProvider
 from ..tools.base import Tool
 from .build_tool_prompt import build_tool_prompt
-from ._config import _REF
+from ._schema import _REF
 from ._helper import _extract_plan, _resolve_refs
 from ._prompt import SYSTEM_PROMPT
 class PlanExecutor:

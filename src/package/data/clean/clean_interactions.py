@@ -10,7 +10,7 @@ trên máy dev thông thường. Nếu OOM trên máy yếu, xem ghi chú ở cu
 from __future__ import annotations
 
 import pandas as pd
-from .._config import REQUIRED_COLUMNS, OPTIONAL_COLUMNS
+from .._schema import REQUIRED_COLUMNS, OPTIONAL_COLUMNS
 
 def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     """

@@ -20,8 +20,8 @@ from typing import Any
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 from ..sql_query.sql_tool import SQLTool
-from .._config import FILTER_KEYS, ITEM_COLUMNS, MAX_CANDIDATES
-from ._config import DEFAULT_LIMIT, MAX_QUERY_TOKENS
+from .._limits import MAX_CANDIDATES, SEMANTIC_DEFAULT_LIMIT
+from .._schema import FILTER_KEYS, ITEM_COLUMNS
 from ._helper import _tokenize
 
 
@@ -40,7 +40,7 @@ class SemanticSearchTool(Tool):
     input_schema = {
         "query": "str  -- keywords, e.g. 'mechanical keyboard quiet'; English",
         "filters": "dict | None  -- same keys as SQLTool.filters (domain, price_max, min_rating, ...)",
-        "limit": f"int (<= {MAX_CANDIDATES}, default {DEFAULT_LIMIT})",
+        "limit": f"int (<= {MAX_CANDIDATES}, default {SEMANTIC_DEFAULT_LIMIT})",
     }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
@@ -52,7 +52,7 @@ class SemanticSearchTool(Tool):
         self,
         query: str,
         filters: dict[str, Any] | None = None,
-        limit: int = DEFAULT_LIMIT,
+        limit: int = SEMANTIC_DEFAULT_LIMIT,
     ) -> dict[str, Any]:
         if not isinstance(query, str) or not query.strip():
             raise ToolInputError("`query` must be a non-empty string")

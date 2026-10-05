@@ -18,7 +18,7 @@ mkdir -p logs
 
 # Get current timestamp for log filename
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-MAIN_LOG="logs/test_run_${TIMESTAMP}.log"
+MAIN_LOG="$PWD/logs/test_run_${TIMESTAMP}.log"  # absolute: survives the `cd ..` below; test logs live in tests/logs/
 
 cd ..
 

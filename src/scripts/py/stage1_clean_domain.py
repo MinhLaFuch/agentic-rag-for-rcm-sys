@@ -2,6 +2,7 @@ import argparse
 import os
 import sqlite3
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -30,6 +31,8 @@ def main() -> None:
         parser.error("--chunk-size phải là số nguyên dương")
 
     paths = get_data_paths()
+    if args.output_dir:  # override only the root; the <domain>/interactions.parquet layout stays DataPaths' job
+        paths = replace(paths, cleaned_dir=Path(args.output_dir))
     review_path = Path(args.review_path) if args.review_path else paths.review_path(args.domain)
     chunk_size = args.chunk_size or load_config("cleaning")["cleaning"]["chunk_size"]
     if not review_path.exists():
@@ -37,10 +40,9 @@ def main() -> None:
 
     print(f"=== STAGE 1: clean domain={args.domain}, chunk_size={chunk_size} ===")
 
-    output_root = Path(args.output_dir) if args.output_dir else paths.cleaned_dir
-    output_dir = output_root / args.domain
+    output_path = paths.cleaned_path(args.domain)
+    output_dir = output_path.parent
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "interactions.parquet"
     if output_path.exists():
         if not args.force:
             raise FileExistsError(f"{output_path} đã tồn tại. Dùng --force để chạy lại và ghi đè.")
@@ -48,7 +50,7 @@ def main() -> None:
 
     db_fd, db_name = tempfile.mkstemp(prefix="stage1_dedupe_", suffix=".sqlite", dir=output_dir)
     os.close(db_fd)
-    tmp_output = output_dir / "interactions.parquet.tmp"
+    tmp_output = output_path.with_name(output_path.name + ".tmp")
     report = {
         "num_input": 0,
         "num_dropped_missing_required_fields": 0,

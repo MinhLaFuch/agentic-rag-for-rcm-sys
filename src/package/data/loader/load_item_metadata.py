@@ -11,7 +11,7 @@ from collections.abc import Callable, Iterable
 import pandas as pd
 
 from .iter_jsonl_gz import iter_jsonl_gz
-from ._config import META_FIELDS
+from ._schema import META_FIELDS
 
 
 def load_item_metadata(

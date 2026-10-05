@@ -3,6 +3,9 @@ REM Run data tests and save results to log file
 
 setlocal enabledelayedexpansion
 
+REM Run from this folder regardless of where the script is invoked from (logs go to tests\logs)
+cd /d "%~dp0"
+
 REM Create logs directory if it doesn't exist
 if not exist ..\logs mkdir ..\logs
 

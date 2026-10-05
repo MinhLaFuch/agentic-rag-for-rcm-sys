@@ -7,4 +7,4 @@ candidate_recall:
   per_segment: 1000         # số user tối đa lấy mẫu mỗi segment
   seed_items: 10            # số item gần nhất làm seed cho ItemCF
   query_items: 3            # số title gần nhất ghép thành semantic query
-  experiments_subdir: "candidate_recall"   # nằm trong experiments/
+  experiments_subdir: "candidate_recall"   # nằm trong data_paths.paths.experiments_dir

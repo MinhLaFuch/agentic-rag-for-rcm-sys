@@ -7,13 +7,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 parse_flags "$@"
 load_domains
 resolve_tag
-CLEANED_DIR="$(cfg data_paths.paths.cleaned_dir)"
-OUT_FILE="$(cfg data_paths.paths.filtered_dir)/${TAG}/interactions.parquet"
+OUT_FILE="$(data_path filtered_path)"
 
 # Dừng sớm (trước khi nạp gì vào RAM) nếu thiếu output của Stage 1.
 missing=0
 for d in "${DOMAIN_LIST[@]}"; do
-  f="${CLEANED_DIR}/${d}/interactions.parquet"
+  f="$(data_path "cleaned_path:${d}")"
   [[ -f "$f" ]] || { echo "MISSING Stage 1 output: $f"; missing=1; }
 done
 [[ $missing -eq 0 ]] || { echo "Run stage1_clean_domain.sh first."; exit 1; }

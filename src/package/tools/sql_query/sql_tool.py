@@ -12,7 +12,8 @@ from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
-from .._config import FILTER_KEYS, ITEM_COLUMNS, MAX_CANDIDATES, ORDER_COLUMNS
+from .._limits import MAX_CANDIDATES
+from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
 from ._helper import _as_list
 
 class SQLTool(Tool):

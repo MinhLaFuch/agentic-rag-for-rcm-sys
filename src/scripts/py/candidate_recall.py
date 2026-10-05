@@ -121,7 +121,7 @@ def main() -> None:
     ap.add_argument("--query-items", type=int, help="recent fit items whose titles form the history query")
     ap.add_argument("--neighbors", type=int, help="ItemKNN k (mặc định: baselines.item_knn.k)")
     ap.add_argument("--seed", type=int, help="mặc định: baselines.seed")
-    ap.add_argument("--experiments-dir", help="mặc định: experiments/<candidate_recall.experiments_subdir>")
+    ap.add_argument("--experiments-dir", help="mặc định: <experiments_dir>/<candidate_recall.experiments_subdir>")
     args = ap.parse_args()
 
     # CLI > configs/candidate_recall.yaml / baselines.yaml / segment_thresholds.yaml
@@ -133,9 +133,9 @@ def main() -> None:
     args.query_items = args.query_items or cfg["query_items"]
     args.neighbors = args.neighbors or baselines["item_knn"]["k"]
     args.seed = baselines["seed"] if args.seed is None else args.seed
-    args.experiments_dir = args.experiments_dir or f"experiments/{cfg['experiments_subdir']}"
 
     data_paths = get_data_paths(args.tag)
+    args.experiments_dir = args.experiments_dir or data_paths.experiments_dir / cfg["experiments_subdir"]
     args.splits_dir = str(data_paths.splits_dir)
     meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
 

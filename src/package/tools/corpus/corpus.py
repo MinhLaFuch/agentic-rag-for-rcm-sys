@@ -20,7 +20,8 @@ import pandas as pd
 
 from ...data import namespaced_item_id
 from ..base import ToolInputError
-from .._config import ITEM_COLUMNS, MAX_QUERY_ROWS, SCHEMA_HINT, SQL_TIME_BUDGET_SECONDS
+from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
+from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 from ._helper import _clean_row
 
 

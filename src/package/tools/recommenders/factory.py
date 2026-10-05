@@ -9,6 +9,7 @@ from .item_knn import ItemKNNRecommender
 from .popularity import PopularityRecommender
 from .random_rec import RandomRecommender
 
+# Model registry: the ONLY list of buildable models (keep in sync with the branches in build_model).
 ALL_MODELS = ["random", "popularity", "item_knn", "bpr_mf"]
 
 

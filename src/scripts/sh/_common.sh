@@ -11,8 +11,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 export PYTHONPATH=".${PYTHONPATH:+:$PYTHONPATH}"
 PYTHON="${PYTHON:-python}"
 
-# cfg data_paths.paths.raw_dir  ->  in một giá trị trong configs/ (list thì mỗi phần tử một dòng)
+# cfg run_tag.tag  ->  in một giá trị trong configs/ (list thì mỗi phần tử một dòng); đường dẫn dùng data_path
 cfg() { "$PYTHON" -m package.config "$1" | tr -d '\r'; }
+
+# data_path <tên>[:<đối số>]  ->  đường dẫn do DataPaths (package/config) resolve, tương đối gốc project.
+#   data_path raw_dir | splits_dir | filtered_path | cleaned_path:<Domain> | review_path:<Domain> | split_path:train ...
+# Dùng $TAG nếu đã gọi resolve_tag, ngược lại tag trong run_tag.yaml. KHÔNG tự ghép đường dẫn trong .sh.
+data_path() { "$PYTHON" -m package.config ${TAG:+--tag "$TAG"} "path:$1" | tr -d '\r'; }
 
 # Điền DOMAIN_LIST từ $DOMAINS hoặc domains.yaml.
 load_domains() {

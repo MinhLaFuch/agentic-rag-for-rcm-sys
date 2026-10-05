@@ -41,7 +41,7 @@ def main() -> None:
     parser.add_argument("--ks", default=None)
     parser.add_argument("--selection-metric", default=None, help="Mặc định lấy tuning.selection_metric")
     parser.add_argument("--run-final-test", action="store_true", help="Refit cấu hình thắng với train+validation rồi đánh giá test một lần.")
-    parser.add_argument("--experiments-dir", default="experiments")
+    parser.add_argument("--experiments-dir", help="Mặc định: experiments_dir trong data_paths.yaml.")
     args = parser.parse_args()
 
     base_config = load_config("baselines")["baselines"]
@@ -59,7 +59,8 @@ def main() -> None:
     if unknown:
         raise ValueError(f"Tuning supports only {sorted(allowed)}, got {sorted(unknown)}")
 
-    splits_dir = args.splits_dir or str(get_data_paths(args.tag).splits_dir)
+    paths = get_data_paths(args.tag)
+    splits_dir = args.splits_dir or str(paths.splits_dir)
     train, validation, test = load_splits(splits_dir)
     num_users, num_items = infer_matrix_shape(train, validation, test)
     train_matrix = build_interaction_matrix(train, num_users, num_items)
@@ -117,7 +118,7 @@ def main() -> None:
         print("Validation tuning done. Re-run with --run-final-test only after reviewing the selected model.")
 
     output = save_experiment(
-        next_experiment_dir(args.experiments_dir),
+        next_experiment_dir(args.experiments_dir or paths.experiments_dir),
         config={"ks": ks, "sparse_max": sparse_max, "baselines": base_config, "tuning": tuning_config},
         metrics=metrics,
         seed=base_config["seed"],

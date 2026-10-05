@@ -10,7 +10,7 @@ from package.data.leakage import (
     check_split_temporal_order,
 )
 from package.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
-from package.data.split import compute_temporal_cutoffs, temporal_split
+from package.data.split import compute_temporal_cutoffs, save_splits, temporal_split
 
 
 def main() -> None:
@@ -31,7 +31,7 @@ def main() -> None:
         raise FileNotFoundError(
             f"Không tìm thấy {paths.filtered_path} — chạy stage2_merge_filter.py (cùng tag) trước."
         )
-    if (paths.splits_dir / "train.parquet").exists() and not args.force:
+    if paths.split_path("train").exists() and not args.force:
         sys.exit(f"{paths.splits_dir} đã có splits. Dùng --force để ghi đè.")
 
     df = pd.read_parquet(paths.filtered_path)
@@ -56,10 +56,7 @@ def main() -> None:
     check_profile_snapshot(as_of_timestamp=cutoff_1, source_interactions=train)
     print("leakage_check status=PASS (3/3 check)")
 
-    paths.splits_dir.mkdir(parents=True, exist_ok=True)
-    train.to_parquet(paths.splits_dir / "train.parquet", index=False)
-    validation.to_parquet(paths.splits_dir / "validation.parquet", index=False)
-    test.to_parquet(paths.splits_dir / "test.parquet", index=False)
+    save_splits(train, validation, test, paths.splits_dir)
 
     print(f"=== STAGE 3 DONE: saved splits -> {paths.splits_dir} ===")
 

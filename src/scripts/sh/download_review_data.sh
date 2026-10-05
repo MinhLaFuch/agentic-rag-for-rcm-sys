@@ -14,7 +14,7 @@ for a in ${PASS_ARGS[@]+"${PASS_ARGS[@]}"}; do
   [[ "$a" == "--no-meta" ]] && GET_META=false
 done
 
-RAW_DIR="$(cfg data_paths.paths.raw_dir)"
+RAW_DIR="$(data_path raw_dir)"
 REVIEW_URL="$(cfg download.download.review_url)"
 META_URL="$(cfg download.download.meta_url)"
 mkdir -p "$RAW_DIR"
@@ -35,8 +35,8 @@ fetch() {  # fetch <url> <out_file>
 for DOMAIN in "${DOMAIN_LIST[@]}"; do
   echo
   echo "################ Download: ${DOMAIN} ################"
-  fetch "${REVIEW_URL//\{domain\}/$DOMAIN}" "${RAW_DIR}/${DOMAIN}.jsonl.gz"
+  fetch "${REVIEW_URL//\{domain\}/$DOMAIN}" "$(data_path "review_path:${DOMAIN}")"
   if [[ "$GET_META" == true ]]; then
-    fetch "${META_URL//\{domain\}/$DOMAIN}" "${RAW_DIR}/meta_${DOMAIN}.jsonl.gz"
+    fetch "${META_URL//\{domain\}/$DOMAIN}" "$(data_path "meta_path:${DOMAIN}")"
   fi
 done

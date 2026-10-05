@@ -7,7 +7,8 @@ from typing import Any, Sequence
 from package.tools.base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 
-from .._config import ITEM_COLUMNS, MAX_QUERY_ROWS, SCHEMA_HINT
+from .._limits import MAX_QUERY_ROWS
+from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 
 
 class QueryTool(Tool):

@@ -1,4 +1,4 @@
-from ._config import ITEM_ID_SEPARATOR, REQUIRED_COLUMNS, OPTIONAL_COLUMNS
+from ._schema import ITEM_ID_SEPARATOR, REQUIRED_COLUMNS, OPTIONAL_COLUMNS
 from . import clean
 from . import domain
 from . import eda
@@ -7,7 +7,7 @@ from . import leakage
 from . import loader
 from . import mapping
 from . import split
-from . import domain
+from .domain import domain_breakdown, merge_domains, namespaced_item_id, tag_domain
 
 __all__ = [
     "ITEM_ID_SEPARATOR",
@@ -21,5 +21,8 @@ __all__ = [
     "loader",
     "mapping",
     "split",
-    "domain"
+    "domain_breakdown",
+    "merge_domains",
+    "namespaced_item_id",
+    "tag_domain",
 ]

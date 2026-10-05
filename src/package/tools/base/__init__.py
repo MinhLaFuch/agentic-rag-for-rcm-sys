@@ -1,4 +1,4 @@
-from .._config import MAX_CANDIDATES
+from .._limits import MAX_CANDIDATES
 from ._dataclass import ToolResult
 from ._error import ToolInputError
 from .candidate_ids import candidate_ids
