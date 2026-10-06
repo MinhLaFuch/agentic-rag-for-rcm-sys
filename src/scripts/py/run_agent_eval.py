@@ -54,6 +54,8 @@ from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.recommenders import ItemKNNRecommender
 from package.utils.console import ensure_utf8_stdout
 
+ERROR_CHARS = 300  # step/plan errors are cut to this many characters in the trajectory file
+
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
     "asked_clarification", "invented_ids", "n_steps", "llm_latency_seconds", "completion_tokens",
@@ -74,11 +76,13 @@ def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: in
     try:
         results = executor.run(request.text)
         traj["steps"] = [
-            {key: r.get(key) for key in ("tool", "ok", "error", "invented_ids", "latency_seconds")} for r in results
+            {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds")},
+             "error": None if r.get("error") is None else str(r["error"])[:ERROR_CHARS]}
+            for r in results
         ]
         traj["recommended"] = extract_recommendations(results, k)
     except (ValueError, LLMProviderError) as exc:  # unparsable plan after retries, or the endpoint failed
-        traj["error"] = f"{type(exc).__name__}: {exc}"
+        traj["error"] = f"{type(exc).__name__}: {exc}"[:ERROR_CHARS]
         traj["provider_error"] = isinstance(exc, LLMProviderError)
     traj.update(plan=executor.last_plan, ask_user=executor.last_question, truncated=executor.last_truncated,
                 usage=dict(executor.last_usage))
@@ -201,11 +205,11 @@ def main() -> None:
                     traj = empty_trajectory(request, agent, [])
                     started = time.perf_counter()
                     if agent == "baseline":
-                        traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k) if i in id2item]
+                        traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
                     else:
                         out = runners["type1"].recommend(request.user_id, [request.seed_item_id], top_k=k)
                         if out["ok"]:
-                            traj["recommended"] = [it["item_id"] for it in out["items"]]
+                            traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
                         else:
                             traj["error"] = f"{out.get('stage')}: {out.get('error')}"
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)

@@ -24,6 +24,10 @@ class QueryTool(Tool):
         "item_ids": "list[str] | None  -- namespaced item ids",
         "max_rows": f"int (<= {MAX_QUERY_ROWS}, default 20)",
     }
+    output_schema = {
+        "items": "list[{item_id, domain, title, store, price, average_rating, rating_number, main_category}]",
+        "missing_item_ids": "list[str]  -- only with item_ids", "truncated": "bool",
+    }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
         super().__init__(logger)

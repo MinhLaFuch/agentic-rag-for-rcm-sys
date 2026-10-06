@@ -44,6 +44,10 @@ class SQLTool(Tool):
         "descending": "bool (default true)",
         "limit": f"int (<= {MAX_CANDIDATES}, default 100)",
     }
+    output_schema = {
+        "candidates": "list[{item_id, domain, title, store, price, ...}]",
+        "total_matches": "int", "truncated": "bool", "applied_filters": "dict",
+    }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
         super().__init__(logger)

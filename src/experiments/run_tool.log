@@ -1,0 +1,66 @@
+log -> C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys-me\ecom-agentic-recsys\experiments\real_tools_check.log
+
+=== Load stage 3 outputs ===
+  train=21,687,358 validation=2,710,920 users=2,757,103 items=678,281
+[ OK ] item2id keys are namespaced 'Domain::asin' 
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys-me\ecom-agentic-recsys\scripts\real_tools_check.py:135: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  wanted = {d: set(g["original_item_id"]) for d, g in all_items.groupby("domain")}
+
+=== Build item corpus from raw metadata ===
+  Video_Games: kept 42544 of 42544 split items (3s)
+  Electronics: kept 382940 of 382940 split items (41s)
+  Toys_and_Games: kept 205867 of 205867 split items (21s)
+[ OK ] corpus built -- 631,351 items, domains=['Electronics', 'Toys_and_Games', 'Video_Games']
+[ OK ] most split items have metadata -- 4894/5000 of the first 5000 mapped items are in the corpus
+
+=== QueryTool / SQLTool on the corpus ===
+[ OK ] SQLTool: top 5 by rating_number -- 5 row(s) in 'candidates'
+         {'item_id': 'Electronics::B07H65KP63', 'domain': 'Electronics', 'original_item_id': 'B07H65KP63', 'title': 'Echo Dot (3rd Gen, 2018 release) - Smart speaker with Alexa - Charcoal', 'store': 'Amazon', 'price': None}
+         {'item_id': 'Electronics::B07GZFM1ZM', 'domain': 'Electronics', 'original_item_id': 'B07GZFM1ZM', 'title': 'Fire TV Stick 4K streaming device with Alexa Voice Remote (includes TV controls) | Dolby Vision', 'store': 'Amazon', 'price': None}
+         {'item_id': 'Electronics::B07PXGQC1Q', 'domain': 'Electronics', 'original_item_id': 'B07PXGQC1Q', 'title': 'Apple AirPods (2nd Generation) Wireless Earbuds with Lightning Charging Case Included. Over 24 Hours of Battery Life, Effortless Setup. Bluetooth Headphones for iPhone', 'store': 'Apple', 'price': 99.0}
+[ OK ] SQLTool: price<=30, rating>=4.5, 100+ ratings -- 5 row(s) in 'candidates'
+         {'item_id': 'Electronics::B07KTYJ769', 'domain': 'Electronics', 'original_item_id': 'B07KTYJ769', 'title': 'Amazon Smart Plug, for home automation, Works with Alexa - A Certified for Humans Device', 'store': 'Amazon', 'price': 24.99}
+         {'item_id': 'Electronics::B0BGNG1294', 'domain': 'Electronics', 'original_item_id': 'B0BGNG1294', 'title': 'Amazon Basics HDMI Cable, 18Gbps High-Speed, 4K@60Hz, 2160p, Ethernet Ready, 10 Foot, Black', 'store': 'Amazon Basics', 'price': 8.55}
+         {'item_id': 'Electronics::B08CLNX58K', 'domain': 'Electronics', 'original_item_id': 'B08CLNX58K', 'title': 'SanDisk 32GB 2-Pack Ultra MicroSDHC UHS-I Memory Card (2x32GB) - SDSQUAR-032G-GN6MT', 'store': 'SanDisk', 'price': 13.4}
+[ OK ] SQLTool: domain=Electronics -- 3 row(s) in 'candidates'
+         {'item_id': 'Electronics::B07H65KP63', 'domain': 'Electronics', 'original_item_id': 'B07H65KP63', 'title': 'Echo Dot (3rd Gen, 2018 release) - Smart speaker with Alexa - Charcoal', 'store': 'Amazon', 'price': None}
+         {'item_id': 'Electronics::B07GZFM1ZM', 'domain': 'Electronics', 'original_item_id': 'B07GZFM1ZM', 'title': 'Fire TV Stick 4K streaming device with Alexa Voice Remote (includes TV controls) | Dolby Vision', 'store': 'Amazon', 'price': None}
+         {'item_id': 'Electronics::B07PXGQC1Q', 'domain': 'Electronics', 'original_item_id': 'B07PXGQC1Q', 'title': 'Apple AirPods (2nd Generation) Wireless Earbuds with Lightning Charging Case Included. Over 24 Hours of Battery Life, Effortless Setup. Bluetooth Headphones for iPhone', 'store': 'Apple', 'price': 99.0}
+[ OK ] SQLTool: domain=Toys_and_Games -- 3 row(s) in 'candidates'
+         {'item_id': 'Toys_and_Games::B004S8F7QM', 'domain': 'Toys_and_Games', 'original_item_id': 'B004S8F7QM', 'title': 'Cards Against Humanity', 'store': 'Cards Against Humanity LLC.', 'price': 29.0}
+         {'item_id': 'Toys_and_Games::B0953YFR2M', 'domain': 'Toys_and_Games', 'original_item_id': 'B0953YFR2M', 'title': 'LeapFrog Learning Friends English-Chinese 100 Words Book with Learning Activity Guide, Amazon Exclusive (Frustration Free Packaging)', 'store': 'LeapFrog', 'price': None}
+         {'item_id': 'Toys_and_Games::B0C5JBWJB6', 'domain': 'Toys_and_Games', 'original_item_id': 'B0C5JBWJB6', 'title': 'Hot Wheels Set of 20 Toy Cars & Trucks in 1:64 Scale, Collectible Vehicles (Styles May Vary)', 'store': 'Hot Wheels', 'price': 29.99}
+[ OK ] SQLTool: domain=Video_Games -- 3 row(s) in 'candidates'
+         {'item_id': 'Video_Games::B0C3KYVDWT', 'domain': 'Video_Games', 'original_item_id': 'B0C3KYVDWT', 'title': 'SanDisk 128GB microSDXC-Card, Licensed for Nintendo-Switch - SDSQXAO-128G-GNCZN', 'store': 'SanDisk', 'price': 14.99}
+         {'item_id': 'Video_Games::B0BL65X86R', 'domain': 'Video_Games', 'original_item_id': 'B0BL65X86R', 'title': '$25 PlayStation Store Gift Card [Digital Code]', 'store': 'PlayStation', 'price': 25.0}
+         {'item_id': 'Video_Games::B07KRWJCQW', 'domain': 'Video_Games', 'original_item_id': 'B07KRWJCQW', 'title': '$40 Xbox Gift Card [Digital Code]', 'store': 'Xbox', 'price': 40.0}
+[ OK ] QueryTool: look up those ids 
+[ OK ] QueryTool: items per domain -- 3 row(s) in 'items'
+         {'domain': 'Electronics', 'n': 382940}
+         {'domain': 'Toys_and_Games', 'n': 205867}
+         {'domain': 'Video_Games', 'n': 42544}
+[ OK ] QueryTool rejects DELETE 
+
+=== Fit knn on TRAIN only ===
+  fitted in 46s
+[ OK ] validation users with train history exist -- 1,062,100 users
+  demo user AE2227QSJSF6HV3XTTIGQAPA6WHQ has 3 train interactions
+
+=== ItemCFTool / RecoModelTool on a real user ===
+[ OK ] ItemCFTool: neighbours of the user's first 3 items -- 5 row(s) in 'candidates'
+         {'item_id': 'Video_Games::B004QSY97W', 'similarity': 0.09137088805437088, 'domain': 'Video_Games'}
+         {'item_id': 'Video_Games::B07MFMQZ7M', 'similarity': 0.08479268103837967, 'domain': 'Video_Games'}
+         {'item_id': 'Electronics::B09DB6MZYT', 'similarity': 0.06651900708675385, 'domain': 'Electronics'}
+[ OK ] RecoModelTool: rank SQLTool's top-200 for the user -- 5 row(s) in 'ranked'
+         {'rank': 1, 'item_id': 'Electronics::B075X8471B', 'score': 1e-06, 'domain': 'Electronics'}
+         {'rank': 2, 'item_id': 'Electronics::B01K8B8YA8', 'score': 8.447933055550752e-07, 'domain': 'Electronics'}
+         {'rank': 3, 'item_id': 'Electronics::B07GZFM1ZM', 'score': 6.622002455090855e-07, 'domain': 'Electronics'}
+[ OK ] not treated as cold start 
+[ OK ] no already-seen item in the ranking 
+
+=== Ranking sanity check (200 validation users, 1 held-out item vs 99 random negatives) ===
+  HR@10 model=0.405  random=0.075  (n=200)
+[ OK ] model beats random ranking -- if this fails on real data, look at candidate/ID alignment before blaming the model
+
+=== Summary ===
+All real-data checks passed.

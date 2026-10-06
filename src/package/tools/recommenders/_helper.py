@@ -10,6 +10,8 @@ def _append_popular_unseen(
     selected: list[int], ranked_items: np.ndarray, seen: set[int], top_k: int
 ) -> list[int]:
     """Fill a ranking from the cached global popularity order without dense scores."""
+    if len(selected) >= top_k:  # already full: without this the loop below appends EVERY remaining item
+        return selected[:top_k]
     selected_set = set(selected)
     for item in ranked_items:
         item = int(item)

@@ -19,6 +19,7 @@ class Tool(ABC):
     name: str = "tool"
     description: str = ""
     input_schema: dict[str, Any] = {}  # JSON-schema-ish, for the Planning module / function calling
+    output_schema: dict[str, Any] = {}  # top-level keys of the result data: the only paths a "$N.path" reference may use
 
     def __init__(self, logger: ToolCallLogger | None = None) -> None:
         self.logger = logger or ToolCallLogger()

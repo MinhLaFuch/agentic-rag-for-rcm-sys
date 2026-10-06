@@ -89,3 +89,33 @@ def test_ask_user_gives_an_empty_plan_and_a_question(corpus):
     executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which product type?")), [SQLTool(corpus)])
     assert executor.run("recommend something") == []
     assert executor.last_question == "Which product type?"
+
+
+def test_every_tool_the_planner_can_see_documents_itself(corpus, cf_setup):
+    # Regression: RecoModelTool once reached the planner with no description and `input_schema: {}`.
+    from package.agents import build_tool_prompt
+    from package.memory.memory_tool import MemoryTool
+    from package.tools import BaselineScorer, ItemCFTool, RecoModelTool, SemanticSearchTool
+    from package.tools.recommenders import ItemKNNRecommender
+
+    interactions, user2id, item2id = cf_setup
+    knn = ItemKNNRecommender(5).fit(interactions)
+    tools = [ItemCFTool(knn, item2id, corpus=corpus), RecoModelTool(BaselineScorer(knn), user2id, item2id, corpus=corpus),
+             QueryTool(corpus), SQLTool(corpus), SemanticSearchTool(corpus), MemoryTool(interactions, user2id, item2id, corpus)]
+    for tool in tools:
+        assert tool.description and tool.input_schema and tool.output_schema, tool.name
+    prompt = build_tool_prompt(tools)
+    assert "returns:" in prompt and "user_id" in prompt and "categories_any" in prompt  # filter keys are spelled out
+    assert "Electronics" in SemanticSearchTool(corpus).input_schema["filters"]["domain"]  # real domain names, not "Amazon"
+
+
+def test_filter_key_sent_at_top_level_gets_an_actionable_error_and_the_tool_is_not_called(corpus):
+    from package.tools import SemanticSearchTool
+
+    logger = ToolCallLogger()
+    flat = {"tool": "SemanticSearchTool", "args": {"query": "game", "categories_any": ["Games"], "price_max": 20}}
+    results = PlanExecutor(ScriptedLLM(plan(flat)), [SemanticSearchTool(corpus, logger=logger)]).run("find games")
+    assert not results[0]["ok"] and logger.records == []
+    assert "belongs inside `filters`" in results[0]["error"] and "categories_any" in results[0]["error"]
+    nested = {"tool": "SemanticSearchTool", "args": {"query": "game", "filters": {"categories_any": ["Games"], "price_max": 20}}}
+    assert PlanExecutor(ScriptedLLM(plan(nested)), [SemanticSearchTool(corpus)]).run("find games")[0]["ok"]

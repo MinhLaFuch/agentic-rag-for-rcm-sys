@@ -5,7 +5,7 @@ from typing import Any
 
 from ..llm import LLMMessage, LLMProvider
 from ..tools.base import Tool
-from ._helper import _extract_plan, _invented_ids, _resolve_refs
+from ._helper import _extract_plan, _invented_ids, _resolve_refs, _unknown_args
 from ._limits import get_agent_limits
 from ._prompt import SYSTEM_PROMPT
 from .build_tool_prompt import build_tool_prompt
@@ -19,7 +19,7 @@ RETRY_NOTICE = (
 class PlanExecutor:
     """
     Plan-first executor: one LLM call writes the whole JSON plan, then the steps run in order.
-    Limits (max_steps, plan_retries, max_tokens, temperature) default to configs/agent/agent.yaml.
+    Limits (max_steps, plan_retries, max_tokens, temperature) default to configs/agent.yaml.
 
     After plan()/run() the `last_*` attributes describe the latest request:
       last_plan / last_question  the parsed plan and the clarifying question (ask_user)
@@ -101,6 +101,8 @@ class PlanExecutor:
             elif invented := _invented_ids(raw_args, user_request):
                 entry["error"] = f"id(s) not found in the request (invented?): {invented}"
                 entry["invented_ids"] = invented  # the tool is NOT executed with an id the user never gave
+            elif unknown := _unknown_args(tool, raw_args):
+                entry["error"] = unknown  # actionable, and the tool is not called with args it does not declare
             else:
                 try:
                     res = tool(agent="planner", **_resolve_refs(raw_args, results))

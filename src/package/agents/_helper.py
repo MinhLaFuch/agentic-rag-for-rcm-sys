@@ -29,7 +29,7 @@ def _resolve_refs(obj: Any, results: list[dict[str, Any]]) -> Any:
         if not 1 <= n <= len(results):
             raise ValueError(f"{obj}: step {n} has not run yet")
         if not results[n - 1]["ok"]:
-            raise ValueError(f"{obj}: step {n} failed ({results[n - 1]['error']})")
+            raise ValueError(f"{obj}: skipped, step {n} failed")  # the cause is in step n's own error
         parts = [p for p in m.group(2).split(".") if p]
         try:
             return _resolve_path(results[n - 1]["data"], parts)
@@ -56,6 +56,22 @@ def _extract_plan(text: str) -> tuple[list[dict[str, Any]], str | None]:
     if not isinstance(data, list) or not all(isinstance(s, dict) for s in data):
         raise ValueError(f"Plan must be a list of steps, got: {text[:200]}")
     return data, question
+
+
+def _unknown_args(tool: Any, args: Any) -> str | None:
+    """Error text for args the tool does not declare (None if fine), with a hint when the key belongs in a nested dict."""
+    schema = tool.input_schema
+    if not isinstance(args, dict) or not schema:
+        return None  # a tool without a declared schema cannot be judged
+    unknown = sorted(set(args) - set(schema))
+    if not unknown:
+        return None
+    hints = []
+    for key in unknown:
+        home = next((name for name, spec in schema.items() if isinstance(spec, dict) and any(key in str(k) for k in spec)), None)
+        if home:
+            hints.append(f"'{key}' belongs inside `{home}`")
+    return f"unknown arg(s) {unknown} for {tool.name}; allowed: {sorted(schema)}" + (f" ({'; '.join(hints)})" if hints else "")
 
 
 def _invented_ids(args: Any, request: str) -> list[str]:

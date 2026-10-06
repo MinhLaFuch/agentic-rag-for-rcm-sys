@@ -29,6 +29,10 @@ class ItemCFTool(Tool):
         "domain": "str | None  -- restrict output domain; None = cross-domain",
         "exclude_input": "bool (default true)",
     }
+    output_schema = {
+        "candidates": "list[{item_id, similarity, domain}]  -- most similar first",
+        "unknown_items": "list[str]",
+    }
 
     def __init__(
         self,

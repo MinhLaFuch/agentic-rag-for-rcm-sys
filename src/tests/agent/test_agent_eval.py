@@ -163,3 +163,13 @@ def test_memory_tool_refuses_interactions_from_the_future(corpus, cf_setup):
     MemoryTool(interactions, user2id, item2id, corpus, as_of_timestamp=int(interactions["timestamp"].max()))
     with pytest.raises(ValueError):
         MemoryTool(interactions.drop(columns="timestamp"), user2id, item2id, corpus, as_of_timestamp=5)
+
+
+def test_personalized_is_not_scored_for_a_planner_that_cannot_read_history(corpus):
+    request = AgentRequest(request_id="p", kind="personalized", segment="warm", text="t", targets=[1])
+    blind = score_trajectory(request, _trajectory(ask_user="What do you like?"), item2id=ITEM2ID, corpus=corpus, k=2)
+    assert blind["task_success"] is None and blind["tool_selection_ok"] is None and blind["asked_clarification"] is True
+    with_memory = _trajectory(steps=[_step("MemoryTool"), _step("SemanticSearchTool"), _step("RecoModelTool")],
+                              recommended=[VG_B], tools=("MemoryTool", "SemanticSearchTool", "RecoModelTool"))
+    scored = score_trajectory(request, with_memory, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert scored["tool_selection_ok"] is True and scored["task_success"] is True

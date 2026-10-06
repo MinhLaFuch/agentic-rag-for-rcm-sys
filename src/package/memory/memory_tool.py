@@ -31,6 +31,11 @@ class MemoryTool(Tool):
         "user_id": "str",
         "top_n_categories": "int (default 3)",
     }
+    output_schema = {
+        "user_id": "str", "known": "bool", "n_interactions": "int",
+        "top_categories": "list[str]  -- e.g. use as filters.categories_any via \"$1.top_categories\"",
+        "price_range": "{min, max} | None  -- e.g. \"$1.price_range.max\" for filters.price_max",
+    }
 
     def __init__(
         self,

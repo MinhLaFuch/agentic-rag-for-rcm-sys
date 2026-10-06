@@ -39,13 +39,23 @@ class SemanticSearchTool(Tool):
     )
     input_schema = {
         "query": "str  -- keywords, e.g. 'mechanical keyboard quiet'; English",
-        "filters": "dict | None  -- same keys as SQLTool.filters (domain, price_max, min_rating, ...)",
+        "filters": SQLTool.input_schema["filters"],  # the planner never sees SQLTool, so the keys are spelled out here
         "limit": f"int (<= {MAX_CANDIDATES}, default {SEMANTIC_DEFAULT_LIMIT})",
+    }
+    output_schema = {
+        "candidates": "list[{item_id, domain, title, store, price, ..., score}]  -- best match first",
+        "query_tokens": "list[str]", "truncated": "bool", "applied_filters": "dict",
     }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
         super().__init__(logger)
         self.corpus = corpus
+        filters = {  # values the planner must use are data-dependent, so this instance-level schema names them
+            **SQLTool.input_schema["filters"],
+            "domain": f"str | list[str]  -- exact domain name, one of {corpus.domains()} (NOT a store name); omit for all",
+            "categories_any": "list[str]  -- catalog category names as written, e.g. ['Nintendo Switch']; item has at least one",
+        }
+        self.input_schema = {**type(self).input_schema, "filters": filters}
         self._sql = SQLTool(corpus)  # reused only for its filter compiler
 
     def execute(
