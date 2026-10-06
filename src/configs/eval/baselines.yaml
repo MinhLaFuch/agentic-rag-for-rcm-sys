@@ -1,0 +1,17 @@
+# Baselines config (mục VIII, XX).
+# Schema được dùng bởi scripts/py/run_baselines.py.
+
+baselines:
+  seed: 42
+  models: [random, popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
+  popularity_fallback: true
+  item_knn:
+    k: 20
+    # Số phần tử dense tối đa mỗi block khi xây item-item similarity.
+    block_elements: 20000000
+  bpr_mf:
+    embedding_dim: 64
+    learning_rate: 0.001
+    reg: 0.01
+    epochs: 20
+    batch_size: 2048

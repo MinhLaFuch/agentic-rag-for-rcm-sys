@@ -1,0 +1,6 @@
+# Recommendation metrics config (mục XVI, XVII, XX).
+
+# Danh sách metric được tính cố định trong package/tools/evaluation; ở đây chỉ chọn các k.
+
+recommendation_metrics:
+  k_values: [5, 10, 20]

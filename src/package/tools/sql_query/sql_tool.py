@@ -12,7 +12,9 @@ from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
-from .._config import *
+from .._limits import MAX_CANDIDATES
+from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
+from ._helper import _as_list
 
 class SQLTool(Tool):
     """
@@ -42,6 +44,10 @@ class SQLTool(Tool):
         "descending": "bool (default true)",
         "limit": f"int (<= {MAX_CANDIDATES}, default 100)",
     }
+    output_schema = {
+        "candidates": "list[{item_id, domain, title, store, price, ...}]",
+        "total_matches": "int", "truncated": "bool", "applied_filters": "dict",
+    }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
         super().__init__(logger)
@@ -55,11 +61,11 @@ class SQLTool(Tool):
         limit: int = 100,
     ) -> dict[str, Any]:
         filters = filters or {}
-        unknown = set(filters) - _FILTER_KEYS
+        unknown = set(filters) - FILTER_KEYS
         if unknown:
-            raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(_FILTER_KEYS)}")
-        if order_by not in _ORDER_COLUMNS:
-            raise ToolInputError(f"order_by must be one of {sorted(_ORDER_COLUMNS)}")
+            raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
+        if order_by not in ORDER_COLUMNS:
+            raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
         limit = check_top_k(limit)
 
         where, params = self._compile(filters)
@@ -142,7 +148,3 @@ class SQLTool(Tool):
             params += ex
 
         return " AND ".join(clauses), params
-
-
-def _as_list(value: Any) -> list[Any]:
-    return list(value) if isinstance(value, (list, tuple, set)) else [value]

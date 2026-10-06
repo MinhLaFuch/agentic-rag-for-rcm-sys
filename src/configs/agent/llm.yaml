@@ -1,0 +1,8 @@
+# LLM config (mục IV, XII, XIV, XX, XXI).
+# reference architecture: InteRecAgent/RecAI (xem docs/decisions.md D-003b)
+
+provider: "openai_compatible"       # openai_compatible — cấu hình base_url + api_key khi có endpoint thật
+model: "gpt-5.4"
+base_url: ${LLM_BASE_URL:-}      # https://api.xah.io/v1
+api_key: ${LLM_API_KEY:-}      # KHÔNG ghi key vào file này: export LLM_API_KEY=...; để trống nếu server local không cần auth
+timeout_seconds: 90.0

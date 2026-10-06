@@ -12,14 +12,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from typing import Any
 from ._dataclass import LLMMessage, LLMResponse
 
 class LLMProvider(ABC):
     """
     Interface bắt buộc cho mọi LLM backend.
 
-    Mọi implementation (mock, openai-compatible, ollama, vllm...) phải
+    Mọi implementation (openai-compatible, ollama, vllm...) phải
     kế thừa class này và implement đầy đủ các method abstract.
     """
 

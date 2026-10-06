@@ -1,0 +1,19 @@
+# Agent evaluation config (mục XVI, XVII, XVIII, XX). Dùng bởi scripts/py/run_agent_eval.py.
+# LLM lấy từ llm.yaml, giới hạn executor từ agent.yaml, ItemKNN k + seed từ baselines.yaml,
+# ngưỡng cold/sparse/warm từ segment_thresholds.yaml.
+
+agent_eval:
+  agents: [baseline, type1, planner, planner_memory]
+  # baseline       ItemKNN + popularity fallback, không LLM, chạy được cho mọi request có user (E2 trên cùng tập request)
+  # type1          plan cố định ItemCF -> RecoModel -> Query, không LLM, chỉ áp dụng cho request "similar"
+  # planner        LLM lập plan với 4 tool (ItemCF, RecoModel, Query, SemanticSearch)            (E6)
+  # planner_memory như planner + MemoryTool                                                       (E7)
+  k: 10                 # cutoff của metric VÀ số gợi ý được yêu cầu trong câu request
+  per_segment: 20       # số request mỗi (kind, segment); tổng số lần gọi LLM ~ số request x số agent LLM
+  n_ambiguous: 6        # số request cố ý thiếu thông tin (kỳ vọng agent hỏi lại, không bịa id)
+  language: "vi"        # ngôn ngữ câu request: vi | en
+  price_slack: 1.25     # ngân sách của request "constrained" = giá item bị giấu x hệ số này, làm tròn lên
+  price_round_to: 5     # bội số làm tròn của ngân sách (đơn vị USD)
+  max_consecutive_llm_errors: 5   # lỗi provider (timeout/auth...) liên tiếp từng này lần thì dừng cả lần chạy
+  experiments_subdir: "agent_eval"                  # nằm trong data_paths.paths.experiments_dir
+  trajectory_file: "agent_eval_trajectories.jsonl"  # ghi dần trong log_dir để --resume được; cuối lần chạy copy vào exp_NNN/

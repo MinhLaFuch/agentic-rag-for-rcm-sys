@@ -3,6 +3,9 @@
 
 set -e
 
+# Run from this folder regardless of where the script is invoked from (logs go to tests/logs/)
+cd "$(dirname "$0")"
+
 # Create logs directory if it doesn't exist
 mkdir -p ../logs
 

@@ -1,1 +1,0 @@
-SUPPORTED_PROVIDERS = {"mock", "openai_compatible"}

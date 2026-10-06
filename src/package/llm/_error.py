@@ -1,2 +1,5 @@
+"""Error classes for LLM module."""
+
+
 class LLMProviderError(RuntimeError):
-    """Lỗi chung khi gọi LLM provider (timeout, auth, rate limit...)."""
+    """General error when calling LLM provider (timeout, auth, rate limit...)."""

@@ -1,0 +1,17 @@
+# Data paths config (mục V, XX) — NGUỒN DUY NHẤT cho mọi thư mục của project.
+# Code chỉ lấy đường dẫn qua package.config.get_data_paths(); shell qua `python -m package.config path:<tên>`.
+# Đường dẫn tương đối so với gốc project (thư mục chứa configs/).
+#
+# Thư mục có phân biệt ngữ nghĩa — KHÔNG gộp:
+#   resource/…       dữ liệu pipeline + log của pipeline/tool
+#   experiments/     kết quả thí nghiệm (exp_NNN/{config.yaml,metrics.json,README.md})
+#   tests/logs/      log của test (do tests/run_*.sh ghi, không thuộc cấu hình này)
+
+paths:
+  raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
+  cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
+  filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
+  mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
+  splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
+  log_dir: "resource/logs"           # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log)
+  experiments_dir: "experiments"     # exp_NNN/… (baselines, tuning); candidate_recall ghi vào <experiments_dir>/<experiments_subdir>

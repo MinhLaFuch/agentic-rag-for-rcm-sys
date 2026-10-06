@@ -18,9 +18,11 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from ...data.domain import namespaced_item_id, ITEM_ID_SEPARATOR
+from ...data import namespaced_item_id
 from ..base import ToolInputError
-from .._config import *
+from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
+from .._schema import ITEM_COLUMNS, SCHEMA_HINT
+from ._helper import _clean_row
 
 
 
@@ -40,9 +42,16 @@ class ItemCorpus:
             sqlite3.SQLITE_FUNCTION,
             getattr(sqlite3, "SQLITE_RECURSIVE", 33),
         }
-        self._conn.set_authorizer(
-            lambda action, *_: sqlite3.SQLITE_OK if action in allowed else sqlite3.SQLITE_DENY
-        )
+
+        def authorizer(action, arg1, *_):
+            if action in allowed:
+                return sqlite3.SQLITE_OK
+            # FTS5 MATCH reads PRAGMA data_version; deny every other pragma.
+            if action == sqlite3.SQLITE_PRAGMA and arg1 == "data_version":
+                return sqlite3.SQLITE_OK
+            return sqlite3.SQLITE_DENY
+
+        self._conn.set_authorizer(authorizer)
 
     # ---- construction ---------------------------------------------------- #
 
@@ -97,6 +106,21 @@ class ItemCorpus:
         conn.execute("CREATE INDEX idx_items_price ON items(price)")
         conn.execute("CREATE INDEX idx_cat_item ON item_categories(item_id)")
         conn.execute("CREATE INDEX idx_cat_cat ON item_categories(category)")
+
+        # FTS5 over title/store/main_category plus joined categories (porter stems "keyboards" -> "keyboard").
+        # External-content FTS cannot include categories (they live on item_categories), so we copy rowids.
+        conn.execute(
+            "CREATE VIRTUAL TABLE items_fts USING fts5("
+            "title, store, main_category, categories, tokenize='porter unicode61')"
+        )
+        conn.execute(
+            "INSERT INTO items_fts(rowid, title, store, main_category, categories) "
+            "SELECT i.rowid, i.title, i.store, i.main_category, "
+            "COALESCE((SELECT group_concat(c.category, ' ') FROM item_categories c "
+            "WHERE c.item_id = i.item_id), '') "
+            "FROM items i"
+        )
+
         conn.commit()
         return cls(conn)
 
@@ -146,13 +170,3 @@ class ItemCorpus:
             cur = self._conn.execute(f"SELECT item_id, domain FROM items WHERE item_id IN ({marks})", chunk)
             out.update(cur.fetchall())
         return out
-
-
-def _clean_row(row: dict[str, Any]) -> dict[str, Any]:
-    """Make values JSON-safe (NaN -> None, numpy scalars -> Python)."""
-    for k, v in row.items():
-        if isinstance(v, float) and np.isnan(v):
-            row[k] = None
-        elif isinstance(v, np.generic):
-            row[k] = v.item()
-    return row

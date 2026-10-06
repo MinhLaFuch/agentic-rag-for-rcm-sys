@@ -1,0 +1,11 @@
+# Tools config — giới hạn runtime của package/tools (mục XX).
+# Schema của tool (tên cột, filter key, order column) là hợp đồng nên nằm trong code: package/tools/_schema.py.
+# Giá trị đọc MỘT lần khi import package.tools (xem package/tools/_limits.py) — sửa file rồi chạy lại process.
+
+tools:
+  max_candidates: 1000            # trần số candidate SQLTool / ItemCFTool / SemanticSearchTool được trả về
+  max_query_rows: 100             # trần số dòng QueryTool trả về cho agent (giữ nhỏ vì đi thẳng vào prompt)
+  sql_time_budget_seconds: 5.0    # ngân sách thời gian cho một câu SQL chạy trên corpus
+  semantic_search:
+    default_limit: 50             # limit mặc định của SemanticSearchTool (phải <= max_candidates)
+    max_query_tokens: 20          # số token tối đa của query BM25 sau khi bỏ stopword

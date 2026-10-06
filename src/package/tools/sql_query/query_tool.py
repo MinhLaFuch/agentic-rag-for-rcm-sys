@@ -7,7 +7,8 @@ from typing import Any, Sequence
 from package.tools.base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 
-from .._config import *
+from .._limits import MAX_QUERY_ROWS
+from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 
 
 class QueryTool(Tool):
@@ -22,6 +23,10 @@ class QueryTool(Tool):
         "query": "str | None  -- one SELECT statement",
         "item_ids": "list[str] | None  -- namespaced item ids",
         "max_rows": f"int (<= {MAX_QUERY_ROWS}, default 20)",
+    }
+    output_schema = {
+        "items": "list[{item_id, domain, title, store, price, average_rating, rating_number, main_category}]",
+        "missing_item_ids": "list[str]  -- only with item_ids", "truncated": "bool",
     }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:

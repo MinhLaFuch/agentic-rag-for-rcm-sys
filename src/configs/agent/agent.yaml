@@ -1,0 +1,8 @@
+# Agent config (mục XII, XIV, XX) — giới hạn runtime của PlanExecutor (package/agents/_limits.py).
+# LLM provider/model nằm ở llm.yaml; file này chỉ chứa hành vi của vòng plan -> execute.
+
+agent:
+  max_steps: 8        # plan dài hơn bị cắt còn chừng này step (chặn cost/latency; kiểu max_tool_calls_per_request)
+  plan_retries: 1     # số lần gọi lại LLM khi reply không phải plan JSON hợp lệ (0 = không retry)
+  max_tokens: 2048    # ngân sách token cho 1 lần plan; model reasoning ăn token suy luận vào đây nên đừng đặt thấp
+  temperature: 0.0    # 0 để plan lặp lại được giữa các lần chạy

@@ -1,6 +1,6 @@
 import pytest
 
-from package.tools.recommenders.baselines import ItemKNNRecommender, PopularityRecommender
+from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools import ItemCFTool
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B
 

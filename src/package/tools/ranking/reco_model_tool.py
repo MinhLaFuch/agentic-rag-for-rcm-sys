@@ -20,13 +20,23 @@ class RecoModelTool(Tool):
     interactions the scorer's model was fitted on (train for validation runs,
     train+validation for test runs, as in scripts/run_baselines.py).
 
+    """
+
+    name = "RecoModelTool"
+    description = (
+        "Rank a candidate set for a user with a recommendation model (not an LLM). "
+        "Feed it `candidates` from ItemCFTool / SemanticSearchTool / SQLTool as-is."
+    )
     input_schema = {
-        "user_id": "str",
-        "candidates": "list[str | {item_id: str}]  -- e.g. output of SQLTool / ItemCFTool",
+        "user_id": "str  -- required",
+        "candidates": "list[str | {item_id: str}]  -- required, e.g. \"$1.candidates\" from a retrieval step",
         "top_k": "int | None  -- default: all scorable candidates",
         "exclude_seen": "bool (default true)  -- drop items the user already interacted with",
     }
-    """
+    output_schema = {
+        "ranked": "list[{rank, item_id, score, domain}]  -- best first",
+        "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
+    }
 
     def __init__(
         self,
