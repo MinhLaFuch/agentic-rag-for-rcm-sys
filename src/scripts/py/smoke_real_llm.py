@@ -1,4 +1,4 @@
-"""Smoke test: PlanExecutor + 5 tool trên fixture synthetic, dùng LLM thật theo configs/llm.yaml.
+"""Smoke test: PlanExecutor + 5 tool trên fixture synthetic, dùng LLM thật theo configs/agent/llm.yaml.
 
 Chạy từ src/:  python scripts/py/smoke_real_llm.py
 """
@@ -69,7 +69,7 @@ def build_fixture() -> list:
 
 
 def main() -> None:
-    llm = build_llm_provider(load_config("llm"))
+    llm = build_llm_provider(load_config("agent/llm"))
     print(f"Provider: {llm.provider_name}  health: {llm.health_check()}")
     executor = PlanExecutor(llm, build_fixture(), max_tokens=MAX_TOKENS)
 

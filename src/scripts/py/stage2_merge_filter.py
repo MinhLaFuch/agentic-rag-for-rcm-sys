@@ -27,7 +27,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    filtering_config = load_config("filtering")
+    filtering_config = load_config("data/filtering")
     min_user = filtering_config["filtering"]["min_user_interactions"]
     min_item = filtering_config["filtering"]["min_item_interactions"]
     domains = args.domain or get_domains()
@@ -88,7 +88,7 @@ def main() -> None:
     del merged
 
     if len(filtered) == 0:
-        sys.exit("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/filtering.yaml")
+        sys.exit("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/data/filtering.yaml")
 
     filtered = optimize_interaction_dtypes(filtered)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,5 +102,5 @@ if __name__ == "__main__":
 
 # NẾU VẪN OOM Ở STAGE NÀY:
 # - Giảm số domain load cùng lúc: chạy với 2 domain trước (TAG riêng), rồi thêm domain thứ 3.
-# - Tăng tạm filtering.min_user_interactions / min_item_interactions trong configs/filtering.yaml
+# - Tăng tạm filtering.min_user_interactions / min_item_interactions trong configs/data/filtering.yaml
 #   để loại bớt dữ liệu sớm hơn.

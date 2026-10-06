@@ -4,7 +4,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 
-# Pipeline data and pipeline/tool logs: everything under paths.* in configs/data_paths.yaml (except experiments_dir)
+# Pipeline data and pipeline/tool logs: everything under paths.* in configs/path/data_paths.yaml (except experiments_dir)
 resource/
 
 # Test logs written by tests/run_*.sh / run_*.bat
@@ -14,6 +14,6 @@ tests/logs/
 # only stray logs are ignored. Add `experiments/` here if you decide results should not be versioned.
 experiments/**/trajectories.jsonl
 
-# Secrets: never commit credentials (configs/llm.yaml reads LLM_API_KEY from the environment)
+# Secrets: never commit credentials (configs/agent/llm.yaml reads LLM_API_KEY from the environment)
 .env
 *.key

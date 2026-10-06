@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tải review + metadata thô của mọi domain trong configs/domains.yaml về resource/raw/.
+# Tải review + metadata thô của mọi domain trong configs/path/domains.yaml về resource/raw/.
 # Resume được nếu bị ngắt giữa chừng; bỏ qua file đã có.
 #   bash scripts/sh/download_review_data.sh              # review + meta, tất cả domain
 #   bash scripts/sh/download_review_data.sh --no-meta    # chỉ review

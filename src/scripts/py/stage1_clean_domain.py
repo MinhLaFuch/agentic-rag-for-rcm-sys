@@ -34,7 +34,7 @@ def main() -> None:
     if args.output_dir:  # override only the root; the <domain>/interactions.parquet layout stays DataPaths' job
         paths = replace(paths, cleaned_dir=Path(args.output_dir))
     review_path = Path(args.review_path) if args.review_path else paths.review_path(args.domain)
-    chunk_size = args.chunk_size or load_config("cleaning")["cleaning"]["chunk_size"]
+    chunk_size = args.chunk_size or load_config("data/cleaning")["cleaning"]["chunk_size"]
     if not review_path.exists():
         raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{args.domain}' về trước.")
 

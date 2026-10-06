@@ -47,7 +47,7 @@ def test_config_cli_prints_values_for_shell_scripts():
         return out.returncode, out.stdout.split()
 
     assert run("domains.domains") == (0, get_domains())
-    assert run("run_tag.tag") == (0, [load_config("run_tag")["tag"]])
+    assert run("run_tag.tag") == (0, [load_config("path/run_tag")["tag"]])
     assert run("data_paths.paths.raw_dir") == (0, ["resource/raw"])
     assert run("data_paths.does_not_exist")[0] != 0
 

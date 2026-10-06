@@ -2,9 +2,9 @@
 In một giá trị trong configs/ hoặc một đường dẫn của project ra stdout — để các script .sh đọc
 config/đường dẫn thay vì hard-code.
 
-    python -m package.config domains.domains        # mỗi domain một dòng
-    python -m package.config run_tag.tag
-    python -m package.config data_paths.paths.raw_dir
+    python -m package.config path/domains.domains        # mỗi domain một dòng
+    python -m package.config path/run_tag.tag
+    python -m package.config path/data_paths.paths.raw_dir
 
     # Đường dẫn đã resolve từ DataPaths (nguồn duy nhất), in tương đối so với gốc project:
     python -m package.config path:filtered_path
@@ -12,7 +12,7 @@ config/đường dẫn thay vì hard-code.
     python -m package.config path:cleaned_path:Video_Games      # <tên>:<đối số> cho review_path/meta_path/cleaned_path/split_path
     python -m package.config path:split_path:train
 
-Phần đầu của key là tên file yaml (domains, run_tag, data_paths, baselines, ...).
+Phần đầu của key là tên file yaml với folder (path/, data/, eval/, agent/).
 List of dict có field ``name`` được in ra theo ``name``.
 """
 
@@ -33,6 +33,28 @@ _PATH_METHODS = ("review_path", "meta_path", "cleaned_path", "split_path")  # ta
 
 def _lookup(key: str):
     name, *path = key.split(".")
+    # Auto-prefix with folder if not already prefixed
+    if "/" not in name:
+        # Map old config names to new folder structure
+        folder_map = {
+            "domains": "path",
+            "run_tag": "path",
+            "data_paths": "path",
+            "cleaning": "data",
+            "filtering": "data",
+            "split": "data",
+            "baselines": "eval",
+            "tuning": "eval",
+            "recommendation_metrics": "eval",
+            "segment_thresholds": "eval",
+            "candidate_recall": "eval",
+            "tools": "agent",
+            "agent": "agent",
+            "agent_eval": "agent",
+            "llm": "agent",
+        }
+        if name in folder_map:
+            name = f"{folder_map[name]}/{name}"
     value = load_config(name)
     for part in path:
         value = value[part]

@@ -16,7 +16,7 @@ from .providers.openai_compatible import OpenAICompatibleProvider
 
 def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
     """
-    config kỳ vọng có dạng (xem configs/llm.yaml):
+    config kỳ vọng có dạng (xem configs/agent/llm.yaml):
         provider: openai_compatible
         model: <model name>
         base_url: <URL của OpenAI-compatible server>

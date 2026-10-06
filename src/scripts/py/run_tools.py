@@ -1,7 +1,7 @@
 """
 Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
-Needs (paths come from configs/data_paths.yaml, default tag = run_tag.yaml):
+Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.yaml):
   - resource/splits/<tag>/{train,validation}.parquet   (stage 3)
   - resource/mapped/<tag>/{user2id,item2id}.json       (stage 3)
   - resource/raw/meta_<Domain>.jsonl.gz per domain     (raw metadata; domains whose
@@ -104,7 +104,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--negatives", type=int, default=99)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
-    args.neighbors = args.neighbors or load_config("baselines")["baselines"]["item_knn"]["k"]
+    args.neighbors = args.neighbors or load_config("eval/baselines")["baselines"]["item_knn"]["k"]
     return args
 
 

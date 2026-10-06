@@ -10,7 +10,7 @@ INTERACTIONS_FILE = "interactions.parquet"  # stage 1 (per domain) and stage 2 (
 
 @dataclass(frozen=True)
 class DataPaths:
-    """Every project directory, resolved from configs/data_paths.yaml (+ run tag). The one source of truth."""
+    """Every project directory, resolved from configs/path/data_paths.yaml (+ run tag). The one source of truth."""
 
     tag: str
     raw_dir: Path

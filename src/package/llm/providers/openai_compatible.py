@@ -9,7 +9,7 @@ urlopen để chạy offline — không cần API key hay server thật trong CI
 BLOCKED:
 REASON: chưa có endpoint LLM thật (API key hoặc local server) trong môi
   trường phát triển hiện tại.
-REQUIRED ACTION: trước Phase 8, cấu hình `configs/llm.yaml` với
+REQUIRED ACTION: trước Phase 8, cấu hình `configs/agent/llm.yaml` với
   base_url + api_key (hoặc để trống nếu server local không cần auth) và
   chạy `scripts/check_llm_provider.py` để xác nhận provider hoạt động
   thật trước khi dùng cho Agent layer.

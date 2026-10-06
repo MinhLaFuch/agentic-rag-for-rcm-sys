@@ -6,5 +6,5 @@ from .loader import load_config
 
 
 def get_domains(config: dict[str, Any] | None = None) -> list[str]:
-    config = config or load_config("domains")
+    config = config or load_config("path/domains")
     return [d["name"] for d in config["domains"]]

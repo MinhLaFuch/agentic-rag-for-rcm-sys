@@ -14,7 +14,7 @@ def fresh_limits():
 
 
 def test_limits_come_from_tools_yaml():
-    cfg = load_config("tools")["tools"]
+    cfg = load_config("agent/tools")["tools"]
     limits = _limits.get_tool_limits()
     assert limits.max_candidates == cfg["max_candidates"] == MAX_CANDIDATES
     assert limits.max_query_rows == cfg["max_query_rows"]
@@ -38,7 +38,7 @@ def test_check_top_k_uses_configured_cap():
     ],
 )
 def test_invalid_limits_are_rejected(monkeypatch, fresh_limits, patch):
-    good = load_config("tools")
+    good = load_config("agent/tools")
     bad = {"tools": {**good["tools"], **patch}}
     monkeypatch.setattr(_limits, "load_config", lambda name: bad)
     with pytest.raises(ConfigError):

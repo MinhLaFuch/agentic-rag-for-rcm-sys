@@ -26,7 +26,7 @@ load_domains() {
   else
     mapfile -t DOMAIN_LIST < <(cfg domains.domains)
   fi
-  [[ ${#DOMAIN_LIST[@]} -gt 0 ]] || { echo "No domains found (configs/domains.yaml → domains)"; exit 1; }
+  [[ ${#DOMAIN_LIST[@]} -gt 0 ]] || { echo "No domains found (configs/path/domains.yaml → domains)"; exit 1; }
 }
 
 # Điền TAG từ $TAG hoặc run_tag.yaml → tag.

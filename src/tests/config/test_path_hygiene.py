@@ -13,7 +13,7 @@ def _py_files():
 
 
 def test_no_hardcoded_project_dirs_in_code():
-    # Directories come from DataPaths (configs/data_paths.yaml). Docstrings/comments may mention them.
+    # Directories come from DataPaths (configs/path/data_paths.yaml). Docstrings/comments may mention them.
     offenders = []
     for path in _py_files():
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
@@ -40,5 +40,5 @@ def test_no_config_py_modules_left():
 def test_no_literal_secrets_in_configs():
     import re
 
-    for path in (PROJECT_ROOT / "configs").glob("*.yaml"):
+    for path in (PROJECT_ROOT / "configs").rglob("*.yaml"):
         assert not re.search(r"\bsk-[A-Za-z0-9_-]{16,}", path.read_text(encoding="utf-8")), path.name

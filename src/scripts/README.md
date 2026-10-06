@@ -3,7 +3,7 @@
 Mọi tham số nằm trong `configs/*.yaml`; các file `.sh` chỉ là lớp bọc mỏng (cd về gốc project, đặt
 `PYTHONPATH`, đọc config). Chạy từ đâu cũng được: `bash scripts/sh/<tên>.sh`.
 
-Mọi thư mục của project được định nghĩa MỘT lần trong `configs/data_paths.yaml → paths`; Python lấy qua
+Mọi thư mục của project được định nghĩa MỘT lần trong `configs/path/data_paths.yaml → paths`; Python lấy qua
 `package.config.get_data_paths()`, shell qua `data_path <tên>` (= `python -m package.config path:<tên>`). Không ghép
 đường dẫn bằng tay trong code/script.
 
@@ -45,7 +45,7 @@ Tham số nằm trong các file YAML atomics: `baselines.yaml`, `tuning.yaml`, `
 - `PYTHON` — interpreter, vd `PYTHON=.venv/Scripts/python`
 - `DOMAINS` — ghi đè danh sách domain, vd `DOMAINS="Video_Games Toys_and_Games"`
 - `TAG` — ghi đè `run_tag.yaml → tag`, để thử ít domain mà không ghi đè bản chạy đủ
-- `LLM_API_KEY` — API key cho `configs/llm.yaml` (`api_key: ${LLM_API_KEY:-}`); KHÔNG ghi key vào file yaml
+- `LLM_API_KEY` — API key cho `configs/agent/llm.yaml` (`api_key: ${LLM_API_KEY:-}`); KHÔNG ghi key vào file yaml
 
 ```bash
 DOMAINS="Video_Games Toys_and_Games" TAG=vg_toys bash scripts/sh/run_data_pipeline.sh

@@ -1,6 +1,6 @@
 """
 Demo: đăng ký đủ 5 tool vào PlanExecutor (LLM <-> tools <-> data qua memory).
-Dùng build_llm_provider(load_config("llm")) để tạo provider từ configs/llm.yaml.
+Dùng build_llm_provider(load_config("agent/llm")) để tạo provider từ configs/agent/llm.yaml.
 Khi có LLM_API_KEY và endpoint thật, chạy script này trực tiếp với data thật.
 """
 from __future__ import annotations

@@ -2,7 +2,7 @@
 Agent evaluation: does the agent layer add anything over the plain recommender, and where?
 
 One run builds a fixed set of simulated requests from held-out data, sends the SAME requests to every agent
-listed in configs/agent_eval.yaml and scores them (ranking metrics + agent metrics).  Request kinds:
+listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent metrics).  Request kinds:
   similar / personalized   built from the user's fit history only (honest)
   constrained / cold_text  category (+ price ceiling) taken from held-out items = ORACLE scenario, an upper bound
   ambiguous                missing information; the right move is to ask back instead of inventing ids
@@ -97,14 +97,14 @@ def main() -> None:
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
     args = ap.parse_args()
 
-    cfg = load_config("agent_eval")["agent_eval"]
-    baselines = load_config("baselines")["baselines"]
+    cfg = load_config("agent/agent_eval")["agent_eval"]
+    baselines = load_config("eval/baselines")["baselines"]
     k, seed = int(cfg["k"]), int(baselines["seed"])
     agents = [a.strip() for a in (args.agents or ",".join(cfg["agents"])).split(",") if a.strip()]
     if set(agents) - set(AGENTS):
         raise SystemExit(f"Unknown agent(s) {sorted(set(agents) - set(AGENTS))}; choose from {list(AGENTS)}")
     per_segment = args.per_segment or int(cfg["per_segment"])
-    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     data_paths = get_data_paths(args.tag)
     meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
     t_start = time.time()
@@ -149,9 +149,9 @@ def main() -> None:
     if "type1" in agents:
         runners["type1"] = Type1Agent(item_cf, reco, query)
     if any(a in PLANNER_AGENTS for a in agents):
-        llm = build_llm_provider(load_config("llm"))
+        llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
-            raise SystemExit("LLM health check failed: check configs/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
+            raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
         runners["planner"] = PlanExecutor(llm, [item_cf, reco, query, search])
         runners["planner_memory"] = PlanExecutor(llm, [item_cf, reco, query, search, memory])
 
@@ -234,7 +234,7 @@ def main() -> None:
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
-                "item_knn_k": baselines["item_knn"]["k"], "llm_model": load_config("llm").get("model")},
+                "item_knn_k": baselines["item_knn"]["k"], "llm_model": load_config("agent/llm").get("model")},
         metrics={"k": k, "summary": summary},
         seed=seed,
         dataset_info={"splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,

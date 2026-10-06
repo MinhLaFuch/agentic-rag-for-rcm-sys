@@ -1,4 +1,4 @@
-"""Contracts of the agent evaluation (fixed in code on purpose; tunables are in configs/agent_eval.yaml)."""
+"""Contracts of the agent evaluation (fixed in code on purpose; tunables are in configs/agent/agent_eval.yaml)."""
 
 SEGMENTS = ("cold", "sparse", "warm")
 AGENTS = ("baseline", "type1", "planner", "planner_memory")

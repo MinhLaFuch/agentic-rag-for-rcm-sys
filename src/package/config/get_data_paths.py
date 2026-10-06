@@ -10,9 +10,9 @@ from .loader import load_config
 
 def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None) -> DataPaths:
     if config is None:
-        tag_config = load_config("run_tag")
+        tag_config = load_config("path/run_tag")
         tag = tag or tag_config["tag"]
-        paths_config = load_config("data_paths")
+        paths_config = load_config("path/data_paths")
         paths = paths_config["paths"]
     else:
         tag = tag or config["tag"]

@@ -44,14 +44,14 @@ def main() -> None:
     parser.add_argument("--experiments-dir", help="Mặc định: experiments_dir trong data_paths.yaml.")
     args = parser.parse_args()
 
-    base_config = load_config("baselines")["baselines"]
-    tuning_config = load_config("tuning")["tuning"]
-    recommendation_metrics = load_config("recommendation_metrics")
+    base_config = load_config("eval/baselines")["baselines"]
+    tuning_config = load_config("eval/tuning")["tuning"]
+    recommendation_metrics = load_config("eval/recommendation_metrics")
     ks = [int(value) for value in args.ks.split(",")] if args.ks else recommendation_metrics["recommendation_metrics"]["k_values"]
     metric = args.selection_metric or tuning_config["selection_metric"]
     if metric not in {f"{name}@{k}" for name in ("precision", "recall", "hit_rate", "ndcg", "mrr", "map") for k in ks}:
         raise ValueError(f"selection metric '{metric}' is not available for ks={ks}")
-    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = args.models.split(",") if args.models else tuning_config["models"]
     model_names = [name.strip() for name in model_names if name.strip()]
     allowed = {"popularity", "item_knn", "bpr_mf"}

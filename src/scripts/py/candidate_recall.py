@@ -20,7 +20,7 @@ Where the semantic query comes from (there are no real user queries offline, so 
 Segments follow the evaluator: cold = 0 fit interactions, sparse = 1..sparse_max, warm = more.
 
 Reads splits/mappings from resource/ (see data_paths.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
-Defaults for budgets, sample sizes, etc. live in configs/candidate_recall.yaml → candidate_recall.
+Defaults for budgets, sample sizes, etc. live in configs/eval/candidate_recall.yaml → candidate_recall.
 
     PYTHONPATH=. python scripts/py/candidate_recall.py --eval-on validation
     PYTHONPATH=. python scripts/py/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
@@ -124,9 +124,9 @@ def main() -> None:
     ap.add_argument("--experiments-dir", help="mặc định: <experiments_dir>/<candidate_recall.experiments_subdir>")
     args = ap.parse_args()
 
-    # CLI > configs/candidate_recall.yaml / baselines.yaml / segment_thresholds.yaml
-    cfg = load_config("candidate_recall")["candidate_recall"]
-    baselines = load_config("baselines")["baselines"]
+    # CLI > configs/eval/candidate_recall.yaml / eval/baselines.yaml / eval/segment_thresholds.yaml
+    cfg = load_config("eval/candidate_recall")["candidate_recall"]
+    baselines = load_config("eval/baselines")["baselines"]
     args.n = args.n or ",".join(str(b) for b in cfg["budgets"])
     args.per_segment = args.per_segment or cfg["per_segment"]
     args.seed_items = args.seed_items or cfg["seed_items"]
@@ -141,7 +141,7 @@ def main() -> None:
 
     budgets = sorted(int(x) for x in args.n.split(","))
     n_max = max(budgets)
-    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     rng = np.random.default_rng(args.seed)
     t_start = time.time()
 

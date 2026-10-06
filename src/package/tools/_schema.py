@@ -1,6 +1,6 @@
 """Tool contracts (schema): columns, filter keys, order columns. Fixed in Python on purpose.
 
-Runtime-tunable limits (max candidates, row caps, SQL time budget...) live in configs/tools.yaml → _limits.py.
+Runtime-tunable limits (max candidates, row caps, SQL time budget...) live in configs/agent/tools.yaml → _limits.py.
 """
 
 ITEM_COLUMNS = (

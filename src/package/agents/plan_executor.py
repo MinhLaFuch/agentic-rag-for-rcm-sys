@@ -19,7 +19,7 @@ RETRY_NOTICE = (
 class PlanExecutor:
     """
     Plan-first executor: one LLM call writes the whole JSON plan, then the steps run in order.
-    Limits (max_steps, plan_retries, max_tokens, temperature) default to configs/agent.yaml.
+    Limits (max_steps, plan_retries, max_tokens, temperature) default to configs/agent/agent.yaml.
 
     After plan()/run() the `last_*` attributes describe the latest request:
       last_plan / last_question  the parsed plan and the clarifying question (ask_user)

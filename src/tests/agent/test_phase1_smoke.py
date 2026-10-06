@@ -51,8 +51,8 @@ class _FakeHTTPResponse:
 # ---------------------------------------------------------------------------
 
 def test_end_to_end_agent_config_to_llm_call(monkeypatch):
-    # 1. Load config thật từ configs/llm.yaml (provider: openai_compatible)
-    llm_config = load_config("llm")
+    # 1. Load config thật từ configs/agent/llm.yaml (provider: openai_compatible)
+    llm_config = load_config("agent/llm")
 
     # 2. Patch urllib so no real HTTP call is made
     fake_reply = _fake_chat_response(
@@ -79,7 +79,7 @@ def test_end_to_end_agent_config_to_llm_call(monkeypatch):
 
 
 def test_end_to_end_data_config():
-    domains_config = load_config("domains")
+    domains_config = load_config("path/domains")
 
     # Domain đến từ domains.yaml, không hard-code trong logic (mục V, XX)
     assert domains_config["domains"][0]["name"] == "Video_Games"

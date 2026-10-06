@@ -30,10 +30,10 @@ def main() -> None:
     parser.add_argument("--experiments-dir", help="Mặc định: experiments_dir trong data_paths.yaml.")
     args = parser.parse_args()
 
-    model_cfg = load_config("baselines")["baselines"]
-    eval_cfg = load_config("recommendation_metrics")
+    model_cfg = load_config("eval/baselines")["baselines"]
+    eval_cfg = load_config("eval/recommendation_metrics")
     ks = [int(x) for x in args.ks.split(",")] if args.ks else eval_cfg["recommendation_metrics"]["k_values"]
-    sparse_max = load_config("segment_thresholds")["segment_thresholds"]["sparse_max_history"]
+    sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = args.models.split(",") if args.models else model_cfg["models"]
     model_names = [m.strip() for m in model_names if m.strip()]
     paths = get_data_paths(args.tag)

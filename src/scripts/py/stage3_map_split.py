@@ -19,7 +19,7 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Ghi đè splits cũ nếu có.")
     args = parser.parse_args()
 
-    split_config = load_config("split")
+    split_config = load_config("data/split")
     train_ratio = split_config["split"]["train_ratio"]
     val_ratio = split_config["split"]["validation_ratio"]
     test_ratio = split_config["split"]["test_ratio"]
