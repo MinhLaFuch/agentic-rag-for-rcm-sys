@@ -12,7 +12,7 @@ tests/logs/
 
 # Experiment results (experiments/exp_NNN/{config.yaml,metrics.json,README.md}) are tracked on purpose;
 # only stray logs are ignored. Add `experiments/` here if you decide results should not be versioned.
-experiments/**/trjectories.jsonl
+experiments/**/trajectories.jsonl
 
 # Secrets: never commit credentials (configs/llm.yaml reads LLM_API_KEY from the environment)
 .env
