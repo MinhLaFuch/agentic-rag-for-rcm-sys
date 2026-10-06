@@ -14,6 +14,7 @@ from typing import Any
 
 import pandas as pd
 
+from ..data.leakage import check_profile_snapshot
 from ..tools.base import Tool, ToolInputError
 from ..tools.corpus import ItemCorpus
 
@@ -38,8 +39,13 @@ class MemoryTool(Tool):
         item2id: dict[str, int],
         corpus: ItemCorpus,
         logger=None,
+        as_of_timestamp: int | None = None,  # nếu có: ném LeakageError khi interactions chứa dòng timestamp > mốc này
     ) -> None:
         super().__init__(logger)
+        if as_of_timestamp is not None:
+            if "timestamp" not in interactions.columns:
+                raise ValueError("as_of_timestamp needs a `timestamp` column in interactions")
+            check_profile_snapshot(as_of_timestamp, interactions)  # profile tại t chỉ được dùng dữ liệu <= t (mục VI)
         self.interactions = interactions
         self.user2id = user2id
         self.id2item = {v: k for k, v in item2id.items()}

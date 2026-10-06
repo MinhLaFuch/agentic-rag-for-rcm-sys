@@ -16,6 +16,7 @@ resource/splits/<tag>/{train,validation,test}.parquet      stage 3
 resource/logs/<tag>/run_tools.log                          log pipeline/tool   (paths.log_dir)
 experiments/exp_NNN/{config.yaml,metrics.json,README.md}   kết quả thí nghiệm (paths.experiments_dir)
 experiments/candidate_recall/exp_NNN/…                     candidate_recall    (+ candidate_recall.experiments_subdir)
+experiments/agent_eval/exp_NNN/…                           run_agent_eval      (+ agent_eval.experiments_subdir; có trajectories/requests/scored.jsonl)
 tests/logs/*.log                                           log của test (tests/run_*.sh), ngoài cấu hình này
 ```
 
@@ -35,9 +36,9 @@ Stage đã có output thì bị bỏ qua; thêm `--force` để làm lại.
 
 ## Experiments
 
-`run_baselines.sh`, `tune_baselines.sh`, `candidate_recall.sh`, `run_tools.sh`, `check_llm_provider.sh`.
+`run_baselines.sh`, `tune_baselines.sh`, `candidate_recall.sh`, `run_tools.sh`, `check_llm_provider.sh`, `run_agent_eval.sh`.
 Tham số nằm trong các file YAML atomics: `baselines.yaml`, `tuning.yaml`, `recommendation_metrics.yaml`,
-`segment_thresholds.yaml`, `candidate_recall.yaml`, `llm.yaml`.
+`segment_thresholds.yaml`, `candidate_recall.yaml`, `llm.yaml`, `agent.yaml` (giới hạn PlanExecutor), `agent_eval.yaml`.
 
 ## Biến môi trường
 

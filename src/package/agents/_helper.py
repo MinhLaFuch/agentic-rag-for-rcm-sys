@@ -2,7 +2,7 @@
 from typing import Any
 import re
 import json
-from ._schema import _REF
+from ._schema import ID_ARG_KEYS, _REF
 
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:
@@ -56,3 +56,17 @@ def _extract_plan(text: str) -> tuple[list[dict[str, Any]], str | None]:
     if not isinstance(data, list) or not all(isinstance(s, dict) for s in data):
         raise ValueError(f"Plan must be a list of steps, got: {text[:200]}")
     return data, question
+
+
+def _invented_ids(args: Any, request: str) -> list[str]:
+    """Literal ids in `args` that do not appear in the request text (the prompt forbids inventing ids)."""
+    if not isinstance(args, dict):
+        return []
+    invented: list[str] = []
+    for key in ID_ARG_KEYS:
+        value = args.get(key)
+        literals = [value] if isinstance(value, str) else value if isinstance(value, list) else []
+        for v in literals:
+            if isinstance(v, str) and not _REF.match(v) and v not in request:
+                invented.append(v)
+    return invented
