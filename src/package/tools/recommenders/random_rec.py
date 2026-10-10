@@ -9,7 +9,7 @@ from .base import Recommender
 class RandomRecommender(Recommender):
     name = "random"
 
-    def __init__(self, seed: int = 42) -> None:
+    def __init__(self, seed: int) -> None:
         super().__init__()
         self._rng = np.random.default_rng(seed)
 

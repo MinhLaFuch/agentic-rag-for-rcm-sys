@@ -5,6 +5,8 @@ from __future__ import annotations
 import numpy as np
 from scipy import sparse
 
+from .build_interaction_matrix import build_interaction_matrix
+
 
 def _append_popular_unseen(
     selected: list[int], ranked_items: np.ndarray, seen: set[int], top_k: int
@@ -24,16 +26,8 @@ def _append_popular_unseen(
 
 
 def _user_item_matrix(interactions, num_items: int) -> sparse.csr_matrix:
-    users = interactions["user_idx"].to_numpy(dtype=np.int64)
-    items = interactions["item_idx"].to_numpy(dtype=np.int64)
-    num_users = int(users.max()) + 1
-    matrix = sparse.csr_matrix(
-        (np.ones(len(interactions), dtype=np.float32), (users, items)),
-        shape=(num_users, num_items),
-    )
-    matrix.data[:] = 1.0  # binary implicit-feedback matrix
-    matrix.eliminate_zeros()
-    return matrix
+    """Binary user-item matrix whose user dimension is inferred from the largest user_idx."""
+    return build_interaction_matrix(interactions, int(interactions["user_idx"].max()) + 1, num_items)
 
 
 def _keep_top_neighbors(matrix: sparse.csr_matrix, neighbors: int) -> sparse.csr_matrix:

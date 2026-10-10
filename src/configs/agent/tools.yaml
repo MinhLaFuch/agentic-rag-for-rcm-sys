@@ -6,6 +6,11 @@ tools:
   max_candidates: 1000            # trần số candidate SQLTool / ItemCFTool / SemanticSearchTool được trả về
   max_query_rows: 100             # trần số dòng QueryTool trả về cho agent (giữ nhỏ vì đi thẳng vào prompt)
   sql_time_budget_seconds: 5.0    # ngân sách thời gian cho một câu SQL chạy trên corpus
+  defaults:                       # giá trị dùng khi planner không truyền arg (cũng được in trong input_schema cho LLM)
+    sql_limit: 100                # SQLTool.limit                         (<= max_candidates)
+    item_cf_top_k: 20             # ItemCFTool.top_k                      (<= max_candidates)
+    query_max_rows: 20            # QueryTool.max_rows                    (<= max_query_rows)
+    memory_top_n_categories: 3    # MemoryTool.top_n_categories
   semantic_search:
     default_limit: 50             # limit mặc định của SemanticSearchTool (phải <= max_candidates)
     max_query_tokens: 20          # số token tối đa của query BM25 sau khi bỏ stopword

@@ -31,7 +31,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
 sys.path.insert(0, str(ROOT))
 
-import numpy as np
 import pandas as pd
 
 from package.config import DataPaths, get_data_paths, get_domains, load_config

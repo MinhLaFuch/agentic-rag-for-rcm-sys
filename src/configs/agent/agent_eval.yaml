@@ -14,6 +14,7 @@ agent_eval:
   language: "vi"        # ngôn ngữ câu request: vi | en
   price_slack: 1.25     # ngân sách của request "constrained" = giá item bị giấu x hệ số này, làm tròn lên
   price_round_to: 5     # bội số làm tròn của ngân sách (đơn vị USD)
+  min_metadata_coverage: 0.5      # dưới tỉ lệ item mapping có metadata này thì dừng (sai file meta / sai định dạng id)
   max_consecutive_llm_errors: 5   # lỗi provider (timeout/auth...) liên tiếp từng này lần thì dừng cả lần chạy
   experiments_subdir: "agent_eval"                  # nằm trong data_paths.paths.experiments_dir
   trajectory_file: "agent_eval_trajectories.jsonl"  # ghi dần trong log_dir để --resume được; cuối lần chạy copy vào exp_NNN/

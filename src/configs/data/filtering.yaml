@@ -4,3 +4,5 @@
 filtering:
   min_user_interactions: 5
   min_item_interactions: 5
+  # Số vòng lặp tối đa của k-core; hết vòng mà chưa hội tụ thì cảnh báo (không im lặng cắt).
+  max_iterations: 20

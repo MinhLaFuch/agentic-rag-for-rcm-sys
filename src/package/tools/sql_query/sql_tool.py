@@ -12,9 +12,9 @@ from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
-from .._limits import MAX_CANDIDATES
+from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
-from ._helper import _as_list
+from ._helper import _as_list, compile_filters
 
 class SQLTool(Tool):
     """
@@ -29,20 +29,20 @@ class SQLTool(Tool):
     )
     input_schema = {
         "filters": {
-            "domain": "str | list[str]  -- omit for all domains",
+            "domain": "str | list[str]  -- omit for all domains (empty string/list = no filter)",
             "price_min / price_max": "float  -- excludes null-price items unless include_missing_price=true",
             "include_missing_price": "bool (default false)",
             "min_rating": "float",
             "min_rating_number": "int",
-            "categories_any": "list[str]  -- item has at least one",
-            "categories_all": "list[str]  -- item has all",
-            "store": "str | list[str]",
+            "categories_any": "list[str]  -- item has at least one (empty list = no filter)",
+            "categories_all": "list[str]  -- item has all (empty list = no filter)",
+            "store": "str | list[str]  -- case-insensitive match (empty string/list = no filter)",
             "title_contains": "str",
             "exclude_item_ids": "list[str]",
         },
         "order_by": "rating_number | average_rating | price (default rating_number)",
         "descending": "bool (default true)",
-        "limit": f"int (<= {MAX_CANDIDATES}, default 100)",
+        "limit": f"int (<= {MAX_CANDIDATES}, default {SQL_DEFAULT_LIMIT})",
     }
     output_schema = {
         "candidates": "list[{item_id, domain, title, store, price, ...}]",
@@ -58,7 +58,7 @@ class SQLTool(Tool):
         filters: dict[str, Any] | None = None,
         order_by: str = "rating_number",
         descending: bool = True,
-        limit: int = 100,
+        limit: int = SQL_DEFAULT_LIMIT,
     ) -> dict[str, Any]:
         filters = filters or {}
         unknown = set(filters) - FILTER_KEYS
@@ -68,7 +68,7 @@ class SQLTool(Tool):
             raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
         limit = check_top_k(limit)
 
-        where, params = self._compile(filters)
+        where, params = compile_filters(filters, set(self.corpus.domains()))
         direction = "DESC" if descending else "ASC"
         cols = ", ".join(ITEM_COLUMNS)
         # NULLs last, then item_id so results are deterministic
@@ -83,68 +83,3 @@ class SQLTool(Tool):
             "truncated": truncated,
             "applied_filters": filters,
         }
-
-    def _compile(self, f: dict[str, Any]) -> tuple[str, list[Any]]:
-        clauses: list[str] = ["1=1"]
-        params: list[Any] = []
-
-        if f.get("domain") is not None:
-            domains = _as_list(f["domain"])
-            known = set(self.corpus.domains())
-            bad = [d for d in domains if d not in known]
-            if bad:
-                raise ToolInputError(f"unknown domain(s) {bad}; available: {sorted(known)}")
-            clauses.append(f"domain IN ({','.join('?' * len(domains))})")
-            params += domains
-
-        price_parts: list[str] = []
-        if f.get("price_min") is not None:
-            price_parts.append("price >= ?")
-            params.append(float(f["price_min"]))
-        if f.get("price_max") is not None:
-            price_parts.append("price <= ?")
-            params.append(float(f["price_max"]))
-        if price_parts:
-            clause = " AND ".join(price_parts)
-            if f.get("include_missing_price"):  # D-006 fallback: keep null-price items
-                clause = f"(({clause}) OR price IS NULL)"
-            clauses.append(clause)
-
-        if f.get("min_rating") is not None:
-            clauses.append("average_rating >= ?")
-            params.append(float(f["min_rating"]))
-        if f.get("min_rating_number") is not None:
-            clauses.append("rating_number >= ?")
-            params.append(int(f["min_rating_number"]))
-
-        if f.get("categories_any"):
-            cats = _as_list(f["categories_any"])
-            clauses.append(
-                "EXISTS (SELECT 1 FROM item_categories c WHERE c.item_id = items.item_id "
-                f"AND c.category IN ({','.join('?' * len(cats))}))"
-            )
-            params += cats
-        if f.get("categories_all"):
-            cats = list(dict.fromkeys(_as_list(f["categories_all"])))
-            clauses.append(
-                "(SELECT COUNT(DISTINCT c.category) FROM item_categories c WHERE "
-                f"c.item_id = items.item_id AND c.category IN ({','.join('?' * len(cats))})) = ?"
-            )
-            params += cats + [len(cats)]
-
-        if f.get("store"):
-            stores = _as_list(f["store"])
-            clauses.append(f"store IN ({','.join('?' * len(stores))})")
-            params += stores
-
-        if f.get("title_contains"):
-            escaped = str(f["title_contains"]).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            clauses.append("title LIKE ? ESCAPE '\\'")
-            params.append(f"%{escaped}%")
-
-        if f.get("exclude_item_ids"):
-            ex = _as_list(f["exclude_item_ids"])
-            clauses.append(f"item_id NOT IN ({','.join('?' * len(ex))})")
-            params += ex
-
-        return " AND ".join(clauses), params

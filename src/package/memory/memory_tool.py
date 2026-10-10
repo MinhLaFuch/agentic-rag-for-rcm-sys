@@ -15,6 +15,7 @@ from typing import Any
 import pandas as pd
 
 from ..data.leakage import check_profile_snapshot
+from ..tools._limits import MEMORY_DEFAULT_TOP_N_CATEGORIES
 from ..tools.base import Tool, ToolInputError
 from ..tools.corpus import ItemCorpus
 
@@ -29,7 +30,7 @@ class MemoryTool(Tool):
     )
     input_schema = {
         "user_id": "str",
-        "top_n_categories": "int (default 3)",
+        "top_n_categories": f"int (default {MEMORY_DEFAULT_TOP_N_CATEGORIES})",
     }
     output_schema = {
         "user_id": "str", "known": "bool", "n_interactions": "int",
@@ -56,7 +57,7 @@ class MemoryTool(Tool):
         self.id2item = {v: k for k, v in item2id.items()}
         self.corpus = corpus
 
-    def execute(self, user_id: str, top_n_categories: int = 3) -> dict[str, Any]:
+    def execute(self, user_id: str, top_n_categories: int = MEMORY_DEFAULT_TOP_N_CATEGORIES) -> dict[str, Any]:
         if user_id not in self.user2id:
             raise ToolInputError(f"unknown user_id: {user_id!r}")
         uidx = self.user2id[user_id]

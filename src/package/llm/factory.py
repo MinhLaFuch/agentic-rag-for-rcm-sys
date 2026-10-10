@@ -34,7 +34,7 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
             base_url=base_url,
             model=model,
             api_key=config.get("api_key"),
-            timeout_seconds=config.get("timeout_seconds", 30.0),
+            timeout_seconds=float(config["timeout_seconds"]),
         )
     raise ValueError(
         f"Unknown LLM provider: {provider!r}. Supported providers: openai_compatible"

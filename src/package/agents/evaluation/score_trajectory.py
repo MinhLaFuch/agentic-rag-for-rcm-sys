@@ -105,4 +105,7 @@ def score_trajectory(
         row["task_success"] = bool(
             plan_valid and steps_ok and rec and (row["constraint_satisfaction"] == 1.0 if constrained else True)
         )
+    if request.kind == "personalized" and is_planner and "MemoryTool" not in trajectory.get("tools_available", []):
+        # a planner that cannot read the user's history has no honest way to personalize: not scored (asking back is fine)
+        row["tool_selection_ok"] = row["task_success"] = None
     return row

@@ -7,15 +7,16 @@ from typing import Any, Sequence
 import numpy as np
 from scipy import sparse
 
-from ..base import MAX_CANDIDATES, Tool, ToolCallLogger, ToolInputError, check_top_k
+from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
+from .._limits import ITEM_CF_DEFAULT_TOP_K, MAX_CANDIDATES
 from ..corpus import ItemCorpus
 
 
 class ItemCFTool(Tool):
     """
     Items similar to seed item(s), from a fitted ItemKNNRecommender's similarity
-    matrix (src/recommenders/baselines.py).  With several seeds, similarities are
-    summed.  Cross-domain by default; pass `domain` to restrict (needs a corpus).
+    matrix. With several seeds, similarities are summed (can exceed 1.0).
+    Cross-domain by default; pass `domain` to restrict (needs a corpus).
 
     Note: ItemKNN keeps only the top-k neighbours per item, so a domain filter
     can return fewer than `top_k` items.
@@ -25,13 +26,14 @@ class ItemCFTool(Tool):
     description = "Retrieve items similar to given item(s) using item-item collaborative filtering."
     input_schema = {
         "items": "list[str]  -- namespaced seed item ids",
-        "top_k": f"int (<= {MAX_CANDIDATES}, default 20)",
+        "top_k": f"int (<= {MAX_CANDIDATES}, default {ITEM_CF_DEFAULT_TOP_K})",
         "domain": "str | None  -- restrict output domain; None = cross-domain",
         "exclude_input": "bool (default true)",
     }
     output_schema = {
         "candidates": "list[{item_id, similarity, domain}]  -- most similar first",
         "unknown_items": "list[str]",
+        "note": "str | None  -- explanation when candidates are empty",
     }
 
     def __init__(
@@ -52,11 +54,12 @@ class ItemCFTool(Tool):
 
     def execute(
         self,
-        items: Sequence[str],
-        top_k: int = 20,
+        items: Any,
+        top_k: int = ITEM_CF_DEFAULT_TOP_K,
         domain: str | None = None,
         exclude_input: bool = True,
     ) -> dict[str, Any]:
+        items = validate_list_like(items, "items")
         seeds = list(dict.fromkeys(items or []))
         if not seeds:
             raise ToolInputError("`items` must contain at least one item id")
@@ -95,4 +98,15 @@ class ItemCFTool(Tool):
             candidates.append(entry)
             if len(candidates) == top_k:
                 break
-        return {"candidates": candidates, "unknown_items": unknown}
+
+        # Generate a note if candidates is empty
+        note = None
+        if not candidates:
+            if not seed_idx:
+                note = "no seed item is known to the CF model"
+            elif domain is not None:
+                note = f"no similar items found in domain '{domain}' (may be filtered by domain after top-k)"
+            else:
+                note = "no similar items found"
+
+        return {"candidates": candidates, "unknown_items": unknown, "note": note}

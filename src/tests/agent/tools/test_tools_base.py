@@ -15,7 +15,7 @@ def test_every_call_is_logged_with_required_fields(corpus):
 
     assert len(logger.records) == 2
     record = logger.records[0]
-    assert set(record) == {"timestamp", "agent", "action", "tool", "input_hash", "output", "latency_seconds"}
+    assert set(record) == {"timestamp", "agent", "action", "tool", "input_hash", "input", "output", "latency_seconds"}
     assert record["agent"] == "single_agent" and record["action"] == "candidate_analysis"
     assert record["tool"] == "QueryTool" and record["latency_seconds"] >= 0
     assert record["output"]["ok"] is True

@@ -19,7 +19,7 @@ from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
-from ..sql_query.sql_tool import SQLTool
+from ..sql_query._helper import compile_filters
 from .._limits import MAX_CANDIDATES, SEMANTIC_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS
 from ._helper import _tokenize
@@ -39,24 +39,36 @@ class SemanticSearchTool(Tool):
     )
     input_schema = {
         "query": "str  -- keywords, e.g. 'mechanical keyboard quiet'; English",
-        "filters": SQLTool.input_schema["filters"],  # the planner never sees SQLTool, so the keys are spelled out here
+        "filters": {
+            "domain": "str | list[str]  -- exact domain name; omit for all (empty string/list = no filter)",
+            "price_min / price_max": "float  -- excludes null-price items unless include_missing_price=true",
+            "include_missing_price": "bool (default false)",
+            "min_rating": "float",
+            "min_rating_number": "int",
+            "categories_any": "list[str]  -- item has at least one (empty list = no filter)",
+            "categories_all": "list[str]  -- item has all (empty list = no filter)",
+            "store": "str | list[str]  -- case-insensitive match (empty string/list = no filter)",
+            "title_contains": "str",
+            "exclude_item_ids": "list[str]",
+        },
         "limit": f"int (<= {MAX_CANDIDATES}, default {SEMANTIC_DEFAULT_LIMIT})",
     }
     output_schema = {
         "candidates": "list[{item_id, domain, title, store, price, ..., score}]  -- best match first",
-        "query_tokens": "list[str]", "truncated": "bool", "applied_filters": "dict",
+        "total_matches": "int", "query_tokens": "list[str]", "truncated": "bool", "applied_filters": "dict",
     }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
         super().__init__(logger)
         self.corpus = corpus
-        filters = {  # values the planner must use are data-dependent, so this instance-level schema names them
-            **SQLTool.input_schema["filters"],
-            "domain": f"str | list[str]  -- exact domain name, one of {corpus.domains()} (NOT a store name); omit for all",
-            "categories_any": "list[str]  -- catalog category names as written, e.g. ['Nintendo Switch']; item has at least one",
+        # Update domain filter with actual domain names for better documentation
+        self.input_schema = {
+            **type(self).input_schema,
+            "filters": {
+                **type(self).input_schema["filters"],
+                "domain": f"str | list[str]  -- exact domain name, one of {corpus.domains()} (NOT a store name); omit for all (empty string/list = no filter)",
+            }
         }
-        self.input_schema = {**type(self).input_schema, "filters": filters}
-        self._sql = SQLTool(corpus)  # reused only for its filter compiler
 
     def execute(
         self,
@@ -77,22 +89,33 @@ class SemanticSearchTool(Tool):
         unknown = set(filters) - FILTER_KEYS
         if unknown:
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
-        where, params = self._sql._compile(filters)
+        where, params = compile_filters(filters, set(self.corpus.domains()))
 
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)
         cols = ", ".join(f"items.{c}" for c in ITEM_COLUMNS)
+        # Secondary tie-breaker: rating_number DESC for equal BM25 scores
         sql = (
             f"SELECT {cols}, -bm25(items_fts) AS score "  # bm25() is lower-is-better -> negate
             f"FROM items_fts JOIN items ON items.rowid = items_fts.rowid "
             f"WHERE items_fts MATCH ? AND {where} "
-            f"ORDER BY score DESC, items.item_id"
+            f"ORDER BY score DESC, items.rating_number DESC, items.item_id"
         )
         rows, truncated = self.corpus.select(sql, [match, *params], max_rows=limit)
         for r in rows:
-            r["score"] = round(float(r["score"]), 4)
+            r["score"] = float(r["score"])
+
+        # Count total matches using a subquery (corpus.count only works with items table)
+        count_sql = (
+            f"SELECT COUNT(*) AS cnt FROM items_fts JOIN items ON items.rowid = items_fts.rowid "
+            f"WHERE items_fts MATCH ? AND {where}"
+        )
+        count_rows, _ = self.corpus.select(count_sql, [match, *params], max_rows=1)
+        total_matches = count_rows[0]["cnt"] if count_rows else 0
+
         return {
             "candidates": rows,
+            "total_matches": total_matches,
             "query_tokens": tokens,
             "truncated": truncated,
             "applied_filters": filters,

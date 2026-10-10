@@ -8,12 +8,10 @@ Chạy các baseline trên splits của stage 3.
 import argparse
 import time
 
-import pandas as pd
-
 from package.config import get_data_paths, load_config
 from package.data.split import infer_matrix_shape, load_splits
 from package.tools.evaluation.evaluator import evaluate_recommender
-from package.tools.evaluation import next_experiment_dir, save_experiment
+from package.tools.evaluation import next_experiment_dir, save_experiment, select_fit_target
 from package.tools.recommenders import build_interaction_matrix, build_model
 from package.utils.console import ensure_utf8_stdout
 
@@ -42,10 +40,7 @@ def main() -> None:
     train, val, test = load_splits(splits_dir)
     num_users, num_items = infer_matrix_shape(train, val, test)
 
-    if args.eval_on == "validation":
-        fit_df, target_df = train, val
-    else:
-        fit_df, target_df = pd.concat([train, val], ignore_index=True), test
+    fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
 
     fit_matrix = build_interaction_matrix(fit_df, num_users, num_items)
     target_matrix = build_interaction_matrix(target_df, num_users, num_items)
@@ -70,14 +65,7 @@ def main() -> None:
         fit_seconds = time.time() - t0
 
         result = evaluate_recommender(model, fit_matrix, target_matrix, ks, sparse_max=sparse_max)
-        all_metrics[model.name] = {
-            "overall": result.overall,
-            "by_segment": result.by_segment,
-            "num_users": result.num_users,
-            "catalog_coverage": result.catalog_coverage,
-            "target_item_seen_ratio": result.target_item_seen_ratio,
-            "fit_seconds": round(fit_seconds, 2),
-        }
+        all_metrics[model.name] = result.to_metrics(fit_seconds)
 
         k0 = ks[0] if 10 not in ks else 10
         o, w = result.overall, result.by_segment.get("warm", {})

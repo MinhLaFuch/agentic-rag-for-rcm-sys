@@ -1,13 +1,8 @@
-"""
-EDA functions cho interaction data (Phase 2, mục V/VI/XVIII).
-
-Các hàm ở đây là pure function trên pandas DataFrame, KHÔNG tự tải dữ
-liệu — vì vậy có thể unit test bằng dữ liệu synthetic (để verify logic
-đúng), tách biệt hoàn toàn với việc dữ liệu thật có tải được hay không
-(xem src/data/acquire.py — hiện đang BLOCKED do network).
-"""
+"""k-core filtering: lặp loại user/item dưới ngưỡng interaction cho đến khi ổn định."""
 
 from __future__ import annotations
+
+import warnings
 
 import pandas as pd
 
@@ -16,7 +11,7 @@ def k_core_filter(
     interactions: pd.DataFrame,
     min_user_interactions: int,
     min_item_interactions: int,
-    max_iterations: int = 20,
+    max_iterations: int,
 ) -> pd.DataFrame:
     """
     Lặp lại việc loại user/item có ít hơn ngưỡng interaction cho đến khi
@@ -34,6 +29,12 @@ def k_core_filter(
             df["user_id"].isin(valid_users) & df["parent_asin"].isin(valid_items)
         ]
         if len(new_df) == len(df):
-            break
+            return df
         df = new_df
+    warnings.warn(
+        f"k_core_filter chưa hội tụ sau {max_iterations} vòng — kết quả có thể còn user/item dưới ngưỡng; "
+        "tăng filtering.max_iterations.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
     return df

@@ -14,7 +14,7 @@ class ItemKNNRecommender(PopularityRecommender):
     multi-domain dataset, so the command-line runner makes it opt-in.
     """
 
-    def __init__(self, neighbors: int = 20) -> None:
+    def __init__(self, neighbors: int) -> None:
         if neighbors <= 0:
             raise ValueError("neighbors must be positive")
         self.neighbors = neighbors

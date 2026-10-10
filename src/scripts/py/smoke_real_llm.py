@@ -14,15 +14,13 @@ sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
-from package.agents import PlanExecutor
+from package.agents import PlanExecutor, build_tools
 from package.config.loader import load_config
 from package.llm import build_llm_provider
 from package.llm._error import LLMProviderError
-from package.memory.memory_tool import MemoryTool
-from package.tools import BaselineScorer, ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool
+from package.tools import BaselineScorer, ItemCorpus
 from package.tools.recommenders import ItemKNNRecommender
 
-MAX_TOKENS = 2048  # ngân sách token cho 1 lần plan (model reasoning ăn token suy luận vào đây)
 PRINT_DATA_CHARS = 300  # cắt data từng step khi in để log gọn
 
 REQUESTS = [  # user_id / item_id phải có trong fixture bên dưới
@@ -59,19 +57,13 @@ def build_fixture() -> list:
 
     knn = ItemKNNRecommender(5).fit(interactions)
     scorer = BaselineScorer(knn)
-    return [  # 1 chỗ duy nhất liệt kê tool agent được dùng
-        ItemCFTool(knn, item2id, corpus=corpus),
-        RecoModelTool(scorer, user2id, item2id, corpus=corpus),
-        QueryTool(corpus),
-        SemanticSearchTool(corpus),
-        MemoryTool(interactions, user2id, item2id, corpus),
-    ]
+    return build_tools(knn, scorer, user2id, item2id, interactions, corpus).for_planner_memory()
 
 
 def main() -> None:
     llm = build_llm_provider(load_config("agent/llm"))
     print(f"Provider: {llm.provider_name}  health: {llm.health_check()}")
-    executor = PlanExecutor(llm, build_fixture(), max_tokens=MAX_TOKENS)
+    executor = PlanExecutor(llm, build_fixture())  # giới hạn lấy từ configs/agent/agent.yaml
 
     for request in REQUESTS:
         print("\n" + "=" * 72 + f"\nREQUEST: {request}")

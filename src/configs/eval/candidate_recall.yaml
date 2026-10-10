@@ -7,4 +7,5 @@ candidate_recall:
   per_segment: 1000         # số user tối đa lấy mẫu mỗi segment
   seed_items: 10            # số item gần nhất làm seed cho ItemCF
   query_items: 3            # số title gần nhất ghép thành semantic query
+  min_metadata_coverage: 0.5   # dưới tỉ lệ item mapping có metadata này thì dừng (sai file meta / sai định dạng id)
   experiments_subdir: "candidate_recall"   # nằm trong data_paths.paths.experiments_dir

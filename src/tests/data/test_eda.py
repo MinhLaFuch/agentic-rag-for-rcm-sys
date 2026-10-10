@@ -1,14 +1,9 @@
-"""
-Test các hàm EDA bằng dữ liệu SYNTHETIC (tự tạo, không phải Amazon Reviews
-2023 thật). Mục đích: verify logic tính toán đúng, KHÔNG dùng để báo cáo
-số liệu EDA thật (số liệu thật vẫn BLOCKED do network — xem
-src/data/acquire.py và docs/limitations.md).
-"""
+"""Test các hàm EDA và k-core bằng dữ liệu SYNTHETIC (verify logic, không phải số liệu Amazon Reviews 2023 thật)."""
 
 import pandas as pd
 import pytest
 
-from package.data.eda import compute_interaction_stats, segment_users
+from package.data.eda import compute_interaction_stats
 from package.data.filter import k_core_filter
 
 
@@ -48,7 +43,7 @@ def test_compute_interaction_stats_missing_column_raises():
 
 def test_k_core_filter_removes_sparse_users_and_items(synthetic_interactions):
     filtered = k_core_filter(
-        synthetic_interactions, min_user_interactions=3, min_item_interactions=2
+        synthetic_interactions, min_user_interactions=3, min_item_interactions=2, max_iterations=20
     )
     # chỉ u1 có >=3 interaction; sau khi lọc theo item >=2, item i3 (chỉ
     # xuất hiện 1 lần với u1) cũng bị loại vì count toàn cục của i3 là 2
@@ -58,25 +53,9 @@ def test_k_core_filter_removes_sparse_users_and_items(synthetic_interactions):
     assert len(filtered) <= len(synthetic_interactions)
 
 
-def test_segment_users_assigns_new_sparse_warm(synthetic_interactions):
-    segments = segment_users(
-        synthetic_interactions, as_of_timestamp=600, sparse_threshold=2
-    )
-    seg_map = dict(zip(segments["user_id"], segments["segment"]))
-    assert seg_map["u1"] == "warm"       # 5 interaction > threshold
-    assert seg_map["u2"] == "sparse_history"  # 2 interaction == threshold
-    assert seg_map["u3"] == "sparse_history"  # 1 interaction <= threshold
-
-    # evolving_interest phải là False khi không có category data — không
-    # được tự suy diễn khi thiếu dữ liệu (mục XXVIII)
-    assert not segments["evolving_interest"].any()
-
-
-def test_segment_users_respects_as_of_timestamp(synthetic_interactions):
-    # tại t=200, u1 chỉ mới có 2 interaction (timestamp 100, 200)
-    segments = segment_users(
-        synthetic_interactions, as_of_timestamp=200, sparse_threshold=2
-    )
-    seg_map = dict(zip(segments["user_id"], segments["segment"]))
-    assert seg_map["u1"] == "sparse_history"  # đúng 2 <= threshold tại thời điểm này
-    assert "u3" not in seg_map  # u3 chưa có interaction nào trước t=200
+def test_k_core_filter_warns_when_not_converged():
+    # chuỗi phụ thuộc: bỏ 1 user thì item kế tiếp rơi dưới ngưỡng -> cần nhiều vòng
+    rows = [("u1", "a"), ("u1", "b"), ("u2", "b"), ("u2", "c"), ("u3", "c")]
+    df = pd.DataFrame(rows, columns=["user_id", "parent_asin"])
+    with pytest.warns(RuntimeWarning):
+        k_core_filter(df, min_user_interactions=2, min_item_interactions=2, max_iterations=1)

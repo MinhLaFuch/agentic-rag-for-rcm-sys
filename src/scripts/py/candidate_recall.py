@@ -37,12 +37,13 @@ import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
-from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.tools import ItemCFTool, ItemCorpus, SemanticSearchTool
-from package.tools.base import MAX_CANDIDATES, ToolCallLogger
-from package.tools.evaluation import next_experiment_dir, save_experiment
+from package.tools import ItemCFTool, SemanticSearchTool
+from package.tools._limits import MAX_CANDIDATES
+from package.tools.base import ToolCallLogger
+from package.tools.corpus import build_corpus
+from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
 from package.tools.recommenders import build_interaction_matrix
 from package.tools.recommenders.item_knn import ItemKNNRecommender
 from package.utils.console import ensure_utf8_stdout
@@ -52,15 +53,6 @@ SOURCES = ("popularity", "item_cf", "semantic", "union_rr", "union_all")
 
 
 # ----------------------------------------------------------------------------- data
-
-
-def load_meta(meta_files: list[tuple[str, str]], item2id: dict[str, int], namespaced: bool) -> pd.DataFrame:
-    """Metadata rows for items that exist in the mapping (same key rule as the splits)."""
-
-    def in_mapping(domain: str, asin: str) -> bool:
-        return (namespaced_item_id(domain, asin) if namespaced else asin) in item2id
-
-    return load_item_metadata(meta_files, keep=in_mapping)
 
 
 def item_text_tables(meta: pd.DataFrame, item2id: dict[str, int], namespaced: bool):
@@ -147,7 +139,7 @@ def main() -> None:
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py)
     train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
-    fit_df, target_df = (train, val) if args.eval_on == "validation" else (pd.concat([train, val]), test)
+    fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     user2id, item2id = load_mappings(data_paths.mapped_dir)
     id2item = {v: k for k, v in item2id.items()}
     num_users, num_items = len(user2id), len(item2id)
@@ -157,9 +149,7 @@ def main() -> None:
     fit_matrix = build_interaction_matrix(fit_df, num_users, num_items)
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.diff(fit_matrix.indptr)
-    seg_of = {
-        u: ("cold" if hist_size[u] == 0 else "sparse" if hist_size[u] <= sparse_max else "warm") for u in target_by_user
-    }
+    seg_of = segment_users(target_by_user, hist_size, sparse_max)
     # most-recent-first fit items per user (needs a timestamp column; falls back to file order)
     fit_sorted = fit_df.sort_values("timestamp") if "timestamp" in fit_df.columns else fit_df
     recent = fit_sorted.groupby("user_idx")["item_idx"].apply(lambda s: list(s)[::-1]).to_dict()
@@ -167,13 +157,9 @@ def main() -> None:
 
     # ---- corpus + tools
     print("Build corpus")
-    meta = load_meta(meta_files, item2id, namespaced)
-    corpus = ItemCorpus.from_dataframe(meta)
+    corpus, meta, coverage = build_corpus(meta_files, item2id, namespaced, float(cfg["min_metadata_coverage"]))
     title_of, cats_of = item_text_tables(meta, item2id, namespaced)
-    coverage = len(title_of) / num_items
     print(f"  metadata covers {coverage:.1%} of mapped items")
-    if coverage < 0.5:
-        raise SystemExit("Less than half of mapped items have metadata: check resource/raw/meta_<Domain>.jsonl.gz / id format")
 
     print("Fit ItemKNN on fit data")
     knn = ItemKNNRecommender(args.neighbors).fit(fit_matrix)
@@ -238,6 +224,9 @@ def main() -> None:
                         got = set(lists.get(s, []))  # a source with no input counts as retrieving nothing
                         acc[s][n]["recall"].append(len(got & targets) / len(targets))
                         acc[s][n]["hit"].append(float(bool(got & targets)))
+                # Clear logger records after each user to prevent unbounded growth
+                item_cf.logger.records.clear()
+                search.logger.records.clear()
             reach = np.mean([fit_item_seen[list(target_by_user[u])].mean() for u in users]) if users else float("nan")
             metrics[mode][seg] = {
                 "users": len(users),

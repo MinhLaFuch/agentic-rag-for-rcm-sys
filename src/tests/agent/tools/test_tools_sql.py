@@ -64,3 +64,53 @@ def test_sql_limit_reports_total_matches_and_truncation(corpus):
     assert len(result.data["candidates"]) == 2
     assert result.data["total_matches"] == 5
     assert result.data["truncated"] is True
+
+
+def test_sql_empty_list_and_string_handling(corpus):
+    """Test that empty strings and lists are treated as 'no filter'."""
+    tool = SQLTool(corpus)
+    # Empty string for domain = no filter
+    result_empty_str = tool(filters={"domain": ""})
+    assert len(result_empty_str.data["candidates"]) == 5
+    # Empty list for categories = no filter
+    result_empty_list = tool(filters={"categories_any": []})
+    assert len(result_empty_list.data["candidates"]) == 5
+    # Whitespace-only string = no filter
+    result_whitespace = tool(filters={"store": "   "})
+    assert len(result_whitespace.data["candidates"]) == 5
+
+
+def test_sql_case_insensitive_store_match(corpus):
+    """Test that store matching is case-insensitive."""
+    tool = SQLTool(corpus)
+    # Store "Acme" should match "acme", "ACME", "Acme"
+    result_lower = tool(filters={"store": "acme"})
+    result_upper = tool(filters={"store": "ACME"})
+    result_mixed = tool(filters={"store": "Acme"})
+    assert _ids(result_lower) == _ids(result_upper) == _ids(result_mixed)
+    assert set(_ids(result_mixed)) == {VG_C, EL_D}
+
+
+def test_sql_price_min_greater_than_max_suggests_fix(corpus):
+    """Test that price_min > price_max returns a helpful error message."""
+    tool = SQLTool(corpus)
+    result = tool(filters={"price_min": 100, "price_max": 50})
+    assert not result.ok
+    assert "price_min" in result.error and "price_max" in result.error
+    assert "Swap the values" in result.error
+
+
+def test_sql_duplicate_categories_all_deduped(corpus):
+    """Test that duplicate categories in categories_all are deduplicated."""
+    tool = SQLTool(corpus)
+    # Duplicate "Video Games" should not cause issues
+    result = tool(filters={"categories_all": ["Video Games", "Video Games", "Games"]})
+    assert set(_ids(result)) == {VG_A, VG_B}
+
+
+def test_sql_long_exclude_item_ids(corpus):
+    """Test that a long list of exclude_item_ids works correctly."""
+    tool = SQLTool(corpus)
+    # Exclude all but one item
+    result = tool(filters={"exclude_item_ids": [VG_A, VG_B, VG_C, EL_D]})
+    assert _ids(result) == [EL_A]

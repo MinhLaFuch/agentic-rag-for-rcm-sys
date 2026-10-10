@@ -29,7 +29,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from package.agents import PlanExecutor, Type1Agent
+from package.agents import PlanExecutor, Type1Agent, build_tools
 from package.agents.evaluation import (
     AGENTS,
     ORACLE_KINDS,
@@ -41,16 +41,15 @@ from package.agents.evaluation import (
     summarize,
 )
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
+from package.data import ITEM_ID_SEPARATOR
 from package.data.leakage import check_profile_snapshot
-from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.llm import build_llm_provider
 from package.llm._error import LLMProviderError
-from package.memory.memory_tool import MemoryTool
-from package.tools import BaselineScorer, ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool, ToolCallLogger
-from package.tools.evaluation import next_experiment_dir, save_experiment
+from package.tools import BaselineScorer, ToolCallLogger
+from package.tools.corpus import build_corpus
+from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
 from package.utils.console import ensure_utf8_stdout
 
@@ -115,7 +114,7 @@ def main() -> None:
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py / candidate_recall.py)
     train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
-    fit_df, target_df = (train, val) if args.eval_on == "validation" else (pd.concat([train, val], ignore_index=True), test)
+    fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     if "timestamp" not in fit_df.columns:
         raise SystemExit("Splits have no `timestamp` column: re-run stage3_map_split.sh")
     as_of = int(target_df["timestamp"].min())
@@ -129,35 +128,28 @@ def main() -> None:
 
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.bincount(fit_df["user_idx"].to_numpy(), minlength=num_users)
-    seg_of = {u: ("cold" if hist_size[u] == 0 else "sparse" if hist_size[u] <= sparse_max else "warm") for u in target_by_user}
+    seg_of = segment_users(target_by_user, hist_size, sparse_max)
     latest = fit_df[fit_df["user_idx"].isin(list(target_by_user))].sort_values("timestamp").drop_duplicates("user_idx", keep="last")
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
 
     # ---- corpus + models + tools
     print("Build corpus")
-    meta = load_item_metadata(meta_files, keep=lambda d, a: namespaced_item_id(d, a) in item2id)
-    corpus = ItemCorpus.from_dataframe(meta)
-    coverage = len(corpus.item_domains(list(islice(item2id, 5000)))) / min(5000, len(item2id))
-    if coverage < 0.5:
-        raise SystemExit("Less than half of mapped items have metadata: check resource/raw/meta_<Domain>.jsonl.gz / id format")
+    corpus, _, coverage = build_corpus(meta_files, item2id, True, float(cfg["min_metadata_coverage"]))
 
     print("Fit ItemKNN on fit data")
     knn = ItemKNNRecommender(int(baselines["item_knn"]["k"])).fit(fit_df[["user_idx", "item_idx"]])
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
-    item_cf = ItemCFTool(knn, item2id, corpus=corpus, logger=logger)
-    reco = RecoModelTool(BaselineScorer(knn), user2id, item2id, corpus=corpus, logger=logger)
-    query, search = QueryTool(corpus, logger=logger), SemanticSearchTool(corpus, logger=logger)
-    memory = MemoryTool(fit_df, user2id, item2id, corpus, logger=logger, as_of_timestamp=as_of)
+    tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
 
     runners: dict[str, Any] = {}
     if "type1" in agents:
-        runners["type1"] = Type1Agent(item_cf, reco, query)
+        runners["type1"] = Type1Agent(tools.item_cf, tools.reco, tools.query)
     if any(a in PLANNER_AGENTS for a in agents):
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
             raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
-        runners["planner"] = PlanExecutor(llm, [item_cf, reco, query, search])
-        runners["planner_memory"] = PlanExecutor(llm, [item_cf, reco, query, search, memory])
+        runners["planner"] = PlanExecutor(llm, tools.for_planner())
+        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory())
 
     # ---- requests (deterministic given the seed) and the trajectory file
     requests = build_requests(

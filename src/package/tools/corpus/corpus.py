@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
+import warnings
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -22,7 +23,7 @@ from ...data import namespaced_item_id
 from ..base import ToolInputError
 from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
-from ._helper import _clean_row
+from ._helper import _clean_row, read_only_authorizer
 
 
 
@@ -36,22 +37,7 @@ class ItemCorpus:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
         self._conn.execute("PRAGMA query_only = ON")
-        allowed = {
-            sqlite3.SQLITE_SELECT,
-            sqlite3.SQLITE_READ,
-            sqlite3.SQLITE_FUNCTION,
-            getattr(sqlite3, "SQLITE_RECURSIVE", 33),
-        }
-
-        def authorizer(action, arg1, *_):
-            if action in allowed:
-                return sqlite3.SQLITE_OK
-            # FTS5 MATCH reads PRAGMA data_version; deny every other pragma.
-            if action == sqlite3.SQLITE_PRAGMA and arg1 == "data_version":
-                return sqlite3.SQLITE_OK
-            return sqlite3.SQLITE_DENY
-
-        self._conn.set_authorizer(authorizer)
+        self._conn.set_authorizer(read_only_authorizer())
 
     # ---- construction ---------------------------------------------------- #
 
@@ -70,9 +56,27 @@ class ItemCorpus:
             if domain is None:
                 raise ValueError("pass domain=... or include a 'domain' column")
             df["domain"] = domain
+        elif domain is not None:
+            # Warn if both domain= arg and domain column are present
+            warnings.warn(
+                f"Both domain= argument ('{domain}') and 'domain' column are present. "
+                "Using the column value; the argument is ignored.",
+                UserWarning,
+                stacklevel=2
+            )
 
         if "original_item_id" in df.columns:
             df["item_id"] = df["parent_asin"]
+            # Warn if item_id doesn't contain '::' when original_item_id is present
+            # (suggests the data wasn't properly namespaced)
+            if not df["item_id"].str.contains("::", na=False).all():
+                warnings.warn(
+                    "original_item_id is present but some item_id values don't contain '::'. "
+                    "This suggests the data wasn't properly namespaced. "
+                    "Ensure parent_asin is already namespaced when using original_item_id.",
+                    UserWarning,
+                    stacklevel=2
+                )
         else:
             df["original_item_id"] = df["parent_asin"]
             df["item_id"] = [namespaced_item_id(d, a) for d, a in zip(df["domain"], df["parent_asin"])]
@@ -141,7 +145,9 @@ class ItemCorpus:
         deadline = time.monotonic() + SQL_TIME_BUDGET_SECONDS
         self._conn.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
         try:
-            cur = self._conn.execute(f"SELECT * FROM ({sql}) LIMIT ?", (*params, max_rows + 1))
+            # Add newline before closing paren to handle trailing -- comments
+            wrapped_sql = f"SELECT * FROM (\n{sql}\n) LIMIT ?"
+            cur = self._conn.execute(wrapped_sql, (*params, max_rows + 1))
             columns = [d[0] for d in cur.description]
             fetched = cur.fetchall()
         except (sqlite3.Error, sqlite3.Warning) as exc:
@@ -154,8 +160,16 @@ class ItemCorpus:
         return rows, truncated
 
     def count(self, where_sql: str, params: Sequence[Any]) -> int:
-        cur = self._conn.execute(f"SELECT COUNT(*) FROM items WHERE {where_sql}", tuple(params))
-        return int(cur.fetchone()[0])
+        deadline = time.monotonic() + SQL_TIME_BUDGET_SECONDS
+        self._conn.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
+        try:
+            cur = self._conn.execute(f"SELECT COUNT(*) FROM items WHERE {where_sql}", tuple(params))
+            result = int(cur.fetchone()[0])
+        except (sqlite3.Error, sqlite3.Warning) as exc:
+            raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
+        finally:
+            self._conn.set_progress_handler(None, 0)
+        return result
 
     def domains(self) -> list[str]:
         return [r[0] for r in self._conn.execute("SELECT DISTINCT domain FROM items ORDER BY domain")]

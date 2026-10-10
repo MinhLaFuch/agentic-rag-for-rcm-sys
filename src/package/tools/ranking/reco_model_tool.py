@@ -36,6 +36,8 @@ class RecoModelTool(Tool):
     output_schema = {
         "ranked": "list[{rank, item_id, score, domain}]  -- best first",
         "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
+        "has_personal_signal": "bool  -- true if user has collaborative/personal signal vs only popularity",
+        "note": "str | None  -- explanation when ranked is empty",
     }
 
     def __init__(
@@ -68,8 +70,19 @@ class RecoModelTool(Tool):
         user_idx = self.user2id.get(user_id, -1)
         cold_start = not self.scorer.is_known_user(user_idx)
 
-        scorable = [i for i in ids if i in self.item2id]
-        unscored = [i for i in ids if i not in self.item2id]  # unknown to the model: reported, not hidden
+        # Separate items into scorable (in model matrix) and unscored (outside matrix or unknown)
+        scorable = []
+        unscored = []
+        for i in ids:
+            if i not in self.item2id:
+                unscored.append(i)
+            else:
+                idx = self.item2id[i]
+                if idx >= self.scorer.num_items:
+                    # Item is in item2id but outside the model matrix (e.g., added after training)
+                    unscored.append(i)
+                else:
+                    scorable.append(i)
 
         excluded_seen: list[str] = []
         if exclude_seen and not cold_start:
@@ -89,10 +102,25 @@ class RecoModelTool(Tool):
                     entry["domain"] = domains.get(scorable[pos])
                 ranked.append(entry)
 
+        # Generate a note if ranked is empty to explain why
+        note = None
+        if not ranked:
+            if not scorable:
+                if excluded_seen:
+                    note = f"All {len(excluded_seen)} candidates were previously seen by the user and exclude_seen=True"
+                elif unscored:
+                    note = f"All {len(unscored)} candidates are unknown to the model (outside vocabulary or matrix)"
+                else:
+                    note = "No candidates were provided"
+            else:
+                note = "All scorable candidates were filtered out (e.g., exclude_seen)"
+
         return {
             "ranked": ranked,
             "model": self.scorer.name,
             "cold_start": cold_start,
             "excluded_seen": excluded_seen,
             "unscored_item_ids": unscored,
+            "has_personal_signal": self.scorer.has_personal_signal(user_idx),
+            "note": note,
         }

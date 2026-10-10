@@ -11,12 +11,12 @@ class BPRMFRecommender(Recommender):
 
     def __init__(
         self,
-        embedding_dim: int = 64,
-        learning_rate: float = 0.05,
-        reg: float = 0.01,
-        epochs: int = 20,
-        batch_size: int = 2048,
-        seed: int = 42,
+        embedding_dim: int,
+        learning_rate: float,
+        reg: float,
+        epochs: int,
+        batch_size: int,
+        seed: int,
     ) -> None:
         super().__init__()
         self.embedding_dim = embedding_dim

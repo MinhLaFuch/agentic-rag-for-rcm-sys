@@ -6,6 +6,8 @@ from .metrics import ranking_metrics_at_k
 from .recommendation_metrics import evaluate_ranking
 from .merge_model_params import merge_model_params
 from .parameter_grid import parameter_grid
+from .segment_users import segment_users
+from .select_fit_target import select_fit_target
 
 __all__ = [
     "EvaluationResult",
@@ -16,4 +18,6 @@ __all__ = [
     "evaluate_ranking",
     "merge_model_params",
     "parameter_grid",
+    "segment_users",
+    "select_fit_target",
 ]

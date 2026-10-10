@@ -43,6 +43,15 @@ class Recommender(ABC):
         """
         Top-k item cho mỗi user, đã loại item trong `exclude` (thường là
         toàn bộ lịch sử đã thấy). Trả về (len(user_idxs), k) đã sắp giảm dần theo điểm.
+
+        Note:
+        - Items với điểm -inf (e.g., excluded items) không được trả về.
+        - Nếu ít hơn k item có điểm hợp lệ, kết quả sẽ ngắn hơn k (padding với -1).
+        - Tie-break: khi điểm bằng nhau, ưu tiên item_idx nhỏ hơn (đeterministic).
+        - Khi toàn bộ điểm là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break.
+        - Sử dụng float32 cho scores để tiết kiệm memory (matrix sparse cũng float32).
+          float64 có thể tăng precision nhưng tốn 2x memory. Thêm tie-breaker rất nhỏ (1e-10)
+          để đảm bảo determinism trong float32.
         """
         if k <= 0 or k > self.num_items:
             raise ValueError(f"k must be in [1, num_items={self.num_items}], got {k}")
@@ -53,8 +62,30 @@ class Recommender(ABC):
             rows, cols = exclude[user_idxs].nonzero()
             scores[rows, cols] = -np.inf
 
+        # Nếu toàn bộ điểm là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break
+        # Tính popularity từ train_matrix (số tương tác mỗi item)
+        popularity = np.asarray(self.train_matrix.sum(axis=0)).ravel()
+        all_zero = (scores == 0).all(axis=1)
+        if all_zero.any():
+            # Thêm popularity nhỏ để tie-break mà không làm thay đổi thứ tự quá nhiều
+            scores[all_zero] += popularity * 1e-6
+
         n = scores.shape[1]
-        top = np.argpartition(scores, n - k, axis=1)[:, n - k :]
-        top_scores = np.take_along_axis(scores, top, axis=1)
+        # Add tiny tie-breaker by item_idx for determinism when scores are equal
+        # This makes ranking stable without full argsort (O(n log n) -> O(n))
+        tie_breaker = np.arange(n, dtype=np.float32) * 1e-10
+        scores_with_tie = scores + tie_breaker[None, :]
+
+        top = np.argpartition(scores_with_tie, n - k, axis=1)[:, n - k :]
+        top_scores = np.take_along_axis(scores_with_tie, top, axis=1)
         order = np.argsort(-top_scores, axis=1, kind="stable")
-        return np.take_along_axis(top, order, axis=1)
+        ranked = np.take_along_axis(top, order, axis=1)
+
+        # Filter out -inf items (excluded or invalid)
+        valid_mask = scores[np.arange(len(user_idxs))[:, None], ranked] > -np.inf
+        result = np.full((len(user_idxs), k), -1, dtype=np.int64)
+        for i in range(len(user_idxs)):
+            valid_items = ranked[i][valid_mask[i]]
+            result[i, :len(valid_items)] = valid_items
+
+        return result

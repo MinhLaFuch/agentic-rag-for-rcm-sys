@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections import Counter
 
 from ._dataclass import StreamingInteractionStats
-from ..loader import iter_jsonl_gz
 
 def compute_interaction_stats_streaming(path: str) -> "StreamingInteractionStats":
     """

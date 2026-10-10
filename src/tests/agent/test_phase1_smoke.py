@@ -51,7 +51,8 @@ class _FakeHTTPResponse:
 # ---------------------------------------------------------------------------
 
 def test_end_to_end_agent_config_to_llm_call(monkeypatch):
-    # 1. Load config thật từ configs/agent/llm.yaml (provider: openai_compatible)
+    # 1. Load config thật từ configs/agent/llm.yaml (provider: openai_compatible); base_url đến từ biến môi trường
+    monkeypatch.setenv("LLM_BASE_URL", "http://localhost:8000/v1")
     llm_config = load_config("agent/llm")
 
     # 2. Patch urllib so no real HTTP call is made

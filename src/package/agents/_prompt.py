@@ -5,6 +5,8 @@ SYSTEM_PROMPT = (
     "Rules:\n"
     "- Use only the tools above, and only the args listed in their input_schema.\n"
     "- Copy ids (user_id, item ids) exactly as they appear in the request; never invent ids.\n"
+    "- Give every arg whose schema has no default (no 'default' / 'None' in it); never send empty args.\n"
+    "- A reference path may only use field names listed under the tool's `returns`.\n"
     "- A step may use the output of an earlier step by writing a reference string as an arg value: "
     '"$<step number starting at 1>.<path>", e.g. "$1.candidates" or "$2.ranked.*.item_id" '
     "(\"*\" collects that field from every element of a list). A reference must be the WHOLE value, not part of a string.\n"

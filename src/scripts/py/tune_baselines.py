@@ -14,22 +14,11 @@ import pandas as pd
 
 from package.config import get_data_paths, load_config
 from package.data.split import infer_matrix_shape, load_splits
-from package.tools.evaluation.evaluator import EvaluationResult, evaluate_recommender
+from package.tools.evaluation.evaluator import evaluate_recommender
 from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.evaluation import merge_model_params, parameter_grid
 from package.tools.recommenders import build_interaction_matrix, build_model
 from package.utils.console import ensure_utf8_stdout
-
-
-def _serialize_result(result: EvaluationResult, fit_seconds: float) -> dict:
-    return {
-        "overall": result.overall,
-        "by_segment": result.by_segment,
-        "num_users": result.num_users,
-        "catalog_coverage": result.catalog_coverage,
-        "target_item_seen_ratio": result.target_item_seen_ratio,
-        "fit_seconds": round(fit_seconds, 2),
-    }
 
 
 def main() -> None:
@@ -79,7 +68,7 @@ def main() -> None:
             fit_start = time.time()
             model.fit(train_matrix)
             result = evaluate_recommender(model, train_matrix, validation_matrix, ks, sparse_max=sparse_max)
-            trial = {"model": model.name, "base_model": model_name, "params": params, "metrics": _serialize_result(result, time.time() - fit_start)}
+            trial = {"model": model.name, "base_model": model_name, "params": params, "metrics": result.to_metrics(time.time() - fit_start)}
             trials.append(trial)
             score = result.overall[metric]
             print(f"model={model.name} params={params} {metric}={score:.6f}")
@@ -109,7 +98,7 @@ def main() -> None:
         metrics["final_test"] = {
             "model": final_model.name,
             "params": best["params"],
-            "metrics": _serialize_result(final_result, time.time() - fit_start),
+            "metrics": final_result.to_metrics(time.time() - fit_start),
         }
         dataset_info["final_fit_interactions"] = int(fit_matrix.nnz)
         dataset_info["test_interactions"] = int(test_matrix.nnz)

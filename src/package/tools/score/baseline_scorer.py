@@ -19,6 +19,16 @@ class BaselineScorer:
     def __init__(self, model: Any) -> None:
         self.model = model
         self.name = type(model).__name__
+
+        # Validate model has required attributes
+        required_attrs = ["scores", "user_items", "num_items"]
+        missing = [attr for attr in required_attrs if not hasattr(model, attr)]
+        if missing:
+            raise AttributeError(
+                f"Model must have attributes {required_attrs}, missing: {missing}. "
+                f"Expected a fitted PopularityRecommender or ItemKNNRecommender."
+            )
+
         self.popularity: np.ndarray = model.scores
         self.user_items: sparse.csr_matrix = model.user_items
         similarity = getattr(model, "similarity", None)
@@ -44,3 +54,11 @@ class BaselineScorer:
             cf = (self.user_items.getrow(user_idx) @ self.similarity).tocsr()
             scores = scores + np.where(valid, cf[:, safe].toarray().ravel(), 0.0)
         return scores
+
+    def has_personal_signal(self, user_idx: int) -> bool:
+        """Check if the user has any collaborative filtering signal (i.e., has history with neighbors)."""
+        if self.similarity is None or not self.is_known_user(user_idx):
+            return False
+        # Check if the user's history has any CF signal (similarity > 0)
+        cf = (self.user_items.getrow(user_idx) @ self.similarity).tocsr()
+        return cf.nnz > 0

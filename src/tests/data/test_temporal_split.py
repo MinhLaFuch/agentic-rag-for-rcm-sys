@@ -35,11 +35,11 @@ def test_compute_temporal_cutoffs_invalid_ratios_raises(synthetic_interactions):
 def test_compute_temporal_cutoffs_empty_dataframe_raises():
     empty_df = pd.DataFrame({"timestamp": []})
     with pytest.raises(ValueError):
-        compute_temporal_cutoffs(empty_df)
+        compute_temporal_cutoffs(empty_df, 0.8, 0.1, 0.1)
 
 
 def test_temporal_split_produces_disjoint_ordered_sets(synthetic_interactions):
-    cutoff_1, cutoff_2 = compute_temporal_cutoffs(synthetic_interactions)
+    cutoff_1, cutoff_2 = compute_temporal_cutoffs(synthetic_interactions, 0.8, 0.1, 0.1)
     train, val, test = temporal_split(synthetic_interactions, cutoff_1, cutoff_2)
 
     assert len(train) + len(val) + len(test) == len(synthetic_interactions)
