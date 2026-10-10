@@ -6,9 +6,9 @@ import pandas as pd
 
 def compute_temporal_cutoffs(
     df: pd.DataFrame,
-    train_ratio: float,
-    validation_ratio: float,
-    test_ratio: float,
+    train_ratio: float = 0.8,
+    validation_ratio: float = 0.1,
+    test_ratio: float = 0.1,
 ) -> tuple[int, int]:
     """
     Trả về (cutoff_1, cutoff_2) sao cho:

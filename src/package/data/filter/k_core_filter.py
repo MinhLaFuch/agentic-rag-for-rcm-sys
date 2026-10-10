@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 import pandas as pd
 
 
@@ -11,7 +9,7 @@ def k_core_filter(
     interactions: pd.DataFrame,
     min_user_interactions: int,
     min_item_interactions: int,
-    max_iterations: int,
+    max_iterations: int = 20,
 ) -> pd.DataFrame:
     """
     Lặp lại việc loại user/item có ít hơn ngưỡng interaction cho đến khi
@@ -29,12 +27,6 @@ def k_core_filter(
             df["user_id"].isin(valid_users) & df["parent_asin"].isin(valid_items)
         ]
         if len(new_df) == len(df):
-            return df
+            break
         df = new_df
-    warnings.warn(
-        f"k_core_filter chưa hội tụ sau {max_iterations} vòng — kết quả có thể còn user/item dưới ngưỡng; "
-        "tăng filtering.max_iterations.",
-        RuntimeWarning,
-        stacklevel=2,
-    )
     return df

@@ -9,7 +9,7 @@ from .base import Recommender
 class ItemKNNRecommender(Recommender):
     name = "item_knn"
 
-    def __init__(self, k: int, block_elements: int) -> None:
+    def __init__(self, k: int = 50, block_elements: int = 20_000_000) -> None:
         super().__init__()
         if k <= 0:
             raise ValueError("k must be positive")

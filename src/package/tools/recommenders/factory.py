@@ -14,19 +14,19 @@ ALL_MODELS = ["random", "popularity", "item_knn", "bpr_mf"]
 
 
 def build_model(name: str, cfg: dict) -> Recommender:
-    seed = cfg["seed"]
+    seed = cfg.get("seed", 42)
     if name == "random":
         return RandomRecommender(seed=seed)
     if name == "popularity":
         return PopularityRecommender()
 
     if name == "item_knn":
-        model: Recommender = ItemKNNRecommender(**cfg["item_knn"])
+        model: Recommender = ItemKNNRecommender(**cfg.get("item_knn", {}))
     elif name == "bpr_mf":
-        model = BPRMFRecommender(seed=seed, **cfg["bpr_mf"])
+        model = BPRMFRecommender(seed=seed, **cfg.get("bpr_mf", {}))
     else:
         raise ValueError(f"Unknown model '{name}'. Choose from {ALL_MODELS}")
 
-    if cfg["popularity_fallback"]:
+    if cfg.get("popularity_fallback", True):
         return FallbackRecommender(model, PopularityRecommender())
     return model

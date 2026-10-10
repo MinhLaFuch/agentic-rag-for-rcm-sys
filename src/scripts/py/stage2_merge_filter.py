@@ -30,7 +30,6 @@ def main() -> None:
     filtering_config = load_config("data/filtering")
     min_user = filtering_config["filtering"]["min_user_interactions"]
     min_item = filtering_config["filtering"]["min_item_interactions"]
-    max_iter = filtering_config["filtering"]["max_iterations"]
     domains = args.domain or get_domains()
     paths = get_data_paths(args.tag)
     output_path = paths.filtered_path
@@ -68,7 +67,7 @@ def main() -> None:
     # k-core chạy TRÊN DỮ LIỆU ĐÃ GỘP: min_user_interactions tính trên tổng interaction
     # của user qua mọi domain, không phải riêng từng domain.
     before_users = merged["user_id"].nunique()
-    filtered = k_core_filter(merged, min_user, min_item, max_iter)
+    filtered = k_core_filter(merged, min_user_interactions=min_user, min_item_interactions=min_item)
     print(
         f"k_core_filter (min_user={min_user}, min_item={min_item}) "
         f"users_before={before_users} users_after={filtered['user_id'].nunique()} "
@@ -80,7 +79,7 @@ def main() -> None:
         per_domain_warm = {}
         for domain in domains:
             single = merged[merged["domain"] == domain]
-            single_filtered = k_core_filter(single, min_user, min_item, max_iter)
+            single_filtered = k_core_filter(single, min_user_interactions=min_user, min_item_interactions=min_item)
             per_domain_warm[domain] = single_filtered["user_id"].nunique()
         print(
             f"cold_start_check per_domain_warm_users={per_domain_warm} "
