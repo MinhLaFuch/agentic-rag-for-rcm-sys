@@ -78,7 +78,7 @@ class SemanticSearchTool(Tool):
     ) -> dict[str, Any]:
         if not isinstance(query, str) or not query.strip():
             raise ToolInputError("`query` must be a non-empty string")
-        limit = check_top_k(limit)
+        limit = check_top_k(limit, name="limit")
         filters = filters or {}
 
         tokens = _tokenize(query)

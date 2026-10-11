@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import pandas as pd
 
 
@@ -27,6 +29,11 @@ def k_core_filter(
             df["user_id"].isin(valid_users) & df["parent_asin"].isin(valid_items)
         ]
         if len(new_df) == len(df):
-            break
+            return df
         df = new_df
+    warnings.warn(
+        f"k_core_filter chưa hội tụ sau {max_iterations} vòng — kết quả có thể còn user/item dưới ngưỡng.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
     return df

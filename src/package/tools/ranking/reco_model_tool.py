@@ -18,7 +18,7 @@ class RecoModelTool(Tool):
 
     Leakage: the tool has no timestamp; the "as-of" time is fixed by which
     interactions the scorer's model was fitted on (train for validation runs,
-    train+validation for test runs, as in scripts/run_baselines.py).
+    train+validation for test runs, as in scripts/py/run_baselines.py).
 
     """
 
@@ -65,7 +65,7 @@ class RecoModelTool(Tool):
         if not ids:
             raise ToolInputError("`candidates` is empty")
         if top_k is not None:
-            top_k = check_top_k(top_k)
+            top_k = check_top_k(top_k, name="top_k")
 
         user_idx = self.user2id.get(user_id, -1)
         cold_start = not self.scorer.is_known_user(user_idx)

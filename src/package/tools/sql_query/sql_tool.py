@@ -66,7 +66,7 @@ class SQLTool(Tool):
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
         if order_by not in ORDER_COLUMNS:
             raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
-        limit = check_top_k(limit)
+        limit = check_top_k(limit, name="limit")
 
         where, params = compile_filters(filters, set(self.corpus.domains()))
         direction = "DESC" if descending else "ASC"

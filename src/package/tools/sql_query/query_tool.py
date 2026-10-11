@@ -40,7 +40,7 @@ class QueryTool(Tool):
     ) -> dict[str, Any]:
         if (query is None) == (item_ids is None):
             raise ToolInputError("provide exactly one of `query` or `item_ids`")
-        max_rows = check_top_k(max_rows, MAX_QUERY_ROWS)
+        max_rows = check_top_k(max_rows, MAX_QUERY_ROWS, name="max_rows")
 
         if item_ids is not None:
             ids = list(dict.fromkeys(item_ids))

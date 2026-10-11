@@ -1,5 +1,12 @@
-"""Schema/protocol constants for the data package (changing them changes the data contract, so they stay in Python)."""
+"""Schema of item metadata: the columns load_item_metadata() extracts (an output contract)."""
 
-REQUIRED_COLUMNS = ["user_id", "parent_asin", "rating", "timestamp"]
-OPTIONAL_COLUMNS = ["title", "text", "helpful_vote", "verified_purchase"]
-ITEM_ID_SEPARATOR = "::"
+META_FIELDS = [
+    "parent_asin",
+    "title",
+    "store",
+    "price",
+    "average_rating",
+    "rating_number",
+    "main_category",
+    "categories",
+]

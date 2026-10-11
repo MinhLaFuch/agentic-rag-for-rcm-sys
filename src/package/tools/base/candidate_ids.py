@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from ._error import ToolInputError
+from ._validation import validate_list_like
 
 
 def candidate_ids(candidates: Sequence[Any]) -> list[str]:
     """Accept item-id strings or dicts with 'item_id' (i.e. another tool's output as-is)."""
     ids: list[str] = []
-    for c in candidates:
+    for c in validate_list_like(candidates, "candidates"):
         if isinstance(c, str):
             ids.append(c)
         elif isinstance(c, dict) and isinstance(c.get("item_id"), str):

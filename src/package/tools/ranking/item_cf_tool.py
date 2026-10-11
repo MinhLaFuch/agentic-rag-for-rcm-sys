@@ -63,7 +63,7 @@ class ItemCFTool(Tool):
         seeds = list(dict.fromkeys(items or []))
         if not seeds:
             raise ToolInputError("`items` must contain at least one item id")
-        top_k = check_top_k(top_k)
+        top_k = check_top_k(top_k, name="top_k")
         if domain is not None and self.corpus is None:
             raise ToolInputError("domain filtering needs the tool to be built with a corpus")
 
