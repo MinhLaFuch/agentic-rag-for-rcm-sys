@@ -46,7 +46,9 @@ class SQLTool(Tool):
     }
     output_schema = {
         "candidates": "list[{item_id, domain, title, store, price, ...}]",
-        "total_matches": "int", "truncated": "bool", "applied_filters": "dict",
+        "total_matches": "int",
+        "truncated": "bool",
+        "applied_filters": "dict  -- normalized filters with validated types",
     }
 
     def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
@@ -59,6 +61,7 @@ class SQLTool(Tool):
         order_by: str = "rating_number",
         descending: bool = True,
         limit: int = SQL_DEFAULT_LIMIT,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         filters = filters or {}
         unknown = set(filters) - FILTER_KEYS
@@ -68,7 +71,7 @@ class SQLTool(Tool):
             raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
         limit = check_top_k(limit, name="limit")
 
-        where, params = compile_filters(filters, set(self.corpus.domains()))
+        where, params, normalized = compile_filters(filters, set(self.corpus.domains()))
         direction = "DESC" if descending else "ASC"
         cols = ", ".join(ITEM_COLUMNS)
         # NULLs last, then item_id so results are deterministic
@@ -81,5 +84,5 @@ class SQLTool(Tool):
             "candidates": rows,
             "total_matches": self.corpus.count(where, params),
             "truncated": truncated,
-            "applied_filters": filters,
+            "applied_filters": normalized,
         }

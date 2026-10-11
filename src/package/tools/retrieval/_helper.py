@@ -4,13 +4,11 @@ import re
 
 from .._limits import SEMANTIC_MAX_QUERY_TOKENS
 from ..base import ToolInputError
+from ._schema import STOPWORDS
 
 # Small on purpose: BM25 already down-weights common words; this only removes
 # glue words that add noise to an OR query.
-_STOPWORDS = frozenset(
-    "a an the for with and or of to in on at by from is are be i me my we our you your "
-    "want need looking find get some any good best cheap new under over below".split()
-)
+
 
 
 def _tokenize(query: str) -> list[str]:
@@ -45,6 +43,6 @@ def _tokenize(query: str) -> list[str]:
     words = re.findall(r"[a-z][a-z0-9-]*", query.lower())
     kept = [
         w for w in words
-        if len(w) > 1 and w not in _STOPWORDS and not w.replace("-", "").isdigit()
+        if len(w) > 1 and w not in STOPWORDS and not w.replace("-", "").isdigit()
     ]
     return list(dict.fromkeys(kept))[:SEMANTIC_MAX_QUERY_TOKENS]  # de-duplicate, keep order, cap length

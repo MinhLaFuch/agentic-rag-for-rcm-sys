@@ -17,6 +17,7 @@ from __future__ import annotations
 import sqlite3
 import time
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -36,7 +37,6 @@ from ._sql import (
     FTS_POPULATE_SQL,
     FTS_TABLE_SCHEMA,
     ITEMS_INDEXES,
-    ITEMS_TABLE_SCHEMA,
 )
 
 
@@ -117,8 +117,10 @@ class ItemCorpus:
             # Handle both list-like and string categories (wrap string in list to avoid iterating characters)
             if isinstance(cs, str):
                 cat_list = [cs]
-            else:
+            elif isinstance(cs, Iterable):
                 cat_list = list(cs)
+            else:
+                continue
             for cat in cat_list:
                 rows.append((item_id, str(cat)))
         conn.execute(CATEGORIES_TABLE_SCHEMA)

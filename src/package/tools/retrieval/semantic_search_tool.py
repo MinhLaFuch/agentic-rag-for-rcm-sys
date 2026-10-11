@@ -75,6 +75,7 @@ class SemanticSearchTool(Tool):
         query: str,
         filters: dict[str, Any] | None = None,
         limit: int = SEMANTIC_DEFAULT_LIMIT,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         if not isinstance(query, str) or not query.strip():
             raise ToolInputError("`query` must be a non-empty string")
@@ -89,7 +90,7 @@ class SemanticSearchTool(Tool):
         unknown = set(filters) - FILTER_KEYS
         if unknown:
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
-        where, params = compile_filters(filters, set(self.corpus.domains()))
+        where, params, _ = compile_filters(filters, set(self.corpus.domains()))
 
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)
