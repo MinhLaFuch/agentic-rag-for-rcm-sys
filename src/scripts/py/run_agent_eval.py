@@ -134,7 +134,7 @@ def main() -> None:
 
     # ---- corpus + models + tools
     print("Build corpus")
-    corpus, _, coverage = build_corpus(meta_files, item2id, True, float(cfg["min_metadata_coverage"]))
+    corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
 
     print("Fit ItemKNN on fit data")
     knn = ItemKNNRecommender(int(baselines["item_knn"]["k"])).fit(fit_df[["user_idx", "item_idx"]])

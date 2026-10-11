@@ -1,11 +1,15 @@
 """
-Read-only item store shared by QueryTool and SQLTool (and used by ItemCFTool /
-RecoModelTool to attach domain).
+Read-only item store shared by QueryTool, SQLTool, SemanticSearchTool, and MemoryTool
+(also used by ItemCFTool and RecoModelTool to attach domain).
 
 Built once from a metadata DataFrame, then locked: `query_only` pragma plus an
-authoriser that only allows SELECT.  Item ids are namespaced
-"{domain}::{parent_asin}"; the domain is stored as a column and looked up, never
-parsed from the id (D-010).
+authoriser that only allows SELECT.  Item ids are namespaced "{domain}::{parent_asin}";
+the domain is stored as a column and looked up directly from the database.
+
+Three tables:
+  - items: main item metadata (item_id, domain, title, price, ratings, etc.)
+  - item_categories: multi-label categories (one row per item-category pair)
+  - items_fts: FTS5 full-text search index over title, store, main_category, and categories
 """
 
 from __future__ import annotations
@@ -23,15 +27,25 @@ from ...data import namespaced_item_id
 from ..base import ToolInputError
 from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
+from ._error import SQLTimeOutError
 from ._helper import _clean_row, read_only_authorizer
+from ._schema import QUERY_CHUNK_SIZE
+from ._sql import (
+    CATEGORIES_INDEXES,
+    CATEGORIES_TABLE_SCHEMA,
+    FTS_POPULATE_SQL,
+    FTS_TABLE_SCHEMA,
+    ITEMS_INDEXES,
+    ITEMS_TABLE_SCHEMA,
+)
 
 
 
 class ItemCorpus:
     """
-    Read-only item store.  Built once from a metadata DataFrame, then locked:
-    query_only pragma + an authoriser that only allows SELECT, so neither tool
-    can modify or exfiltrate anything beyond reading the two tables.
+    Read-only item store. Built once from a metadata DataFrame, then locked:
+    query_only pragma + an authoriser that only allows SELECT, so tools cannot
+    modify or exfiltrate anything beyond reading.
     """
 
     def __init__(self, conn: sqlite3.Connection) -> None:
@@ -96,34 +110,29 @@ class ItemCorpus:
         df[list(ITEM_COLUMNS)].to_sql("items", conn, index=False)
 
         cats = df["categories"] if "categories" in df.columns else pd.Series([None] * len(df))
-        rows = [
-            (item_id, str(cat))
-            for item_id, cs in zip(df["item_id"], cats)
-            if cs is not None and not (isinstance(cs, float) and np.isnan(cs))
-            for cat in list(cs)
-        ]
-        conn.execute("CREATE TABLE item_categories (item_id TEXT, category TEXT)")
+        rows = []
+        for item_id, cs in zip(df["item_id"], cats):
+            if cs is None or (isinstance(cs, float) and np.isnan(cs)):
+                continue
+            # Handle both list-like and string categories (wrap string in list to avoid iterating characters)
+            if isinstance(cs, str):
+                cat_list = [cs]
+            else:
+                cat_list = list(cs)
+            for cat in cat_list:
+                rows.append((item_id, str(cat)))
+        conn.execute(CATEGORIES_TABLE_SCHEMA)
         conn.executemany("INSERT INTO item_categories VALUES (?, ?)", rows)
 
-        conn.execute("CREATE UNIQUE INDEX idx_items_id ON items(item_id)")
-        conn.execute("CREATE INDEX idx_items_domain ON items(domain)")
-        conn.execute("CREATE INDEX idx_items_price ON items(price)")
-        conn.execute("CREATE INDEX idx_cat_item ON item_categories(item_id)")
-        conn.execute("CREATE INDEX idx_cat_cat ON item_categories(category)")
+        for idx_sql in ITEMS_INDEXES:
+            conn.execute(idx_sql)
+        for idx_sql in CATEGORIES_INDEXES:
+            conn.execute(idx_sql)
 
         # FTS5 over title/store/main_category plus joined categories (porter stems "keyboards" -> "keyboard").
         # External-content FTS cannot include categories (they live on item_categories), so we copy rowids.
-        conn.execute(
-            "CREATE VIRTUAL TABLE items_fts USING fts5("
-            "title, store, main_category, categories, tokenize='porter unicode61')"
-        )
-        conn.execute(
-            "INSERT INTO items_fts(rowid, title, store, main_category, categories) "
-            "SELECT i.rowid, i.title, i.store, i.main_category, "
-            "COALESCE((SELECT group_concat(c.category, ' ') FROM item_categories c "
-            "WHERE c.item_id = i.item_id), '') "
-            "FROM items i"
-        )
+        conn.execute(FTS_TABLE_SCHEMA)
+        conn.execute(FTS_POPULATE_SQL)
 
         conn.commit()
         return cls(conn)
@@ -151,6 +160,8 @@ class ItemCorpus:
             columns = [d[0] for d in cur.description]
             fetched = cur.fetchall()
         except (sqlite3.Error, sqlite3.Warning) as exc:
+            if time.monotonic() > deadline:
+                raise SQLTimeOutError("query exceeded the time budget") from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
         finally:
             self._conn.set_progress_handler(None, 0)
@@ -166,6 +177,8 @@ class ItemCorpus:
             cur = self._conn.execute(f"SELECT COUNT(*) FROM items WHERE {where_sql}", tuple(params))
             result = int(cur.fetchone()[0])
         except (sqlite3.Error, sqlite3.Warning) as exc:
+            if time.monotonic() > deadline:
+                raise SQLTimeOutError("query exceeded the time budget") from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
         finally:
             self._conn.set_progress_handler(None, 0)
@@ -178,8 +191,8 @@ class ItemCorpus:
         """item_id -> domain, via the stored column (never by parsing the id)."""
         out: dict[str, str] = {}
         ids = list(item_ids)
-        for i in range(0, len(ids), 500):
-            chunk = ids[i : i + 500]
+        for i in range(0, len(ids), QUERY_CHUNK_SIZE):
+            chunk = ids[i : i + QUERY_CHUNK_SIZE]
             marks = ",".join("?" * len(chunk))
             cur = self._conn.execute(f"SELECT item_id, domain FROM items WHERE item_id IN ({marks})", chunk)
             out.update(cur.fetchall())

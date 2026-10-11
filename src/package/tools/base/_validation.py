@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
+
 from ._error import ToolInputError
 
 
@@ -14,23 +16,49 @@ def validate_list_like(value: Any, name: str) -> list[Any]:
     return list(value)
 
 
-def validate_int(value: Any, name: str, *, min_value: int = 1, max_value: int | None = None) -> int:
-    """Ensure value is an integer (not bool), in range, and not truncated."""
-    if isinstance(value, bool):
+def validate_int(
+    value: Any,
+    name: str,
+    *,
+    min_value: int = 1,
+    max_value: int | None = None,
+    allow_numpy: bool = False,
+) -> int:
+    """Ensure value is an integer (not bool), in range, and not truncated.
+
+    Args:
+        value: The value to validate
+        name: Parameter name for error messages
+        min_value: Minimum allowed value (default: 1)
+        max_value: Maximum allowed value (default: None)
+        allow_numpy: If True, accept numpy integer types (default: False)
+    """
+    # Check for boolean (including numpy bool)
+    if isinstance(value, (bool, np.bool_)):
         raise ToolInputError(f"{name} must be an integer, not a boolean")
-    if not isinstance(value, int):
+    
+    # Check for integer type
+    if allow_numpy:
+        is_int = isinstance(value, (int, np.integer))
+    else:
+        is_int = isinstance(value, int)
+    
+    if not is_int:
         if isinstance(value, float):
             if not value.is_integer():
                 raise ToolInputError(f"{name} must be an integer, got float {value}")
             raise ToolInputError(f"{name} must be an integer, got float {value} (use int({int(value)}))")
-        raise ToolInputError(f"{name} must be an integer, got {type(value).__name__}")
+        raise ToolInputError(f"{name} must be an integer, got {type(value).__name__} {value!r}")
     
-    if min_value is not None and value < min_value:
-        raise ToolInputError(f"{name} must be >= {min_value}, got {value}")
-    if max_value is not None and value > max_value:
-        raise ToolInputError(f"{name} must be <= {max_value}, got {value}")
+    # Convert numpy integer to Python int
+    int_value = int(value)
     
-    return value
+    if min_value is not None and int_value < min_value:
+        raise ToolInputError(f"{name} must be >= {min_value}, got {int_value}")
+    if max_value is not None and int_value > max_value:
+        raise ToolInputError(f"{name} must be <= {max_value}, got {int_value}")
+    
+    return int_value
 
 
 def validate_float(value: Any, name: str, *, min_value: float | None = None, max_value: float | None = None) -> float:

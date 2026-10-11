@@ -52,7 +52,7 @@ def corpus():
             ["Cheap", "Strategy"],
         ],
     })
-    return ItemCorpus.from_dataframe(meta, domain="Video_Games")
+    return ItemCorpus.from_dataframe(meta)
 
 
 @pytest.fixture
@@ -154,7 +154,7 @@ def test_memory_tool_all_null_prices(corpus, user2id, item2id):
         "main_category": ["Action", "Puzzle"],
         "categories": [["Action"], ["Puzzle"]],
     })
-    corpus_null = ItemCorpus.from_dataframe(meta_null, domain="Video_Games")
+    corpus_null = ItemCorpus.from_dataframe(meta_null)
     
     interactions = pd.DataFrame({
         "user_id": ["u_null"] * 2,

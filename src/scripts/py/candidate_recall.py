@@ -157,7 +157,7 @@ def main() -> None:
 
     # ---- corpus + tools
     print("Build corpus")
-    corpus, meta, coverage = build_corpus(meta_files, item2id, namespaced, float(cfg["min_metadata_coverage"]))
+    corpus, meta, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
     title_of, cats_of = item_text_tables(meta, item2id, namespaced)
     print(f"  metadata covers {coverage:.1%} of mapped items")
 

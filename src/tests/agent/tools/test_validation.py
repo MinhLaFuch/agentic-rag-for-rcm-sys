@@ -1,10 +1,12 @@
 """Tests for validation helpers in tools/base."""
 
+import numpy as np
 import pytest
 
 from package.tools.base import (
     ToolInputError,
     candidate_ids,
+    candidate_results,
     check_top_k,
     validate_dict,
     validate_float,
@@ -62,6 +64,13 @@ class TestValidateInt:
     def test_enforces_max_value(self):
         with pytest.raises(ToolInputError, match="must be <= 10"):
             validate_int(15, "test", max_value=10)
+
+    def test_rejects_numpy_int_by_default(self):
+        with pytest.raises(ToolInputError, match="must be an integer"):
+            validate_int(np.int64(5), "test")
+
+    def test_accepts_numpy_int_when_allowed(self):
+        assert validate_int(np.int64(5), "test", allow_numpy=True) == 5
 
 
 class TestValidateFloat:
@@ -128,14 +137,66 @@ class TestCandidateIds:
             candidate_ids([123])
 
 
+class TestCandidateResults:
+    def test_extracts_string_ids(self):
+        result = candidate_results(["a", "b", "c"])
+        assert result == [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]
+
+    def test_preserves_dict_fields(self):
+        input_data = [
+            {"item_id": "a", "score": 0.9, "similarity": 0.8},
+            {"item_id": "b", "score": 0.7},
+        ]
+        result = candidate_results(input_data)
+        assert result == input_data
+
+    def test_mixed_strings_and_dicts(self):
+        input_data = ["a", {"item_id": "b", "score": 0.9}, "c"]
+        result = candidate_results(input_data)
+        assert result == [
+            {"item_id": "a"},
+            {"item_id": "b", "score": 0.9},
+            {"item_id": "c"},
+        ]
+
+    def test_deduplicates_preserves_order(self):
+        input_data = ["a", "b", "a", "c", "b"]
+        result = candidate_results(input_data)
+        assert result == [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]
+
+    def test_deduplicates_dicts_by_item_id(self):
+        input_data = [
+            {"item_id": "a", "score": 0.9},
+            {"item_id": "b", "score": 0.7},
+            {"item_id": "a", "score": 0.5},  # duplicate item_id, different score
+        ]
+        result = candidate_results(input_data)
+        assert result == [
+            {"item_id": "a", "score": 0.9},
+            {"item_id": "b", "score": 0.7},
+        ]
+
+    def test_rejects_string_not_list(self):
+        with pytest.raises(ToolInputError, match="must be a list or tuple"):
+            candidate_results("a")
+
+    def test_rejects_dict_without_item_id(self):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
+            candidate_results([{"name": "a"}])
+
+    def test_rejects_non_string_non_dict(self):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
+            candidate_results([123])
+
+
 class TestCheckTopK:
     def test_accepts_valid_int(self):
         assert check_top_k(10) == 10
 
     def test_rejects_bool(self):
-        with pytest.raises(ToolInputError, match="not a boolean.*limit/max_rows/top_k"):
+        with pytest.raises(ToolInputError, match="must be an integer, not a boolean"):
             check_top_k(True)
-        with pytest.raises(ToolInputError, match="not a boolean.*limit/max_rows/top_k"):
+        with pytest.raises(ToolInputError, match="must be an integer, not a boolean"):
             check_top_k(False)
 
     def test_rejects_too_small(self):
@@ -145,3 +206,6 @@ class TestCheckTopK:
     def test_rejects_too_large(self):
         with pytest.raises(ToolInputError, match="must be <= 1000"):
             check_top_k(2000)
+
+    def test_accepts_numpy_int(self):
+        assert check_top_k(np.int64(10)) == 10

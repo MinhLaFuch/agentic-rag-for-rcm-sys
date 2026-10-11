@@ -10,25 +10,24 @@ from package.data import namespaced_item_id
 from package.data.loader import load_item_metadata
 
 from .corpus import ItemCorpus
-
-COVERAGE_SAMPLE = 5000  # số item mapping đầu tiên dùng để ước lượng độ phủ metadata
+from ._schema import COVERAGE_SAMPLE
 
 
 def build_corpus(
     meta_files: list[tuple[str, str]],
     item2id: dict[str, int],
-    namespaced: bool,
     min_coverage: float,
 ) -> tuple[ItemCorpus, pd.DataFrame, float]:
     """
-    meta_files: [(domain, đường dẫn meta)]. namespaced: key trong item2id có dạng 'Domain::asin' hay asin thuần.
+    meta_files: [(domain, đường dẫn meta)].
+    item2id: mapping từ namespaced item_id ('Domain::asin') sang integer id.
     min_coverage: tỉ lệ tối thiểu item mapping phải có metadata, dưới mức này ném ValueError
     (thường do sai file meta hoặc sai định dạng id).
     Trả về (corpus, bảng metadata đã lọc, độ phủ ước lượng) — bảng này còn dùng để dựng text cho query mô phỏng.
     """
 
     def in_mapping(domain: str, asin: str) -> bool:
-        return (namespaced_item_id(domain, asin) if namespaced else asin) in item2id
+        return namespaced_item_id(domain, asin) in item2id
 
     meta = load_item_metadata(meta_files, keep=in_mapping)
     corpus = ItemCorpus.from_dataframe(meta)

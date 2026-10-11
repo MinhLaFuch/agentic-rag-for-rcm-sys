@@ -35,4 +35,4 @@ def test_segment_users_thresholds():
 
 def test_build_corpus_raises_when_coverage_too_low(tmp_path):
     with pytest.raises(ValueError):
-        build_corpus([], {"Video_Games::a": 0}, True, 0.5)
+        build_corpus([], {"Video_Games::a": 0}, 0.5)
