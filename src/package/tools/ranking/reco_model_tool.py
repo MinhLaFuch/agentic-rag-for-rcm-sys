@@ -6,7 +6,7 @@ from typing import Any, Sequence
 
 import numpy as np
 
-from ..base import Tool, ToolCallLogger, ToolInputError, ToolExecutionError, candidate_ids, check_top_k
+from ..base import Tool, ToolCallLogger, ToolInputError, candidate_ids, check_top_k
 from ..corpus import ItemCorpus
 from ..score import CandidateScorer
 
@@ -35,6 +35,7 @@ class RecoModelTool(Tool):
     }
     output_schema = {
         "ranked": "list[{rank, item_id, score, domain}]  -- best first",
+        "model": "str  -- name of the scorer that produced the scores",
         "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
         "has_personal_signal": "bool  -- true if user has collaborative/personal signal vs only popularity",
         "note": "str | None  -- explanation when ranked is empty",
@@ -61,18 +62,11 @@ class RecoModelTool(Tool):
         top_k: int | None = None,
         exclude_seen: bool = True,
     ) -> dict[str, Any]:
-        # Validate user_id is a non-empty string
+        # Validate types first: an unhashable user_id would otherwise crash in dict.get().
         if not isinstance(user_id, str) or not user_id.strip():
-            raise ToolInputError(
-                f"`user_id` must be a non-empty string, got {type(user_id).__name__}: {user_id!r}"
-            )
-        
-        # Validate exclude_seen is a boolean
+            raise ToolInputError(f"`user_id` must be a non-empty string, got {user_id!r}")
         if not isinstance(exclude_seen, bool):
-            raise ToolInputError(
-                f"`exclude_seen` must be a boolean (True/False), got {type(exclude_seen).__name__}: {exclude_seen!r}"
-            )
-        
+            raise ToolInputError(f"`exclude_seen` must be a boolean (true/false), got {exclude_seen!r}")
         ids = candidate_ids(candidates)
         if not ids:
             raise ToolInputError("`candidates` is empty")
@@ -106,29 +100,25 @@ class RecoModelTool(Tool):
         ranked: list[dict[str, Any]] = []
         if scorable:
             idxs = np.array([self.item2id[i] for i in scorable], dtype=np.int64)
-            scores = np.asarray(self.scorer.score(user_idx, idxs), dtype=np.float64)
-            
-            # Validate scorer contract: correct shape
-            if scores.shape != idxs.shape:
-                raise ToolExecutionError(
-                    f"Scorer returned shape {scores.shape} but candidates had shape {idxs.shape}. "
-                    "Scorer contract violation: must return one score per candidate."
+            try:
+                scores = np.asarray(self.scorer.score(user_idx, idxs), dtype=np.float64)
+            except (TypeError, ValueError) as exc:
+                raise ToolInputError(f"scorer {self.scorer.name} returned scores that are not numeric: {exc}") from exc
+            # Scorer contract: exactly one finite score per scored candidate, in the same order.
+            if scores.shape != (len(scorable),):
+                raise ToolInputError(
+                    f"scorer {self.scorer.name} returned {scores.size} score(s) for {len(scorable)} candidate(s); "
+                    "expected exactly one score per candidate"
                 )
-            
-            # Filter out non-finite scores - treat them as unscored
-            finite_mask = np.isfinite(scores)
-            unscored.extend([scorable[i] for i in range(len(scorable)) if not finite_mask[i]])
-            scorable_filtered = [scorable[i] for i in range(len(scorable)) if finite_mask[i]]
-            scores_filtered = scores[finite_mask]
-            
-            if scorable_filtered:
-                order = np.argsort(-scores_filtered, kind="stable")  # ties keep input order
-                domains = self.corpus.item_domains(scorable_filtered) if self.corpus else {}
-                for rank, pos in enumerate(order[:top_k], start=1):
-                    entry = {"rank": rank, "item_id": scorable_filtered[pos], "score": float(scores_filtered[pos])}
-                    if self.corpus:
-                        entry["domain"] = domains.get(scorable_filtered[pos])
-                    ranked.append(entry)
+            if not np.isfinite(scores).all():
+                raise ToolInputError(f"scorer {self.scorer.name} returned a non-finite score (NaN or inf)")
+            order = np.argsort(-scores, kind="stable")  # ties keep input order
+            domains = self.corpus.item_domains(scorable) if self.corpus else {}
+            for rank, pos in enumerate(order[:top_k], start=1):
+                entry = {"rank": rank, "item_id": scorable[pos], "score": float(scores[pos])}
+                if self.corpus:
+                    entry["domain"] = domains.get(scorable[pos])
+                ranked.append(entry)
 
         # Generate a note if ranked is empty to explain why
         note = None
@@ -137,7 +127,7 @@ class RecoModelTool(Tool):
                 if excluded_seen:
                     note = f"All {len(excluded_seen)} candidates were previously seen by the user and exclude_seen=True"
                 elif unscored:
-                    note = f"All {len(unscored)} candidates are unknown to the model (outside vocabulary or matrix, or have non-finite scores)"
+                    note = f"All {len(unscored)} candidates are unknown to the model (outside vocabulary or matrix)"
                 else:
                     note = "No candidates were provided"
             else:

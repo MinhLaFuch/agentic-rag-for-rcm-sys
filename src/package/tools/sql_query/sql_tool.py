@@ -72,6 +72,8 @@ class SQLTool(Tool):
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
         if order_by not in ORDER_COLUMNS:
             raise ToolInputError(f"order_by must be one of {sorted(ORDER_COLUMNS)}")
+        if not isinstance(descending, bool):  # the string "false" is truthy: it would silently sort DESC
+            raise ToolInputError(f"`descending` must be a boolean (true/false), got {descending!r}")
         limit = check_top_k(limit, name="limit")
 
         where, params, normalized = compile_filters(filters, set(self.corpus.domains()))

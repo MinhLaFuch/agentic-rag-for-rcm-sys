@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
+from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
 from ..corpus import ItemCorpus
 from .._limits import MAX_QUERY_ROWS, QUERY_DEFAULT_MAX_ROWS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
@@ -44,6 +44,11 @@ class QueryTool(Tool):
         max_rows = check_top_k(max_rows, MAX_QUERY_ROWS, name="max_rows")
 
         if item_ids is not None:
+            # A bare string would be split into characters and an unhashable element would crash dict.fromkeys.
+            item_ids = validate_list_like(item_ids, "item_ids")
+            bad = [i for i in item_ids if not isinstance(i, str) or not i.strip()]
+            if bad:
+                raise ToolInputError(f"`item_ids` must be a list of non-empty strings, got invalid element(s): {bad!r}")
             ids = list(dict.fromkeys(item_ids))
             if not ids:
                 raise ToolInputError("`item_ids` is empty")
@@ -68,6 +73,7 @@ class QueryTool(Tool):
                 "truncated": truncated,
             }
 
-        assert query is not None
+        if not isinstance(query, str):
+            raise ToolInputError(f"`query` must be a string, got {type(query).__name__}")
         rows, truncated = self.corpus.select(query, max_rows=max_rows)
         return {"items": rows, "missing_item_ids": [], "truncated": truncated}

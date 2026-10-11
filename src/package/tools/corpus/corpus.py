@@ -24,12 +24,12 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from ...data import namespaced_item_id
+from ...data import ITEM_ID_SEPARATOR, namespaced_item_id
 from ..base import ToolInputError
 from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 from ._error import SQLTimeOutError
-from ._helper import _clean_row, read_only_authorizer
+from ._helper import _clean_row, normalize_categories, numeric_column, read_only_authorizer
 from ._schema import QUERY_CHUNK_SIZE
 from ._sql import (
     CATEGORIES_INDEXES,
@@ -59,37 +59,56 @@ class ItemCorpus:
     def from_dataframe(cls, meta: pd.DataFrame, domain: str | None = None) -> "ItemCorpus":
         """
         `meta` needs `parent_asin` and either a `domain` column or the `domain` arg.
-        If `original_item_id` is present, `parent_asin` is assumed already namespaced
-        (output of domain_registry.tag_domain); otherwise it is namespaced here.
+
+        Contract:
+        - Item ids are ALWAYS namespaced "{domain}::{original id}" (there is no plain-id mode); the same asin in two
+          domains gives two items. ``domain`` must be a non-empty string for every row.
+        - Domain: the ``domain`` argument is a default for a missing ``domain`` column. If both are given they must
+          agree (matching is fine and silent; any disagreement raises ValueError).
+        - If `original_item_id` is present, `parent_asin` must already be namespaced (output of tag_domain):
+          ``parent_asin == "{domain}::{original_item_id}"`` (or both equal an already-namespaced id of that domain);
+          inconsistent rows raise ValueError. Otherwise `parent_asin` is the original id and is namespaced here.
+        - ``categories``: missing -> none; string -> one category; list of strings -> many (blank/None skipped,
+          de-duplicated). Malformed values raise ValueError (see normalize_categories).
+        - ``price``: "$1,299.99" style strings are parsed; ranges / junk -> NULL. ``average_rating`` and
+          ``rating_number``: non-numeric -> NULL with a warning; never rounded or truncated (rating_number is stored
+          as given: INTEGER if every value is integral and none missing, otherwise REAL; SQLite compares both numerically).
         Extra columns are ignored; missing optional columns become NULL.
         """
         if "parent_asin" not in meta.columns:
             raise ValueError("metadata must have a 'parent_asin' column")
         df = meta.copy()
-        if "domain" not in df.columns:
+        if "domain" in df.columns:
+            if domain is not None and not (df["domain"] == domain).all():
+                found = sorted({str(d) for d in df.loc[df["domain"] != domain, "domain"]})[:3]
+                raise ValueError(
+                    f"domain={domain!r} conflicts with the 'domain' column (found {found}); "
+                    "pass only one of them, or make them agree"
+                )
+        else:
             if domain is None:
                 raise ValueError("pass domain=... or include a 'domain' column")
             df["domain"] = domain
-        elif domain is not None:
-            # Warn if both domain= arg and domain column are present
-            warnings.warn(
-                f"Both domain= argument ('{domain}') and 'domain' column are present. "
-                "Using the column value; the argument is ignored.",
-                UserWarning,
-                stacklevel=2
-            )
+        if not df["domain"].map(lambda d: isinstance(d, str) and bool(d.strip())).all():
+            raise ValueError("every item needs a non-empty string domain (found missing or non-string domain values)")
+        if not df["parent_asin"].map(lambda a: isinstance(a, str) and bool(a.strip())).all():
+            raise ValueError("every item needs a non-empty string parent_asin (found missing or non-string values)")
 
         if "original_item_id" in df.columns:
             df["item_id"] = df["parent_asin"]
-            # Warn if item_id doesn't contain '::' when original_item_id is present
-            # (suggests the data wasn't properly namespaced)
-            if not df["item_id"].str.contains("::", na=False).all():
-                warnings.warn(
-                    "original_item_id is present but some item_id values don't contain '::'. "
-                    "This suggests the data wasn't properly namespaced. "
-                    "Ensure parent_asin is already namespaced when using original_item_id.",
-                    UserWarning,
-                    stacklevel=2
+            original = df["original_item_id"]
+            from_pipeline = df["item_id"] == pd.Series(
+                [namespaced_item_id(d, o) for d, o in zip(df["domain"], original)], index=df.index
+            )
+            already_namespaced = (df["item_id"] == original) & pd.Series(
+                [i.startswith(f"{d}{ITEM_ID_SEPARATOR}") for i, d in zip(df["item_id"], df["domain"])], index=df.index
+            )
+            inconsistent = ~(from_pipeline | already_namespaced)
+            if inconsistent.any():
+                examples = df.loc[inconsistent, ["parent_asin", "domain", "original_item_id"]].head(3).to_dict("records")
+                raise ValueError(
+                    "original_item_id is inconsistent with parent_asin/domain (expected parent_asin == "
+                    f"'<domain>{ITEM_ID_SEPARATOR}<original_item_id>'); e.g. {examples}"
                 )
         else:
             df["original_item_id"] = df["parent_asin"]
@@ -104,7 +123,8 @@ class ItemCorpus:
         df["price"] = pd.to_numeric(
             df["price"].astype("string").str.replace(r"[$,]", "", regex=True), errors="coerce"
         )  # "19.99" -> 19.99 ; null / ranges -> NaN -> NULL
-        df["rating_number"] = pd.to_numeric(df["rating_number"], errors="coerce")
+        df["average_rating"] = numeric_column(df["average_rating"], "average_rating")
+        df["rating_number"] = numeric_column(df["rating_number"], "rating_number")
 
         conn = sqlite3.connect(":memory:")
         df[list(ITEM_COLUMNS)].to_sql("items", conn, index=False)
@@ -112,17 +132,8 @@ class ItemCorpus:
         cats = df["categories"] if "categories" in df.columns else pd.Series([None] * len(df))
         rows = []
         for item_id, cs in zip(df["item_id"], cats):
-            if cs is None or (isinstance(cs, float) and np.isnan(cs)):
-                continue
-            # Handle both list-like and string categories (wrap string in list to avoid iterating characters)
-            if isinstance(cs, str):
-                cat_list = [cs]
-            elif isinstance(cs, Iterable):
-                cat_list = list(cs)
-            else:
-                continue
-            for cat in cat_list:
-                rows.append((item_id, str(cat)))
+            for cat in normalize_categories(cs, item_id):
+                rows.append((item_id, cat))
         conn.execute(CATEGORIES_TABLE_SCHEMA)
         conn.executemany("INSERT INTO item_categories VALUES (?, ?)", rows)
 
@@ -148,7 +159,12 @@ class ItemCorpus:
     def select(
         self, sql: str, params: Sequence[Any] = (), max_rows: int = MAX_QUERY_ROWS
     ) -> tuple[list[dict[str, Any]], bool]:
-        """Run one read-only SELECT. Returns (rows, truncated)."""
+        """Run one read-only SELECT. Returns (rows, truncated).
+
+        The ``select``/``with`` prefix check below is only a friendly early error, NOT a security boundary or a
+        SQL parser. The real protections are the read-only connection (``query_only`` + the authoriser that
+        denies every non-read action, one-statement-only execution) and the time budget (progress handler).
+        """
         sql = sql.strip().rstrip(";").strip()
         if not sql.lower().startswith(("select", "with")):
             raise ToolInputError("only SELECT statements are allowed")

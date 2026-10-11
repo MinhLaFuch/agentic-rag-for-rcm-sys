@@ -129,11 +129,11 @@ class TestCandidateIds:
             candidate_ids("a")
 
     def test_rejects_dict_without_item_id(self):
-        with pytest.raises(ToolInputError, match="candidates must contain only item_id strings or dicts with 'item_id'"):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
             candidate_ids([{"name": "a"}])
 
     def test_rejects_non_string_non_dict(self):
-        with pytest.raises(ToolInputError, match="candidates must contain only item_id strings or dicts with 'item_id'"):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
             candidate_ids([123])
 
 
@@ -181,11 +181,11 @@ class TestCandidateResults:
             candidate_results("a")
 
     def test_rejects_dict_without_item_id(self):
-        with pytest.raises(ToolInputError, match="candidates must contain only item_id strings or dicts with 'item_id'"):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
             candidate_results([{"name": "a"}])
 
     def test_rejects_non_string_non_dict(self):
-        with pytest.raises(ToolInputError, match="candidates must contain only item_id strings or dicts with 'item_id'"):
+        with pytest.raises(ToolInputError, match="must be an item_id string or dict"):
             candidate_results([123])
 
 

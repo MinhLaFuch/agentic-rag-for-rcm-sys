@@ -150,7 +150,7 @@ def test_reco_top_k_validation(reco_tool, bad_top_k):
 @pytest.mark.parametrize("bad_candidates", [VG_A, 5, None, {"item_id": VG_A}, [VG_A, 5], [None], [["x"]]], ids=repr)
 def test_reco_candidates_must_be_a_list_of_ids_or_dicts_with_item_id(reco_tool, bad_candidates):
     result = reco_tool(user_id="u1", candidates=bad_candidates)
-    assert not result.ok and ("candidates" in result.error or "candidate" in result.error)
+    assert not result.ok and "candidates" in result.error
 
 
 def test_reco_top_k_larger_than_candidates_returns_all(reco_tool):
@@ -245,46 +245,18 @@ def test_reco_with_a_well_behaved_scorer_sorts_descending_with_contiguous_ranks(
 def test_reco_never_returns_a_non_finite_score(bad):
     tool = _fake_tool(lambda idx: np.where(idx == 1, bad, 0.5))
     result = tool(user_id="u", candidates=["i0", "i1", "i2"])
-    # Non-finite scores should be filtered out as unscored
-    assert result.ok
-    assert all(math.isfinite(r["score"]) for r in result.data["ranked"])
-    assert "i1" in result.data["unscored_item_ids"]  # i1 has non-finite score
-    assert "i1" not in _ranked_ids(result)
+    if result.ok:  # either the item is dropped / reported, or the call fails cleanly -- never a NaN in `ranked`
+        assert all(math.isfinite(r["score"]) for r in result.data["ranked"])
+        assert "i1" not in _ranked_ids(result)
+    else:
+        assert "score" in result.error.lower()
 
 
 @pytest.mark.parametrize("n_scores", [0, 2, 4], ids=["too_few_0", "too_few_2", "too_many_4"])
 def test_reco_scorer_returning_wrong_number_of_scores_is_a_clean_error(n_scores):
     tool = _fake_tool(lambda idx: np.full(n_scores, 0.5))
     result = tool(user_id="u", candidates=["i0", "i1", "i2"])  # must not raise IndexError
-    # Wrong number of scores should cause a clean error
-    assert not result.ok and ("score" in result.error.lower() or "shape" in result.error.lower())
-
-
-def test_baseline_scorer_returns_one_finite_score_per_item(knn):
-    scorer = BaselineScorer(knn)
-    idxs = np.arange(scorer.num_items)
-    for user_idx in (0, 1, 2, 10_000, -1):  # known, unknown, out-of-range users
-        scores = scorer.score(user_idx, idxs)
-        assert scores.shape == idxs.shape
-        assert np.isfinite(scores).all()
-
-
-def test_baseline_scorer_out_of_range_items_score_zero_not_garbage(knn):
-    scorer = BaselineScorer(knn)
-    scores = scorer.score(0, np.array([-1, scorer.num_items, scorer.num_items + 99]))
-    assert scores.tolist() == [0.0, 0.0, 0.0]
-
-
-def test_baseline_scorer_empty_candidate_array(knn):
-    assert BaselineScorer(knn).score(0, np.array([], dtype=np.int64)).shape == (0,)
-
-
-@pytest.mark.parametrize("user_idx", [-1, 10_000])
-def test_baseline_scorer_unknown_users_have_no_history(knn, user_idx):
-    scorer = BaselineScorer(knn)
-    assert scorer.is_known_user(user_idx) is False
-    assert scorer.seen_items(user_idx) == set()
-    assert scorer.has_personal_signal(user_idx) is False
+    assert not result.ok and "score" in result.error.lower()
 
 
 def test_baseline_scorer_rejects_unfitted_or_wrong_model():

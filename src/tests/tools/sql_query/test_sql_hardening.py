@@ -143,6 +143,7 @@ def test_sql_empty_filter_lists_are_ignored_consistently(corpus):
         "  \n\t drop table items",
         "",
         "   ;  ",
+        "SELECT * FROM does_not_exist",  # valid syntax, unknown table (from the old test_tools_query.py)
     ],
     ids=lambda s: repr(s)[:50],
 )

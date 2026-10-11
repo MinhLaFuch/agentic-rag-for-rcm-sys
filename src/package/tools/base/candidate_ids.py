@@ -26,7 +26,9 @@ def candidate_ids(candidates: Sequence[Any]) -> list[str]:
         elif isinstance(c, dict) and isinstance(c.get("item_id"), str):
             ids.append(c["item_id"])
         else:
-            raise ToolInputError(f"candidates must contain only item_id strings or dicts with 'item_id': {c!r}")
+            raise ToolInputError(
+                f"invalid entry in candidates: each candidate must be an item_id string or dict with a string 'item_id', got {c!r}"
+            )
     return list(dict.fromkeys(ids))  # de-duplicate, keep order
 
 
@@ -59,7 +61,9 @@ def candidate_results(candidates: Sequence[Any]) -> list[dict[str, Any]]:
         elif isinstance(c, dict) and isinstance(c.get("item_id"), str):
             result = c
         else:
-            raise ToolInputError(f"candidates must contain only item_id strings or dicts with 'item_id': {c!r}")
+            raise ToolInputError(
+                f"invalid entry in candidates: each candidate must be an item_id string or dict with a string 'item_id', got {c!r}"
+            )
 
         item_id = result["item_id"]
         if item_id not in seen_ids:

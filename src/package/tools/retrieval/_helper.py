@@ -16,7 +16,7 @@ def _tokenize(query: str) -> list[str]:
     Tokenize query for BM25 search.
 
     Rules:
-    - Keep hyphenated tokens (e.g., "usb-c" becomes ["usb-c"])
+    - Keep hyphenated tokens (e.g., "usb-c" becomes ["usb-c"]) and alphanumeric model tokens ("4k", "2tb")
     - Drop pure numbers (prices belong in filters)
     - Drop stopwords (including "under", "over", "below")
     - Query must be ASCII; non-ASCII raises ToolInputError
@@ -39,8 +39,9 @@ def _tokenize(query: str) -> list[str]:
             "Translate non-English queries before searching."
         )
 
-    # Keep hyphenated tokens by matching word chars and hyphens
-    words = re.findall(r"[a-z][a-z0-9-]*", query.lower())
+    # Keep hyphenated tokens by matching word chars and hyphens. A token may START with a digit ("4k", "1080p",
+    # "2tb", "20-inch"): starting at a letter would chop "2tb" into "tb". Pure numbers are dropped below.
+    words = re.findall(r"[a-z0-9][a-z0-9-]*", query.lower())
     kept = [
         w for w in words
         if len(w) > 1 and w not in STOPWORDS and not w.replace("-", "").isdigit()

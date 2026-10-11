@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ._dataclass import ToolResult
-from ._error import ToolInputError, ToolExecutionError
+from ._error import ToolInputError
 from ._helper import _hash_input, _simplify_args
 from .tool_call_logger import ToolCallLogger
 
@@ -52,10 +52,10 @@ class Tool(ABC):
         start = time.perf_counter()
         try:
             result = ToolResult(ok=True, data=self.execute(**kwargs))
-        except (ToolInputError, ToolExecutionError) as exc:
+        except ToolInputError as exc:
             result = ToolResult(ok=False, error=str(exc))
         except Exception as exc:
-            # Log error record for non-ToolInputError/ToolExecutionError exceptions, then re-raise
+            # Log error record for non-ToolInputError exceptions, then re-raise
             self.logger.log(
                 {
                     "timestamp": datetime.now(timezone.utc).isoformat(),

@@ -41,46 +41,32 @@ class BPRMFRecommender(Recommender):
         self.item_bias: np.ndarray | None = None
         self.loss_history: list[float] = []
 
+    @staticmethod
+    def _is_positive(train_matrix: sp.csr_matrix, users: np.ndarray, items: np.ndarray) -> np.ndarray:
+        """True where user ``users[i]`` has interacted with item ``items[i]`` (vectorised CSR lookup)."""
+        return np.asarray(train_matrix[users, items]).ravel() != 0
+
     def _sample_negatives(self, rng, users: np.ndarray, pos_items: np.ndarray, train_matrix: sp.csr_matrix) -> np.ndarray:
-        """Lấy mẫu item âm, đảm bảo không trùng item user đã tương tác trong batch."""
+        """One negative item per row: an item the user has NOT interacted with (any of their positives, not just
+        the paired one). Returns -1 for a row only when the user has interacted with every item.
+
+        Step 1: cheap vectorised rejection sampling (a few rounds). Step 2: for the rare rows still clashing,
+        draw exactly from that user's complement, so the result is always valid and there is no unbounded loop.
+        ``pos_items`` is kept for API compatibility: a user's positives already include it.
+        """
         num_items = self.num_items
         neg = rng.integers(0, num_items, size=len(users))
-
-        # Keep sampling until no clashes with positive items in this batch
-        max_attempts = 10
-        for attempt in range(max_attempts):
-            # Check if any negative equals its corresponding positive
-            clash = neg == pos_items
+        for _ in range(10):
+            clash = self._is_positive(train_matrix, users, neg)
             if not clash.any():
-                break
-            # Resample only the clashing negatives
+                return neg
             neg[clash] = rng.integers(0, num_items, size=int(clash.sum()))
 
-        # After max_attempts, verify once more and set clashing negatives to a valid alternative
-        # If still clashing, find a valid negative by sampling from items NOT in user's history
-        clash = neg == pos_items
-        if clash.any():
-            # For users where we still have a clash, we need to find a valid negative
-            # This is more expensive but ensures correctness
-            for idx in np.where(clash)[0]:
-                u = users[idx]
-                # Get all items this user has interacted with
-                user_items = set(train_matrix[u].indices)
-                # Sample until we find a valid negative
-                # If user has interacted with all items, skip this training pair
-                if len(user_items) >= num_items:
-                    # Mark this as invalid - will be handled in training loop
-                    neg[idx] = -1
-                else:
-                    for _ in range(20):  # Try harder for these edge cases
-                        candidate = rng.integers(0, num_items)
-                        if candidate not in user_items and candidate != pos_items[idx]:
-                            neg[idx] = candidate
-                            break
-                    else:
-                        # Still couldn't find valid negative - mark as invalid
-                        neg[idx] = -1
-
+        indptr, indices = train_matrix.indptr, train_matrix.indices
+        for idx in np.where(self._is_positive(train_matrix, users, neg))[0]:
+            u = users[idx]
+            free = np.setdiff1d(np.arange(num_items), indices[indptr[u] : indptr[u + 1]])
+            neg[idx] = rng.choice(free) if len(free) else -1
         return neg
 
     def _fit(self, train_matrix: sp.csr_matrix) -> None:

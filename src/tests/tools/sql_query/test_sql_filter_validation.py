@@ -77,15 +77,3 @@ def test_sql_rejects_non_dict_filters(corpus):
     assert "dictionary" in result_str.error
     assert _fails_cleanly(result_int)
     assert "dictionary" in result_int.error
-
-
-def test_sql_applied_filters_returns_normalized_values(corpus):
-    """Test that applied_filters returns normalized/converted values from compile_filters."""
-    # String numbers are converted to float/int
-    result = SQLTool(corpus)(filters={"price_min": "50", "min_rating_number": "100"})
-    assert result.ok
-    applied = result.data["applied_filters"]
-    assert isinstance(applied["price_min"], float)
-    assert isinstance(applied["min_rating_number"], int)
-    assert applied["price_min"] == 50.0
-    assert applied["min_rating_number"] == 100

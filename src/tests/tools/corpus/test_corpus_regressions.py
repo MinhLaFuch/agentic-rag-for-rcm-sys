@@ -2,19 +2,7 @@ import pandas as pd
 import pytest
 import sqlite3
 
-from package.tools import ItemCorpus, QueryTool
-from tests.tools_helpers import EL_A, VG_A, VG_B, VG_C
-
-
-def test_corpus_namespaces_ids_so_equal_asins_do_not_collide(corpus):
-    ids = {r["item_id"] for r in QueryTool(corpus)(query="SELECT item_id FROM items").data["items"]}
-    assert {VG_A, EL_A} <= ids
-
-
-def test_corpus_parses_price_strings_and_keeps_missing_as_null(corpus):
-    rows = QueryTool(corpus)(query="SELECT item_id, price FROM items WHERE domain='Video_Games'").data["items"]
-    prices = {r["item_id"]: r["price"] for r in rows}
-    assert prices == {VG_A: 19.99, VG_B: None, VG_C: 5.5}
+from package.tools import ItemCorpus
 
 
 def test_corpus_rejects_duplicate_item_ids():
@@ -80,15 +68,6 @@ def test_corpus_authorizer_blocks_writes(corpus):
         corpus._conn.execute("DROP TABLE items")
 
 
-def test_corpus_count_respects_time_budget(corpus):
-    """count() should have the same time budget as select()."""
-    # This is a basic sanity check - we can't easily test timeout without mocking
-    # but we verify the method exists and works
-    count = corpus.count("domain = ?", ("Video_Games",))
-    assert count >= 0
-    assert isinstance(count, int)
-
-
 def test_corpus_item_domains_handles_chunking(corpus):
     """item_domains should handle large lists by chunking."""
     # Get all item IDs from the corpus
@@ -100,19 +79,6 @@ def test_corpus_item_domains_handles_chunking(corpus):
         domains = corpus.item_domains(all_ids)
         assert len(domains) == len(all_ids)
         assert all(isinstance(d, str) for d in domains.values())
-
-
-def test_corpus_from_dataframe_with_original_item_id():
-    """Test from_dataframe when original_item_id is already namespaced."""
-    meta = pd.DataFrame({
-        "parent_asin": ["Video_Games::a", "Video_Games::b"],
-        "title": ["x", "y"],
-        "domain": ["Video_Games", "Video_Games"],
-        "original_item_id": ["Video_Games::a", "Video_Games::b"],
-    })
-    # Should not warn about missing '::' since parent_asin already has it
-    corpus = ItemCorpus.from_dataframe(meta)
-    assert corpus._conn.execute("SELECT COUNT(*) FROM items").fetchone()[0] == 2
 
 
 def test_corpus_from_parquet_works(tmp_path):

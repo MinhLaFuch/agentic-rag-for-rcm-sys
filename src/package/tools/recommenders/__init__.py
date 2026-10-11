@@ -16,7 +16,10 @@ from .fallback import FallbackRecommender
 from .build_interaction_matrix import build_interaction_matrix
 from .factory import ALL_MODELS, build_model
 
-# Legacy aliases for backward compatibility (will be deprecated in future)
+# Legacy aliases for backward compatibility (will be deprecated in future).
+# NOTE: despite the "ABC" suffix these are the CONCRETE sparse-matrix classes, not abstract base classes.
+# The DataFrame-API and matrix-API ItemKNN agree only when no top-k truncation happens (see
+# tests/tools/recommenders/test_contract_recommenders.py): they score in opposite orientations.
 ItemKNNRecommenderABC = ItemKNNMatrixRecommender
 PopularityRecommenderABC = PopularityMatrixRecommender
 

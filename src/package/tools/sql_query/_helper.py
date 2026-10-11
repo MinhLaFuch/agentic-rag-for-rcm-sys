@@ -63,7 +63,7 @@ def _as_float(value: Any, name: str) -> float:
         )
     try:
         f = float(value)
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, OverflowError) as exc:
         raise ToolInputError(
             f"{name} must be a number, got {type(value).__name__}: {value!r}"
         ) from exc
@@ -95,7 +95,7 @@ def _as_int(value: Any, name: str) -> int:
         )
     try:
         f = float(value)
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, OverflowError) as exc:
         raise ToolInputError(
             f"{name} must be an integer, got {type(value).__name__}: {value!r}"
         ) from exc
@@ -108,6 +108,15 @@ def _as_int(value: Any, name: str) -> int:
             f"{name} must be an integer, got {type(value).__name__}: {value!r}"
         )
     return int(f)
+
+
+def _ascii_lower(text: str) -> str:
+    """Lower-case ASCII letters only: exactly what SQLite's LOWER() does. Python's str.lower() also folds
+    non-ASCII letters (e.g. 'Ü' -> 'ü') which SQLite leaves alone, so the two sides would never match."""
+    return text.translate(_ASCII_LOWER)
+
+
+_ASCII_LOWER = {c: c + 32 for c in range(ord("A"), ord("Z") + 1)}
 
 
 def compile_filters(
@@ -147,6 +156,12 @@ def compile_filters(
             params += domains
             normalized["domain"] = domains
 
+    include_missing_price = filters.get("include_missing_price")
+    if include_missing_price is not None and not isinstance(include_missing_price, bool):
+        raise ToolInputError(
+            f"include_missing_price must be a boolean (true/false), got {include_missing_price!r}"
+        )
+
     price_parts: list[str] = []
     price_min = filters.get("price_min")
     price_max = filters.get("price_max")
@@ -167,7 +182,7 @@ def compile_filters(
         )
     if price_parts:
         clause = " AND ".join(price_parts)
-        if filters.get("include_missing_price"):  # D-006 fallback: keep null-price items
+        if include_missing_price:  # D-006 fallback: keep null-price items
             clause = f"(({clause}) OR price IS NULL)"
             normalized["include_missing_price"] = True
         clauses.append(clause)
@@ -223,9 +238,9 @@ def compile_filters(
                 raise ToolInputError(
                     f"store must be string(s), got non-string values: {non_string}"
                 )
-            # Case-insensitive comparison for better UX
+            # Case-insensitive for ASCII letters (SQLite LOWER() semantics); other letters match exactly
             clauses.append(f"LOWER(store) IN ({','.join('?' * len(stores))})")
-            params += [s.lower() for s in stores]
+            params += [_ascii_lower(s) for s in stores]
             normalized["store"] = stores
 
     if filters.get("title_contains"):

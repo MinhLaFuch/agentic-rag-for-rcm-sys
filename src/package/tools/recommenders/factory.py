@@ -23,7 +23,8 @@ def build_model(name: str, cfg: dict) -> Recommender:
     if name == "item_knn":
         model: Recommender = ItemKNNRecommender(**cfg.get("item_knn", {}))
     elif name == "bpr_mf":
-        model = BPRMFRecommender(seed=seed, **cfg.get("bpr_mf", {}))
+        # a per-model "seed" overrides the top-level one (both used to crash: "multiple values for keyword 'seed'")
+        model = BPRMFRecommender(**{"seed": seed, **cfg.get("bpr_mf", {})})
     else:
         raise ValueError(f"Unknown model '{name}'. Choose from {ALL_MODELS}")
 
