@@ -37,6 +37,7 @@ class QueryTool(Tool):
         query: str | None = None,
         item_ids: Sequence[str] | None = None,
         max_rows: int = QUERY_DEFAULT_MAX_ROWS,
+        **kwargs: Any
     ) -> dict[str, Any]:
         if (query is None) == (item_ids is None):
             raise ToolInputError("provide exactly one of `query` or `item_ids`")
@@ -67,5 +68,6 @@ class QueryTool(Tool):
                 "truncated": truncated,
             }
 
+        assert query is not None
         rows, truncated = self.corpus.select(query, max_rows=max_rows)
         return {"items": rows, "missing_item_ids": [], "truncated": truncated}

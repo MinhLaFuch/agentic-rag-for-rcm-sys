@@ -199,3 +199,71 @@ def test_search_total_matches_in_output(kb_corpus):
     assert "total_matches" in result.data
     assert isinstance(result.data["total_matches"], int)
     assert result.data["total_matches"] >= len(result.data["candidates"])
+
+
+def test_search_total_matches_no_results(kb_corpus):
+    """Test that total_matches is 0 when there are no results."""
+    result = SemanticSearchTool(kb_corpus)(query="submarine")
+    assert result.ok
+    assert result.data["total_matches"] == 0
+    assert result.data["candidates"] == []
+
+
+def test_search_total_matches_exceeds_limit(kb_corpus):
+    """Test that total_matches correctly counts results when they exceed limit."""
+    tool = SemanticSearchTool(kb_corpus)
+    result = tool(query="keyboard", limit=1)
+    assert result.ok
+    # With limit=1, we get at most 1 candidate, but total_matches should reflect all matches
+    assert len(result.data["candidates"]) <= 1
+    assert result.data["total_matches"] >= len(result.data["candidates"])
+
+
+def test_search_total_matches_with_filters(kb_corpus):
+    """Test that total_matches correctly accounts for filters."""
+    tool = SemanticSearchTool(kb_corpus)
+    # Filter by price should reduce total_matches
+    result_all = tool(query="keyboard")
+    result_filtered = tool(query="keyboard", filters={"price_max": 20})
+    assert result_all.ok and result_filtered.ok
+    assert result_filtered.data["total_matches"] <= result_all.data["total_matches"]
+
+
+def test_search_rejects_non_dict_filters(kb_corpus):
+    """Test that non-dictionary filters are rejected."""
+    tool = SemanticSearchTool(kb_corpus)
+    result_list = tool(query="keyboard", filters=["domain"])
+    result_str = tool(query="keyboard", filters="domain")
+    result_int = tool(query="keyboard", filters=123)
+    assert not result_list.ok
+    assert "dictionary" in result_list.error
+    assert not result_str.ok
+    assert "dictionary" in result_str.error
+    assert not result_int.ok
+    assert "dictionary" in result_int.error
+
+
+def test_search_validates_filter_types(kb_corpus):
+    """Test that filter values are validated for correct types."""
+    tool = SemanticSearchTool(kb_corpus)
+    # Invalid price filter
+    result_bad_price = tool(query="keyboard", filters={"price_min": "invalid"})
+    assert not result_bad_price.ok
+    assert "price_min" in result_bad_price.error
+    # Invalid rating_number filter
+    result_bad_rating = tool(query="keyboard", filters={"min_rating_number": "abc"})
+    assert not result_bad_rating.ok
+    assert "min_rating_number" in result_bad_rating.error
+
+
+def test_search_applied_filters_are_normalized(kb_corpus):
+    """Test that applied_filters returns normalized filters, not raw input."""
+    tool = SemanticSearchTool(kb_corpus)
+    result = tool(query="keyboard", filters={"price_min": "50", "price_max": "100"})
+    assert result.ok
+    # Normalized filters should have numeric types, not strings
+    applied = result.data["applied_filters"]
+    assert isinstance(applied.get("price_min"), (int, float))
+    assert isinstance(applied.get("price_max"), (int, float))
+    assert applied["price_min"] == 50.0
+    assert applied["price_max"] == 100.0

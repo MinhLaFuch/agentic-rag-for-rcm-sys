@@ -131,3 +131,20 @@ def test_reco_note_when_all_candidates_seen(corpus, cf_setup):
     assert result.data["ranked"] == []
     assert result.data["excluded_seen"] == [VG_A, VG_B]
     assert "previously seen" in result.data["note"]
+
+
+def test_reco_items_with_negative_index_go_to_unscored(cf_setup):
+    """Items with negative index in item2id must be unscored, not scored as 0.0."""
+    interactions, user2id, item2id = cf_setup
+    model = PopularityRecommender().fit(interactions)
+    # Add a fake item to item2id with negative index (invalid mapping)
+    fake_item = "Fake::item_negative_index"
+    fake_idx = -5  # Invalid negative index
+    item2id_extended = {**item2id, fake_item: fake_idx}
+    tool = RecoModelTool(BaselineScorer(model), user2id, item2id_extended)
+    result = tool(user_id="u1", candidates=[VG_B, fake_item])
+    assert result.ok
+    # The fake item should be in unscored_item_ids, not in ranked with score 0.0
+    assert fake_item in result.data["unscored_item_ids"]
+    assert VG_B in [r["item_id"] for r in result.data["ranked"]]
+    assert fake_item not in [r["item_id"] for r in result.data["ranked"]]

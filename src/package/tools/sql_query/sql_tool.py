@@ -14,7 +14,7 @@ from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
-from ._helper import _as_list, compile_filters
+from ._helper import compile_filters
 
 class SQLTool(Tool):
     """
@@ -63,6 +63,9 @@ class SQLTool(Tool):
         limit: int = SQL_DEFAULT_LIMIT,
         **kwargs: Any,
     ) -> dict[str, Any]:
+        # Validate filters is a dictionary
+        if filters is not None and not isinstance(filters, dict):
+            raise ToolInputError(f"`filters` must be a dictionary, got {type(filters).__name__}")
         filters = filters or {}
         unknown = set(filters) - FILTER_KEYS
         if unknown:

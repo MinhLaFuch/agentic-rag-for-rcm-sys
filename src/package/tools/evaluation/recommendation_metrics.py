@@ -14,9 +14,16 @@ def evaluate_ranking(
     """Macro-average metrics over users with at least one held-out item."""
     if not k_values or min(k_values) <= 0:
         raise ValueError("k_values must contain positive integers")
+
+    if interactions.empty:
+        raise ValueError("interactions DataFrame is empty - no users to evaluate")
+
     truth: dict[int, set[int]] = defaultdict(set)
     for user_idx, item_idx in interactions[["user_idx", "item_idx"]].itertuples(index=False):
         truth[int(user_idx)].add(int(item_idx))
+
+    if not truth:
+        raise ValueError("No valid users found in interactions after processing")
 
     totals = {f"{metric}@{k}": 0.0 for k in k_values for metric in (
         "precision", "recall", "hit_rate", "ndcg", "mrr", "map"

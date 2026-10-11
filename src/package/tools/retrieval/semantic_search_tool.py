@@ -80,6 +80,10 @@ class SemanticSearchTool(Tool):
         if not isinstance(query, str) or not query.strip():
             raise ToolInputError("`query` must be a non-empty string")
         limit = check_top_k(limit, name="limit")
+        
+        # Validate filters is a dictionary
+        if filters is not None and not isinstance(filters, dict):
+            raise ToolInputError(f"`filters` must be a dictionary, got {type(filters).__name__}")
         filters = filters or {}
 
         tokens = _tokenize(query)
@@ -90,7 +94,7 @@ class SemanticSearchTool(Tool):
         unknown = set(filters) - FILTER_KEYS
         if unknown:
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
-        where, params, _ = compile_filters(filters, set(self.corpus.domains()))
+        where, params, normalized_filters = compile_filters(filters, set(self.corpus.domains()))
 
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)
@@ -119,5 +123,5 @@ class SemanticSearchTool(Tool):
             "total_matches": total_matches,
             "query_tokens": tokens,
             "truncated": truncated,
-            "applied_filters": filters,
+            "applied_filters": normalized_filters,
         }

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from .._schema import FILTER_KEYS
 from ..base import ToolInputError
 
 
-def _as_list(value: Any) -> list[Any]:
+def _as_list(value: Any, name: str = "value", allow_none: bool = False) -> list[Any]:
     """
     Convert value to list.
 
@@ -18,12 +19,26 @@ def _as_list(value: Any) -> list[Any]:
     - Single value -> [value]
     - List/tuple/set -> list(value)
 
-    This ensures consistency across all filter fields that accept lists.
+    Args:
+        value: Value to convert
+        name: Parameter name for error messages
+        allow_none: Whether None values in the list are allowed
+
+    Returns:
+        List of values
+
+    Raises:
+        ToolInputError: If None values are present and not allowed
     """
     if isinstance(value, str):
         return [] if not value.strip() else [value]
     if isinstance(value, (list, tuple, set)):
-        return list(value)
+        result = list(value)
+        if not allow_none and None in result:
+            raise ToolInputError(
+                f"{name} cannot contain None values"
+            )
+        return result
     return [value]
 
 
@@ -39,14 +54,24 @@ def _as_float(value: Any, name: str) -> float:
         Float value
 
     Raises:
-        ToolInputError: If value cannot be converted to float
+        ToolInputError: If value cannot be converted to float, is NaN/infinite, or is a boolean
     """
+    # Reject booleans explicitly (bool is a subclass of int in Python)
+    if isinstance(value, bool):
+        raise ToolInputError(
+            f"{name} must be a number, got boolean: {value!r}"
+        )
     try:
-        return float(value)
+        f = float(value)
     except (ValueError, TypeError) as exc:
         raise ToolInputError(
             f"{name} must be a number, got {type(value).__name__}: {value!r}"
         ) from exc
+    if math.isnan(f) or math.isinf(f):
+        raise ToolInputError(
+            f"{name} must be a finite number, got {f!r}"
+        )
+    return f
 
 
 def _as_int(value: Any, name: str) -> int:
@@ -61,14 +86,28 @@ def _as_int(value: Any, name: str) -> int:
         Integer value
 
     Raises:
-        ToolInputError: If value cannot be converted to int
+        ToolInputError: If value cannot be converted to int or is not a true integer
     """
+    # Reject booleans explicitly (bool is a subclass of int in Python)
+    if isinstance(value, bool):
+        raise ToolInputError(
+            f"{name} must be an integer, got boolean: {value!r}"
+        )
     try:
-        return int(value)
+        f = float(value)
     except (ValueError, TypeError) as exc:
         raise ToolInputError(
             f"{name} must be an integer, got {type(value).__name__}: {value!r}"
         ) from exc
+    if math.isnan(f) or math.isinf(f):
+        raise ToolInputError(
+            f"{name} must be a finite integer, got {f!r}"
+        )
+    if f != int(f):
+        raise ToolInputError(
+            f"{name} must be an integer, got {type(value).__name__}: {value!r}"
+        )
+    return int(f)
 
 
 def compile_filters(
@@ -93,8 +132,14 @@ def compile_filters(
     normalized: dict[str, Any] = {}
 
     if filters.get("domain") is not None:
-        domains = _as_list(filters["domain"])
+        domains = _as_list(filters["domain"], "domain")
         if domains:  # Skip if empty (empty string or empty list = no filter)
+            # Validate all domain values are strings
+            non_string = [d for d in domains if not isinstance(d, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"domain must be string(s), got non-string values: {non_string}"
+                )
             bad = [d for d in domains if d not in domains_known]
             if bad:
                 raise ToolInputError(f"unknown domain(s) {bad}; available: {sorted(domains_known)}")
@@ -139,8 +184,14 @@ def compile_filters(
         normalized["min_rating_number"] = min_rating_number
 
     if filters.get("categories_any"):
-        cats = _as_list(filters["categories_any"])
+        cats = _as_list(filters["categories_any"], "categories_any")
         if cats:
+            # Validate all category values are strings
+            non_string = [c for c in cats if not isinstance(c, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"categories_any must be string(s), got non-string values: {non_string}"
+                )
             clauses.append(
                 "EXISTS (SELECT 1 FROM item_categories c WHERE c.item_id = items.item_id "
                 f"AND c.category IN ({','.join('?' * len(cats))}))"
@@ -148,8 +199,14 @@ def compile_filters(
             params += cats
             normalized["categories_any"] = cats
     if filters.get("categories_all"):
-        cats = list(dict.fromkeys(_as_list(filters["categories_all"])))
+        cats = list(dict.fromkeys(_as_list(filters["categories_all"], "categories_all")))
         if cats:
+            # Validate all category values are strings
+            non_string = [c for c in cats if not isinstance(c, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"categories_all must be string(s), got non-string values: {non_string}"
+                )
             clauses.append(
                 "(SELECT COUNT(DISTINCT c.category) FROM item_categories c WHERE "
                 f"c.item_id = items.item_id AND c.category IN ({','.join('?' * len(cats))})) = ?"
@@ -158,23 +215,44 @@ def compile_filters(
             normalized["categories_all"] = cats
 
     if filters.get("store"):
-        stores = _as_list(filters["store"])
+        stores = _as_list(filters["store"], "store")
         if stores:
+            # Validate all store values are strings
+            non_string = [s for s in stores if not isinstance(s, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"store must be string(s), got non-string values: {non_string}"
+                )
             # Case-insensitive comparison for better UX
             clauses.append(f"LOWER(store) IN ({','.join('?' * len(stores))})")
             params += [s.lower() for s in stores]
             normalized["store"] = stores
 
     if filters.get("title_contains"):
-        title = str(filters["title_contains"])
+        title = filters["title_contains"]
+        if not isinstance(title, str):
+            raise ToolInputError(
+                f"title_contains must be a string, got {type(title).__name__}: {title!r}"
+            )
+        # Reject null character which can truncate LIKE pattern in SQLite
+        if "\x00" in title:
+            raise ToolInputError(
+                f"title_contains cannot contain null character (\\x00)"
+            )
         escaped = title.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         clauses.append("title LIKE ? ESCAPE '\\'")
         params.append(f"%{escaped}%")
         normalized["title_contains"] = title
 
     if filters.get("exclude_item_ids"):
-        ex = _as_list(filters["exclude_item_ids"])
+        ex = _as_list(filters["exclude_item_ids"], "exclude_item_ids")
         if ex:
+            # Validate all item_id values are strings
+            non_string = [e for e in ex if not isinstance(e, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"exclude_item_ids must be string(s), got non-string values: {non_string}"
+                )
             clauses.append(f"item_id NOT IN ({','.join('?' * len(ex))})")
             params += ex
             normalized["exclude_item_ids"] = ex

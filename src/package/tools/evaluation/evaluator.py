@@ -29,12 +29,27 @@ def evaluate_recommender(
     if exclude.shape != target.shape:
         raise ValueError("exclude and target must have the same shape")
 
+    # Validate ks parameter
+    if not ks:
+        raise ValueError("ks must be a non-empty list of positive integers")
+    if not all(isinstance(k, int) and k > 0 for k in ks):
+        raise ValueError("all k values in ks must be positive integers")
+    if len(set(ks)) != len(ks):
+        raise ValueError("ks must contain unique values (no duplicates)")
+
+    max_k = max(ks)
+    num_items = target.shape[1]
+    if max_k > num_items:
+        raise ValueError(f"max_k ({max_k}) cannot exceed num_items ({num_items})")
+
+    # Validate sparse_max
+    if not isinstance(sparse_max, int) or sparse_max < 0:
+        raise ValueError("sparse_max must be a non-negative integer")
+
     users = np.where(np.diff(target.indptr) > 0)[0]
     if len(users) == 0:
         raise ValueError("target has no interactions to evaluate")
 
-    max_k = max(ks)
-    num_items = target.shape[1]
     batch = max(16, min(1024, batch_elements // max(1, num_items)))
 
     per_user: dict[str, list[np.ndarray]] = {}
@@ -45,12 +60,19 @@ def evaluate_recommender(
         u = users[start : start + batch]
         top = model.recommend(u, max_k, exclude)
         gt = target[u].toarray() > 0
-        hits = np.take_along_axis(gt, top, axis=1)
+
+        # Mask out padding (-1 values) - these are not real recommendations
+        valid_mask = top >= 0
+        # For invalid positions, set hits to False (no hit)
+        hits = np.where(valid_mask, np.take_along_axis(gt, top, axis=1), False)
+
         n_rel = n_rel_all[start : start + batch]
         for k in ks:
             for name, values in ranking_metrics_at_k(hits, n_rel, k).items():
                 per_user.setdefault(name, []).append(values)
-            recommended[k].update(np.unique(top[:, :k]).tolist())
+            # Only add valid item indices (>= 0) to recommended set
+            valid_top_k = top[:, :k][valid_mask[:, :k]]
+            recommended[k].update(np.unique(valid_top_k).tolist())
 
     metric_arrays = {name: np.concatenate(parts) for name, parts in per_user.items()}
 

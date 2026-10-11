@@ -19,6 +19,7 @@ mkdir -p logs
 # Get current timestamp for log filename
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 MAIN_LOG="$PWD/logs/test_run_${TIMESTAMP}.log"  # absolute: survives the `cd ..` below; test logs live in tests/logs/
+RESULTS_FILE="$PWD/logs/test_results_${TIMESTAMP}.md"  # input/output of EVERY test in one file (see tests/results_report.py)
 
 cd ..
 
@@ -26,20 +27,12 @@ echo "==========================================" | tee -a "$MAIN_LOG"
 echo "Running All Tests - $TIMESTAMP" | tee -a "$MAIN_LOG"
 echo "==========================================" | tee -a "$MAIN_LOG"
 
-# Run tests in each subdirectory
+# One pytest run over every folder (config, data, agent, ...) so there is exactly ONE results file
 echo "" | tee -a "$MAIN_LOG"
-echo "=== Running Config Tests ===" | tee -a "$MAIN_LOG"
-PYTHONPATH=. python -m pytest tests/config/ -v --tb=short --log-cli-level=INFO 2>&1 | tee -a "$MAIN_LOG" || true
-
-echo "" | tee -a "$MAIN_LOG"
-echo "=== Running Data Tests ===" | tee -a "$MAIN_LOG"
-PYTHONPATH=. python -m pytest tests/data/ -v --tb=short --log-cli-level=INFO 2>&1 | tee -a "$MAIN_LOG" || true
-
-echo "" | tee -a "$MAIN_LOG"
-echo "=== Running Agent Tests ===" | tee -a "$MAIN_LOG"
-PYTHONPATH=. python -m pytest tests/agent/ -v --tb=short --log-cli-level=INFO 2>&1 | tee -a "$MAIN_LOG" || true
+PYTHONPATH=. python -m pytest tests/ -v --tb=short --log-cli-level=INFO --results-file="$RESULTS_FILE" 2>&1 | tee -a "$MAIN_LOG" || true
 
 echo "" | tee -a "$MAIN_LOG"
 echo "==========================================" | tee -a "$MAIN_LOG"
 echo "All tests completed. Log saved to: $MAIN_LOG" | tee -a "$MAIN_LOG"
+echo "Per-test input/output saved to: $RESULTS_FILE" | tee -a "$MAIN_LOG"
 echo "==========================================" | tee -a "$MAIN_LOG"

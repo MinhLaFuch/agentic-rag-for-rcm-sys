@@ -48,6 +48,17 @@ class ItemCFTool(Tool):
         if similarity is None:
             raise TypeError("model must be a fitted ItemKNNRecommender (missing `.similarity`)")
         self.similarity: sparse.csr_matrix = similarity.tocsr()
+        
+        # Check for duplicate indices (two items mapping to the same index)
+        seen_indices = {}
+        for item_id, idx in item2id.items():
+            if idx in seen_indices:
+                raise ValueError(
+                    f"item2id has duplicate index {idx} for items '{seen_indices[idx]}' and '{item_id}'. "
+                    "Each item must have a unique index."
+                )
+            seen_indices[idx] = item_id
+        
         self.item2id = item2id
         self.idx2item: dict[int, str] = {v: k for k, v in item2id.items()}
         self.corpus = corpus
@@ -59,7 +70,25 @@ class ItemCFTool(Tool):
         domain: str | None = None,
         exclude_input: bool = True,
     ) -> dict[str, Any]:
+        # Validate exclude_input is a boolean
+        if not isinstance(exclude_input, bool):
+            raise ToolInputError(
+                f"`exclude_input` must be a boolean (True/False), got {type(exclude_input).__name__}: {exclude_input!r}"
+            )
+        
+        # Validate domain is a string if provided
+        if domain is not None and not isinstance(domain, str):
+            raise ToolInputError(
+                f"`domain` must be a string or None, got {type(domain).__name__}: {domain!r}"
+            )
+        
         items = validate_list_like(items, "items")
+        # Validate each item is a non-empty string
+        for i, item in enumerate(items):
+            if not isinstance(item, str) or not item.strip():
+                raise ToolInputError(
+                    f"`items[{i}]` must be a non-empty string, got {type(item).__name__}: {item!r}"
+                )
         seeds = list(dict.fromkeys(items or []))
         if not seeds:
             raise ToolInputError("`items` must contain at least one item id")
@@ -68,8 +97,8 @@ class ItemCFTool(Tool):
             raise ToolInputError("domain filtering needs the tool to be built with a corpus")
 
         n = self.similarity.shape[0]
-        seed_idx = [self.item2id[s] for s in seeds if s in self.item2id and self.item2id[s] < n]
-        unknown = [s for s in seeds if s not in self.item2id or self.item2id[s] >= n]
+        seed_idx = [self.item2id[s] for s in seeds if s in self.item2id and 0 <= self.item2id[s] < n]
+        unknown = [s for s in seeds if s not in self.item2id or not (0 <= self.item2id[s] < n)]
         if not seed_idx:
             return {"candidates": [], "unknown_items": unknown, "note": "no seed item is known to the CF model"}
 
@@ -105,7 +134,7 @@ class ItemCFTool(Tool):
             if not seed_idx:
                 note = "no seed item is known to the CF model"
             elif domain is not None:
-                note = f"no similar items found in domain '{domain}' (may be filtered by domain after top-k)"
+                note = f"no similar items found in domain '{domain}'"
             else:
                 note = "no similar items found"
 

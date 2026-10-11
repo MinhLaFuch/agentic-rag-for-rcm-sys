@@ -13,15 +13,18 @@ REM Get current timestamp for log filename
 for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set datetime=%%I
 set TIMESTAMP=%datetime:~0,8%_%datetime:~8,6%
 set LOG_FILE=..\logs\agent_tests_%TIMESTAMP%.log
+REM Input/output of every test (see tests\results_report.py)
+set RESULTS_FILE=..\logs\agent_tests_results_%TIMESTAMP%.md
 
 echo ========================================== > %LOG_FILE%
 echo Running Agent Tests - %TIMESTAMP% >> %LOG_FILE%
 echo ========================================== >> %LOG_FILE%
 
 set PYTHONPATH=..\..
-python -m pytest . -v --tb=short --log-cli-level=INFO >> %LOG_FILE% 2>&1
+python -m pytest . -v --tb=short --log-cli-level=INFO --results-file=%RESULTS_FILE% >> %LOG_FILE% 2>&1
 
 echo. >> %LOG_FILE%
 echo Agent tests completed. Log saved to: %LOG_FILE% >> %LOG_FILE%
 
 echo Agent tests completed. Log saved to: %LOG_FILE%
+echo Per-test input/output saved to: %RESULTS_FILE%

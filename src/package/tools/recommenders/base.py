@@ -48,13 +48,25 @@ class Recommender(ABC):
         - Items với điểm -inf (e.g., excluded items) không được trả về.
         - Nếu ít hơn k item có điểm hợp lệ, kết quả sẽ ngắn hơn k (padding với -1).
         - Tie-break: khi điểm bằng nhau, ưu tiên item_idx nhỏ hơn (đeterministic).
-        - Khi toàn bộ điểm là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break.
+        - Khi toàn bộ điểm hợp lệ là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break.
         - Sử dụng float32 cho scores để tiết kiệm memory (matrix sparse cũng float32).
-          float64 có thể tăng precision nhưng tốn 2x memory. Thêm tie-breaker rất nhỏ (1e-10)
-          để đảm bảo determinism trong float32.
         """
-        if k <= 0 or k > self.num_items:
+        # Validate k
+        if not isinstance(k, int) or k <= 0 or k > self.num_items:
             raise ValueError(f"k must be in [1, num_items={self.num_items}], got {k}")
+
+        # Validate user_idxs
+        if not isinstance(user_idxs, np.ndarray):
+            raise TypeError("user_idxs must be a numpy array")
+        if user_idxs.ndim != 1:
+            raise ValueError("user_idxs must be 1-dimensional")
+        if len(user_idxs) == 0:
+            raise ValueError("user_idxs cannot be empty")
+        if np.any(user_idxs < 0) or np.any(user_idxs >= self.num_users):
+            raise ValueError(
+                f"user_idxs must be in [0, num_users={self.num_users}), "
+                f"got out-of-range indices"
+            )
 
         scores = np.array(self.score_batch(user_idxs), dtype=np.float32, copy=True)
 
@@ -62,30 +74,54 @@ class Recommender(ABC):
             rows, cols = exclude[user_idxs].nonzero()
             scores[rows, cols] = -np.inf
 
-        # Nếu toàn bộ điểm là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break
+        # Nếu toàn bộ điểm hợp lệ là 0 (không có tín hiệu cá nhân), dùng popularity làm tie-break
         # Tính popularity từ train_matrix (số tương tác mỗi item)
         popularity = np.asarray(self.train_matrix.sum(axis=0)).ravel()
-        all_zero = (scores == 0).all(axis=1)
-        if all_zero.any():
+        # Check only non-excluded items for all-zero condition
+        if exclude is not None:
+            # Mask out excluded items when checking for all-zero
+            valid_mask = scores > -np.inf
+            # Use valid_mask to zero out excluded scores before checking
+            scores_masked = np.where(valid_mask, scores, 0.0)
+            all_zero_valid = np.where(
+                valid_mask.any(axis=1),
+                (scores_masked == 0).all(axis=1),
+                False
+            )
+        else:
+            all_zero_valid = (scores == 0).all(axis=1)
+
+        if all_zero_valid.any():
             # Thêm popularity nhỏ để tie-break mà không làm thay đổi thứ tự quá nhiều
-            scores[all_zero] += popularity * 1e-6
+            scores[all_zero_valid] += popularity * 1e-6
 
         n = scores.shape[1]
-        # Add tiny tie-breaker by item_idx for determinism when scores are equal
-        # This makes ranking stable without full argsort (O(n log n) -> O(n))
-        tie_breaker = np.arange(n, dtype=np.float32) * 1e-10
-        scores_with_tie = scores + tie_breaker[None, :]
+        # Create mask for valid (non -inf) items
+        valid_mask = scores > -np.inf
+        # Fill -inf with very negative value so they sort to the end when inverted
+        scores_safe = np.where(valid_mask, scores, -1e30)
 
-        top = np.argpartition(scores_with_tie, n - k, axis=1)[:, n - k :]
-        top_scores = np.take_along_axis(scores_with_tie, top, axis=1)
-        order = np.argsort(-top_scores, axis=1, kind="stable")
-        ranked = np.take_along_axis(top, order, axis=1)
+        # Use lexsort to break ties by score (descending) then item_idx (ascending)
+        # This ensures determinism without relying on epsilon addition
+        # Create inverted scores for descending order
+        inv_scores = -scores_safe
+        # lexsort sorts by last key first, so item_idx first, then score
+        # Use item_idx as secondary key (smaller index = higher priority)
+        item_indices = np.arange(n)
+
+        # Use lexsort on each row - this is still a loop but lexsort is efficient
+        ranked = np.zeros((len(user_idxs), k), dtype=np.int64)
+        for i in range(len(user_idxs)):
+            # Get indices sorted by (score descending, item_idx ascending)
+            sorted_indices = np.lexsort((item_indices, inv_scores[i]))
+            # Take top k
+            ranked[i] = sorted_indices[:k]
 
         # Filter out -inf items (excluded or invalid)
-        valid_mask = scores[np.arange(len(user_idxs))[:, None], ranked] > -np.inf
+        valid_mask_result = scores[np.arange(len(user_idxs))[:, None], ranked] > -np.inf
         result = np.full((len(user_idxs), k), -1, dtype=np.int64)
         for i in range(len(user_idxs)):
-            valid_items = ranked[i][valid_mask[i]]
+            valid_items = ranked[i][valid_mask_result[i]]
             result[i, :len(valid_items)] = valid_items
 
         return result
