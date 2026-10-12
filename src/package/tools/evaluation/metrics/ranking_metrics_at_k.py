@@ -1,8 +1,15 @@
-"""Ranking metrics computation for recommendation evaluation."""
+"""Ranking metrics at k for many users: input validation + one call per metric."""
 
 from __future__ import annotations
 
 import numpy as np
+
+from .average_precision import average_precision_at_k
+from .hit_rate import hit_rate_at_k
+from .mrr import mrr_at_k
+from .ndcg import ndcg_at_k
+from .precision import precision_at_k
+from .recall import recall_at_k
 
 
 def ranking_metrics_at_k(
@@ -29,32 +36,12 @@ def ranking_metrics_at_k(
 
     h = hits[:, :k].astype(np.float64)
     n_rel = num_relevant.astype(np.float64)
-    ranks = np.arange(1, k + 1, dtype=np.float64)
-
-    num_hits = h.sum(axis=1)
-
-    precision = num_hits / k
-    recall = num_hits / n_rel
-    hit_rate = (num_hits > 0).astype(np.float64)
-
-    discounts = 1.0 / np.log2(ranks + 1.0)
-    dcg = (h * discounts).sum(axis=1)
-    ideal_len = np.minimum(n_rel, k).astype(np.int64)
-    cum_discounts = np.cumsum(discounts)
-    idcg = cum_discounts[ideal_len - 1]
-    ndcg = dcg / idcg
-
-    first_hit = np.argmax(h > 0, axis=1)
-    mrr = np.where(num_hits > 0, 1.0 / (first_hit + 1.0), 0.0)
-
-    precision_at_rank = np.cumsum(h, axis=1) / ranks
-    ap = (precision_at_rank * h).sum(axis=1) / np.minimum(n_rel, k)
 
     return {
-        f"precision@{k}": precision,
-        f"recall@{k}": recall,
-        f"hit_rate@{k}": hit_rate,
-        f"ndcg@{k}": ndcg,
-        f"mrr@{k}": mrr,
-        f"map@{k}": ap,
+        f"precision@{k}": precision_at_k(h),
+        f"recall@{k}": recall_at_k(h, n_rel),
+        f"hit_rate@{k}": hit_rate_at_k(h),
+        f"ndcg@{k}": ndcg_at_k(h, n_rel),
+        f"mrr@{k}": mrr_at_k(h),
+        f"map@{k}": average_precision_at_k(h, n_rel),
     }
