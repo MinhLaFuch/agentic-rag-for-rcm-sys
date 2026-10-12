@@ -12,6 +12,7 @@ from ..config.loader import ConfigError, load_config
 class AgentLimits:
     max_steps: int
     plan_retries: int
+    reflect_rounds: int
     max_tokens: int
     temperature: float
     type1_candidate_multiplier: int
@@ -24,6 +25,7 @@ def get_agent_limits() -> AgentLimits:
     limits = AgentLimits(
         max_steps=int(cfg["max_steps"]),
         plan_retries=int(cfg["plan_retries"]),
+        reflect_rounds=int(cfg["reflect_rounds"]),
         max_tokens=int(cfg["max_tokens"]),
         temperature=float(cfg["temperature"]),
         type1_candidate_multiplier=int(cfg["type1"]["candidate_multiplier"]),
@@ -33,6 +35,7 @@ def get_agent_limits() -> AgentLimits:
     for name in positive:
         if getattr(limits, name) <= 0:
             raise ConfigError(f"configs/agent/agent.yaml: {name} must be > 0")
-    if limits.plan_retries < 0:
-        raise ConfigError("configs/agent/agent.yaml: plan_retries must be >= 0")
+    for name in ("plan_retries", "reflect_rounds"):
+        if getattr(limits, name) < 0:
+            raise ConfigError(f"configs/agent/agent.yaml: {name} must be >= 0")
     return limits

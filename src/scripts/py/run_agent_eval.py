@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools
+from package.agents._limits import get_agent_limits
 from package.agents.evaluation import (
     AGENTS,
     ORACLE_KINDS,
@@ -57,7 +58,7 @@ ERROR_CHARS = 300  # step/plan errors are cut to this many characters in the tra
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
-    "asked_clarification", "invented_ids", "n_steps", "llm_latency_seconds", "completion_tokens",
+    "asked_clarification", "invented_ids", "n_steps", "first_attempt_ok", "reflections", "llm_latency_seconds", "completion_tokens",
 )
 
 
@@ -66,7 +67,15 @@ def empty_trajectory(request: AgentRequest, agent: str, tools_available: list[st
         "request_id": request.request_id, "agent": agent, "text": request.text, "tools_available": tools_available,
         "plan": [], "ask_user": None, "steps": [], "recommended": [], "usage": {}, "error": None,
         "provider_error": False, "truncated": False, "wall_seconds": 0.0,
+        "reflections": 0, "first_attempt_ok": None, "reflect_rounds": None,
     }
+
+
+def is_resumable(rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int) -> bool:
+    """A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds."""
+    if text_of.get(rec["request_id"]) != rec["text"] or rec["agent"] not in agents:
+        return False
+    return rec["agent"] not in PLANNER_AGENTS or rec.get("reflect_rounds", 0) == reflect_rounds  # no field = before plan-reflect = 0
 
 
 def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: int) -> dict[str, Any]:
@@ -84,7 +93,8 @@ def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: in
         traj["error"] = f"{type(exc).__name__}: {exc}"[:ERROR_CHARS]
         traj["provider_error"] = isinstance(exc, LLMProviderError)
     traj.update(plan=executor.last_plan, ask_user=executor.last_question, truncated=executor.last_truncated,
-                usage=dict(executor.last_usage))
+                usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
+                first_attempt_ok=executor.last_first_attempt_ok and traj["error"] is None)
     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
     return traj
 
@@ -97,8 +107,12 @@ def main() -> None:
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     ap.add_argument("--agents", help="Danh sách agent, cách nhau dấu phẩy (mặc định: agent_eval.agents)")
     ap.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
+    ap.add_argument("--reflect-rounds", type=int, help="Số lượt plan-reflect của planner (mặc định: agent.reflect_rounds; 0 = tắt)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
     args = ap.parse_args()
+    if args.reflect_rounds is not None and args.reflect_rounds < 0:
+        ap.error("--reflect-rounds must be >= 0")
+    reflect_rounds = get_agent_limits().reflect_rounds if args.reflect_rounds is None else args.reflect_rounds
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
@@ -148,8 +162,8 @@ def main() -> None:
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
             raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
-        runners["planner"] = PlanExecutor(llm, tools.for_planner())
-        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory())
+        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds)
+        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds)
 
     # ---- requests (deterministic given the seed) and the trajectory file
     requests = build_requests(
@@ -168,7 +182,7 @@ def main() -> None:
     if args.resume and traj_path.exists():
         for line in traj_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
-            if text_of.get(rec["request_id"]) == rec["text"] and rec["agent"] in agents:  # drop stale records
+            if is_resumable(rec, text_of, agents, reflect_rounds):  # drop stale records (other text / agent / reflect_rounds)
                 done[(rec["request_id"], rec["agent"])] = rec
     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
@@ -230,7 +244,8 @@ def main() -> None:
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
-                "item_knn_k": baselines["item_knn"]["k"], "llm_model": load_config("agent/llm").get("model")},
+                "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
+                "llm_model": load_config("agent/llm").get("model")},
         metrics={"k": k, "summary": summary},
         seed=seed,
         dataset_info={"splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,

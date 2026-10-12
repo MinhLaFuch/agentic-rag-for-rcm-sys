@@ -38,7 +38,9 @@ def score_trajectory(
     """
     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds}], recommended[item_id],
                  usage{attempts, prompt_tokens, completion_tokens, latency_seconds}, error, truncated,
-                 tools_available, wall_seconds}
+                 tools_available, wall_seconds, reflections, first_attempt_ok}
+    `steps` / `recommended` are the FINAL attempt (after plan-reflect), so task_success is "right after fixing";
+    first_attempt_ok is "right without fixing". Trajectories written before plan-reflect: reflections=0, first_attempt_ok=None.
     Returns one flat row of numbers/bools/None (None = metric not defined for this agent/kind).
     """
     agent = trajectory["agent"]
@@ -61,6 +63,8 @@ def score_trajectory(
         "steps_ok_rate": (sum(s["ok"] for s in steps) / len(steps)) if steps else None,
         "invented_ids": sum(len(s.get("invented_ids", [])) for s in steps) if is_planner else None,
         "asked_clarification": asked if is_planner else None,
+        "reflections": int(trajectory.get("reflections") or 0) if is_planner else None,
+        "first_attempt_ok": trajectory.get("first_attempt_ok") if is_planner else None,
         "n_recommended": len(rec),
         "prompt_tokens": usage.get("prompt_tokens") if is_planner else None,
         "completion_tokens": usage.get("completion_tokens") if is_planner else None,

@@ -40,6 +40,21 @@ Stage đã có output thì bị bỏ qua; thêm `--force` để làm lại.
 Tham số nằm trong các file YAML atomics: `baselines.yaml`, `tuning.yaml`, `recommendation_metrics.yaml`,
 `segment_thresholds.yaml`, `candidate_recall.yaml`, `llm.yaml`, `agent.yaml` (giới hạn PlanExecutor), `agent_eval.yaml`.
 
+### Agent eval và plan-reflect
+
+`run_agent_eval.sh` chạy cùng một tập request qua các agent và ghi `trajectories.jsonl`, `scored.jsonl`, `metrics.json`.
+Planner có plan-reflect: nếu plan chạy có step lỗi, hoặc không ra item nào (và không phải `ask_user`), LLM được gửi báo cáo
+step và viết lại plan, tối đa `agent.reflect_rounds` lần (`configs/agent/agent.yaml`, mặc định 1, 0 = tắt).
+Không reflect khi có id bịa hoặc SQL hết giờ. Ghi đè từng lần chạy: `--reflect-rounds N` (ghi vào `config.yaml` của experiment).
+
+Cột kết quả liên quan (trung bình theo agent/kind/segment):
+- `task_success`: đúng trên kết quả CUỐI (sau khi sửa), định nghĩa không đổi.
+- `first_attempt_ok`: đúng ngay lần chạy đầu (không step lỗi, có item hoặc hỏi lại). Chênh với `task_success` = phần reflect cứu được.
+- `reflections`: số lượt reflect trung bình. `completion_tokens` / `llm_latency_seconds` đã cộng dồn cả lượt reflect.
+
+`--resume` chỉ dùng lại trajectory planner được tạo với cùng `reflect_rounds` (file cũ trước plan-reflect tính là 0); khác thì chạy lại.
+Kết quả LLM không tái lập hoàn toàn: so bật/tắt reflect cần lặp nhiều lần và báo phương sai.
+
 ## Biến môi trường
 
 - `PYTHON` — interpreter, vd `PYTHON=.venv/Scripts/python`

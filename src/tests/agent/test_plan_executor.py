@@ -114,7 +114,7 @@ def test_filter_key_sent_at_top_level_gets_an_actionable_error_and_the_tool_is_n
 
     logger = ToolCallLogger()
     flat = {"tool": "SemanticSearchTool", "args": {"query": "game", "categories_any": ["Games"], "price_max": 20}}
-    results = PlanExecutor(ScriptedLLM(plan(flat)), [SemanticSearchTool(corpus, logger=logger)]).run("find games")
+    results = PlanExecutor(ScriptedLLM(plan(flat)), [SemanticSearchTool(corpus, logger=logger)], reflect_rounds=0).run("find games")  # reflect off: this test is about the first run's error
     assert not results[0]["ok"] and logger.records == []
     assert "belongs inside `filters`" in results[0]["error"] and "categories_any" in results[0]["error"]
     nested = {"tool": "SemanticSearchTool", "args": {"query": "game", "filters": {"categories_any": ["Games"], "price_max": 20}}}
