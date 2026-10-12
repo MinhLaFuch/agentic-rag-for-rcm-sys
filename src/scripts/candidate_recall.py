@@ -22,8 +22,8 @@ Segments follow the evaluator: cold = 0 fit interactions, sparse = 1..sparse_max
 Reads splits/mappings from resource/ (see data_paths.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
 Defaults for budgets, sample sizes, etc. live in configs/eval/candidate_recall.yaml → candidate_recall.
 
-    PYTHONPATH=. python scripts/py/candidate_recall.py --eval-on validation
-    PYTHONPATH=. python scripts/py/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
+    PYTHONPATH=. python scripts/candidate_recall.py --eval-on validation
+    PYTHONPATH=. python scripts/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
 """
 
 from __future__ import annotations

@@ -1,8 +1,8 @@
 """
 Chạy các baseline trên splits của stage 3.
 
-    PYTHONPATH=. python scripts/py/run_baselines.py --eval-on validation
-    PYTHONPATH=. python scripts/py/run_baselines.py --tag vg_toys --models popularity,item_knn
+    PYTHONPATH=. python scripts/run_baselines.py --eval-on validation
+    PYTHONPATH=. python scripts/run_baselines.py --tag vg_toys --models popularity,item_knn
 """
 
 import argparse

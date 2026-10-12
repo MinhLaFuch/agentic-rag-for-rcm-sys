@@ -12,9 +12,9 @@ Reads splits/mappings from resource/ (data_paths.yaml) and meta_<Domain>.jsonl.g
 Trajectories are appended to a file as they finish, so an interrupted run continues with --resume.
 Nothing here touches the test split unless you pass --eval-on test.
 
-    PYTHONPATH=. python scripts/py/run_agent_eval.py --per-segment 2          # tiny trial first
-    PYTHONPATH=. python scripts/py/run_agent_eval.py --agents baseline,type1  # no LLM calls at all
-    PYTHONPATH=. python scripts/py/run_agent_eval.py --resume
+    PYTHONPATH=. python scripts/run_agent_eval.py --per-segment 2          # tiny trial first
+    PYTHONPATH=. python scripts/run_agent_eval.py --agents baseline,type1  # no LLM calls at all
+    PYTHONPATH=. python scripts/run_agent_eval.py --resume
 """
 
 from __future__ import annotations
@@ -46,8 +46,8 @@ from package.data import ITEM_ID_SEPARATOR
 from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.llm import build_llm_provider
-from package.llm._error import LLMProviderError
+from package.api import build_llm_provider
+from package.api._error import LLMProviderError
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target

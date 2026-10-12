@@ -3,8 +3,8 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from ..llm import LLMMessage, LLMProvider
-from ..llm._error import LLMProviderError
+from ..api import LLMMessage, LLMProvider
+from ..api._error import LLMProviderError
 from ..tools.base import Tool
 from ._helper import _blocks_reflect, _extract_plan, _invented_ids, _reflect_problem, _resolve_refs, _step_report, _unknown_args
 from ._limits import get_agent_limits

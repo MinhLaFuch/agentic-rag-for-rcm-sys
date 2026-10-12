@@ -1,6 +1,6 @@
 """Smoke test: PlanExecutor + 5 tool trên fixture synthetic, dùng LLM thật theo configs/agent/llm.yaml.
 
-Chạy từ src/:  python scripts/py/smoke_real_llm.py
+Chạy từ src/:  python scripts/smoke_real_llm.py
 """
 from __future__ import annotations
 
@@ -9,15 +9,15 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
 from package.agents import PlanExecutor, build_tools
 from package.config.loader import load_config
-from package.llm import build_llm_provider
-from package.llm._error import LLMProviderError
+from package.api import build_llm_provider
+from package.api._error import LLMProviderError
 from package.tools import BaselineScorer, ItemCorpus
 from package.tools.recommenders import ItemKNNRecommender
 

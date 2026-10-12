@@ -1,6 +1,6 @@
 from package.config.loader import load_config
-from package.llm.base import LLMMessage
-from package.llm.factory import build_llm_provider
+from package.api.base import LLMMessage
+from package.api.factory import build_llm_provider
 
 
 def main() -> None:

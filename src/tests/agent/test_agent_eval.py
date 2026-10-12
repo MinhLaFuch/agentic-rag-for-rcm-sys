@@ -181,7 +181,7 @@ def _load_run_agent_eval():
     import importlib.util
     from pathlib import Path
 
-    path = Path(__file__).resolve().parents[2] / "scripts" / "py" / "run_agent_eval.py"
+    path = Path(__file__).resolve().parents[2] / "scripts" / "run_agent_eval.py"
     spec = importlib.util.spec_from_file_location("run_agent_eval_script", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -1,8 +1,8 @@
 """Validation-only Phase 4 tuning, with an optional one-time final test run.
 
 Example:
-    PYTHONPATH=. python scripts/py/tune_baselines.py
-    PYTHONPATH=. python scripts/py/tune_baselines.py --tag vg_toys --run-final-test
+    PYTHONPATH=. python scripts/tune_baselines.py
+    PYTHONPATH=. python scripts/tune_baselines.py --tag vg_toys --run-final-test
 """
 
 from __future__ import annotations

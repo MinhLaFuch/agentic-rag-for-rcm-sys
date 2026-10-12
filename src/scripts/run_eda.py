@@ -1,9 +1,9 @@
 """
 EDA interaction trên review thô đã tải về (resource/raw/<Domain>.jsonl.gz), đọc theo dòng.
 
-    PYTHONPATH=. python scripts/py/run_eda.py                      # mọi domain trong domains.yaml
-    PYTHONPATH=. python scripts/py/run_eda.py --domain Video_Games
-    PYTHONPATH=. python scripts/py/run_eda.py --path /duong/dan/review_Video_Games.jsonl.gz
+    PYTHONPATH=. python scripts/run_eda.py                      # mọi domain trong domains.yaml
+    PYTHONPATH=. python scripts/run_eda.py --domain Video_Games
+    PYTHONPATH=. python scripts/run_eda.py --path /duong/dan/review_Video_Games.jsonl.gz
 """
 
 import argparse

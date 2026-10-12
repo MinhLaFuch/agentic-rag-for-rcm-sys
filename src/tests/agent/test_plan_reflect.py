@@ -172,7 +172,7 @@ def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
 
 
 def test_provider_error_during_reflect_keeps_the_previous_result(corpus):
-    from package.llm._error import LLMProviderError
+    from package.api._error import LLMProviderError
 
     class FailsSecondCall(ScriptedLLM):
         def complete(self, messages, **kw):

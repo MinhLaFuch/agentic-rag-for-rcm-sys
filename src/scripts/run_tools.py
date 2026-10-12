@@ -9,8 +9,8 @@ Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.
 
 Run from the project root:
 
-    PYTHONPATH=. python scripts/py/run_tools.py
-    PYTHONPATH=. python scripts/py/run_tools.py --tag vg_toys --domain Video_Games
+    PYTHONPATH=. python scripts/run_tools.py
+    PYTHONPATH=. python scripts/run_tools.py --tag vg_toys --domain Video_Games
 
 Only train is used to fit the model and validation is used to check it, so
 nothing here touches the test split.
@@ -28,7 +28,7 @@ import time
 import traceback
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
+ROOT = Path(__file__).resolve().parents[1]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd

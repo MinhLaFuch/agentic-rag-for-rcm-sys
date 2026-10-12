@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from package.agents import PlanExecutor
-from package.llm.base import LLMProvider
-from package.llm._dataclass import LLMResponse
+from package.api.base import LLMProvider
+from package.api._dataclass import LLMResponse
 from package.memory.memory_tool import MemoryTool
 from package.tools import SQLTool
 from package.tools.corpus import ItemCorpus

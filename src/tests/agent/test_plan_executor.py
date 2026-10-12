@@ -5,8 +5,8 @@ import json
 import pytest
 
 from package.agents import PlanExecutor
-from package.llm.base import LLMProvider
-from package.llm._dataclass import LLMResponse
+from package.api.base import LLMProvider
+from package.api._dataclass import LLMResponse
 from package.tools import QueryTool, SQLTool, ToolCallLogger
 from tests.tools_helpers import VG_A
 

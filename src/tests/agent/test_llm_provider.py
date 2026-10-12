@@ -1,8 +1,8 @@
 import pytest
 
-from package.llm.base import LLMProvider
-from package.llm.factory import build_llm_provider
-from package.llm.providers import OpenAICompatibleProvider
+from package.api.base import LLMProvider
+from package.api.factory import build_llm_provider
+from package.api import OpenAICompatibleProvider
 
 
 def test_openai_compatible_provider_is_llm_provider_subclass():
