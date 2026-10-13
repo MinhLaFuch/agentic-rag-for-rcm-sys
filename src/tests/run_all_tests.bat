@@ -18,6 +18,8 @@ set "LOG_DIR=%CD%\logs"
 REM Get current timestamp (PowerShell instead of wmic, which is removed on newer Windows)
 for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set TIMESTAMP=%%I
 set "MAIN_LOG=%LOG_DIR%\test_run_%TIMESTAMP%.log"
+REM Input/output of EVERY test in one file (see tests\results_report.py)
+set "RESULTS_FILE=%LOG_DIR%\test_results_%TIMESTAMP%.md"
 
 REM Move up to src so that tests/config/, tests/data/, tests/agent/ resolve
 cd /d ..
@@ -27,18 +29,9 @@ echo ========================================== > "%MAIN_LOG%"
 echo Running All Tests - %TIMESTAMP% >> "%MAIN_LOG%"
 echo ========================================== >> "%MAIN_LOG%"
 
-REM Run tests in each subdirectory
+REM One pytest run over every folder (config, data, agent, ...) so there is exactly ONE results file
 echo. >> "%MAIN_LOG%"
-echo === Running Config Tests === >> "%MAIN_LOG%"
-python -m pytest tests/config/ -v --tb=short --log-cli-level=INFO >> "%MAIN_LOG%" 2>&1
-
-echo. >> "%MAIN_LOG%"
-echo === Running Data Tests === >> "%MAIN_LOG%"
-python -m pytest tests/data/ -v --tb=short --log-cli-level=INFO >> "%MAIN_LOG%" 2>&1
-
-echo. >> "%MAIN_LOG%"
-echo === Running Agent Tests === >> "%MAIN_LOG%"
-python -m pytest tests/agent/ -v --tb=short --log-cli-level=INFO >> "%MAIN_LOG%" 2>&1
+python -m pytest tests/ -v --tb=short --log-cli-level=INFO --results-file="%RESULTS_FILE%" >> "%MAIN_LOG%" 2>&1
 
 echo. >> "%MAIN_LOG%"
 echo ========================================== >> "%MAIN_LOG%"
@@ -46,3 +39,4 @@ echo All tests completed. Log saved to: %MAIN_LOG% >> "%MAIN_LOG%"
 echo ========================================== >> "%MAIN_LOG%"
 
 echo All tests completed. Log saved to: %MAIN_LOG%
+echo Per-test input/output saved to: %RESULTS_FILE%

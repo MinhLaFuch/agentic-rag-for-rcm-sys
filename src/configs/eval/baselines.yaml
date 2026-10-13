@@ -1,5 +1,5 @@
 # Baselines config (mục VIII, XX).
-# Schema được dùng bởi scripts/py/run_baselines.py.
+# Schema được dùng bởi scripts/run_baselines.py.
 
 baselines:
   seed: 42

@@ -9,13 +9,13 @@ nguồn hội thoại nào để ghi vào.
 """
 from __future__ import annotations
 
-from collections import Counter
 from typing import Any
 
 import pandas as pd
 
 from ..data.leakage import check_profile_snapshot
-from ..tools.base import Tool, ToolInputError
+from ..tools._limits import MEMORY_DEFAULT_TOP_N_CATEGORIES
+from ..tools.base import Tool, validate_int
 from ..tools.corpus import ItemCorpus
 
 
@@ -29,10 +29,10 @@ class MemoryTool(Tool):
     )
     input_schema = {
         "user_id": "str",
-        "top_n_categories": "int (default 3)",
+        "top_n_categories": f"int (default {MEMORY_DEFAULT_TOP_N_CATEGORIES})",
     }
     output_schema = {
-        "user_id": "str", "known": "bool", "n_interactions": "int",
+        "user_id": "str", "known": "bool  -- False = no history (unknown user or 0 interactions: cold start)", "n_interactions": "int",
         "top_categories": "list[str]  -- e.g. use as filters.categories_any via \"$1.top_categories\"",
         "price_range": "{min, max} | None  -- e.g. \"$1.price_range.max\" for filters.price_max",
     }
@@ -56,27 +56,29 @@ class MemoryTool(Tool):
         self.id2item = {v: k for k, v in item2id.items()}
         self.corpus = corpus
 
-    def execute(self, user_id: str, top_n_categories: int = 3) -> dict[str, Any]:
-        if user_id not in self.user2id:
-            raise ToolInputError(f"unknown user_id: {user_id!r}")
-        uidx = self.user2id[user_id]
-        hist_idx = self.interactions.loc[self.interactions["user_idx"] == uidx, "item_idx"].tolist()
+    def execute(self, user_id: str, top_n_categories: int = MEMORY_DEFAULT_TOP_N_CATEGORIES) -> dict[str, Any]:
+        top_n_categories = validate_int(top_n_categories, "top_n_categories")
+        uidx = self.user2id.get(user_id)  # user lạ hoặc 0 tương tác: known=False (cold-start, như RecoModelTool), không ném lỗi
+        hist_idx = [] if uidx is None else self.interactions.loc[self.interactions["user_idx"] == uidx, "item_idx"].tolist()
         if not hist_idx:
-            return {"user_id": user_id, "known": True, "n_interactions": 0, "top_categories": [], "price_range": None}
+            return {"user_id": user_id, "known": False, "n_interactions": 0, "top_categories": [], "price_range": None}
 
         item_ids = [self.id2item[i] for i in hist_idx if i in self.id2item]
         placeholders = ",".join("?" for _ in item_ids)
 
+        # Tổng hợp bằng SQL (MIN/MAX/GROUP BY): không bị giới hạn số dòng của corpus.select cắt âm thầm
         price_rows, _ = self.corpus.select(
-            f"SELECT price FROM items WHERE item_id IN ({placeholders}) AND price IS NOT NULL", tuple(item_ids)
+            f"SELECT MIN(price) AS lo, MAX(price) AS hi FROM items WHERE item_id IN ({placeholders})", tuple(item_ids)
         )
-        prices = [r["price"] for r in price_rows]
-        price_range = {"min": min(prices), "max": max(prices)} if prices else None
+        lo, hi = price_rows[0]["lo"], price_rows[0]["hi"]
+        price_range = {"min": lo, "max": hi} if lo is not None else None
 
         cat_rows, _ = self.corpus.select(
-            f"SELECT category FROM item_categories WHERE item_id IN ({placeholders})", tuple(item_ids)
+            f"SELECT category, COUNT(*) AS n FROM item_categories WHERE item_id IN ({placeholders}) "
+            "GROUP BY category ORDER BY n DESC, category LIMIT ?",
+            (*item_ids, top_n_categories),
         )
-        top_categories = [c for c, _ in Counter(r["category"] for r in cat_rows).most_common(top_n_categories)]
+        top_categories = [r["category"] for r in cat_rows]
 
         return {
             "user_id": user_id,

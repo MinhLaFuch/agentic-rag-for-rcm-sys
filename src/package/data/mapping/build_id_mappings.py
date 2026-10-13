@@ -1,11 +1,4 @@
-"""
-ID mapping: chuyển user_id/parent_asin gốc (string) thành integer index
-liên tục (0..N-1) — cần cho hầu hết model (embedding lookup table).
-
-Mapping phải được lưu lại (save_mappings/load_mappings) để đảm bảo
-reproducibility — mục XXII yêu cầu lưu model version/data version, và
-mapping chính là một phần của "data version" đó.
-"""
+"""Dựng user2id/item2id (id gốc -> index nguyên) từ toàn bộ interaction."""
 
 from __future__ import annotations
 

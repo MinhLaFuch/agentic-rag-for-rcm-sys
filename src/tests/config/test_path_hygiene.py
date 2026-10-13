@@ -4,7 +4,7 @@ import ast
 
 from package.config._constants import PROJECT_ROOT
 
-PY_ROOTS = [PROJECT_ROOT / "package", PROJECT_ROOT / "scripts" / "py"]
+PY_ROOTS = [PROJECT_ROOT / "package", PROJECT_ROOT / "scripts"]
 
 
 def _py_files():

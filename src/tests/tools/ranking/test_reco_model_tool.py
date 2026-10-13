@@ -1,0 +1,80 @@
+from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.tools import BaselineScorer, ItemCFTool, RecoModelTool, SQLTool
+from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B
+
+
+def _reco(corpus, cf_setup, model_cls=ItemKNNRecommender):
+    interactions, user2id, item2id = cf_setup
+    model = model_cls(5).fit(interactions) if model_cls is ItemKNNRecommender else model_cls().fit(interactions)
+    return RecoModelTool(BaselineScorer(model), user2id, item2id, corpus=corpus)
+
+
+def test_reco_accepts_other_tools_output_directly(corpus, cf_setup):
+    interactions, user2id, item2id = cf_setup
+    knn = ItemKNNRecommender(5).fit(interactions)
+    cf = ItemCFTool(knn, item2id, corpus=corpus)
+    reco = RecoModelTool(BaselineScorer(knn), user2id, item2id, corpus=corpus)
+    candidates = cf(items=[VG_A]).data["candidates"]
+    assert reco(user_id="u3", candidates=candidates).ok
+    sql_candidates = SQLTool(corpus)().data["candidates"]
+    assert reco(user_id="u3", candidates=sql_candidates).ok
+
+
+def test_reco_works_with_a_popularity_model_and_without_a_corpus(cf_setup):
+    interactions, user2id, item2id = cf_setup
+    tool = RecoModelTool(BaselineScorer(PopularityRecommender().fit(interactions)), user2id, item2id)
+    result = tool(user_id="u1", candidates=[VG_B, EL_D])
+    assert result.ok and result.data["model"] == "PopularityRecommender"
+    assert "domain" not in result.data["ranked"][0]
+
+
+def test_reco_items_outside_model_matrix_go_to_unscored(cf_setup):
+    """Items in item2id with idx >= num_items (outside model matrix) must be unscored, not scored as 0.0."""
+    interactions, user2id, item2id = cf_setup
+    # Create a tool with a popularity model
+    model = PopularityRecommender().fit(interactions)
+    # Add a fake item to item2id with idx >= num_items (simulating item added after model training)
+    fake_item = "Fake::item_outside_matrix"
+    fake_idx = model.num_items + 10  # Definitely outside the model matrix
+    item2id_extended = {**item2id, fake_item: fake_idx}
+    tool = RecoModelTool(BaselineScorer(model), user2id, item2id_extended)
+    result = tool(user_id="u1", candidates=[VG_B, fake_item])
+    assert result.ok
+    # The fake item should be in unscored_item_ids, not in ranked with score 0.0
+    assert fake_item in result.data["unscored_item_ids"]
+    assert VG_B in [r["item_id"] for r in result.data["ranked"]]
+    assert fake_item not in [r["item_id"] for r in result.data["ranked"]]
+
+
+def test_reco_has_personal_signal_flag(cf_setup):
+    """has_personal_signal distinguishes users with CF signal from those with only popularity."""
+    interactions, user2id, item2id = cf_setup
+    # u2 has history and CF neighbors, so should have personal signal
+    knn = ItemKNNRecommender(5).fit(interactions)
+    tool_knn = RecoModelTool(BaselineScorer(knn), user2id, item2id)
+    result = tool_knn(user_id="u2", candidates=[VG_A, EL_A])
+    assert result.ok
+    assert result.data["has_personal_signal"] is True
+
+    # Cold start user should not have personal signal
+    result_cold = tool_knn(user_id="brand_new_user", candidates=[VG_A, EL_A])
+    assert result_cold.ok
+    assert result_cold.data["has_personal_signal"] is False
+
+    # Popularity model never has personal signal
+    model = PopularityRecommender().fit(interactions)
+    tool_pop = RecoModelTool(BaselineScorer(model), user2id, item2id)
+    result_pop = tool_pop(user_id="u2", candidates=[VG_A, EL_A])
+    assert result_pop.ok
+    assert result_pop.data["has_personal_signal"] is False
+
+
+def test_reco_note_when_all_candidates_seen(corpus, cf_setup):
+    """When all candidates have been seen, ranked=[] and note explains why."""
+    tool = _reco(corpus, cf_setup)
+    # u2 has seen VG_A and VG_B; pass only these with exclude_seen=True
+    result = tool(user_id="u2", candidates=[VG_A, VG_B], exclude_seen=True)
+    assert result.ok
+    assert result.data["ranked"] == []
+    assert result.data["excluded_seen"] == [VG_A, VG_B]
+    assert "previously seen" in result.data["note"]

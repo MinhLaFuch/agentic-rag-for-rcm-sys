@@ -58,6 +58,14 @@ def test_k_core_filter_removes_sparse_users_and_items(synthetic_interactions):
     assert len(filtered) <= len(synthetic_interactions)
 
 
+def test_k_core_filter_warns_when_not_converged():
+    # chuỗi phụ thuộc: bỏ một user thì item kế tiếp rơi dưới ngưỡng -> cần nhiều vòng
+    rows = [("u1", "a"), ("u1", "b"), ("u2", "b"), ("u2", "c"), ("u3", "c")]
+    df = pd.DataFrame(rows, columns=["user_id", "parent_asin"])
+    with pytest.warns(RuntimeWarning):
+        k_core_filter(df, min_user_interactions=2, min_item_interactions=2, max_iterations=1)
+
+
 def test_segment_users_assigns_new_sparse_warm(synthetic_interactions):
     segments = segment_users(
         synthetic_interactions, as_of_timestamp=600, sparse_threshold=2

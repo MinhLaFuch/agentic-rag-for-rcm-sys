@@ -173,3 +173,95 @@ def test_personalized_is_not_scored_for_a_planner_that_cannot_read_history(corpu
                               recommended=[VG_B], tools=("MemoryTool", "SemanticSearchTool", "RecoModelTool"))
     scored = score_trajectory(request, with_memory, item2id=ITEM2ID, corpus=corpus, k=2)
     assert scored["tool_selection_ok"] is True and scored["task_success"] is True
+
+
+# ---- plan-reflect in trajectories / scoring / summary / resume
+
+def _load_run_agent_eval():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[2] / "scripts" / "run_agent_eval.py"
+    spec = importlib.util.spec_from_file_location("run_agent_eval_script", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _similar_request():
+    return AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+
+
+def test_score_trajectory_exposes_reflections_and_first_attempt_ok(corpus):
+    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    traj.update(reflections=1, first_attempt_ok=False)
+    row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["reflections"] == 1 and row["first_attempt_ok"] is False
+    assert row["task_success"] is True  # task_success is judged on the final result only
+
+
+def test_score_trajectory_still_scores_old_trajectories_without_the_new_fields(corpus):
+    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    assert "reflections" not in traj and "first_attempt_ok" not in traj
+    row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["reflections"] == 0 and row["first_attempt_ok"] is None and row["task_success"] is True
+
+
+def test_non_planner_rows_have_no_reflect_columns(corpus):
+    row = score_trajectory(_similar_request(), _trajectory(agent="baseline", recommended=[VG_B]), item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["reflections"] is None and row["first_attempt_ok"] is None
+
+
+def test_summarize_averages_first_attempt_ok_and_skips_missing():
+    rows = [
+        {"request_id": f"r{i}", "agent": "planner", "kind": "similar", "segment": "warm", "first_attempt_ok": v, "reflections": r}
+        for i, (v, r) in enumerate([(True, 0), (False, 1), (False, 1), (None, 0)])
+    ]
+    stats = summarize(rows)["planner"]["similar"]["all"]
+    assert stats["first_attempt_ok"] == pytest.approx(1 / 3) and stats["reflections"] == pytest.approx(0.5)
+
+
+def test_summary_columns_print_the_reflect_metrics():
+    columns = _load_run_agent_eval().SUMMARY_COLUMNS
+    assert "first_attempt_ok" in columns and "reflections" in columns
+
+
+def test_run_planner_records_reflections_and_the_last_attempt(corpus):
+    import json
+
+    from package.agents import PlanExecutor
+    from package.tools import SQLTool
+    from tests.agent.test_plan_executor import ScriptedLLM
+
+    script = _load_run_agent_eval()
+    bad = {"tool": "SQLTool", "args": {"category": "Games"}}
+    good = {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
+    llm = ScriptedLLM(json.dumps({"steps": [bad]}), json.dumps({"steps": [good]}))
+    executor = PlanExecutor(llm, [SQLTool(corpus)], reflect_rounds=1)
+    traj = script.run_planner(executor, _similar_request(), "planner", 2)
+    assert traj["reflections"] == 1 and traj["first_attempt_ok"] is False and traj["reflect_rounds"] == 1
+    assert [s["ok"] for s in traj["steps"]] == [True] and traj["plan"] == [good] and traj["recommended"]
+    assert traj["usage"]["attempts"] == 2 and traj["usage"]["prompt_tokens"] == 20
+    json.dumps(traj)  # the file stays serialisable
+
+
+def test_run_planner_marks_an_unparsable_plan_as_not_ok_first_time(corpus):
+    from package.agents import PlanExecutor
+    from package.tools import SQLTool
+    from tests.agent.test_plan_executor import ScriptedLLM
+
+    executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=1)
+    traj = _load_run_agent_eval().run_planner(executor, _similar_request(), "planner", 2)
+    assert traj["error"] and traj["first_attempt_ok"] is False and traj["reflections"] == 0
+
+
+def test_resume_drops_planner_records_made_with_another_reflect_setting():
+    keep = _load_run_agent_eval().is_resumable
+    text_of = {"r0": "hello"}
+    rec = {"request_id": "r0", "agent": "planner", "text": "hello", "reflect_rounds": 1}
+    assert keep(rec, text_of, ["planner"], 1)
+    assert not keep(rec, text_of, ["planner"], 0)  # a 0-vs-1 comparison must not mix runs
+    old = {k: v for k, v in rec.items() if k != "reflect_rounds"}  # written before plan-reflect existed = 0 rounds
+    assert keep(old, text_of, ["planner"], 0) and not keep(old, text_of, ["planner"], 1)
+    assert not keep({**rec, "text": "changed"}, text_of, ["planner"], 1) and not keep(rec, text_of, ["baseline"], 1)
+    assert keep({"request_id": "r0", "agent": "baseline", "text": "hello"}, text_of, ["baseline"], 1)  # no LLM, no setting

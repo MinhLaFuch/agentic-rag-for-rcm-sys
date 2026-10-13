@@ -1,7 +1,7 @@
-"""Test helpers: sample items and fixtures for agent/tools tests.
+"""Test helpers: sample items and fixtures for the tests/tools suites (the shared `corpus` / `cf_setup` fixtures).
 
 NOTE: Similarity values are estimated based on test assertions.
-Verify line 16 in test_tools_item_cf.py passes:
+Verify line 16 in tests/tools/ranking/test_item_cf_tool.py passes:
   assert candidates[0]["similarity"] >= candidates[1]["similarity"] > 0
 where candidates order is [VG_B, EL_A].
 """
@@ -10,7 +10,6 @@ import pandas as pd
 import pytest
 
 from package.tools import ItemCorpus
-from package.tools.recommenders import ItemKNNRecommender
 
 # Sample item IDs with namespace prefix (domain::asin)
 VG_A = "Video_Games::vg_a"
@@ -61,13 +60,13 @@ def cf_setup():
     """Collaborative filtering setup: (interactions, user2id, item2id).
 
     Inferred from tests:
-    - u2 has seen VG_A and VG_B (test_tools_reco_model.py line 14)
-    - u3 has NOT seen VG_B (test_tools_reco_model.py line 43 - u3 scores VG_B)
-    - VG_A -> VG_B similarity > VG_A -> EL_A similarity > 0 (test_tools_item_cf.py line 15-16)
-    - Both VG_A and EL_D contribute to EL_A similarity (test_tools_item_cf.py line 34)
-    - VG_C is not in CF vocabulary (test_tools_reco_model.py line 44)
-    - VG_B and EL_D should have equal popularity (test_tools_reco_model.py line 79)
-    - EL_D should be least popular among [EL_D, VG_A, EL_A] (test_tools_reco_model.py line 53)
+    - u2 has seen VG_A and VG_B (tests/tools/ranking/test_reco_model_tool.py line 14)
+    - u3 has NOT seen VG_B (tests/tools/ranking/test_reco_model_tool.py line 43 - u3 scores VG_B)
+    - VG_A -> VG_B similarity > VG_A -> EL_A similarity > 0 (tests/tools/ranking/test_item_cf_tool.py line 15-16)
+    - Both VG_A and EL_D contribute to EL_A similarity (tests/tools/ranking/test_item_cf_tool.py line 34)
+    - VG_C is not in CF vocabulary (tests/tools/ranking/test_reco_model_tool.py line 44)
+    - VG_B and EL_D should have equal popularity (tests/tools/ranking/test_reco_model_tool.py line 79)
+    - EL_D should be least popular among [EL_D, VG_A, EL_A] (tests/tools/ranking/test_reco_model_tool.py line 53)
 
     ItemKNN similarity = co-occurrence / (sqrt(count_A) * sqrt(count_B))
     Calculated design:

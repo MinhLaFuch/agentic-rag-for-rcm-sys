@@ -7,15 +7,16 @@ from typing import Any, Sequence
 import numpy as np
 from scipy import sparse
 
-from ..base import MAX_CANDIDATES, Tool, ToolCallLogger, ToolInputError, check_top_k
+from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
+from .._limits import ITEM_CF_DEFAULT_TOP_K, MAX_CANDIDATES
 from ..corpus import ItemCorpus
 
 
 class ItemCFTool(Tool):
     """
     Items similar to seed item(s), from a fitted ItemKNNRecommender's similarity
-    matrix (src/recommenders/baselines.py).  With several seeds, similarities are
-    summed.  Cross-domain by default; pass `domain` to restrict (needs a corpus).
+    matrix. With several seeds, similarities are summed (can exceed 1.0).
+    Cross-domain by default; pass `domain` to restrict (needs a corpus).
 
     Note: ItemKNN keeps only the top-k neighbours per item, so a domain filter
     can return fewer than `top_k` items.
@@ -24,14 +25,15 @@ class ItemCFTool(Tool):
     name = "ItemCFTool"
     description = "Retrieve items similar to given item(s) using item-item collaborative filtering."
     input_schema = {
-        "items": "list[str]  -- namespaced seed item ids",
-        "top_k": f"int (<= {MAX_CANDIDATES}, default 20)",
-        "domain": "str | None  -- restrict output domain; None = cross-domain",
+        "items": "list[str]  -- namespaced seed item ids (non-empty strings)",
+        "top_k": f"int (<= {MAX_CANDIDATES}, default {ITEM_CF_DEFAULT_TOP_K})",
+        "domain": "str | None  -- restrict output domain; None or empty string = cross-domain",
         "exclude_input": "bool (default true)",
     }
     output_schema = {
         "candidates": "list[{item_id, similarity, domain}]  -- most similar first",
         "unknown_items": "list[str]",
+        "note": "str | None  -- explanation when candidates are empty",
     }
 
     def __init__(
@@ -47,26 +49,50 @@ class ItemCFTool(Tool):
             raise TypeError("model must be a fitted ItemKNNRecommender (missing `.similarity`)")
         self.similarity: sparse.csr_matrix = similarity.tocsr()
         self.item2id = item2id
+        # Two items sharing one (valid) index would make idx2item silently drop one of them.
+        # Negative indices are not valid matrix rows; they are treated as "unknown item" in execute().
+        valid_idx = [v for v in item2id.values() if v >= 0]
+        if len(valid_idx) != len(set(valid_idx)):
+            raise ValueError("item2id has duplicate indices: every item must map to a unique index")
         self.idx2item: dict[int, str] = {v: k for k, v in item2id.items()}
         self.corpus = corpus
 
     def execute(
         self,
-        items: Sequence[str],
-        top_k: int = 20,
+        items: Any,
+        top_k: int = ITEM_CF_DEFAULT_TOP_K,
         domain: str | None = None,
         exclude_input: bool = True,
     ) -> dict[str, Any]:
-        seeds = list(dict.fromkeys(items or []))
+        items = validate_list_like(items, "items")
+        # Check element types BEFORE de-duplicating: dict.fromkeys needs hashable elements.
+        bad = [s for s in items if not isinstance(s, str) or not s.strip()]
+        if bad:
+            raise ToolInputError(f"`items` must be a list of non-empty item id strings, got invalid element(s): {bad!r}")
+        seeds = list(dict.fromkeys(items))
         if not seeds:
             raise ToolInputError("`items` must contain at least one item id")
-        top_k = check_top_k(top_k)
-        if domain is not None and self.corpus is None:
-            raise ToolInputError("domain filtering needs the tool to be built with a corpus")
+        top_k = check_top_k(top_k, name="top_k")
+        if not isinstance(exclude_input, bool):
+            raise ToolInputError(f"`exclude_input` must be a boolean (true/false), got {exclude_input!r}")
+        if domain is not None and not isinstance(domain, str):
+            raise ToolInputError(f"`domain` must be a string or null, got {type(domain).__name__}: {domain!r}")
+        if domain is not None and not domain.strip():
+            domain = None  # empty string = no filter (same convention as SQLTool / SemanticSearchTool)
+        if domain is not None:
+            if self.corpus is None:
+                raise ToolInputError("domain filtering needs the tool to be built with a corpus")
+            known_domains = self.corpus.domains()
+            if domain not in known_domains:
+                raise ToolInputError(f"unknown domain {domain!r}; available: {known_domains}")
 
         n = self.similarity.shape[0]
-        seed_idx = [self.item2id[s] for s in seeds if s in self.item2id and self.item2id[s] < n]
-        unknown = [s for s in seeds if s not in self.item2id or self.item2id[s] >= n]
+
+        def is_row(s: str) -> bool:  # a valid similarity row: 0 <= idx < n  (-1 would silently pick the LAST row)
+            return s in self.item2id and 0 <= self.item2id[s] < n
+
+        seed_idx = [self.item2id[s] for s in seeds if is_row(s)]
+        unknown = [s for s in seeds if not is_row(s)]
         if not seed_idx:
             return {"candidates": [], "unknown_items": unknown, "note": "no seed item is known to the CF model"}
 
@@ -95,4 +121,14 @@ class ItemCFTool(Tool):
             candidates.append(entry)
             if len(candidates) == top_k:
                 break
-        return {"candidates": candidates, "unknown_items": unknown}
+
+        # Explain an empty result. The domain filter runs over ALL of the seeds' neighbours before the
+        # top_k cut, so an empty result means none of them lives in that domain (or has no neighbours).
+        note = None
+        if not candidates:
+            if domain is not None:
+                note = f"none of the seed items' similar items are in domain '{domain}'"
+            else:
+                note = "no similar items found"
+
+        return {"candidates": candidates, "unknown_items": unknown, "note": note}

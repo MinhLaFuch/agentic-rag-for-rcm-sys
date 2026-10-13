@@ -1,8 +1,10 @@
-
 from typing import Any
 import re
 import json
 from ._schema import ID_ARG_KEYS, _REF
+from .evaluation.extract_recommendations import extract_recommendations
+
+REFLECT_ERROR_CHARS = 300  # an error longer than this is cut in the reflect notice (the tool's own message leads)
 
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:
@@ -86,3 +88,33 @@ def _invented_ids(args: Any, request: str) -> list[str]:
             if isinstance(v, str) and not _REF.match(v) and v not in request:
                 invented.append(v)
     return invented
+
+
+def _is_time_budget(error: Any) -> bool:
+    return isinstance(error, str) and ("time budget" in error or "SQLTimeOutError" in error)
+
+
+def _blocks_reflect(results: list[dict[str, Any]]) -> bool:
+    """No reflect after an invented id (it must not be 'fixed' into another id) or a SQL timeout (a new plan does not help)."""
+    return any(r.get("invented_ids") or _is_time_budget(r.get("error")) for r in results)
+
+
+def _reflect_problem(results: list[dict[str, Any]], question: str | None) -> str | None:
+    """Why this run needs a corrected plan (None = fine): a failed step, or no item at all for a plan that is not ask_user."""
+    if any(not r["ok"] for r in results):
+        return "at least one step failed."
+    if not question and not extract_recommendations(results, 1):
+        return "no step returned any item (empty results), so there is nothing to recommend."
+    return None
+
+
+def _step_report(results: list[dict[str, Any]]) -> str:
+    """One line per step: errors cut short; for ok steps only the keys of `data` (lists with their length), never the data."""
+    lines = []
+    for n, r in enumerate(results, 1):
+        if r["ok"]:
+            keys = ", ".join(f"{k}[{len(v)}]" if isinstance(v, list) else k for k, v in r["data"].items())
+            lines.append(f"{n}. {r['tool']}: ok, returned {keys or 'nothing'}")
+        else:
+            lines.append(f"{n}. {r['tool']}: FAILED: {str(r['error'])[:REFLECT_ERROR_CHARS]}")
+    return "\n".join(lines)

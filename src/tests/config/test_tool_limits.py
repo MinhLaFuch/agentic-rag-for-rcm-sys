@@ -2,7 +2,8 @@ import pytest
 
 from package.config.loader import ConfigError, load_config
 from package.tools import _limits
-from package.tools.base import MAX_CANDIDATES, check_top_k
+from package.tools.base import check_top_k
+from package.tools._limits import MAX_CANDIDATES
 from package.tools.base import ToolInputError
 
 

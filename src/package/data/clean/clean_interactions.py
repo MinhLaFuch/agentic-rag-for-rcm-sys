@@ -1,16 +1,9 @@
-"""
-Load + clean interaction data thật (Phase 3, mục V).
-
-Dùng pandas.read_json(lines=True) — đọc trực tiếp .jsonl.gz, không cần
-tự viết streaming parser (đơn giản hơn, và pandas xử lý gzip built-in).
-Với ~4.6M dòng x 8 cột, DataFrame chiếm vài trăm MB RAM — chấp nhận được
-trên máy dev thông thường. Nếu OOM trên máy yếu, xem ghi chú ở cuối file.
-"""
+"""Dedupe interaction thô theo (user, item, timestamp) và kiểm tra cột bắt buộc; trả về (df sạch, báo cáo)."""
 
 from __future__ import annotations
 
 import pandas as pd
-from .._schema import REQUIRED_COLUMNS, OPTIONAL_COLUMNS
+from .._schema import REQUIRED_COLUMNS
 
 def clean_interactions(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     """

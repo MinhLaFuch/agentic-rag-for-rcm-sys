@@ -35,7 +35,10 @@ class RecoModelTool(Tool):
     }
     output_schema = {
         "ranked": "list[{rank, item_id, score, domain}]  -- best first",
+        "model": "str  -- name of the scorer that produced the scores",
         "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
+        "has_personal_signal": "bool  -- true if user has collaborative/personal signal vs only popularity",
+        "note": "str | None  -- explanation when ranked is empty",
     }
 
     def __init__(
@@ -59,17 +62,34 @@ class RecoModelTool(Tool):
         top_k: int | None = None,
         exclude_seen: bool = True,
     ) -> dict[str, Any]:
+        # Validate types first: an unhashable user_id would otherwise crash in dict.get().
+        if not isinstance(user_id, str) or not user_id.strip():
+            raise ToolInputError(f"`user_id` must be a non-empty string, got {user_id!r}")
+        if not isinstance(exclude_seen, bool):
+            raise ToolInputError(f"`exclude_seen` must be a boolean (true/false), got {exclude_seen!r}")
         ids = candidate_ids(candidates)
         if not ids:
             raise ToolInputError("`candidates` is empty")
         if top_k is not None:
-            top_k = check_top_k(top_k)
+            top_k = check_top_k(top_k, name="top_k")
 
         user_idx = self.user2id.get(user_id, -1)
         cold_start = not self.scorer.is_known_user(user_idx)
 
-        scorable = [i for i in ids if i in self.item2id]
-        unscored = [i for i in ids if i not in self.item2id]  # unknown to the model: reported, not hidden
+        # Separate items into scorable (in model matrix) and unscored (outside matrix or unknown)
+        scorable = []
+        unscored = []
+        for i in ids:
+            if i not in self.item2id:
+                unscored.append(i)
+            else:
+                idx = self.item2id[i]
+                if idx < 0 or idx >= self.scorer.num_items:
+                    # Item is in item2id but outside the model matrix (e.g., added after training)
+                    # or has an invalid negative index
+                    unscored.append(i)
+                else:
+                    scorable.append(i)
 
         excluded_seen: list[str] = []
         if exclude_seen and not cold_start:
@@ -80,7 +100,18 @@ class RecoModelTool(Tool):
         ranked: list[dict[str, Any]] = []
         if scorable:
             idxs = np.array([self.item2id[i] for i in scorable], dtype=np.int64)
-            scores = np.asarray(self.scorer.score(user_idx, idxs), dtype=np.float64)
+            try:
+                scores = np.asarray(self.scorer.score(user_idx, idxs), dtype=np.float64)
+            except (TypeError, ValueError) as exc:
+                raise ToolInputError(f"scorer {self.scorer.name} returned scores that are not numeric: {exc}") from exc
+            # Scorer contract: exactly one finite score per scored candidate, in the same order.
+            if scores.shape != (len(scorable),):
+                raise ToolInputError(
+                    f"scorer {self.scorer.name} returned {scores.size} score(s) for {len(scorable)} candidate(s); "
+                    "expected exactly one score per candidate"
+                )
+            if not np.isfinite(scores).all():
+                raise ToolInputError(f"scorer {self.scorer.name} returned a non-finite score (NaN or inf)")
             order = np.argsort(-scores, kind="stable")  # ties keep input order
             domains = self.corpus.item_domains(scorable) if self.corpus else {}
             for rank, pos in enumerate(order[:top_k], start=1):
@@ -89,10 +120,25 @@ class RecoModelTool(Tool):
                     entry["domain"] = domains.get(scorable[pos])
                 ranked.append(entry)
 
+        # Generate a note if ranked is empty to explain why
+        note = None
+        if not ranked:
+            if not scorable:
+                if excluded_seen:
+                    note = f"All {len(excluded_seen)} candidates were previously seen by the user and exclude_seen=True"
+                elif unscored:
+                    note = f"All {len(unscored)} candidates are unknown to the model (outside vocabulary or matrix)"
+                else:
+                    note = "No candidates were provided"
+            else:
+                note = "All scorable candidates were filtered out (e.g., exclude_seen)"
+
         return {
             "ranked": ranked,
             "model": self.scorer.name,
             "cold_start": cold_start,
             "excluded_seen": excluded_seen,
             "unscored_item_ids": unscored,
+            "has_personal_signal": self.scorer.has_personal_signal(user_idx),
+            "note": note,
         }

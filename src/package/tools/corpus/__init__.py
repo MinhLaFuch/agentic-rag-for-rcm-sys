@@ -1,5 +1,8 @@
+from .build_corpus import build_corpus
 from .corpus import ItemCorpus
 
+
 __all__ = [
-    "ItemCorpus"
+    "ItemCorpus",
+    "build_corpus",
 ]

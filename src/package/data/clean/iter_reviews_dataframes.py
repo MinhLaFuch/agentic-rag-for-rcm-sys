@@ -1,11 +1,4 @@
-"""
-Load + clean interaction data thật (Phase 3, mục V).
-
-Dùng pandas.read_json(lines=True) — đọc trực tiếp .jsonl.gz, không cần
-tự viết streaming parser (đơn giản hơn, và pandas xử lý gzip built-in).
-Với ~4.6M dòng x 8 cột, DataFrame chiếm vài trăm MB RAM — chấp nhận được
-trên máy dev thông thường. Nếu OOM trên máy yếu, xem ghi chú ở cuối file.
-"""
+"""Đọc file review .jsonl.gz theo từng chunk DataFrame (không nạp hết vào RAM)."""
 
 from __future__ import annotations
 

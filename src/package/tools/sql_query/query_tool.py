@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-from package.tools.base import Tool, ToolCallLogger, ToolInputError, check_top_k
+from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
 from ..corpus import ItemCorpus
-
-from .._limits import MAX_QUERY_ROWS
+from .._limits import MAX_QUERY_ROWS, QUERY_DEFAULT_MAX_ROWS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 
 
@@ -22,7 +21,7 @@ class QueryTool(Tool):
     input_schema = {
         "query": "str | None  -- one SELECT statement",
         "item_ids": "list[str] | None  -- namespaced item ids",
-        "max_rows": f"int (<= {MAX_QUERY_ROWS}, default 20)",
+        "max_rows": f"int (<= {MAX_QUERY_ROWS}, default {QUERY_DEFAULT_MAX_ROWS})",
     }
     output_schema = {
         "items": "list[{item_id, domain, title, store, price, average_rating, rating_number, main_category}]",
@@ -37,13 +36,19 @@ class QueryTool(Tool):
         self,
         query: str | None = None,
         item_ids: Sequence[str] | None = None,
-        max_rows: int = 20,
+        max_rows: int = QUERY_DEFAULT_MAX_ROWS,
+        **kwargs: Any
     ) -> dict[str, Any]:
         if (query is None) == (item_ids is None):
             raise ToolInputError("provide exactly one of `query` or `item_ids`")
-        max_rows = check_top_k(max_rows, MAX_QUERY_ROWS)
+        max_rows = check_top_k(max_rows, MAX_QUERY_ROWS, name="max_rows")
 
         if item_ids is not None:
+            # A bare string would be split into characters and an unhashable element would crash dict.fromkeys.
+            item_ids = validate_list_like(item_ids, "item_ids")
+            bad = [i for i in item_ids if not isinstance(i, str) or not i.strip()]
+            if bad:
+                raise ToolInputError(f"`item_ids` must be a list of non-empty strings, got invalid element(s): {bad!r}")
             ids = list(dict.fromkeys(item_ids))
             if not ids:
                 raise ToolInputError("`item_ids` is empty")
@@ -51,15 +56,24 @@ class QueryTool(Tool):
                 raise ToolInputError(f"at most {MAX_QUERY_ROWS} item_ids per call")
             marks = ",".join("?" * len(ids))
             cols = ", ".join(ITEM_COLUMNS)
-            rows, truncated = self.corpus.select(
+            # For item_ids, fetch all matching items first (capped by internal limit)
+            rows, _ = self.corpus.select(
                 f"SELECT {cols} FROM items WHERE item_id IN ({marks})", ids, max_rows=len(ids)
             )
-            found = {r["item_id"] for r in rows}
+            # Preserve input order by re-sorting
+            found_map = {r["item_id"]: r for r in rows}
+            ordered_rows = [found_map[i] for i in ids if i in found_map]
+            # Apply max_rows to respect user's limit
+            truncated = len(ordered_rows) > max_rows
+            ordered_rows = ordered_rows[:max_rows]
+            found = set(found_map.keys())
             return {
-                "items": rows,
+                "items": ordered_rows,
                 "missing_item_ids": [i for i in ids if i not in found],
-                "truncated": False,
+                "truncated": truncated,
             }
 
+        if not isinstance(query, str):
+            raise ToolInputError(f"`query` must be a string, got {type(query).__name__}")
         rows, truncated = self.corpus.select(query, max_rows=max_rows)
-        return {"items": rows, "truncated": truncated}
+        return {"items": rows, "missing_item_ids": [], "truncated": truncated}

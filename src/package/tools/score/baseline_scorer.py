@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
@@ -19,13 +20,66 @@ class BaselineScorer:
     def __init__(self, model: Any) -> None:
         self.model = model
         self.name = type(model).__name__
+
+        # Validate model has required attributes
+        required_attrs = ["scores", "user_items", "num_items"]
+        missing = [attr for attr in required_attrs if not hasattr(model, attr)]
+        if missing:
+            raise AttributeError(
+                f"Model must have attributes {required_attrs}, missing: {missing}. "
+                f"Expected a fitted PopularityRecommender or ItemKNNRecommender."
+            )
+
         self.popularity: np.ndarray = model.scores
         self.user_items: sparse.csr_matrix = model.user_items
         similarity = getattr(model, "similarity", None)
         self.similarity = similarity.tocsr() if similarity is not None else None
         self.num_items = int(model.num_items)
+
+        # Validate model consistency
+        self._validate_model()
+
         peak = float(self.popularity.max()) if self.num_items else 0.0
         self._pop_norm = self.popularity / peak if peak > 0 else self.popularity
+
+    def _validate_model(self) -> None:
+        """Validate model invariants: shapes, finite values, and consistency."""
+        # Check popularity shape matches num_items
+        if len(self.popularity) != self.num_items:
+            raise ValueError(
+                f"Model popularity array has length {len(self.popularity)} "
+                f"but num_items={self.num_items}. Inconsistent model state."
+            )
+
+        # Check popularity values are finite
+        if not np.all(np.isfinite(self.popularity)):
+            non_finite_count = np.sum(~np.isfinite(self.popularity))
+            raise ValueError(
+                f"Model popularity contains {non_finite_count} non-finite values (NaN or inf). "
+                "Model must have finite popularity scores."
+            )
+
+        # Check user_items shape
+        if self.user_items.shape[1] != self.num_items:
+            raise ValueError(
+                f"Model user_items has {self.user_items.shape[1]} columns "
+                f"but num_items={self.num_items}. Inconsistent model state."
+            )
+
+        # Check similarity matrix shape if present
+        if self.similarity is not None:
+            if self.similarity.shape[0] != self.num_items or self.similarity.shape[1] != self.num_items:
+                raise ValueError(
+                    f"Model similarity matrix has shape {self.similarity.shape} "
+                    f"but expected ({self.num_items}, {self.num_items}). Inconsistent model state."
+                )
+            # Check similarity values are finite
+            if not np.all(np.isfinite(self.similarity.data)):
+                non_finite_count = np.sum(~np.isfinite(self.similarity.data))
+                raise ValueError(
+                    f"Model similarity contains {non_finite_count} non-finite values (NaN or inf). "
+                    "Model must have finite similarity scores."
+                )
 
     def is_known_user(self, user_idx: int) -> bool:
         return 0 <= user_idx < self.user_items.shape[0] and self.user_items.getrow(user_idx).nnz > 0
@@ -43,4 +97,26 @@ class BaselineScorer:
         if self.similarity is not None and self.is_known_user(user_idx):
             cf = (self.user_items.getrow(user_idx) @ self.similarity).tocsr()
             scores = scores + np.where(valid, cf[:, safe].toarray().ravel(), 0.0)
+
+        # Validate output: must match input shape and be finite
+        if scores.shape != item_idxs.shape:
+            raise RuntimeError(
+                f"Score output shape {scores.shape} does not match input shape {item_idxs.shape}. "
+                "Scorer contract violation."
+            )
+        if not np.all(np.isfinite(scores)):
+            non_finite_count = np.sum(~np.isfinite(scores))
+            raise RuntimeError(
+                f"Score output contains {non_finite_count} non-finite values (NaN or inf). "
+                "Scorer contract violation."
+            )
+
         return scores
+
+    def has_personal_signal(self, user_idx: int) -> bool:
+        """Check if the user has any collaborative filtering signal (i.e., has history with neighbors)."""
+        if self.similarity is None or not self.is_known_user(user_idx):
+            return False
+        # Check if the user's history has any CF signal (similarity > 0)
+        cf = (self.user_items.getrow(user_idx) @ self.similarity).tocsr()
+        return cf.nnz > 0
