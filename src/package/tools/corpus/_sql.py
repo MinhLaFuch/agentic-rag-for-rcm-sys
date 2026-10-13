@@ -51,6 +51,7 @@ ITEMS_INDEXES = [
 CATEGORIES_INDEXES = [
     "CREATE INDEX idx_cat_item ON item_categories(item_id)",
     "CREATE INDEX idx_cat_cat ON item_categories(category)",
+    "CREATE INDEX idx_cat_item_cat ON item_categories(item_id, category)",
 ]
 
 # ---- FTS5 population ---------------------------------------------------- #

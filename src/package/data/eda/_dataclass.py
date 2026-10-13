@@ -74,3 +74,47 @@ class MetadataStats:
             if self.num_with_average_rating
             else 0.0
         )
+
+
+@dataclass
+class SplitDiagnosis:
+    """Kết quả chẩn đoán splits cho stage 3."""
+    train_rows: int
+    val_rows: int
+    test_rows: int
+    train_users: int
+    val_users: int
+    test_users: int
+    train_items: int
+    val_items: int
+    test_items: int
+    train_timestamp_min: int
+    train_timestamp_max: int
+    val_timestamp_min: int
+    val_timestamp_max: int
+    test_timestamp_min: int
+    test_timestamp_max: int
+    # Domain distribution
+    train_domain_ratios: dict[str, float]
+    val_domain_ratios: dict[str, float]
+    test_domain_ratios: dict[str, float]
+    # Target item coverage
+    val_items_in_train_pct: float  # % val items seen in train (by unique item)
+    test_items_in_train_pct: float  # % test items seen in train (by unique item)
+    val_rows_with_train_item_pct: float  # % val rows whose item is in train
+    test_rows_with_train_item_pct: float  # % test rows whose item is in train
+    # User history coverage
+    val_users_with_train_history_pct: float  # % val users seen in train
+    test_users_with_train_history_pct: float  # % test users seen in train
+    val_history_len_stats: dict[str, float]  # {min, median, p90} of train history length for val users
+    test_history_len_stats: dict[str, float]  # {min, median, p90} of train history length for test users
+    # Repeat pairs (leakage due to exclude)
+    val_repeat_pairs_pct: float  # % val (user, item) pairs already in train
+    test_repeat_pairs_pct: float  # % test (user, item) pairs already in train+val
+    # Theoretical recall ceiling
+    val_reachable_pct: float  # % val rows where item in train AND pair not in train history
+    test_reachable_pct: float  # % test rows where item in train AND pair not in train+val history
+    # Multi-domain users
+    train_multi_domain_users_pct: float
+    val_multi_domain_users_pct: float
+    test_multi_domain_users_pct: float
