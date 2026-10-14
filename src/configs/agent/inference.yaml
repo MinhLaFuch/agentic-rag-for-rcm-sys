@@ -1,0 +1,11 @@
+# Inference config: tầng sinh câu trả lời cuối (package/inference/_limits.py), xem docs/inference_contract.md.
+# LLM provider/model lấy từ llm.yaml; hành vi planner ở agent.yaml. File này chỉ chứa hành vi của bước trả lời.
+
+inference:
+  mode: llm          # llm | template. llm = LLM viết, có kiểm grounding, lỗi thì lùi về template; template = luôn tất định, không gọi LLM
+  max_items: 10      # chỉ trình bày tối đa chừng này item (cắt từ đầu danh sách agent, không đổi thứ tự); đặt >= agent_eval.k kẻo trả lời ít hơn số được yêu cầu
+  max_tokens: 2048   # ngân sách token cho 1 lần viết câu trả lời; model reasoning ăn token suy luận vào đây nên đừng đặt thấp
+  temperature: 0.0   # 0 để câu trả lời lặp lại được giữa các lần chạy (nhà cung cấp vẫn có thể không tất định hoàn toàn)
+  llm_retries: 1     # số lần gọi lại khi reply sai JSON hoặc không grounded (0 = không retry); hết lượt thì dùng template
+  check_numbers: true    # bật kiểm giá/rating trong câu trả lời LLM; false = chỉ kiểm JSON, id, đủ item, đúng thứ tự
+  price_tolerance: 0.5   # USD; số tiền trong text lệch mọi giá đã biết quá mức này thì bị coi là bịa (0 = phải khớp đúng); chỉ có tác dụng khi check_numbers = true
