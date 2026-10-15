@@ -8,7 +8,7 @@ from typing import Any
 from package.api._error import LLMProviderError
 from package.api.base import LLMProvider
 from package.inference import AgentOutcome
-from tests.agent.test_plan_executor import ScriptedLLM
+from tests.agents.test_plan_executor import ScriptedLLM
 
 __all__ = ["FailingLLM", "ScriptedLLM", "good_reply", "item", "outcome", "reply"]
 

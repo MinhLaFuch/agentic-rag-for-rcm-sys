@@ -1,0 +1,14 @@
+# Config cho demo UI (Giai đoạn 1)
+
+demo:
+  # Giới hạn độ dài lỗi hiển thị trên UI
+  max_error_length: 300
+
+  # Số lượng item tối đa hiển thị
+  max_items_display: 10
+
+  # Số lượng user mẫu cho mỗi segment
+  sample_users_per_segment: 3
+
+  # Ngôn ngữ mặc định cho template câu hỏi mẫu
+  default_language: "vi"

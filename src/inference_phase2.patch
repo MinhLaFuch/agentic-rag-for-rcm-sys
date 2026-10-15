@@ -1,0 +1,536 @@
+diff -ruN /tmp/p2a/package/agents/evaluation/__init__.py ./package/agents/evaluation/__init__.py
+--- /tmp/p2a/package/agents/evaluation/__init__.py	2026-10-15 03:03:50.310998442 +0000
++++ ./package/agents/evaluation/__init__.py	2026-10-15 03:03:50.312055728 +0000
+@@ -1,6 +1,6 @@
+ from ._dataclass import AgentRequest
+ from ._helper import items_satisfying, items_without_price
+-from ._schema import AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
++from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
+ from .build_requests import build_requests
+ from .extract_recommendations import extract_recommendations
+ from .score_trajectory import reference_groups, score_trajectory
+@@ -8,6 +8,7 @@
+ 
+ __all__ = [
+     "AGENTS",
++    "INFERENCE_AGENTS",
+     "KINDS",
+     "ORACLE_KINDS",
+     "PLANNER_AGENTS",
+diff -ruN /tmp/p2a/package/agents/evaluation/_schema.py ./package/agents/evaluation/_schema.py
+--- /tmp/p2a/package/agents/evaluation/_schema.py	2026-10-15 03:03:50.315578207 +0000
++++ ./package/agents/evaluation/_schema.py	2026-10-15 03:03:50.316579613 +0000
+@@ -3,6 +3,10 @@
+ SEGMENTS = ("cold", "sparse", "warm")
+ AGENTS = ("baseline", "type1", "planner", "planner_memory")
+ PLANNER_AGENTS = ("planner", "planner_memory")
++INFERENCE_AGENTS = ("type1", "planner", "planner_memory")  # agents whose result is turned into an answer (the baseline has none)
++# Statuses of an Inference answer. Same as package.inference._schema.STATUSES (a test keeps them equal); duplicated because
++# package.inference imports this package, so importing it back would be a cycle.
++ANSWER_STATUSES = ("ok", "ask_user", "no_result", "tool_error")
+ 
+ # request kind -> user segments it is drawn from ("none" = no user in the request)
+ KIND_SEGMENTS = {
+diff -ruN /tmp/p2a/package/agents/evaluation/score_trajectory.py ./package/agents/evaluation/score_trajectory.py
+--- /tmp/p2a/package/agents/evaluation/score_trajectory.py	2026-10-15 03:03:50.319919114 +0000
++++ ./package/agents/evaluation/score_trajectory.py	2026-10-15 03:03:50.320876007 +0000
+@@ -11,7 +11,7 @@
+ from ...tools.evaluation.metrics import ranking_metrics_at_k
+ from ._dataclass import AgentRequest
+ from ._helper import items_satisfying, items_without_price
+-from ._schema import PLANNER_AGENTS, REFERENCE_PLANS
++from ._schema import ANSWER_STATUSES, PLANNER_AGENTS, REFERENCE_PLANS
+ 
+ 
+ def reference_groups(kind: str, available_tools: set[str]) -> list[tuple[str, ...]]:
+@@ -27,6 +27,19 @@
+     return position == len(groups)
+ 
+ 
++def _add_answer_columns(row: dict[str, Any], trajectory: dict[str, Any]) -> None:
++    status = trajectory.get("answer_status")
++    answered = status is not None
++    shown = status == "ok"
++    inference = trajectory.get("inference_usage") or {}
++    for name in ANSWER_STATUSES:
++        row[f"answer_status_{name}"] = (status == name) if answered else None
++    row["answer_grounded"] = bool(trajectory.get("answer_grounded")) if shown else None
++    row["answer_fallback"] = bool(trajectory.get("answer_fallback")) if shown else None
++    for key in ("attempts", "prompt_tokens", "completion_tokens", "latency_seconds"):
++        row[f"inference_{key}"] = inference.get(key) if answered else None
++
++
+ def score_trajectory(
+     request: AgentRequest,
+     trajectory: dict[str, Any],
+@@ -38,10 +51,18 @@
+     """
+     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds}], recommended[item_id],
+                  usage{attempts, prompt_tokens, completion_tokens, latency_seconds}, error, truncated,
+-                 tools_available, wall_seconds, reflections, first_attempt_ok}
++                 tools_available, wall_seconds, reflections, first_attempt_ok,
++                 answer_status, answer_grounded, answer_fallback, inference_usage}   (the last four: Inference, see below)
+     `steps` / `recommended` are the FINAL attempt (after plan-reflect), so task_success is "right after fixing";
+     first_attempt_ok is "right without fixing". Trajectories written before plan-reflect: reflections=0, first_attempt_ok=None.
+     Returns one flat row of numbers/bools/None (None = metric not defined for this agent/kind).
++
++    Inference columns (None when the trajectory has no answer: baseline, or a trajectory written before Inference existed):
++      answer_status_<status>     whether the answer had that status (their means are the share of each status)
++      answer_grounded            the answer text passed the grounding checks      (only for status "ok", else None)
++      answer_fallback            the LLM answer was replaced by the template      (only for status "ok", else None)
++      inference_*                tokens / latency / attempts of Inference's own LLM calls, apart from the planner's `usage`
++    None of them is read by task_success, the ranking metrics or any other column above.
+     """
+     agent = trajectory["agent"]
+     is_planner = agent in PLANNER_AGENTS
+@@ -73,6 +94,8 @@
+         "wall_seconds": trajectory.get("wall_seconds"),
+     }
+ 
++    _add_answer_columns(row, trajectory)
++
+     if is_planner:
+         if request.kind == "ambiguous":
+             row["tool_selection_ok"] = asked  # the right plan is "no steps + a question"
+diff -ruN /tmp/p2a/scripts/run_agent_eval.py ./scripts/run_agent_eval.py
+--- /tmp/p2a/scripts/run_agent_eval.py	2026-10-15 03:03:50.305835277 +0000
++++ ./scripts/run_agent_eval.py	2026-10-15 03:03:50.307121012 +0000
+@@ -8,12 +8,19 @@
+   ambiguous                missing information; the right move is to ask back instead of inventing ids
+ Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
+ 
++Inference (final answer, package/inference): after type1 / planner / planner_memory the agent's outcome is turned into a text answer.
++It only PRESENTS what the agent chose, so `recommended`, task_success, recall... are unchanged; the answer is judged by its own columns
++(answer_grounded, answer_fallback, answer_status_*, inference_* tokens/latency, kept apart from the planner's `usage`).
++--inference-mode llm writes the answer with the LLM (checked against the tool data, template fallback; <= 1 + llm_retries extra calls
++per answered request), --inference-mode template is deterministic and calls no LLM. The baseline has no answer.
++
+ Reads splits/mappings from resource/ (data_paths.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
+ Trajectories are appended to a file as they finish, so an interrupted run continues with --resume.
+ Nothing here touches the test split unless you pass --eval-on test.
+ 
+     PYTHONPATH=. python scripts/run_agent_eval.py --per-segment 2          # tiny trial first
+-    PYTHONPATH=. python scripts/run_agent_eval.py --agents baseline,type1  # no LLM calls at all
++    PYTHONPATH=. python scripts/run_agent_eval.py --agents baseline,type1 --inference-mode template   # no LLM calls at all
++    PYTHONPATH=. python scripts/run_agent_eval.py --inference-mode template   # LLM only for the planner, deterministic answers
+     PYTHONPATH=. python scripts/run_agent_eval.py --resume
+ """
+ 
+@@ -33,6 +40,7 @@
+ from package.agents._limits import get_agent_limits
+ from package.agents.evaluation import (
+     AGENTS,
++    INFERENCE_AGENTS,
+     ORACLE_KINDS,
+     PLANNER_AGENTS,
+     AgentRequest,
+@@ -48,6 +56,8 @@
+ from package.data.split import load_splits
+ from package.api import build_llm_provider
+ from package.api._error import LLMProviderError
++from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
++from package.inference._schema import MODES
+ from package.tools import BaselineScorer, ToolCallLogger
+ from package.tools.corpus import build_corpus
+ from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
+@@ -59,6 +69,7 @@
+ SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
+     "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
+     "asked_clarification", "invented_ids", "n_steps", "first_attempt_ok", "reflections", "llm_latency_seconds", "completion_tokens",
++    "answer_status_ok", "answer_grounded", "answer_fallback",
+ )
+ 
+ 
+@@ -68,19 +79,46 @@
+         "plan": [], "ask_user": None, "steps": [], "recommended": [], "usage": {}, "error": None,
+         "provider_error": False, "truncated": False, "wall_seconds": 0.0,
+         "reflections": 0, "first_attempt_ok": None, "reflect_rounds": None,
++        # Inference (None / {} = this agent has no answer, e.g. the baseline); answer_fallback = why the template replaced the LLM text
++        "answer": None, "answer_status": None, "answer_grounded": None, "answer_composer": None, "answer_fallback": None,
++        "answer_reason": None, "inference_usage": {}, "inference_mode": None,
+     }
+ 
+ 
+-def is_resumable(rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int) -> bool:
+-    """A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds."""
++def attach_answer(traj: dict[str, Any], answer: Any, inference_mode: str) -> None:
++    """Copy an Inference Answer into the trajectory; the planner's `usage` and `recommended` are never touched."""
++    traj.update(
++        answer=answer.text, answer_status=answer.status, answer_grounded=answer.grounded, answer_composer=answer.composer,
++        answer_fallback=answer.fallback_reason, answer_reason=answer.reason, inference_usage=dict(answer.usage),
++        inference_mode=inference_mode,
++    )
++
++
++def is_resumable(
++    rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int, inference_mode: str | None = None,
++) -> bool:
++    """
++    A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds.
++    Agents that get an answer (type1, planners) also need the same inference_mode, so LLM and template answers never mix in one
++    experiment; a record without the field was written before Inference existed: it is reused and its answer columns stay empty.
++    """
+     if text_of.get(rec["request_id"]) != rec["text"] or rec["agent"] not in agents:
+         return False
++    if inference_mode is not None and rec["agent"] in INFERENCE_AGENTS and rec.get("inference_mode", inference_mode) != inference_mode:
++        return False
+     return rec["agent"] not in PLANNER_AGENTS or rec.get("reflect_rounds", 0) == reflect_rounds  # no field = before plan-reflect = 0
+ 
+ 
+-def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: int) -> dict[str, Any]:
++def run_planner(
++    executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
++) -> dict[str, Any]:
++    """
++    One planner trajectory. `answerer(AgentOutcome) -> Answer` (compose_answer bound to the LLM and mode) adds the final answer;
++    it runs after the agent's own timing (wall_seconds keeps its old meaning) and never touches recommended / usage.
++    """
+     traj = empty_trajectory(request, agent, sorted(executor.tools))
+     started = time.perf_counter()
++    results: list[dict[str, Any]] = []
+     try:
+         results = executor.run(request.text)
+         traj["steps"] = [
+@@ -96,6 +134,26 @@
+                 usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
+                 first_attempt_ok=executor.last_first_attempt_ok and traj["error"] is None)
+     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
++    if answerer is not None:
++        outcome = outcome_from_plan_results(request.text, results, question=executor.last_question, plan_error=traj["error"])
++        attach_answer(traj, answerer(outcome), inference_mode)
++    return traj
++
++
++def run_type1(
++    runner: Type1Agent, request: AgentRequest, k: int, *, answerer: Any = None, inference_mode: str | None = None,
++) -> dict[str, Any]:
++    """One type1 trajectory (fixed plan, no LLM for the recommendation); `answerer` as in run_planner."""
++    traj = empty_trajectory(request, "type1", [])
++    started = time.perf_counter()
++    out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
++    if out["ok"]:
++        traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
++    else:
++        traj["error"] = f"{out.get('stage')}: {out.get('error')}"
++    traj["wall_seconds"] = round(time.perf_counter() - started, 3)
++    if answerer is not None:
++        attach_answer(traj, answerer(outcome_from_type1(request.text, out)), inference_mode)
+     return traj
+ 
+ 
+@@ -108,11 +166,14 @@
+     ap.add_argument("--agents", help="Danh sách agent, cách nhau dấu phẩy (mặc định: agent_eval.agents)")
+     ap.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
+     ap.add_argument("--reflect-rounds", type=int, help="Số lượt plan-reflect của planner (mặc định: agent.reflect_rounds; 0 = tắt)")
++    ap.add_argument("--inference-mode", choices=list(MODES),
++                    help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
+     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
+     args = ap.parse_args()
+     if args.reflect_rounds is not None and args.reflect_rounds < 0:
+         ap.error("--reflect-rounds must be >= 0")
+     reflect_rounds = get_agent_limits().reflect_rounds if args.reflect_rounds is None else args.reflect_rounds
++    inference_mode = args.inference_mode or get_inference_limits().mode
+ 
+     cfg = load_config("agent/agent_eval")["agent_eval"]
+     baselines = load_config("eval/baselines")["baselines"]
+@@ -158,13 +219,20 @@
+     runners: dict[str, Any] = {}
+     if "type1" in agents:
+         runners["type1"] = Type1Agent(tools.item_cf, tools.reco, tools.query)
+-    if any(a in PLANNER_AGENTS for a in agents):
++    llm = None
++    needs_llm = any(a in PLANNER_AGENTS for a in agents) or (inference_mode == "llm" and any(a in INFERENCE_AGENTS for a in agents))
++    if needs_llm:
+         llm = build_llm_provider(load_config("agent/llm"))
+         if not llm.health_check():
+-            raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
++            raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY "
++                             "(or run with --agents baseline,type1 --inference-mode template)")
++    if any(a in PLANNER_AGENTS for a in agents):
+         runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds)
+         runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds)
+ 
++    def answerer(outcome: Any) -> Any:
++        return compose_answer(outcome, llm, mode=inference_mode)
++
+     # ---- requests (deterministic given the seed) and the trajectory file
+     requests = build_requests(
+         seg_of=seg_of, target_by_user=target_by_user, last_item_of=last_item_of, id2user=id2user, id2item=id2item,
+@@ -182,7 +250,7 @@
+     if args.resume and traj_path.exists():
+         for line in traj_path.read_text(encoding="utf-8").splitlines():
+             rec = json.loads(line)
+-            if is_resumable(rec, text_of, agents, reflect_rounds):  # drop stale records (other text / agent / reflect_rounds)
++            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode):  # drop stale records (other text / agent / reflect_rounds)
+                 done[(rec["request_id"], rec["agent"])] = rec
+     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
+     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
+@@ -206,18 +274,13 @@
+                     trajectories.append(done[key])
+                     continue
+                 if agent in PLANNER_AGENTS:
+-                    traj = run_planner(runners[agent], request, agent, k)
++                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode)
++                elif agent == "type1":
++                    traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
+                 else:
+                     traj = empty_trajectory(request, agent, [])
+                     started = time.perf_counter()
+-                    if agent == "baseline":
+-                        traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
+-                    else:
+-                        out = runners["type1"].recommend(request.user_id, [request.seed_item_id], top_k=k)
+-                        if out["ok"]:
+-                            traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
+-                        else:
+-                            traj["error"] = f"{out.get('stage')}: {out.get('error')}"
++                    traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
+                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
+                 logger.records.clear()
+                 trajectories.append(traj)
+@@ -225,7 +288,8 @@
+                 sink.flush()
+                 errors_in_a_row = errors_in_a_row + 1 if traj["provider_error"] else 0
+                 print(f"[{len(trajectories)}/{total}] {agent:<14} {request.request_id:<22} rec={len(traj['recommended']):>2} "
+-                      f"steps={len(traj['steps'])} {traj['wall_seconds']:.1f}s" + (f"  ERROR {traj['error'][:80]}" if traj["error"] else ""))
++                      f"steps={len(traj['steps'])} {traj['wall_seconds']:.1f}s" +
++                      (f" ans={traj['answer_status']}/{traj['answer_composer']}" + ("!" if traj["answer_fallback"] else "") if traj["answer_status"] else "") + (f"  ERROR {traj['error'][:80]}" if traj["error"] else ""))
+                 if errors_in_a_row >= int(cfg["max_consecutive_llm_errors"]):
+                     raise SystemExit(f"{errors_in_a_row} LLM errors in a row: stopping. Fix the endpoint, then re-run with --resume")
+ 
+@@ -245,6 +309,7 @@
+         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
+                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
++                "inference_mode": inference_mode if any(a in INFERENCE_AGENTS for a in agents) else None,
+                 "llm_model": load_config("agent/llm").get("model")},
+         metrics={"k": k, "summary": summary},
+         seed=seed,
+diff -ruN /tmp/p2a/tests/agents/inference/test_eval_integration.py ./tests/agents/inference/test_eval_integration.py
+--- /tmp/p2a/tests/agents/inference/test_eval_integration.py	1970-01-01 00:00:00.000000000 +0000
++++ ./tests/agents/inference/test_eval_integration.py	2026-10-15 03:03:50.324713812 +0000
+@@ -0,0 +1,224 @@
++"""Inference in the evaluation path: trajectory fields, scoring columns, summary, resume, and one end-to-end scenario."""
++
++import json
++import sys
++
++import pytest
++
++from package.agents import PlanExecutor
++from package.agents.evaluation import INFERENCE_AGENTS, AgentRequest, score_trajectory, summarize
++from package.agents.evaluation._schema import ANSWER_STATUSES
++from package.inference import compose_answer
++from package.inference._schema import STATUSES
++from package.tools import QueryTool
++from tests.agents.test_agent_eval import ITEM2ID, _load_run_agent_eval, _step, _trajectory
++from tests.agents.test_plan_executor import ScriptedLLM, plan
++from tests.agents.inference.helpers import good_reply
++from tests.tools_helpers import VG_A, VG_B
++
++NEW_COLUMNS = ("answer_grounded", "answer_fallback", "inference_attempts", "inference_prompt_tokens",
++               "inference_completion_tokens", "inference_latency_seconds", *(f"answer_status_{s}" for s in STATUSES))
++
++
++def _request(text="t"):
++    return AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text=text, targets=[1])
++
++
++def _answered(status="ok", grounded=True, fallback=None, composer="llm", **kw):
++    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B], **kw)
++    traj.update(answer="text", answer_status=status, answer_grounded=grounded, answer_composer=composer, answer_fallback=fallback,
++                answer_reason=None, inference_mode="llm",
++                inference_usage={"attempts": 2, "prompt_tokens": 40, "completion_tokens": 12, "latency_seconds": 0.7})
++    return traj
++
++
++# ---------------------------------------------------------------- contract between the two packages
++
++def test_answer_statuses_of_the_evaluation_match_the_inference_statuses():
++    assert tuple(ANSWER_STATUSES) == tuple(STATUSES)  # duplicated on purpose: evaluation must not import inference (cycle)
++    assert set(INFERENCE_AGENTS) == {"type1", "planner", "planner_memory"}  # baseline has no answer
++
++
++# ---------------------------------------------------------------- scoring
++
++def test_new_columns_do_not_change_any_existing_column(corpus):
++    bare = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
++    row_bare = score_trajectory(_request(), bare, item2id=ITEM2ID, corpus=corpus, k=2)
++    row_full = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
++    assert {k: v for k, v in row_full.items() if k not in NEW_COLUMNS} == {k: v for k, v in row_bare.items() if k not in NEW_COLUMNS}
++    assert row_full["task_success"] is True and row_full["recall@2"] == row_bare["recall@2"]
++
++
++def test_old_trajectories_without_an_answer_score_with_empty_answer_columns(corpus):
++    row = score_trajectory(_request(), _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A]),
++                           item2id=ITEM2ID, corpus=corpus, k=2)
++    assert all(row[c] is None for c in NEW_COLUMNS)
++
++
++def test_answer_columns_for_an_ok_answer(corpus):
++    row = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
++    assert row["answer_grounded"] is True and row["answer_fallback"] is False
++    assert row["answer_status_ok"] is True and row["answer_status_ask_user"] is False
++    assert (row["inference_attempts"], row["inference_prompt_tokens"], row["inference_completion_tokens"]) == (2, 40, 12)
++    assert row["inference_latency_seconds"] == pytest.approx(0.7)
++
++
++def test_a_fallback_is_counted_and_grounded_is_only_defined_for_ok_answers(corpus):
++    fell_back = score_trajectory(_request(), _answered(fallback="ungrounded: x", composer="template"), item2id=ITEM2ID, corpus=corpus, k=2)
++    assert fell_back["answer_fallback"] is True and fell_back["answer_grounded"] is True
++    err = score_trajectory(_request(), _answered(status="tool_error"), item2id=ITEM2ID, corpus=corpus, k=2)
++    assert err["answer_grounded"] is None and err["answer_fallback"] is None and err["answer_status_tool_error"] is True
++
++
++def test_summarize_averages_the_answer_columns_and_skips_missing():
++    base = {"agent": "planner", "kind": "similar", "segment": "warm"}
++    rows = [
++        {**base, "request_id": "a", "answer_grounded": True, "answer_fallback": False, "answer_status_ok": True, "answer_status_tool_error": False},
++        {**base, "request_id": "b", "answer_grounded": True, "answer_fallback": True, "answer_status_ok": True, "answer_status_tool_error": False},
++        {**base, "request_id": "c", "answer_grounded": None, "answer_fallback": None, "answer_status_ok": False, "answer_status_tool_error": True},
++        {**base, "request_id": "d", "answer_grounded": None, "answer_fallback": None, "answer_status_ok": None, "answer_status_tool_error": None},
++    ]
++    stats = summarize(rows)["planner"]["similar"]["all"]
++    assert stats["answer_grounded"] == 1.0 and stats["answer_fallback"] == 0.5
++    assert stats["answer_status_ok"] == pytest.approx(2 / 3) and stats["answer_status_tool_error"] == pytest.approx(1 / 3)
++
++
++def test_summary_columns_print_the_answer_metrics():
++    columns = _load_run_agent_eval().SUMMARY_COLUMNS
++    assert {"answer_grounded", "answer_fallback", "answer_status_ok"} <= set(columns)
++
++
++# ---------------------------------------------------------------- run_planner / run_type1
++
++def _executor(corpus, *replies):
++    return PlanExecutor(ScriptedLLM(*replies), [QueryTool(corpus)], plan_retries=0, reflect_rounds=0)
++
++
++def _two_items_request():
++    return _request(f"tell me about {VG_A} and {VG_B}")
++
++
++QUERY_PLAN = plan({"tool": "QueryTool", "args": {"item_ids": [VG_A, VG_B]}})
++
++
++def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
++    traj = _load_run_agent_eval().run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
++    assert traj["answer"] is None and traj["answer_status"] is None and traj["inference_usage"] == {} and traj["inference_mode"] is None
++
++
++def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage(corpus):
++    script = _load_run_agent_eval()
++    plain = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
++    infer_llm = ScriptedLLM()
++
++    def answerer(outcome):
++        infer_llm.replies.append(good_reply(outcome.items))
++        return compose_answer(outcome, infer_llm, mode="llm")
++
++    with_answer = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2, answerer=answerer, inference_mode="llm")
++    for key in ("recommended", "plan", "error", "reflections", "first_attempt_ok", "ask_user"):
++        assert with_answer[key] == plain[key], key
++    brief = lambda t: [(s["tool"], s["ok"], s["error"]) for s in t["steps"]]  # latency differs between two runs
++    assert brief(with_answer) == brief(plain)
++    assert {k: v for k, v in with_answer["usage"].items() if k != "latency_seconds"} == {k: v for k, v in plain["usage"].items() if k != "latency_seconds"}
++    assert with_answer["recommended"] == [VG_A, VG_B]
++    assert with_answer["answer_status"] == "ok" and with_answer["answer_composer"] == "llm" and with_answer["answer_grounded"] is True
++    assert with_answer["answer_fallback"] is None and VG_A in with_answer["answer"] and with_answer["inference_mode"] == "llm"
++    assert with_answer["inference_usage"]["attempts"] == 1 and with_answer["usage"]["attempts"] == 1  # two separate ledgers
++    json.dumps(with_answer, ensure_ascii=False)
++
++
++def test_run_planner_answers_even_when_the_plan_failed_and_never_calls_the_llm_for_it(corpus):
++    infer_llm = ScriptedLLM()
++    traj = _load_run_agent_eval().run_planner(
++        _executor(corpus, "nope"), _two_items_request(), "planner", 2,
++        answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
++    assert traj["error"] and traj["answer_status"] == "tool_error" and traj["recommended"] == [] and infer_llm.calls == []
++    assert "planner" not in traj["answer"]
++
++
++def test_run_planner_ask_user_returns_the_question_as_the_answer(corpus):
++    infer_llm = ScriptedLLM()
++    traj = _load_run_agent_eval().run_planner(
++        _executor(corpus, plan(ask_user="Bạn cần loại sản phẩm nào?")), _request("gợi ý sản phẩm hay"), "planner", 2,
++        answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
++    assert traj["answer_status"] == "ask_user" and traj["answer"] == "Bạn cần loại sản phẩm nào?" and infer_llm.calls == []
++
++
++class _FakeType1:
++    def __init__(self, out):
++        self.out = out
++
++    def recommend(self, user_id, seed_items, top_k=10):
++        return self.out
++
++
++def test_run_type1_keeps_the_recommendation_and_adds_the_answer():
++    script = _load_run_agent_eval()
++    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="similar to x", user_id="u1", seed_item_id=VG_A, targets=[1])
++    out = {"ok": True, "cold_start": False, "items": [{"rank": 1, "item_id": VG_B, "score": 0.4, "domain": "Video_Games", "title": "Beta", "price": 3.0}]}
++    traj = script.run_type1(_FakeType1(out), request, 2, answerer=lambda o: compose_answer(o, None, mode="template"), inference_mode="template")
++    assert traj["agent"] == "type1" and traj["recommended"] == [VG_B] and traj["error"] is None and traj["usage"] == {}
++    assert traj["answer_status"] == "ok" and traj["answer_composer"] == "template" and traj["answer_fallback"] is None and VG_B in traj["answer"]
++    failed = script.run_type1(_FakeType1({"ok": False, "stage": "rank", "error": "boom"}), request, 2,
++                              answerer=lambda o: compose_answer(o, None, mode="template"), inference_mode="template")
++    assert failed["error"] == "rank: boom" and failed["recommended"] == [] and failed["answer_status"] == "tool_error"
++    bare = script.run_type1(_FakeType1(out), request, 2)
++    assert bare["recommended"] == [VG_B] and bare["answer"] is None
++
++
++# ---------------------------------------------------------------- resume / CLI
++
++def test_resume_keeps_old_records_and_drops_other_inference_modes():
++    keep = _load_run_agent_eval().is_resumable
++    text_of = {"r0": "hello"}
++    rec = {"request_id": "r0", "agent": "planner", "text": "hello", "reflect_rounds": 0, "inference_mode": "llm"}
++    assert keep(rec, text_of, ["planner"], 0, "llm")
++    assert not keep(rec, text_of, ["planner"], 0, "template")  # LLM and template answers must not be mixed in one experiment
++    old = {k: v for k, v in rec.items() if k != "inference_mode"}  # written before Inference existed: reusable, answer columns stay empty
++    assert keep(old, text_of, ["planner"], 0, "llm") and keep(old, text_of, ["planner"], 0, "template")
++    type1 = {"request_id": "r0", "agent": "type1", "text": "hello", "inference_mode": "llm"}
++    assert keep(type1, text_of, ["type1"], 0, "llm") and not keep(type1, text_of, ["type1"], 0, "template")
++    baseline = {"request_id": "r0", "agent": "baseline", "text": "hello", "inference_mode": None}
++    assert keep(baseline, text_of, ["baseline"], 0, "template")  # no Inference for the baseline
++    assert keep(rec, text_of, ["planner"], 0)  # the old call signature still works
++
++
++def test_inference_mode_is_a_cli_flag(monkeypatch, capsys):
++    script = _load_run_agent_eval()
++    monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--help"])
++    with pytest.raises(SystemExit) as helped:
++        script.main()
++    assert helped.value.code == 0 and "--inference-mode" in capsys.readouterr().out
++    monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--inference-mode", "gpt"])
++    with pytest.raises(SystemExit) as bad:
++        script.main()
++    assert bad.value.code == 2
++
++
++# ---------------------------------------------------------------- end to end: request -> planner -> Inference -> trajectory -> score -> summary
++
++@pytest.mark.parametrize("mode", ["llm", "template"])
++def test_end_to_end_scenario(corpus, mode):
++    script = _load_run_agent_eval()
++    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text=f"similar to {VG_A} and {VG_B}", targets=[1])
++    infer_llm = ScriptedLLM()
++
++    def answerer(outcome):
++        if mode == "llm":
++            infer_llm.replies.append(good_reply(outcome.items))
++        return compose_answer(outcome, infer_llm, mode=mode)
++
++    traj = script.run_planner(_executor(corpus, QUERY_PLAN), request, "planner", 2, answerer=answerer, inference_mode=mode)
++    baseline = script.empty_trajectory(request, "baseline", [])
++    baseline["recommended"] = [VG_A]
++    rows = [score_trajectory(request, t, item2id=ITEM2ID, corpus=corpus, k=2) for t in (traj, baseline)]
++    summary = summarize(rows)
++
++    planner = summary["planner"]["similar"]["all"]
++    assert planner["task_success"] == 1.0 and planner["answer_status_ok"] == 1.0 and planner["answer_grounded"] == 1.0
++    assert planner["answer_fallback"] == 0.0  # mode=template is a choice, not a fallback
++    assert len(infer_llm.calls) == (1 if mode == "llm" else 0)
++    assert planner["inference_attempts"] == (1 if mode == "llm" else 0)
++    assert "answer_grounded" not in summary["baseline"]["similar"]["all"]  # the baseline has no Inference
++    json.dumps(summary)

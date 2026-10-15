@@ -1,0 +1,56 @@
+# Config cho công cụ so sánh thí nghiệm (ablation comparison tool).
+# Framework còn thay đổi, nên đây chỉ là base template - không gắn cứng vào ablation cụ thể.
+# Khi framework ổn định, định nghĩa ablation cụ thể bằng cấu hình ở đây.
+
+ablation:
+  # Số resample bootstrap cho khoảng tin cậy
+  bootstrap_resamples: 10000
+
+  # Mức độ tin cậy (0.95 = 95%)
+  confidence: 0.95
+
+  # Số cặp nhỏ hơn thì in cảnh báo cạnh con số
+  min_n_warn: 20
+
+  # Seed cho bootstrap (để tái lập kết quả)
+  seed: 42
+
+  # Danh sách metric để so sánh (có thể dùng {k} thay bằng giá trị k từ config)
+  # Các metric nhị phân: task_success, first_attempt_ok, tool_selection_ok, asked_clarification
+  # Các metric liên tục: recall@{k}, ndcg@{k}, constraint_satisfaction, reflections, llm_latency_seconds, completion_tokens
+  metrics:
+    - task_success
+    - recall@{k}
+    - ndcg@{k}
+    - constraint_satisfaction
+    - first_attempt_ok
+    - reflections
+    - llm_latency_seconds
+    - completion_tokens
+
+  # Nhóm (group): nhãn -> danh sách các thư mục exp_NNN của cấu hình đó
+  # Ví dụ: config_a là cấu hình có reflect_rounds=0, config_b là reflect_rounds=1
+  # Các thư mục là tương đối experiments_dir/agent_eval/
+  groups: {}
+    # Ví dụ: cấu hình baseline (không reflect, không memory)
+    # config_a: [exp_001]
+
+    # Ví dụ: cấu hình với reflect_rounds=1
+    # config_b: [exp_002, exp_003]  # nhiều lần lặp cho cùng cấu hình
+
+  # Danh sách các contrast để so sánh
+  # Mỗi contrast: name (tên), a (agent, group), b (agent, group), kinds (tuỳ chọn, nếu bỏ thì so tất cả)
+  contrasts:
+    # Ví dụ: so planner với reflect_rounds=0 (config_a) và reflect_rounds=1 (config_b)
+    # - name: example_ab
+    #   a: [planner, config_a]
+    #   b: [planner, config_b]
+
+    # Ví dụ: so type1 và planner trên cùng lần chạy (cùng group)
+    # - name: example_agents_same_run
+    #   a: [type1, config_b]
+    #   b: [planner, config_b]
+    #   kinds: [similar]  # chỉ so kind "similar"
+
+  # Đường dẫn xuất báo cáo (tương đối experiments_dir)
+  output_subdir: "agent_eval/ablation"

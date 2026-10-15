@@ -3,7 +3,7 @@ Type1Agent — agent-assisted recommender, plan cố định, không LLM.
 
 Thứ tự cố định: retrieve (ItemCFTool) -> rank (RecoModelTool) -> fetch (QueryTool).
 LLM ranking để dành làm "improvement room" sau (đã quyết định), bản này chỉ ráp
-lại 3 tool đã test trong tests/agent/tools — không có logic mới cần tin.
+lại 3 tool đã test trong tests/tools — không có logic mới cần tin.
 """
 from __future__ import annotations
 

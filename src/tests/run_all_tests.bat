@@ -21,7 +21,7 @@ set "MAIN_LOG=%LOG_DIR%\test_run_%TIMESTAMP%.log"
 REM Input/output of EVERY test in one file (see tests\results_report.py)
 set "RESULTS_FILE=%LOG_DIR%\test_results_%TIMESTAMP%.md"
 
-REM Move up to src so that tests/config/, tests/data/, tests/agent/ resolve
+REM Move up to src so that tests/config/, tests/data/, tests/agents/ resolve
 cd /d ..
 set PYTHONPATH=.
 

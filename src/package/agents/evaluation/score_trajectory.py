@@ -11,7 +11,7 @@ from ...tools.corpus import ItemCorpus
 from ...tools.evaluation.metrics import ranking_metrics_at_k
 from ._dataclass import AgentRequest
 from ._helper import items_satisfying, items_without_price
-from ._schema import PLANNER_AGENTS, REFERENCE_PLANS
+from ._schema import ANSWER_STATUSES, PLANNER_AGENTS, REFERENCE_PLANS
 
 
 def reference_groups(kind: str, available_tools: set[str]) -> list[tuple[str, ...]]:
@@ -27,6 +27,19 @@ def _follows(called: list[str], groups: list[tuple[str, ...]]) -> bool:
     return position == len(groups)
 
 
+def _add_answer_columns(row: dict[str, Any], trajectory: dict[str, Any]) -> None:
+    status = trajectory.get("answer_status")
+    answered = status is not None
+    shown = status == "ok"
+    inference = trajectory.get("inference_usage") or {}
+    for name in ANSWER_STATUSES:
+        row[f"answer_status_{name}"] = (status == name) if answered else None
+    row["answer_grounded"] = bool(trajectory.get("answer_grounded")) if shown else None
+    row["answer_fallback"] = bool(trajectory.get("answer_fallback")) if shown else None
+    for key in ("attempts", "prompt_tokens", "completion_tokens", "latency_seconds"):
+        row[f"inference_{key}"] = inference.get(key) if answered else None
+
+
 def score_trajectory(
     request: AgentRequest,
     trajectory: dict[str, Any],
@@ -38,10 +51,18 @@ def score_trajectory(
     """
     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds}], recommended[item_id],
                  usage{attempts, prompt_tokens, completion_tokens, latency_seconds}, error, truncated,
-                 tools_available, wall_seconds, reflections, first_attempt_ok}
+                 tools_available, wall_seconds, reflections, first_attempt_ok,
+                 answer_status, answer_grounded, answer_fallback, inference_usage}   (the last four: Inference, see below)
     `steps` / `recommended` are the FINAL attempt (after plan-reflect), so task_success is "right after fixing";
     first_attempt_ok is "right without fixing". Trajectories written before plan-reflect: reflections=0, first_attempt_ok=None.
     Returns one flat row of numbers/bools/None (None = metric not defined for this agent/kind).
+
+    Inference columns (None when the trajectory has no answer: baseline, or a trajectory written before Inference existed):
+      answer_status_<status>     whether the answer had that status (their means are the share of each status)
+      answer_grounded            the answer text passed the grounding checks      (only for status "ok", else None)
+      answer_fallback            the LLM answer was replaced by the template      (only for status "ok", else None)
+      inference_*                tokens / latency / attempts of Inference's own LLM calls, apart from the planner's `usage`
+    None of them is read by task_success, the ranking metrics or any other column above.
     """
     agent = trajectory["agent"]
     is_planner = agent in PLANNER_AGENTS
@@ -72,6 +93,8 @@ def score_trajectory(
         "tool_latency_seconds": sum(s.get("latency_seconds", 0.0) for s in steps) if is_planner else None,
         "wall_seconds": trajectory.get("wall_seconds"),
     }
+
+    _add_answer_columns(row, trajectory)
 
     if is_planner:
         if request.kind == "ambiguous":

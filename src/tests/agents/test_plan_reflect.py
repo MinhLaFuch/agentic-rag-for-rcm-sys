@@ -8,7 +8,7 @@ from package.config.loader import ConfigError
 from package.tools import QueryTool, SQLTool
 from package.tools.base import Tool
 from package.tools.corpus import _error as corpus_error
-from tests.agent.test_plan_executor import ScriptedLLM, plan
+from tests.agents.test_plan_executor import ScriptedLLM, plan
 from tests.tools_helpers import VG_A
 
 GOOD = {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}

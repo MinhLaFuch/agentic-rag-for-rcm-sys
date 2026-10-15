@@ -15,8 +15,8 @@ from package.inference import (
 )
 from package.inference._helper import check_grounding
 from package.tools import QueryTool
-from tests.agent.test_plan_executor import plan
-from tests.inference.helpers import FailingLLM, ScriptedLLM, good_reply, item, outcome, reply
+from tests.agents.test_plan_executor import plan
+from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, good_reply, item, outcome, reply
 from tests.tools_helpers import VG_A, VG_B
 
 A, B, C = "Video_Games::a", "Video_Games::b", "Electronics::c"

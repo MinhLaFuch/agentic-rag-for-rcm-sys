@@ -231,7 +231,7 @@ def test_run_planner_records_reflections_and_the_last_attempt(corpus):
 
     from package.agents import PlanExecutor
     from package.tools import SQLTool
-    from tests.agent.test_plan_executor import ScriptedLLM
+    from tests.agents.test_plan_executor import ScriptedLLM
 
     script = _load_run_agent_eval()
     bad = {"tool": "SQLTool", "args": {"category": "Games"}}
@@ -248,7 +248,7 @@ def test_run_planner_records_reflections_and_the_last_attempt(corpus):
 def test_run_planner_marks_an_unparsable_plan_as_not_ok_first_time(corpus):
     from package.agents import PlanExecutor
     from package.tools import SQLTool
-    from tests.agent.test_plan_executor import ScriptedLLM
+    from tests.agents.test_plan_executor import ScriptedLLM
 
     executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=1)
     traj = _load_run_agent_eval().run_planner(executor, _similar_request(), "planner", 2)

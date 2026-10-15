@@ -3,6 +3,10 @@
 SEGMENTS = ("cold", "sparse", "warm")
 AGENTS = ("baseline", "type1", "planner", "planner_memory")
 PLANNER_AGENTS = ("planner", "planner_memory")
+INFERENCE_AGENTS = ("type1", "planner", "planner_memory")  # agents whose result is turned into an answer (the baseline has none)
+# Statuses of an Inference answer. Same as package.inference._schema.STATUSES (a test keeps them equal); duplicated because
+# package.inference imports this package, so importing it back would be a cycle.
+ANSWER_STATUSES = ("ok", "ask_user", "no_result", "tool_error")
 
 # request kind -> user segments it is drawn from ("none" = no user in the request)
 KIND_SEGMENTS = {

@@ -8,12 +8,19 @@ listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent
   ambiguous                missing information; the right move is to ask back instead of inventing ids
 Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
 
+Inference (final answer, package/inference): after type1 / planner / planner_memory the agent's outcome is turned into a text answer.
+It only PRESENTS what the agent chose, so `recommended`, task_success, recall... are unchanged; the answer is judged by its own columns
+(answer_grounded, answer_fallback, answer_status_*, inference_* tokens/latency, kept apart from the planner's `usage`).
+--inference-mode llm writes the answer with the LLM (checked against the tool data, template fallback; <= 1 + llm_retries extra calls
+per answered request), --inference-mode template is deterministic and calls no LLM. The baseline has no answer.
+
 Reads splits/mappings from resource/ (data_paths.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
 Trajectories are appended to a file as they finish, so an interrupted run continues with --resume.
 Nothing here touches the test split unless you pass --eval-on test.
 
     PYTHONPATH=. python scripts/run_agent_eval.py --per-segment 2          # tiny trial first
-    PYTHONPATH=. python scripts/run_agent_eval.py --agents baseline,type1  # no LLM calls at all
+    PYTHONPATH=. python scripts/run_agent_eval.py --agents baseline,type1 --inference-mode template   # no LLM calls at all
+    PYTHONPATH=. python scripts/run_agent_eval.py --inference-mode template   # LLM only for the planner, deterministic answers
     PYTHONPATH=. python scripts/run_agent_eval.py --resume
 """
 
@@ -33,6 +40,7 @@ from package.agents import PlanExecutor, Type1Agent, build_tools
 from package.agents._limits import get_agent_limits
 from package.agents.evaluation import (
     AGENTS,
+    INFERENCE_AGENTS,
     ORACLE_KINDS,
     PLANNER_AGENTS,
     AgentRequest,
@@ -48,6 +56,8 @@ from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api._error import LLMProviderError
+from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
+from package.inference._schema import MODES
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
@@ -59,6 +69,7 @@ ERROR_CHARS = 300  # step/plan errors are cut to this many characters in the tra
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
     "asked_clarification", "invented_ids", "n_steps", "first_attempt_ok", "reflections", "llm_latency_seconds", "completion_tokens",
+    "answer_status_ok", "answer_grounded", "answer_fallback",
 )
 
 
@@ -68,19 +79,46 @@ def empty_trajectory(request: AgentRequest, agent: str, tools_available: list[st
         "plan": [], "ask_user": None, "steps": [], "recommended": [], "usage": {}, "error": None,
         "provider_error": False, "truncated": False, "wall_seconds": 0.0,
         "reflections": 0, "first_attempt_ok": None, "reflect_rounds": None,
+        # Inference (None / {} = this agent has no answer, e.g. the baseline); answer_fallback = why the template replaced the LLM text
+        "answer": None, "answer_status": None, "answer_grounded": None, "answer_composer": None, "answer_fallback": None,
+        "answer_reason": None, "inference_usage": {}, "inference_mode": None,
     }
 
 
-def is_resumable(rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int) -> bool:
-    """A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds."""
+def attach_answer(traj: dict[str, Any], answer: Any, inference_mode: str) -> None:
+    """Copy an Inference Answer into the trajectory; the planner's `usage` and `recommended` are never touched."""
+    traj.update(
+        answer=answer.text, answer_status=answer.status, answer_grounded=answer.grounded, answer_composer=answer.composer,
+        answer_fallback=answer.fallback_reason, answer_reason=answer.reason, inference_usage=dict(answer.usage),
+        inference_mode=inference_mode,
+    )
+
+
+def is_resumable(
+    rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int, inference_mode: str | None = None,
+) -> bool:
+    """
+    A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds.
+    Agents that get an answer (type1, planners) also need the same inference_mode, so LLM and template answers never mix in one
+    experiment; a record without the field was written before Inference existed: it is reused and its answer columns stay empty.
+    """
     if text_of.get(rec["request_id"]) != rec["text"] or rec["agent"] not in agents:
+        return False
+    if inference_mode is not None and rec["agent"] in INFERENCE_AGENTS and rec.get("inference_mode", inference_mode) != inference_mode:
         return False
     return rec["agent"] not in PLANNER_AGENTS or rec.get("reflect_rounds", 0) == reflect_rounds  # no field = before plan-reflect = 0
 
 
-def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: int) -> dict[str, Any]:
+def run_planner(
+    executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
+) -> dict[str, Any]:
+    """
+    One planner trajectory. `answerer(AgentOutcome) -> Answer` (compose_answer bound to the LLM and mode) adds the final answer;
+    it runs after the agent's own timing (wall_seconds keeps its old meaning) and never touches recommended / usage.
+    """
     traj = empty_trajectory(request, agent, sorted(executor.tools))
     started = time.perf_counter()
+    results: list[dict[str, Any]] = []
     try:
         results = executor.run(request.text)
         traj["steps"] = [
@@ -96,6 +134,26 @@ def run_planner(executor: PlanExecutor, request: AgentRequest, agent: str, k: in
                 usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
                 first_attempt_ok=executor.last_first_attempt_ok and traj["error"] is None)
     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
+    if answerer is not None:
+        outcome = outcome_from_plan_results(request.text, results, question=executor.last_question, plan_error=traj["error"])
+        attach_answer(traj, answerer(outcome), inference_mode)
+    return traj
+
+
+def run_type1(
+    runner: Type1Agent, request: AgentRequest, k: int, *, answerer: Any = None, inference_mode: str | None = None,
+) -> dict[str, Any]:
+    """One type1 trajectory (fixed plan, no LLM for the recommendation); `answerer` as in run_planner."""
+    traj = empty_trajectory(request, "type1", [])
+    started = time.perf_counter()
+    out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    if out["ok"]:
+        traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
+    else:
+        traj["error"] = f"{out.get('stage')}: {out.get('error')}"
+    traj["wall_seconds"] = round(time.perf_counter() - started, 3)
+    if answerer is not None:
+        attach_answer(traj, answerer(outcome_from_type1(request.text, out)), inference_mode)
     return traj
 
 
@@ -108,11 +166,14 @@ def main() -> None:
     ap.add_argument("--agents", help="Danh sách agent, cách nhau dấu phẩy (mặc định: agent_eval.agents)")
     ap.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
     ap.add_argument("--reflect-rounds", type=int, help="Số lượt plan-reflect của planner (mặc định: agent.reflect_rounds; 0 = tắt)")
+    ap.add_argument("--inference-mode", choices=list(MODES),
+                    help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
     reflect_rounds = get_agent_limits().reflect_rounds if args.reflect_rounds is None else args.reflect_rounds
+    inference_mode = args.inference_mode or get_inference_limits().mode
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
@@ -158,12 +219,19 @@ def main() -> None:
     runners: dict[str, Any] = {}
     if "type1" in agents:
         runners["type1"] = Type1Agent(tools.item_cf, tools.reco, tools.query)
-    if any(a in PLANNER_AGENTS for a in agents):
+    llm = None
+    needs_llm = any(a in PLANNER_AGENTS for a in agents) or (inference_mode == "llm" and any(a in INFERENCE_AGENTS for a in agents))
+    if needs_llm:
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
-            raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY (or run with --agents baseline,type1)")
+            raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY "
+                             "(or run with --agents baseline,type1 --inference-mode template)")
+    if any(a in PLANNER_AGENTS for a in agents):
         runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds)
         runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds)
+
+    def answerer(outcome: Any) -> Any:
+        return compose_answer(outcome, llm, mode=inference_mode)
 
     # ---- requests (deterministic given the seed) and the trajectory file
     requests = build_requests(
@@ -182,7 +250,7 @@ def main() -> None:
     if args.resume and traj_path.exists():
         for line in traj_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
-            if is_resumable(rec, text_of, agents, reflect_rounds):  # drop stale records (other text / agent / reflect_rounds)
+            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode):  # drop stale records (other text / agent / reflect_rounds)
                 done[(rec["request_id"], rec["agent"])] = rec
     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
@@ -206,18 +274,13 @@ def main() -> None:
                     trajectories.append(done[key])
                     continue
                 if agent in PLANNER_AGENTS:
-                    traj = run_planner(runners[agent], request, agent, k)
+                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode)
+                elif agent == "type1":
+                    traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
                 else:
                     traj = empty_trajectory(request, agent, [])
                     started = time.perf_counter()
-                    if agent == "baseline":
-                        traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
-                    else:
-                        out = runners["type1"].recommend(request.user_id, [request.seed_item_id], top_k=k)
-                        if out["ok"]:
-                            traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
-                        else:
-                            traj["error"] = f"{out.get('stage')}: {out.get('error')}"
+                    traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
                 trajectories.append(traj)
@@ -225,7 +288,8 @@ def main() -> None:
                 sink.flush()
                 errors_in_a_row = errors_in_a_row + 1 if traj["provider_error"] else 0
                 print(f"[{len(trajectories)}/{total}] {agent:<14} {request.request_id:<22} rec={len(traj['recommended']):>2} "
-                      f"steps={len(traj['steps'])} {traj['wall_seconds']:.1f}s" + (f"  ERROR {traj['error'][:80]}" if traj["error"] else ""))
+                      f"steps={len(traj['steps'])} {traj['wall_seconds']:.1f}s" +
+                      (f" ans={traj['answer_status']}/{traj['answer_composer']}" + ("!" if traj["answer_fallback"] else "") if traj["answer_status"] else "") + (f"  ERROR {traj['error'][:80]}" if traj["error"] else ""))
                 if errors_in_a_row >= int(cfg["max_consecutive_llm_errors"]):
                     raise SystemExit(f"{errors_in_a_row} LLM errors in a row: stopping. Fix the endpoint, then re-run with --resume")
 
@@ -245,6 +309,7 @@ def main() -> None:
         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
+                "inference_mode": inference_mode if any(a in INFERENCE_AGENTS for a in agents) else None,
                 "llm_model": load_config("agent/llm").get("model")},
         metrics={"k": k, "summary": summary},
         seed=seed,
