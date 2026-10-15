@@ -18,7 +18,7 @@ class DataPaths:
     filtered_dir: Path
     mapped_dir: Path
     splits_dir: Path
-    log_dir: Path  # pipeline/tool logs: resource/logs/<tag>/ (NOT experiment results, NOT test logs)
+    log_dir: Path  # pipeline/tool logs: experiments/logs/<tag>/ (NOT experiment results, NOT test logs)
     experiments_dir: Path  # experiment artifacts: experiments/exp_NNN/
 
     def review_path(self, domain: str) -> Path:

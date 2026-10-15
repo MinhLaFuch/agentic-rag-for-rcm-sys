@@ -18,7 +18,7 @@ class RecoModelTool(Tool):
 
     Leakage: the tool has no timestamp; the "as-of" time is fixed by which
     interactions the scorer's model was fitted on (train for validation runs,
-    train+validation for test runs, as in scripts/run_baselines.py).
+    train+validation for test runs, as in scripts/evaluation/run_baselines.py).
 
     """
 

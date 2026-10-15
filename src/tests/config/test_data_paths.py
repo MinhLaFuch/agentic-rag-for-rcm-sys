@@ -24,7 +24,7 @@ def test_data_paths_layout_is_under_resource():
 
 def test_logs_and_experiments_are_separate_semantic_dirs():
     paths = get_data_paths()
-    assert paths.log_dir == PROJECT_ROOT / "resource/logs/multi_domain"  # pipeline/tool logs
+    assert paths.log_dir == PROJECT_ROOT / "experiments/logs/multi_domain"  # pipeline/tool logs
     assert paths.experiments_dir == PROJECT_ROOT / "experiments"  # experiment artifacts
     assert paths.log_dir != paths.experiments_dir
     assert PROJECT_ROOT / "tests" / "logs" not in (paths.log_dir, paths.experiments_dir)  # test logs are not configured here
@@ -62,7 +62,7 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
     assert run("path:raw_dir") == (0, ["resource/raw"])
     assert run("path:filtered_path") == (0, ["resource/filtered/multi_domain/interactions.parquet"])
     assert run("--tag", "vg_toys", "path:splits_dir") == (0, ["resource/splits/vg_toys"])
-    assert run("--tag", "vg_toys", "path:log_dir") == (0, ["resource/logs/vg_toys"])
+    assert run("--tag", "vg_toys", "path:log_dir") == (0, ["experiments/logs/vg_toys"])
     assert run("path:experiments_dir") == (0, ["experiments"])
     assert run("path:review_path:Video_Games") == (0, ["resource/raw/Video_Games.jsonl.gz"])
     assert run("path:meta_path:Video_Games") == (0, ["resource/raw/meta_Video_Games.jsonl.gz"])

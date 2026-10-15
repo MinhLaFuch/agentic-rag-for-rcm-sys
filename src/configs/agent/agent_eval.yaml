@@ -1,4 +1,4 @@
-# Agent evaluation config (mục XVI, XVII, XVIII, XX). Dùng bởi scripts/run_agent_eval.py.
+# Agent evaluation config (mục XVI, XVII, XVIII, XX). Dùng bởi scripts/evaluation/run_agent_eval.py.
 # LLM lấy từ llm.yaml, giới hạn executor từ agent.yaml, ItemKNN k + seed từ baselines.yaml,
 # ngưỡng cold/sparse/warm từ segment_thresholds.yaml.
 

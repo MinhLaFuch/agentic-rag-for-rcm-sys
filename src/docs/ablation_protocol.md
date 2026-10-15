@@ -235,14 +235,14 @@ McNemar test chỉ chính xác khi có đủ cặp không nhất quán (b + c �
 
 ```powershell
 $env:PYTHONPATH="."
-python scripts/compare_experiments.py
+python scripts/experiments/compare_experiments.py
 ```
 
 ### Chạy với config file khác
 
 ```powershell
 $env:PYTHONPATH="."
-python scripts/compare_experiments.py --config agent/ablation_custom
+python scripts/experiments/compare_experiments.py --config agent/ablation_custom
 ```
 
 ### Kết quả đầu ra

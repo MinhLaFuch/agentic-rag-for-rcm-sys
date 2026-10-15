@@ -1,7 +1,7 @@
 # Inference contract: tầng sinh câu trả lời cuối
 
 Trạng thái: **đã duyệt D1, D2, D4, D8, D9; hoãn D5, D6, D10 (chưa có thí nghiệm); D3 và D7 chờ xác nhận lần cuối (Giai đoạn 0, chưa có code)**.
-Phạm vi: `package/inference/` (hiện là stub rỗng), `configs/agent/inference.yaml` (mới), điểm nối ở `scripts/run_agent_eval.py` (Giai đoạn 2).
+Phạm vi: `package/inference/` (hiện là stub rỗng), `configs/agent/inference.yaml` (mới), điểm nối ở `scripts/evaluation/run_agent_eval.py` (Giai đoạn 2).
 Mốc trước khi sửa: `pytest tests -q` = **811 passed** (7.35 s trên bản `src.zip` đã đọc); `python3 -m pyflakes package scripts` = 10 dòng cảnh báo có sẵn (không do tầng này).
 
 ## 1. Mục tiêu và nguyên tắc

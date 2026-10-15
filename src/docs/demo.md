@@ -33,7 +33,7 @@ Dùng cho demo khi không có dữ liệu thật, không có mạng, hoặc LLM 
 
 ```powershell
 $env:PYTHONPATH="."
-python scripts/run_demo.py --mock
+python scripts/demo/run_demo.py --mock
 ```
 
 Server sẽ chạy tại `http://127.0.0.1:7860` (mặc định). Trình duyệt sẽ tự động mở.
@@ -50,7 +50,7 @@ Thay `YOUR_API_KEY_HERE` bằng API key thật của bạn (không chia sẻ ho�
 **Bước 2: Chạy demo**
 ```powershell
 $env:PYTHONPATH="."
-python scripts/run_demo.py --tag v1 --domain Video_Games
+python scripts/demo/run_demo.py --tag v1 --domain Video_Games
 ```
 
 Các tùy chọn thêm:
@@ -63,10 +63,10 @@ Các tùy chọn thêm:
 **Ví dụ:**
 ```powershell
 # Chạy với domain Video_Games và Toys_and_Games
-python scripts/run_demo.py --tag v1 --domain Video_Games --domain Toys_and_Games
+python scripts/demo/run_demo.py --tag v1 --domain Video_Games --domain Toys_and_Games
 
 # Chạy với port khác
-python scripts/run_demo.py --mock --port 8080
+python scripts/demo/run_demo.py --mock --port 8080
 ```
 
 ## Thời gian khởi động dự kiến
@@ -164,7 +164,7 @@ Nếu gặp lỗi khi chạy chế độ thật (thiếu dữ liệu, LLM không
 ```powershell
 # Dừng server hiện tại (Ctrl+C)
 # Chạy lại với --mock
-python scripts/run_demo.py --mock
+python scripts/demo/run_demo.py --mock
 ```
 
 Mock mode sẽ:
@@ -248,7 +248,7 @@ ERROR: LLM health check failed
    ```
 3. Hoặc chạy với `--mock`:
    ```powershell
-   python scripts/run_demo.py --mock
+   python scripts/demo/run_demo.py --mock
    ```
 
 ### Lỗi "LIVEBACKEND INITIALIZATION FAILED"
@@ -263,7 +263,7 @@ Reason: ...
 - Mapping không có format `Domain::asin`
 
 **Giải pháp:**
-1. Kiểm tra dữ liệu đã được xử lý (xem `scripts/stage1_clean_domain.py`, `stage2_merge_filter.py`, `stage3_map_split.py`)
+1. Kiểm tra dữ liệu đã được xử lý (xem `scripts/data_pipeline/stage1_clean_domain.py`, `scripts/data_pipeline/stage2_merge_filter.py`, `scripts/data_pipeline/stage3_map_split.py`)
 2. Kiểm tra tag và domain
 3. Chạy với `--mock` để demo không cần dữ liệu
 
@@ -276,7 +276,7 @@ RuntimeError: Mapping has plain item ids; need namespaced 'Domain::asin' ids
 - Mapping cũ chưa chạy qua stage3 (chưa thêm prefix domain)
 
 **Giải pháp:**
-1. Chạy lại stage3: `python scripts/stage3_map_split.py`
+1. Chạy lại stage3: `python scripts/data_pipeline/stage3_map_split.py`
 2. Hoặc dùng tag có mapping mới
 
 ## Tài liệu liên quan

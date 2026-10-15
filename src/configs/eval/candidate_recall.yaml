@@ -1,5 +1,5 @@
 # Candidate recall config (mục IX, X, XX).
-# Dùng bởi scripts/candidate_recall.py. k của ItemKNN lấy từ baselines.yaml
+# Dùng bởi scripts/evaluation/candidate_recall.py. k của ItemKNN lấy từ baselines.yaml
 # (baselines.item_knn.k) và seed lấy từ baselines.seed.
 
 candidate_recall:

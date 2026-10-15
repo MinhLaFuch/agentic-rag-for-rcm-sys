@@ -3,9 +3,14 @@
 # Đường dẫn tương đối so với gốc project (thư mục chứa configs/).
 #
 # Thư mục có phân biệt ngữ nghĩa — KHÔNG gộp:
-#   resource/…       dữ liệu pipeline + log của pipeline/tool
-#   experiments/     kết quả thí nghiệm (exp_NNN/{config.yaml,metrics.json,README.md})
-#   tests/logs/      log của test (do tests/run_*.sh ghi, không thuộc cấu hình này)
+#   resource/…       dữ liệu pipeline (raw, cleaned, filtered, mapped, splits)
+#   experiments/     kết quả thí nghiệm + tất cả log (exp_NNN/, logs/, test_logs/)
+#   experiments/logs/ log của pipeline/tool (stage logs, run_tools.log, etc.)
+#   experiments/test_logs/ log của test
+#   experiments/baselines/ thí nghiệm baseline model
+#   experiments/agent_eval/ thí nghiệm agent evaluation
+#   experiments/data_pipeline/ thí nghiệm data pipeline
+#   experiments/smoke_tests/ thí nghiệm smoke test
 
 paths:
   raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
@@ -13,5 +18,5 @@ paths:
   filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
   mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
   splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
-  log_dir: "resource/logs"           # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log)
+  log_dir: "experiments/logs"       # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
   experiments_dir: "experiments"     # exp_NNN/… (baselines, tuning); candidate_recall ghi vào <experiments_dir>/<experiments_subdir>
