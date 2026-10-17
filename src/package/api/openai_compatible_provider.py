@@ -22,7 +22,7 @@ import time
 import urllib.error
 import urllib.request
 
-from .base import LLMProvider
+from .llm_provider import LLMProvider
 from ._dataclass import LLMMessage, LLMResponse
 from ._error import LLMProviderError
 

@@ -6,7 +6,7 @@ import json
 from typing import Any
 
 from package.api._error import LLMProviderError
-from package.api.base import LLMProvider
+from package.api.llm_provider import LLMProvider
 from package.inference import AgentOutcome
 from tests.agents.test_plan_executor import ScriptedLLM
 

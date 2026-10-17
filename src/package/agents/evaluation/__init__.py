@@ -3,7 +3,8 @@ from ._helper import items_satisfying, items_without_price
 from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
 from .build_requests import build_requests
 from .extract_recommendations import extract_recommendations
-from .score_trajectory import reference_groups, score_trajectory
+from .reference_groups import reference_groups
+from .score_trajectory import score_trajectory
 from .summarize import summarize
 
 __all__ = [

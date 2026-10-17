@@ -5,7 +5,7 @@ from typing import Any
 
 from ._constants import PROJECT_ROOT
 from ._dataclass import DataPaths
-from .loader import load_config
+from .load_config import load_config
 
 
 def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None) -> DataPaths:

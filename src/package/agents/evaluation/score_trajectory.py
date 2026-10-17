@@ -11,12 +11,8 @@ from ...tools.corpus import ItemCorpus
 from ...tools.evaluation.metrics import ranking_metrics_at_k
 from ._dataclass import AgentRequest
 from ._helper import items_satisfying, items_without_price
-from ._schema import ANSWER_STATUSES, PLANNER_AGENTS, REFERENCE_PLANS
-
-
-def reference_groups(kind: str, available_tools: set[str]) -> list[tuple[str, ...]]:
-    groups = (tuple(t for t in group if t in available_tools) for group in REFERENCE_PLANS[kind])
-    return [g for g in groups if g]
+from ._schema import ANSWER_STATUSES, PLANNER_AGENTS
+from .reference_groups import reference_groups
 
 
 def _follows(called: list[str], groups: list[tuple[str, ...]]) -> bool:

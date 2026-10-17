@@ -1,7 +1,7 @@
 import pytest
 
-from package.api.base import LLMProvider
-from package.api.factory import build_llm_provider
+from package.api.llm_provider import LLMProvider
+from package.api.build_llm_provider import build_llm_provider
 from package.api import OpenAICompatibleProvider
 
 

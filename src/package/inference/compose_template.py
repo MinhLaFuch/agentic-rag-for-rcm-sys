@@ -3,12 +3,8 @@ from __future__ import annotations
 from ._dataclass import AgentOutcome, Answer
 from ._helper import cut_title
 from ._prompt import ID_ONLY_NOTE, NO_RESULT_TEXT, OK_HEADER, PARTIAL_HEADER, TOOL_ERROR_TEXT
-from ._schema import USAGE_KEYS
 from .classify_outcome import classify_outcome
-
-
-def empty_usage() -> dict[str, float]:
-    return {key: 0.0 if key == "latency_seconds" else 0 for key in USAGE_KEYS}
+from .empty_usage import empty_usage
 
 
 def _item_lines(number: int, item: dict) -> list[str]:

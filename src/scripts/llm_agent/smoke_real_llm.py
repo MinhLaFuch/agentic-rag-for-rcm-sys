@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 
 from package.agents import PlanExecutor, build_tools
-from package.config.loader import load_config
+from package.config.load_config import load_config
 from package.api import build_llm_provider
 from package.api._error import LLMProviderError
 from package.tools import BaselineScorer, ItemCorpus

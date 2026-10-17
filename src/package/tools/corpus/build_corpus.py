@@ -9,7 +9,7 @@ import pandas as pd
 from package.data import namespaced_item_id
 from package.data.loader import load_item_metadata
 
-from .corpus import ItemCorpus
+from .item_corpus import ItemCorpus
 from ._schema import COVERAGE_SAMPLE
 
 

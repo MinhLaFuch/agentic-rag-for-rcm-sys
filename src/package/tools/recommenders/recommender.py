@@ -3,7 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
+
+from .build_interaction_matrix import build_interaction_matrix
 
 
 def _prepare_train_matrix(train_matrix) -> sp.csr_matrix:
@@ -37,7 +40,13 @@ class Recommender(ABC):
         self.num_items = 0
         self.train_matrix: sp.csr_matrix | None = None
 
-    def fit(self, train_matrix: sp.csr_matrix) -> "Recommender":
+    def fit(self, train_matrix: sp.csr_matrix | pd.DataFrame) -> "Recommender":
+        if isinstance(train_matrix, pd.DataFrame):
+            if not {"user_idx", "item_idx"}.issubset(train_matrix.columns):
+                raise ValueError("DataFrame input for fit() must include user_idx and item_idx columns")
+            num_users = int(train_matrix["user_idx"].max()) + 1 if not train_matrix.empty else 0
+            num_items = int(train_matrix["item_idx"].max()) + 1 if not train_matrix.empty else 0
+            train_matrix = build_interaction_matrix(train_matrix, num_users, num_items)
         self.train_matrix = _prepare_train_matrix(train_matrix)
         self.num_users, self.num_items = self.train_matrix.shape
         self._fit(self.train_matrix)
@@ -59,10 +68,10 @@ class Recommender(ABC):
 
     def recommend(
         self,
-        user_idxs: np.ndarray,
+        user_idxs: int | np.ndarray,
         k: int,
         exclude: sp.csr_matrix | None = None,
-    ) -> np.ndarray:
+    ) -> np.ndarray | list[int]:
         """
         Top-k item cho mỗi user, đã loại item trong `exclude` (thường là
         toàn bộ lịch sử đã thấy). Trả về (len(user_idxs), k) đã sắp giảm dần theo điểm.
@@ -91,15 +100,18 @@ class Recommender(ABC):
             raise ValueError(f"k must be in [1, num_items={self.num_items}] and an integer, got {k!r}")
         k = int(k)
 
-        # Validate user_idxs
-        if not isinstance(user_idxs, np.ndarray):
-            raise TypeError("user_idxs must be a numpy array")
-        if user_idxs.ndim != 1:
-            raise ValueError("user_idxs must be 1-dimensional")
-        if len(user_idxs) == 0:
-            raise ValueError("user_idxs cannot be empty")
-        if not np.issubdtype(user_idxs.dtype, np.integer):
-            raise TypeError(f"user_idxs must be an integer array, got dtype {user_idxs.dtype}")
+        scalar = isinstance(user_idxs, (int, np.integer)) and not isinstance(user_idxs, (bool, np.bool_))
+        if scalar:
+            user_idxs = np.asarray([int(user_idxs)], dtype=np.int64)
+        else:
+            if not isinstance(user_idxs, np.ndarray):
+                raise TypeError("user_idxs must be a numpy array or integer")
+            if user_idxs.ndim != 1:
+                raise ValueError("user_idxs must be 1-dimensional")
+            if len(user_idxs) == 0:
+                raise ValueError("user_idxs cannot be empty")
+            if not np.issubdtype(user_idxs.dtype, np.integer):
+                raise TypeError(f"user_idxs must be an integer array, got dtype {user_idxs.dtype}")
         if np.any(user_idxs < 0) or np.any(user_idxs >= self.num_users):
             raise ValueError(
                 f"user_idxs must be in [0, num_users={self.num_users}), "
@@ -165,4 +177,6 @@ class Recommender(ABC):
             valid_items = ranked[i][valid_mask_result[i]]
             result[i, :len(valid_items)] = valid_items
 
+        if scalar:
+            return result[0].tolist()
         return result

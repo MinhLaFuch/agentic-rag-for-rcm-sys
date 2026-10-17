@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
-from package.config.loader import ConfigError, load_config
+from package.config.load_config import ConfigError, load_config
 
 
 @dataclass(frozen=True)

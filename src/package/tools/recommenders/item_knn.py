@@ -3,17 +3,27 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from .base import Recommender
+from .baseline_item_knn import BaselineItemKNNRecommender
+from .recommender import Recommender
 
 
-class ItemKNNRecommender(Recommender):
+class ItemKNNRecommender(BaselineItemKNNRecommender):
+    """Legacy DataFrame-based item-kNN recommender."""
+
+    pass
+
+
+class ItemKNNMatrixRecommender(Recommender):
     name = "item_knn"
 
-    def __init__(self, k: int = 50, block_elements: int = 20_000_000) -> None:
+    def __init__(self, k: int = 50, neighbors: int | None = None, block_elements: int = 20_000_000) -> None:
         super().__init__()
+        if neighbors is not None:
+            k = neighbors
         if k <= 0:
             raise ValueError("k must be positive")
-        self.k = k
+        self.k = int(k)
+        self.neighbors = self.k
         self.block_elements = block_elements
         self.similarity: sp.csr_matrix | None = None  # (items x items), hàng i = láng giềng của i
 

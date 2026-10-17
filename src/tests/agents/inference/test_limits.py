@@ -2,7 +2,7 @@
 
 import pytest
 
-from package.config.loader import ConfigError, load_config
+from package.config.load_config import ConfigError, load_config
 from package.inference import _limits
 
 

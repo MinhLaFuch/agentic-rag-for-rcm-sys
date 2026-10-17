@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from package.tools.corpus import build_corpus
-from package.tools.evaluation import segment_users, select_fit_target, parameter_grid
+from package.tools.evaluation import segment_users_by_history, select_fit_target, parameter_grid
 
 
 def _frames():

@@ -43,7 +43,7 @@ from package.tools import ItemCFTool, SemanticSearchTool
 from package.tools._limits import MAX_CANDIDATES
 from package.tools.base import ToolCallLogger
 from package.tools.corpus import build_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
+from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import build_interaction_matrix
 from package.tools.recommenders.item_knn import ItemKNNRecommender
 from package.utils.console import ensure_utf8_stdout
@@ -149,7 +149,7 @@ def main() -> None:
     fit_matrix = build_interaction_matrix(fit_df, num_users, num_items)
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.diff(fit_matrix.indptr)
-    seg_of = segment_users(target_by_user, hist_size, sparse_max)
+    seg_of = segment_users_by_history(target_by_user, hist_size, sparse_max)
     # most-recent-first fit items per user (needs a timestamp column; falls back to file order)
     fit_sorted = fit_df.sort_values("timestamp") if "timestamp" in fit_df.columns else fit_df
     recent = fit_sorted.groupby("user_idx")["item_idx"].apply(lambda s: list(s)[::-1]).to_dict()

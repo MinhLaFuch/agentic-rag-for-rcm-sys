@@ -6,7 +6,7 @@ import yaml
 
 from package.config import get_data_paths
 from package.config._constants import CONFIG_DIR
-from package.config.loader import ConfigError, load_config
+from package.config.load_config import ConfigError, load_config
 
 
 def test_data_config_has_domains_and_resource_paths():

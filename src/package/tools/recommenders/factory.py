@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from .base import Recommender
+from .recommender import Recommender
 from .bpr_mf import BPRMFRecommender
 from .fallback import FallbackRecommender
-from .item_knn import ItemKNNRecommender
-from .popularity import PopularityRecommender
+from .item_knn import ItemKNNMatrixRecommender
+from .popularity import PopularityMatrixRecommender
 from .random_rec import RandomRecommender
 
 # Model registry: the ONLY list of buildable models (keep in sync with the branches in build_model).
@@ -18,10 +18,10 @@ def build_model(name: str, cfg: dict) -> Recommender:
     if name == "random":
         return RandomRecommender(seed=seed)
     if name == "popularity":
-        return PopularityRecommender()
+        return PopularityMatrixRecommender()
 
     if name == "item_knn":
-        model: Recommender = ItemKNNRecommender(**cfg.get("item_knn", {}))
+        model: Recommender = ItemKNNMatrixRecommender(**cfg.get("item_knn", {}))
     elif name == "bpr_mf":
         # a per-model "seed" overrides the top-level one (both used to crash: "multiple values for keyword 'seed'")
         model = BPRMFRecommender(**{"seed": seed, **cfg.get("bpr_mf", {})})
@@ -29,5 +29,5 @@ def build_model(name: str, cfg: dict) -> Recommender:
         raise ValueError(f"Unknown model '{name}'. Choose from {ALL_MODELS}")
 
     if cfg.get("popularity_fallback", True):
-        return FallbackRecommender(model, PopularityRecommender())
+        return FallbackRecommender(model, PopularityMatrixRecommender())
     return model

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 
-from package.tools.recommenders.base import Recommender
+from package.tools.recommenders.recommender import Recommender
 from package.tools.recommenders.popularity import PopularityRecommender
 
 

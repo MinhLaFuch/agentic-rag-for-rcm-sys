@@ -10,7 +10,7 @@ import time
 
 from package.config import get_data_paths, load_config
 from package.data.split import infer_matrix_shape, load_splits
-from package.tools.evaluation.evaluator import evaluate_recommender
+from package.tools.evaluation.evaluate_recommender import evaluate_recommender
 from package.tools.evaluation import next_experiment_dir, save_experiment, select_fit_target
 from package.tools.recommenders import build_interaction_matrix, build_model
 from package.utils.console import ensure_utf8_stdout

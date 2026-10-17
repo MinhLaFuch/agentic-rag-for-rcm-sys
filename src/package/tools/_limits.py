@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
-from ..config.loader import ConfigError, load_config
+from ..config.load_config import ConfigError, load_config
 
 
 @dataclass(frozen=True)

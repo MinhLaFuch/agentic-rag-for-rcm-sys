@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 
-from package.tools.evaluation import EvaluationResult, evaluate_recommender, ranking_metrics_at_k, segment_users
+from package.tools.evaluation import EvaluationResult, evaluate_recommender, ranking_metrics_at_k, segment_users_by_history_by_history
 from package.tools.recommenders import PopularityMatrixRecommender, build_model
 
 D2, D3 = 1 / math.log2(3), 0.5  # DCG discounts at ranks 2 and 3
@@ -211,30 +211,30 @@ def test_k_equal_to_catalog_size_is_allowed(world):
     assert r.overall["recall@6"] == 1.0  # every unseen target item is somewhere in a full ranking
 
 
-# ---------------------------------------------------------------- segment_users (tools.evaluation)
+# ---------------------------------------------------------------- segment_users_by_history (tools.evaluation)
 @pytest.mark.parametrize("sparse_max", [4])
-def test_segment_users_boundaries(sparse_max):
+def test_segment_users_by_history_boundaries(sparse_max):
     history = np.array([0, 1, 4, 5, 100])
-    assert segment_users(range(5), history, sparse_max) == {0: "cold", 1: "sparse", 2: "sparse", 3: "warm", 4: "warm"}
+    assert segment_users_by_history(range(5), history, sparse_max) == {0: "cold", 1: "sparse", 2: "sparse", 3: "warm", 4: "warm"}
 
 
-def test_segment_users_edge_cases():
+def test_segment_users_by_history_edge_cases():
     history = np.array([0, 1, 2])
-    assert segment_users([2, 0], history, 0) == {2: "warm", 0: "cold"}  # sparse_max=0: any history is warm
-    assert segment_users([], history, 4) == {}
-    assert segment_users(np.array([1, 1]), history, 4) == {1: "sparse"}
+    assert segment_users_by_history([2, 0], history, 0) == {2: "warm", 0: "cold"}  # sparse_max=0: any history is warm
+    assert segment_users_by_history([], history, 4) == {}
+    assert segment_users_by_history(np.array([1, 1]), history, 4) == {1: "sparse"}
 
 
 @pytest.mark.parametrize("users, history, sparse_max, exc", [
     ([3], np.array([0, 1, 2]), 4, ValueError), ([-1], np.array([0, 1, 2]), 4, ValueError),
     ([0], [0, 1], 4, TypeError), ([0], np.array([1]), -1, ValueError), ([0], np.array([1]), 1.5, ValueError),
 ])
-def test_segment_users_validation(users, history, sparse_max, exc):
+def test_segment_users_by_history_validation(users, history, sparse_max, exc):
     with pytest.raises(exc):
-        segment_users(users, history, sparse_max)
+        segment_users_by_history(users, history, sparse_max)
 
 
-def test_segment_users_agrees_with_the_evaluator_when_given_the_fit_matrix(world):
+def test_segment_users_by_history_agrees_with_the_evaluator_when_given_the_fit_matrix(world):
     model = PopularityMatrixRecommender().fit(world.train)
-    seg = segment_users(range(6), model.history_sizes(np.arange(6)), 4)
+    seg = segment_users_by_history(range(6), model.history_sizes(np.arange(6)), 4)
     assert seg == {0: "cold", 1: "sparse", 2: "sparse", 3: "warm", 4: "sparse", 5: "warm"}

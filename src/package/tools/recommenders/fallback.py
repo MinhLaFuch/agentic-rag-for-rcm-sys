@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from .base import Recommender
+from .recommender import Recommender
 
 
 class FallbackRecommender(Recommender):

@@ -11,9 +11,9 @@ import io
 import json
 import urllib.request
 
-from package.config.loader import load_config
-from package.api.base import LLMMessage
-from package.api.factory import build_llm_provider
+from package.config.load_config import load_config
+from package.api.llm_provider import LLMMessage
+from package.api.build_llm_provider import build_llm_provider
 
 
 # ---------------------------------------------------------------------------

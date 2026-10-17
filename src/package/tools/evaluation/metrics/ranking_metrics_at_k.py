@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from .average_precision import average_precision_at_k
-from .hit_rate import hit_rate_at_k
-from .mrr import mrr_at_k
-from .ndcg import ndcg_at_k
-from .precision import precision_at_k
-from .recall import recall_at_k
+from .average_precision_at_k import average_precision_at_k
+from .hit_rate_at_k import hit_rate_at_k
+from .mrr_at_k import mrr_at_k
+from .ndcg_at_k import ndcg_at_k
+from .precision_at_k import precision_at_k
+from .recall_at_k import recall_at_k
 
 
 def ranking_metrics_at_k(

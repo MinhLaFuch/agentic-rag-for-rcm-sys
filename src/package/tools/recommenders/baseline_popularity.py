@@ -6,10 +6,13 @@ import pandas as pd
 from ._helper import _append_popular_unseen, _user_item_matrix
 
 
-class PopularityRecommender:
-    """Ranks items by their interaction frequency in the fitting period."""
+class BaselinePopularityRecommender:
+    """Ranks items by their interaction frequency in the fitting period (DataFrame-based baseline).
 
-    def fit(self, interactions: pd.DataFrame) -> "PopularityRecommender":
+    Distinct from the matrix-based PopularityRecommender used in tools/agents.
+    """
+
+    def fit(self, interactions: pd.DataFrame) -> "BaselinePopularityRecommender":
         missing = {"user_idx", "item_idx"} - set(interactions.columns)
         if missing:
             raise ValueError(f"interactions must have columns user_idx and item_idx, missing: {sorted(missing)}")

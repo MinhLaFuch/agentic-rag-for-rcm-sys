@@ -3,7 +3,7 @@
 import pytest
 
 from package.agents.ablation._limits import AblationLimits
-from package.config.loader import ConfigError
+from package.config.load_config import ConfigError
 
 
 def test_ablation_limits_creation():

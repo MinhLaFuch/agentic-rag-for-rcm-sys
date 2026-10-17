@@ -3,10 +3,17 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from .base import Recommender
+from .baseline_popularity import BaselinePopularityRecommender
+from .recommender import Recommender
 
 
-class PopularityRecommender(Recommender):
+class PopularityRecommender(BaselinePopularityRecommender):
+    """Legacy DataFrame-based popularity recommender."""
+
+    pass
+
+
+class PopularityMatrixRecommender(Recommender):
     name = "popularity"
 
     def __init__(self) -> None:

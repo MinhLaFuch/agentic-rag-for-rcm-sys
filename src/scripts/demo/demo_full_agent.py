@@ -6,8 +6,8 @@ Khi có LLM_API_KEY và endpoint thật, chạy script này trực tiếp với 
 from __future__ import annotations
 
 from package.agents.plan_executor import PlanExecutor
-from package.config.loader import load_config
-from package.api.factory import build_llm_provider
+from package.config.load_config import load_config
+from package.api.build_llm_provider import build_llm_provider
 from package.memory.memory_tool import MemoryTool
 from package.tools.ranking.item_cf_tool import ItemCFTool
 from package.tools.ranking.reco_model_tool import RecoModelTool

@@ -4,14 +4,16 @@ import numpy as np
 import pandas as pd
 
 from ._helper import _append_popular_unseen, _keep_top_neighbors
-from .baseline_popularity import PopularityRecommender
+from .baseline_popularity import BaselinePopularityRecommender
 
 
-class ItemKNNRecommender(PopularityRecommender):
-    """Cosine item-item KNN over implicit user-item interactions.
+class BaselineItemKNNRecommender(BaselinePopularityRecommender):
+    """Cosine item-item KNN over implicit user-item interactions (DataFrame-based baseline).
 
-    This is an exact sparse baseline.  Its item-item matrix can be large on a
+    This is an exact sparse baseline for offline evaluation. Its item-item matrix can be large on a
     multi-domain dataset, so the command-line runner makes it opt-in.
+
+    Distinct from the matrix-based ItemKNNRecommender used in tools/agents.
     """
 
     def __init__(self, neighbors: int = 20) -> None:
@@ -19,7 +21,7 @@ class ItemKNNRecommender(PopularityRecommender):
             raise ValueError("neighbors must be positive")
         self.neighbors = neighbors
 
-    def fit(self, interactions: pd.DataFrame) -> "ItemKNNRecommender":
+    def fit(self, interactions: pd.DataFrame) -> "BaselineItemKNNRecommender":
         super().fit(interactions)
         cooccurrence = (self.user_items.T @ self.user_items).tocsr()
         cooccurrence.setdiag(0)

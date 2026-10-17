@@ -60,7 +60,7 @@ from package.inference import compose_answer, get_inference_limits, outcome_from
 from package.inference._schema import MODES
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus import build_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users, select_fit_target
+from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
 from package.utils.console import ensure_utf8_stdout
 
@@ -203,7 +203,7 @@ def main() -> None:
 
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.bincount(fit_df["user_idx"].to_numpy(), minlength=num_users)
-    seg_of = segment_users(target_by_user, hist_size, sparse_max)
+    seg_of = segment_users_by_history(target_by_user, hist_size, sparse_max)
     latest = fit_df[fit_df["user_idx"].isin(list(target_by_user))].sort_values("timestamp").drop_duplicates("user_idx", keep="last")
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
 

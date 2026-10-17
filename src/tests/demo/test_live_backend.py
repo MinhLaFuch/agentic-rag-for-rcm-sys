@@ -5,7 +5,7 @@ import json
 import pytest
 
 from package.agents import PlanExecutor
-from package.api.base import LLMProvider
+from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
 from package.demo import DemoRequest, adapt_from_plan_executor, adapt_from_plan_executor_error
 from package.tools import QueryTool, SQLTool

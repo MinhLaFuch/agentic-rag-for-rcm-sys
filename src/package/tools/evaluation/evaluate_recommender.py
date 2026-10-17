@@ -8,7 +8,7 @@ import scipy.sparse as sp
 from ._dataclass import EvaluationResult
 from ._helper import assign_segments
 from .metrics import ranking_metrics_at_k
-from ..recommenders.base import Recommender
+from ..recommenders.recommender import Recommender
 
 
 def evaluate_recommender(

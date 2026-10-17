@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 from ._schema import SPLIT_NAMES
+from .infer_matrix_shape import infer_matrix_shape
 from .split_path import split_path
 
 def load_splits(
@@ -23,10 +24,3 @@ def load_splits(
         available = set(pq.ParquetFile(path).schema.names)
         frames.append(pd.read_parquet(path, columns=[c for c in columns if c in available]))
     return frames[0], frames[1], frames[2]
-
-
-def infer_matrix_shape(*frames: pd.DataFrame) -> tuple[int, int]:
-    """(num_users, num_items) từ index lớn nhất trong các split."""
-    num_users = int(max(f["user_idx"].max() for f in frames)) + 1
-    num_items = int(max(f["item_idx"].max() for f in frames)) + 1
-    return num_users, num_items

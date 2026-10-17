@@ -32,7 +32,7 @@ from package.agents.ablation._report import (
     write_json,
 )
 from package.config import get_data_paths
-from package.config.loader import ConfigError
+from package.config.load_config import ConfigError
 from package.utils.console import ensure_utf8_stdout
 
 

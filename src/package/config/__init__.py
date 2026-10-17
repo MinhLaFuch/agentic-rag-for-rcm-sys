@@ -1,4 +1,4 @@
-from .loader import load_config
+from .load_config import load_config
 from .get_data_paths import DataPaths, get_data_paths
 from .get_domains import get_domains
 

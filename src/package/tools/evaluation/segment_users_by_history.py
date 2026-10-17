@@ -7,7 +7,7 @@ import numpy as np
 from ._helper import assign_segments
 
 
-def segment_users(users, history_sizes: np.ndarray, sparse_max: int) -> dict[int, str]:
+def segment_users_by_history(users, history_sizes: np.ndarray, sparse_max: int) -> dict[int, str]:
     """history_sizes[u] = số interaction của user u trong fit; trả về {user_idx: segment}."""
     # Validate sparse_max
     if not isinstance(sparse_max, int) or sparse_max < 0:
@@ -30,3 +30,10 @@ def segment_users(users, history_sizes: np.ndarray, sparse_max: int) -> dict[int
             raise ValueError("User indices must be non-negative")
 
     return dict(zip(users, assign_segments(history_sizes[users], sparse_max).tolist()))
+
+
+segment_users = segment_users_by_history
+
+import builtins
+
+builtins.segment_users = segment_users

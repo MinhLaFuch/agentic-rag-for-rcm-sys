@@ -1,13 +1,13 @@
 # DataFrame-based recommenders (used in agent tools: BaselineScorer, ItemCFTool, RecoModelTool)
 # These accept pandas DataFrame and return direct item lists
-from .baseline_popularity import PopularityRecommender
-from .baseline_item_knn import ItemKNNRecommender
+from .baseline_popularity import BaselinePopularityRecommender
+from .baseline_item_knn import BaselineItemKNNRecommender
+from .popularity import PopularityRecommender, PopularityMatrixRecommender
+from .item_knn import ItemKNNRecommender, ItemKNNMatrixRecommender
 
 # Matrix-based recommenders (used in evaluation pipeline and experiments)
 # These accept sparse CSR matrix and return scores, with recommend() for top-k extraction
-from .base import Recommender
-from .popularity import PopularityRecommender as PopularityMatrixRecommender
-from .item_knn import ItemKNNRecommender as ItemKNNMatrixRecommender
+from .recommender import Recommender
 from .bpr_mf import BPRMFRecommender
 from .random_rec import RandomRecommender
 from .fallback import FallbackRecommender
@@ -32,6 +32,8 @@ __all__ = [
     "FallbackRecommender",
     "RandomRecommender",
     # DataFrame-based (for agent tools)
+    "BaselineItemKNNRecommender",
+    "BaselinePopularityRecommender",
     "ItemKNNRecommender",
     "PopularityRecommender",
     # Matrix-based (for evaluation/experiments)

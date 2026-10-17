@@ -14,7 +14,7 @@ from package.agents.ablation._loader import (
     load_scored_data,
     validate_contrast_config,
 )
-from package.config.loader import ConfigError
+from package.config.load_config import ConfigError
 
 
 def test_load_scored_data():

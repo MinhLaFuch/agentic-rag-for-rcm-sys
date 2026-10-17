@@ -23,7 +23,7 @@ from pathlib import Path
 
 from ._constants import PROJECT_ROOT
 from .get_data_paths import get_data_paths
-from .loader import load_config
+from .load_config import load_config
 
 _PATH_PROPERTIES = (
     "raw_dir", "cleaned_dir", "filtered_dir", "mapped_dir", "splits_dir", "log_dir", "experiments_dir", "filtered_path",

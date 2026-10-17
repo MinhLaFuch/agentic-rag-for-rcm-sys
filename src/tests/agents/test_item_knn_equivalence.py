@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
-from package.tools.recommenders.baseline_item_knn import ItemKNNRecommender as DataFrameKNN
+from package.tools.recommenders.baseline_item_knn import BaselineItemKNNRecommender as DataFrameKNN
 from package.tools.recommenders.item_knn import ItemKNNRecommender as MatrixKNN
 
 

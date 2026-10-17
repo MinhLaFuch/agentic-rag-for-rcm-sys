@@ -4,7 +4,7 @@ import pytest
 
 from package.agents import PlanExecutor
 from package.agents import _limits
-from package.config.loader import ConfigError
+from package.config.load_config import ConfigError
 from package.tools import QueryTool, SQLTool
 from package.tools.base import Tool
 from package.tools.corpus import _error as corpus_error

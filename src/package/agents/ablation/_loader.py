@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from package.config import get_data_paths
-from package.config.loader import ConfigError
+from package.config.load_config import ConfigError
 from ._limits import get_ablation_limits
 
 
