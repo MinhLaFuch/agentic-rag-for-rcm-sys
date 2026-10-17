@@ -9,7 +9,7 @@ from package.demo import MockBackend, DemoRequest
 
 def test_build_ui_with_mock_backend():
     """Dựng UI với MockBackend không được crash."""
-    from scripts.run_demo import build_ui
+    from scripts.demo.run_demo import build_ui
 
     backend = MockBackend()
     demo = build_ui(backend, mock_mode=True, sample_user_dict=None)
@@ -44,7 +44,7 @@ def test_gradio_import_error_handling():
 
 def test_build_ui_with_sample_users():
     """Dựng UI với sample_user_dict không được crash."""
-    from scripts.run_demo import build_ui
+    from scripts.demo.run_demo import build_ui
 
     backend = MockBackend()
     sample_user_dict = {

@@ -14,9 +14,11 @@ from typing import Any
 import pandas as pd
 
 from ..data.leakage import check_profile_snapshot
-from ..tools._limits import MEMORY_DEFAULT_TOP_N_CATEGORIES
+from ..tools import get_tool_limits
 from ..tools.base import Tool, validate_int
 from ..tools.corpus import ItemCorpus
+
+MEMORY_DEFAULT_TOP_N_CATEGORIES = get_tool_limits().memory_default_top_n_categories
 
 
 class MemoryTool(Tool):

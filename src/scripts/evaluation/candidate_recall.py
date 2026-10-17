@@ -40,13 +40,15 @@ from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import ItemCFTool, SemanticSearchTool
-from package.tools._limits import MAX_CANDIDATES
+from package.tools import get_tool_limits
 from package.tools.base import ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import build_interaction_matrix
-from package.tools.recommenders.item_knn import ItemKNNRecommender
-from package.utils.console import ensure_utf8_stdout
+from package.tools.recommenders import ItemKNNMatrixRecommender
+from package.utils import ensure_utf8_stdout
+
+MAX_CANDIDATES = get_tool_limits().max_candidates
 
 SEGMENTS = ("cold", "sparse", "warm")
 SOURCES = ("popularity", "item_cf", "semantic", "union_rr", "union_all")
@@ -162,7 +164,7 @@ def main() -> None:
     print(f"  metadata covers {coverage:.1%} of mapped items")
 
     print("Fit ItemKNN on fit data")
-    knn = ItemKNNRecommender(args.neighbors).fit(fit_matrix)
+    knn = ItemKNNMatrixRecommender(args.neighbors).fit(fit_matrix)
     item_cf = ItemCFTool(knn, item2id, logger=ToolCallLogger())
     search = SemanticSearchTool(corpus, logger=ToolCallLogger())
     pop_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable").tolist()

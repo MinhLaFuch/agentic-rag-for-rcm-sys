@@ -1,5 +1,6 @@
 from ._dataclass import AgentOutcome, Answer
 from ._limits import InferenceLimits, get_inference_limits
+from ._schema import MODES
 from .classify_outcome import classify_outcome
 from .compose_answer import compose_answer
 from .compose_llm import compose_llm
@@ -12,6 +13,7 @@ __all__ = [
     "AgentOutcome",
     "Answer",
     "InferenceLimits",
+    "MODES",
     "classify_outcome",
     "compose_answer",
     "compose_llm",

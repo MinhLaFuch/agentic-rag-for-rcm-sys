@@ -1,20 +1,3 @@
-# Python bytecode / caches
 __pycache__/
-*.py[cod]
+*.pyc
 .pytest_cache/
-.venv/
-
-# Pipeline data: everything under resource/ in configs/path/data_paths.yaml
-resource/
-
-# All logs in experiments/ (pipeline logs, test logs, etc.) - not versioned
-experiments/logs/
-experiments/test_logs/
-
-# Experiment results (experiments/*/exp_NNN/{config.yaml,metrics.json,README.md}) are tracked on purpose;
-# only stray logs and trajectories are ignored. Add `experiments/` here if you decide results should not be versioned.
-experiments/**/trajectories.jsonl
-
-# Secrets: never commit credentials (configs/agent/llm.yaml reads LLM_API_KEY from the environment)
-.env
-*.key

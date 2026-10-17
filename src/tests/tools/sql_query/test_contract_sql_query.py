@@ -3,7 +3,7 @@
 import pytest
 
 from package.tools import QueryTool, SQLTool
-from package.tools.sql_query._helper import compile_filters
+from package.tools.sql_query import compile_filters
 
 G_A1, G_B2, G_C3, G_D4, T_A1, T_E5 = "Games::A1", "Games::B2", "Games::C3", "Games::D4", "Toys::A1", "Toys::E5"
 

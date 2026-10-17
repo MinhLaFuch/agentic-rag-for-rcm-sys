@@ -8,6 +8,7 @@ from . import sql_query
 from .sql_query import SQLTool, QueryTool
 from .ranking import ItemCFTool, RecoModelTool
 from .score import BaselineScorer, CandidateScorer
+from ._limits import get_tool_limits
 from .base import ToolCallLogger
 from .corpus import ItemCorpus
 from .retrieval import SemanticSearchTool
@@ -27,6 +28,7 @@ __all__ = [
     "BaselineScorer",
     "CandidateScorer",
     "ToolCallLogger",
+    "get_tool_limits",
     "ItemCorpus",
     "SemanticSearchTool"
 ]

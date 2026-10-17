@@ -5,7 +5,7 @@ import pytest
 import scipy.sparse as sp
 
 from package.tools.recommenders.recommender import Recommender
-from package.tools.recommenders.popularity import PopularityRecommender
+from package.tools.recommenders.popularity_matrix_recommender import PopularityMatrixRecommender
 
 
 class MockRecommender(Recommender):
@@ -93,7 +93,7 @@ def test_recommend_validates_user_idxs_bounds():
 
 def test_recommend_tie_break_prefers_smaller_index():
     """When scores are equal, smaller item_idx should be preferred."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     # Create train data where all items have equal popularity
     train = sp.csr_matrix((5, 10))
     for i in range(10):
@@ -110,7 +110,7 @@ def test_recommend_tie_break_prefers_smaller_index():
 
 def test_recommend_padding_with_neg_one():
     """When fewer than k valid items, result should be padded with -1."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     train = sp.csr_matrix((5, 10))
     # Only 3 items have interactions
     train[0, 0] = 1
@@ -144,7 +144,7 @@ def test_recommend_padding_with_neg_one():
 
 def test_recommend_filters_excluded_items():
     """Items in exclude matrix should not be returned."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     train = sp.csr_matrix((5, 10))
     train[0, 0] = 1
     train[0, 1] = 1
@@ -170,7 +170,7 @@ def test_history_sizes_requires_fit():
 
 def test_history_sizes_returns_correct_counts():
     """history_sizes() should return correct interaction counts."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     train = sp.csr_matrix((5, 10))
     train[0, 0] = 1
     train[0, 1] = 1
@@ -188,7 +188,7 @@ def test_history_sizes_returns_correct_counts():
 
 def test_popularity_fallback_when_all_scores_zero():
     """When all valid scores are zero, popularity should be used as tie-break."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     train = sp.csr_matrix((5, 10))
     # Item 0 is most popular, item 9 is least popular
     for i in range(5):
@@ -206,7 +206,7 @@ def test_popularity_fallback_when_all_scores_zero():
 
 def test_popularity_fallback_with_exclude():
     """Popularity fallback should only consider non-excluded items."""
-    model = PopularityRecommender()
+    model = PopularityMatrixRecommender()
     train = sp.csr_matrix((5, 10))
     train[0, 0] = 1
     train[0, 1] = 1

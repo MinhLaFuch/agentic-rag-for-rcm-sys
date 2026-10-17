@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from package.agents.evaluation._schema import ORACLE_KINDS
+from package.agents.evaluation import ORACLE_KINDS
 
 
 def render_markdown_report(

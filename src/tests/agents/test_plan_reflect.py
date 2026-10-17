@@ -158,9 +158,9 @@ def test_reflect_rounds_default_comes_from_yaml(corpus):
 
 
 def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
-    from package.config import loader
+    from package.config import load_config
 
-    cfg = loader.load_config("agent/agent")
+    cfg = load_config("agent/agent")
     cfg["agent"]["reflect_rounds"] = -1
     monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
     _limits.get_agent_limits.cache_clear()
@@ -172,7 +172,7 @@ def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
 
 
 def test_provider_error_during_reflect_keeps_the_previous_result(corpus):
-    from package.api._error import LLMProviderError
+    from package.api import LLMProviderError
 
     class FailsSecondCall(ScriptedLLM):
         def complete(self, messages, **kw):

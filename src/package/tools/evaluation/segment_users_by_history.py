@@ -31,9 +31,3 @@ def segment_users_by_history(users, history_sizes: np.ndarray, sparse_max: int) 
 
     return dict(zip(users, assign_segments(history_sizes[users], sparse_max).tolist()))
 
-
-segment_users = segment_users_by_history
-
-import builtins
-
-builtins.segment_users = segment_users

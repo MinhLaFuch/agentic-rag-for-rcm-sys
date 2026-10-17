@@ -18,7 +18,7 @@ from package.tools.evaluation.evaluate_recommender import evaluate_recommender
 from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.evaluation import merge_model_params, parameter_grid
 from package.tools.recommenders import build_interaction_matrix, build_model
-from package.utils.console import ensure_utf8_stdout
+from package.utils import ensure_utf8_stdout
 
 
 def main() -> None:

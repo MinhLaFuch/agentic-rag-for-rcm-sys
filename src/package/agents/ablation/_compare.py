@@ -7,7 +7,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from package.agents.evaluation._schema import ORACLE_KINDS
+from package.agents.evaluation import ORACLE_KINDS
 from ._loader import check_compatibility, load_group_data
 from ._limits import get_ablation_limits
 from ._statistics import bootstrap_ci, mcnemar_test

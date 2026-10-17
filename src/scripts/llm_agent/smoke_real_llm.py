@@ -17,7 +17,7 @@ import pandas as pd
 from package.agents import PlanExecutor, build_tools
 from package.config.load_config import load_config
 from package.api import build_llm_provider
-from package.api._error import LLMProviderError
+from package.api import LLMProviderError
 from package.tools import BaselineScorer, ItemCorpus
 from package.tools.recommenders import ItemKNNRecommender
 

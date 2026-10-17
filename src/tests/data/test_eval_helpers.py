@@ -30,30 +30,30 @@ def test_select_fit_target_rejects_unknown_split():
 
 def test_segment_users_thresholds():
     sizes = np.array([0, 2, 4, 5])
-    assert segment_users([0, 1, 2, 3], sizes, sparse_max=4) == {0: "cold", 1: "sparse", 2: "sparse", 3: "warm"}
+    assert segment_users_by_history([0, 1, 2, 3], sizes, sparse_max=4) == {0: "cold", 1: "sparse", 2: "sparse", 3: "warm"}
 
 
 def test_segment_users_rejects_invalid_sparse_max():
     sizes = np.array([0, 2, 4, 5])
     with pytest.raises(ValueError, match="sparse_max must be a non-negative integer"):
-        segment_users([0, 1, 2, 3], sizes, sparse_max=-1)
+        segment_users_by_history([0, 1, 2, 3], sizes, sparse_max=-1)
 
     with pytest.raises(ValueError, match="sparse_max must be a non-negative integer"):
-        segment_users([0, 1, 2, 3], sizes, sparse_max=3.5)
+        segment_users_by_history([0, 1, 2, 3], sizes, sparse_max=3.5)
 
 
 def test_segment_users_rejects_out_of_bounds_user_indices():
     sizes = np.array([0, 2, 4, 5])
     with pytest.raises(ValueError, match="out of bounds"):
-        segment_users([0, 1, 2, 10], sizes, sparse_max=4)
+        segment_users_by_history([0, 1, 2, 10], sizes, sparse_max=4)
 
     with pytest.raises(ValueError, match="non-negative"):
-        segment_users([-1, 0, 1, 2], sizes, sparse_max=4)
+        segment_users_by_history([-1, 0, 1, 2], sizes, sparse_max=4)
 
 
 def test_segment_users_rejects_non_array_history_sizes():
     with pytest.raises(TypeError, match="history_sizes must be a numpy array"):
-        segment_users([0, 1, 2], [0, 2, 4], sparse_max=4)
+        segment_users_by_history([0, 1, 2], [0, 2, 4], sparse_max=4)
 
 
 def test_build_corpus_raises_when_coverage_too_low(tmp_path):

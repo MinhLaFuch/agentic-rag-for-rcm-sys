@@ -19,8 +19,10 @@ import pandas as pd
 from package.config import get_data_paths, get_domains
 from package.data.loader import load_item_metadata
 from package.tools import ItemCorpus, SemanticSearchTool
-from package.tools._limits import SQL_TIME_BUDGET_SECONDS
+from package.tools import get_tool_limits
 from package.tools.base import ToolResult
+
+SQL_TIME_BUDGET_SECONDS = get_tool_limits().sql_time_budget_seconds
 
 
 def _check_result(result: ToolResult) -> bool:
@@ -37,7 +39,7 @@ def create_corpus_without_composite_index(meta: pd.DataFrame) -> ItemCorpus:
     Create a corpus WITHOUT the composite index idx_cat_item_cat.
     This is done by temporarily modifying the CATEGORIES_INDEXES list.
     """
-    from package.tools.corpus._sql import CATEGORIES_INDEXES
+    from package.tools.corpus import CATEGORIES_INDEXES
 
     # Save original indexes
     original_indexes = CATEGORIES_INDEXES.copy()

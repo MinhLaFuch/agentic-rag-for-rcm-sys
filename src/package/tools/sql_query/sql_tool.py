@@ -14,7 +14,7 @@ from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from ..corpus import ItemCorpus
 from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
-from ._helper import compile_filters
+from .compile_filters import compile_filters
 
 class SQLTool(Tool):
     """

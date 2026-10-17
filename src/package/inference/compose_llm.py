@@ -4,7 +4,7 @@ import json
 from dataclasses import replace
 
 from ..api import LLMMessage, LLMProvider
-from ..api._error import LLMProviderError
+from ..api import LLMProviderError
 from ._dataclass import AgentOutcome, Answer
 from ._helper import check_grounding, cut, item_view, parse_llm_reply
 from ._prompt import RETRY_NOTICE, SYSTEM_PROMPT

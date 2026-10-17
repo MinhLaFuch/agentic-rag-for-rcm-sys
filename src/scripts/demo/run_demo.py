@@ -20,7 +20,7 @@ except ImportError:
     print("Please install with: pip install gradio")
     sys.exit(1)
 
-from package.agents.evaluation._schema import TEMPLATES
+from package.agents.evaluation import TEMPLATES
 from package.config import get_data_paths, get_domains, load_config
 from package.demo import (
     DemoRequest,
@@ -31,7 +31,7 @@ from package.demo import (
     status_badge,
     sample_requests,
 )
-from package.utils.console import ensure_utf8_stdout
+from package.utils import ensure_utf8_stdout
 
 
 def parse_args() -> argparse.Namespace:

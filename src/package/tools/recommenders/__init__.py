@@ -1,20 +1,22 @@
 # DataFrame-based recommenders (used in agent tools: BaselineScorer, ItemCFTool, RecoModelTool)
 # These accept pandas DataFrame and return direct item lists
-from .baseline_popularity import BaselinePopularityRecommender
-from .baseline_item_knn import BaselineItemKNNRecommender
-from .popularity import PopularityRecommender, PopularityMatrixRecommender
-from .item_knn import ItemKNNRecommender, ItemKNNMatrixRecommender
+from .baseline_popularity_recommender import BaselinePopularityRecommender
+from .baseline_item_knn_recommender import BaselineItemKNNRecommender
+from .popularity_recommender import PopularityRecommender
+from .popularity_matrix_recommender import PopularityMatrixRecommender
+from .item_knn_recommender import ItemKNNRecommender
+from .item_knn_matrix_recommender import ItemKNNMatrixRecommender
 
 # Matrix-based recommenders (used in evaluation pipeline and experiments)
 # These accept sparse CSR matrix and return scores, with recommend() for top-k extraction
 from .recommender import Recommender
-from .bpr_mf import BPRMFRecommender
-from .random_rec import RandomRecommender
-from .fallback import FallbackRecommender
+from .bpr_mf_recommender import BPRMFRecommender
+from .random_recommender import RandomRecommender
+from .fallback_recommender import FallbackRecommender
 
 # Utilities
 from .build_interaction_matrix import build_interaction_matrix
-from .factory import ALL_MODELS, build_model
+from .build_model import ALL_MODELS, build_model
 
 # Legacy aliases for backward compatibility (will be deprecated in future).
 # NOTE: despite the "ABC" suffix these are the CONCRETE sparse-matrix classes, not abstract base classes.

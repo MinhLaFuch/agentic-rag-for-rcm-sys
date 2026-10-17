@@ -12,8 +12,8 @@ import pandas as pd
 import scipy.sparse as sp
 import pytest
 
-from package.tools.recommenders.baseline_item_knn import BaselineItemKNNRecommender as DataFrameKNN
-from package.tools.recommenders.item_knn import ItemKNNRecommender as MatrixKNN
+from package.tools.recommenders.baseline_item_knn_recommender import BaselineItemKNNRecommender as DataFrameKNN
+from package.tools.recommenders.item_knn_matrix_recommender import ItemKNNMatrixRecommender as MatrixKNN
 
 
 def test_item_knn_top_k_difference():

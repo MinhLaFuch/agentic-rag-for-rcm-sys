@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools
-from package.agents._limits import get_agent_limits
+from package.agents import get_agent_limits
 from package.agents.evaluation import (
     AGENTS,
     INFERENCE_AGENTS,
@@ -55,14 +55,14 @@ from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.api import build_llm_provider
-from package.api._error import LLMProviderError
+from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
-from package.inference._schema import MODES
+from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
-from package.utils.console import ensure_utf8_stdout
+from package.utils import ensure_utf8_stdout
 
 ERROR_CHARS = 300  # step/plan errors are cut to this many characters in the trajectory file
 

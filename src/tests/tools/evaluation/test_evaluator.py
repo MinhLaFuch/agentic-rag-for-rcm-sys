@@ -6,7 +6,7 @@ import pytest
 import scipy.sparse as sp
 
 from package.tools.evaluation import evaluate_recommender
-from package.tools.evaluation.recommendation_metrics import evaluate_ranking
+from package.tools.evaluation import evaluate_ranking
 from package.tools.recommenders import PopularityRecommender
 
 

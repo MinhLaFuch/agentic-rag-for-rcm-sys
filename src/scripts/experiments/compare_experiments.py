@@ -15,25 +15,21 @@ import json
 from pathlib import Path
 from typing import Any
 
-from package.agents.ablation._compare import (
+from package.agents.ablation import (
     compare_two_groups,
     find_disagreements,
-    pair_by_request_id,
-)
-from package.agents.ablation._limits import get_ablation_limits
-from package.agents.ablation._loader import (
+    get_ablation_limits,
     load_group_data,
-    validate_contrast_config,
-)
-from package.agents.ablation._report import (
+    pair_by_request_id,
     render_markdown_report,
+    validate_contrast_config,
     write_csv,
     write_disagreements,
     write_json,
 )
 from package.config import get_data_paths
 from package.config.load_config import ConfigError
-from package.utils.console import ensure_utf8_stdout
+from package.utils import ensure_utf8_stdout
 
 
 def parse_args() -> argparse.Namespace:
