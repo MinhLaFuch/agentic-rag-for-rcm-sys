@@ -6,8 +6,8 @@ import sys
 import pytest
 
 from package.agents import PlanExecutor
-from package.agents.evaluation import INFERENCE_AGENTS, AgentRequest, score_trajectory, summarize
-from package.agents.evaluation._schema import ANSWER_STATUSES
+from package.evaluation.agent import INFERENCE_AGENTS, AgentRequest, score_trajectory, summarize
+from package.evaluation.agent._schema import ANSWER_STATUSES
 from package.inference import compose_answer
 from package.inference._schema import STATUSES
 from package.tools import QueryTool

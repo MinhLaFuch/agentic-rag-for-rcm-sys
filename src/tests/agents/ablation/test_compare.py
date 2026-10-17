@@ -7,14 +7,14 @@ from typing import Any
 
 import pytest
 
-from package.agents.ablation._compare import (
+from package.evaluation.ablation._compare import (
     average_across_runs,
     compute_binary_disagreement,
     compute_metric_diff,
     find_disagreements,
     pair_by_request_id,
 )
-from package.agents.ablation._limits import AblationLimits
+from package.evaluation.ablation._limits import AblationLimits
 
 
 def test_pair_by_request_id():

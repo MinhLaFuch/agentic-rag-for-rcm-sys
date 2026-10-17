@@ -5,7 +5,7 @@ import json
 import pytest
 
 from package.agents import PlanExecutor
-from package.agents.evaluation.extract_recommendations import extract_recommendations
+from package.agents import extract_recommendations
 from package.inference import (
     Answer,
     compose_answer,

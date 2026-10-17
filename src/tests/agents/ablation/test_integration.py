@@ -8,8 +8,8 @@ from typing import Any
 import pytest
 import yaml
 
-from package.agents.ablation._compare import compare_two_groups
-from package.agents.ablation._limits import AblationLimits
+from package.evaluation.ablation._compare import compare_two_groups
+from package.evaluation.ablation._limits import AblationLimits
 
 
 def test_end_to_end_with_synthetic_data():

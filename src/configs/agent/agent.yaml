@@ -5,6 +5,7 @@ agent:
   max_steps: 8        # plan dài hơn bị cắt còn chừng này step (chặn cost/latency; kiểu max_tool_calls_per_request)
   plan_retries: 1     # số lần gọi lại LLM khi reply không phải plan JSON hợp lệ (0 = không retry)
   reflect_rounds: 1   # số lần sửa plan sau khi chạy lỗi / không ra item (gửi báo cáo step cho LLM, chạy lại plan sửa); 0 = tắt
+  reflect_error_chars: 300  # lỗi của step dài hơn chừng này ký tự thì bị cắt trong báo cáo step gửi cho LLM khi reflect (message của tool nằm đầu nên phần đầu được giữ)
   max_tokens: 2048    # ngân sách token cho 1 lần plan; model reasoning ăn token suy luận vào đây nên đừng đặt thấp
   temperature: 0.0    # 0 để plan lặp lại được giữa các lần chạy
   type1:              # Type1Agent (plan cố định, không LLM)

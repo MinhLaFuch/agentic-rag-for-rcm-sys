@@ -8,7 +8,8 @@ from typing import Any
 
 from ..data import ITEM_ID_SEPARATOR
 from ._dataclass import AgentOutcome
-from ._schema import ITEM_FIELDS, REASON_CHARS, TITLE_CHARS
+from ._limits import get_inference_limits
+from ._schema import ITEM_FIELDS
 
 _SEP = re.escape(ITEM_ID_SEPARATOR)
 _ID = re.compile(rf"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_]*{_SEP}[A-Za-z0-9_-]*[A-Za-z0-9_]")
@@ -20,13 +21,14 @@ _RATING = (re.compile(r"(?<![\d.,])(\d(?:[.,]\d)?)\s*/\s*5\b"), re.compile(r"(?<
 _EPS = 1e-9
 
 
-def cut(text: Any, limit: int = REASON_CHARS) -> str:
-    return str(text)[:limit]
+def cut(text: Any, limit: int | None = None) -> str:
+    return str(text)[: get_inference_limits().reason_chars if limit is None else limit]
 
 
 def cut_title(title: str) -> str:
     title = " ".join(title.split())
-    return title if len(title) <= TITLE_CHARS else title[: TITLE_CHARS - 1] + "…"
+    limit = get_inference_limits().title_chars
+    return title if len(title) <= limit else title[: limit - 1] + "…"
 
 
 def item_view(item: dict[str, Any]) -> dict[str, Any]:

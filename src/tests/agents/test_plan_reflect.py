@@ -171,6 +171,21 @@ def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
         _limits.get_agent_limits.cache_clear()
 
 
+def test_reflect_error_chars_comes_from_yaml_and_must_be_positive(monkeypatch):
+    from package.config import load_config
+
+    assert _limits.get_agent_limits().reflect_error_chars == load_config("agent/agent")["agent"]["reflect_error_chars"]
+    cfg = load_config("agent/agent")
+    cfg["agent"]["reflect_error_chars"] = 0
+    monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
+    _limits.get_agent_limits.cache_clear()
+    try:
+        with pytest.raises(ConfigError):
+            _limits.get_agent_limits()
+    finally:
+        _limits.get_agent_limits.cache_clear()
+
+
 def test_provider_error_during_reflect_keeps_the_previous_result(corpus):
     from package.api import LLMProviderError
 

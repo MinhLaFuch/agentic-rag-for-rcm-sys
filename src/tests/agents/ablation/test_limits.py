@@ -2,7 +2,7 @@
 
 import pytest
 
-from package.agents.ablation._limits import AblationLimits
+from package.evaluation.ablation._limits import AblationLimits
 from package.config.load_config import ConfigError
 
 

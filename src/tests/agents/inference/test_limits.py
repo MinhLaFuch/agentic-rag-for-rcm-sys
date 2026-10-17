@@ -20,6 +20,7 @@ def test_limits_come_from_inference_yaml():
     assert limits.max_tokens == cfg["max_tokens"] and limits.temperature == cfg["temperature"]
     assert limits.llm_retries == cfg["llm_retries"]
     assert limits.check_numbers == cfg["check_numbers"] and limits.price_tolerance == cfg["price_tolerance"]
+    assert limits.title_chars == cfg["title_chars"] and limits.reason_chars == cfg["reason_chars"]
 
 
 @pytest.mark.parametrize(
@@ -28,6 +29,7 @@ def test_limits_come_from_inference_yaml():
         {"mode": "gpt"}, {"mode": None},
         {"max_items": 0}, {"max_items": -3},
         {"max_tokens": 0},
+        {"title_chars": 0}, {"reason_chars": 0}, {"reason_chars": -1},
         {"temperature": -0.1},
         {"llm_retries": -1},
         {"price_tolerance": -0.5},
@@ -41,7 +43,7 @@ def test_invalid_values_are_rejected(monkeypatch, fresh_limits, patch):
         _limits.get_inference_limits()
 
 
-@pytest.mark.parametrize("key", ["mode", "max_items", "max_tokens", "temperature", "llm_retries", "check_numbers", "price_tolerance"])
+@pytest.mark.parametrize("key", ["mode", "max_items", "max_tokens", "temperature", "llm_retries", "check_numbers", "price_tolerance", "title_chars", "reason_chars"])
 def test_missing_key_is_a_config_error(monkeypatch, fresh_limits, key):
     cfg = dict(load_config("agent/inference")["inference"])
     del cfg[key]

@@ -8,4 +8,6 @@ inference:
   temperature: 0.0   # 0 để câu trả lời lặp lại được giữa các lần chạy (nhà cung cấp vẫn có thể không tất định hoàn toàn)
   llm_retries: 1     # số lần gọi lại khi reply sai JSON hoặc không grounded (0 = không retry); hết lượt thì dùng template
   check_numbers: true    # bật kiểm giá/rating trong câu trả lời LLM; false = chỉ kiểm JSON, id, đủ item, đúng thứ tự
+  title_chars: 120       # tiêu đề sản phẩm Amazon rất dài: cắt còn chừng này ký tự (có dấu … nếu bị cắt) trong template và trong dữ liệu gửi cho LLM
+  reason_chars: 300      # lỗi / lý do bị cắt còn chừng này ký tự (cùng mức với trajectory của evaluation)
   price_tolerance: 0.5   # USD; số tiền trong text lệch mọi giá đã biết quá mức này thì bị coi là bịa (0 = phải khớp đúng); chỉ có tác dụng khi check_numbers = true

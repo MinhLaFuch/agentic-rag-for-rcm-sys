@@ -29,7 +29,9 @@ Tests for configuration loading, path management, and domain registry.
 
 - `test_config_loader.py` - Configuration loading tests
 - `test_data_paths.py` - Data path resolution tests
+- `test_dependency_direction.py` - Dependency direction between top-level packages (tools, agents, inference, evaluation, demo)
 - `test_domain_registry.py` - Domain registry tests
+- `test_package_layout.py` - Atomic files, file/symbol name match, `_` modules private to their folder
 - `test_path_hygiene.py` - Path hygiene validation tests
 - `test_tool_limits.py` - Tool limits configuration tests
 

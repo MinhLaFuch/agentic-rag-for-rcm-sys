@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from package.agents.ablation._loader import (
+from package.evaluation.ablation._loader import (
     check_compatibility,
     load_config_data,
     load_group_data,

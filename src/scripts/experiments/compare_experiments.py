@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from package.agents.ablation import (
+from package.evaluation.ablation import (
     compare_two_groups,
     find_disagreements,
     get_ablation_limits,

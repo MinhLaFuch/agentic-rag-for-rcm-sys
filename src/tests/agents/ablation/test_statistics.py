@@ -2,7 +2,7 @@
 
 import pytest
 
-from package.agents.ablation._statistics import bootstrap_ci, mcnemar_test
+from package.evaluation.ablation._statistics import bootstrap_ci, mcnemar_test
 
 
 def test_bootstrap_ci_with_known_values():

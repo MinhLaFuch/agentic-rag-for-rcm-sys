@@ -17,6 +17,7 @@ class AgentLimits:
     temperature: float
     type1_candidate_multiplier: int
     type1_min_candidates: int
+    reflect_error_chars: int
 
 
 @lru_cache(maxsize=1)
@@ -30,8 +31,9 @@ def get_agent_limits() -> AgentLimits:
         temperature=float(cfg["temperature"]),
         type1_candidate_multiplier=int(cfg["type1"]["candidate_multiplier"]),
         type1_min_candidates=int(cfg["type1"]["min_candidates"]),
+        reflect_error_chars=int(cfg["reflect_error_chars"]),
     )
-    positive = ("max_steps", "max_tokens", "type1_candidate_multiplier", "type1_min_candidates")
+    positive = ("max_steps", "max_tokens", "type1_candidate_multiplier", "type1_min_candidates", "reflect_error_chars")
     for name in positive:
         if getattr(limits, name) <= 0:
             raise ConfigError(f"configs/agent/agent.yaml: {name} must be > 0")

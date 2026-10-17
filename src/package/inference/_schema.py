@@ -7,8 +7,6 @@ STATUSES = ("ok", "ask_user", "no_result", "tool_error")
 MODES = ("llm", "template")
 COMPOSERS = ("llm", "template")
 
-TITLE_CHARS = 120  # Amazon titles are very long: cut in the template and in the data sent to the LLM
-REASON_CHARS = 300  # errors / reasons are cut to this many characters (same as the evaluation trajectories)
 USAGE_KEYS = ("attempts", "prompt_tokens", "completion_tokens", "latency_seconds")
 
 METADATA_ROW_KEYS = ("items", "candidates", "ranked")  # `data` keys of the tools that return rows with an `item_id`

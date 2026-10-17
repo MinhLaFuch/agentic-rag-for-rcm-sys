@@ -5,17 +5,17 @@ import math
 import numpy as np
 import pytest
 
-from package.agents.evaluation import (
+from package.agents import extract_recommendations
+from package.evaluation.agent import (
     AgentRequest,
     build_requests,
-    extract_recommendations,
     items_satisfying,
     items_without_price,
     reference_groups,
     score_trajectory,
     summarize,
 )
-from package.agents.evaluation._helper import _deepest_category
+from package.evaluation.agent._helper import _deepest_category
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C

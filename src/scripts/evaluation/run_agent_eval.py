@@ -37,15 +37,14 @@ import numpy as np
 import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools
-from package.agents import get_agent_limits
-from package.agents.evaluation import (
+from package.agents import extract_recommendations, get_agent_limits
+from package.evaluation.agent import (
     AGENTS,
     INFERENCE_AGENTS,
     ORACLE_KINDS,
     PLANNER_AGENTS,
     AgentRequest,
     build_requests,
-    extract_recommendations,
     score_trajectory,
     summarize,
 )

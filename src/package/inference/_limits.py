@@ -18,6 +18,8 @@ class InferenceLimits:
     llm_retries: int
     check_numbers: bool
     price_tolerance: float
+    title_chars: int
+    reason_chars: int
 
 
 @lru_cache(maxsize=1)
@@ -33,6 +35,8 @@ def get_inference_limits() -> InferenceLimits:
             llm_retries=int(cfg["llm_retries"]),
             check_numbers=cfg["check_numbers"],
             price_tolerance=float(cfg["price_tolerance"]),
+            title_chars=int(cfg["title_chars"]),
+            reason_chars=int(cfg["reason_chars"]),
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise ConfigError(f"{where}: missing or malformed value ({type(exc).__name__}: {exc})") from exc
@@ -40,7 +44,7 @@ def get_inference_limits() -> InferenceLimits:
         raise ConfigError(f"{where}: mode must be one of {list(MODES)}, got {limits.mode!r}")
     if not isinstance(limits.check_numbers, bool):
         raise ConfigError(f"{where}: check_numbers must be true or false, got {limits.check_numbers!r}")
-    for name in ("max_items", "max_tokens"):
+    for name in ("max_items", "max_tokens", "title_chars", "reason_chars"):
         if getattr(limits, name) <= 0:
             raise ConfigError(f"{where}: {name} must be > 0")
     for name in ("temperature", "llm_retries", "price_tolerance"):

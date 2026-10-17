@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from ..agents.evaluation.extract_recommendations import extract_recommendations
+from ..agents import extract_recommendations
 from ._dataclass import AgentOutcome
 from ._helper import cut
 from ._limits import get_inference_limits

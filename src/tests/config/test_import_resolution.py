@@ -1,7 +1,7 @@
 """Static test that all package.* imports resolve to existing modules.
 
 This test catches bugs like the one in Phase 1a where scripts/experiments/compare_experiments.py
-imported from a non-existent path package.agents.evaluation.ablation.
+imported from a non-existent path package.evaluation.ablation.
 """
 
 import ast

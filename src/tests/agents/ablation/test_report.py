@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from package.agents.ablation._limits import AblationLimits
-from package.agents.ablation._report import (
+from package.evaluation.ablation._limits import AblationLimits
+from package.evaluation.ablation._report import (
     render_markdown_report,
     write_csv,
     write_disagreements,

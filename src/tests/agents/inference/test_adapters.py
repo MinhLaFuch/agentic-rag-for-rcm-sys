@@ -1,6 +1,6 @@
 """AgentOutcome adapters: PlanExecutor results and Type1Agent output -> one normalized outcome."""
 
-from package.agents.evaluation.extract_recommendations import extract_recommendations
+from package.agents import extract_recommendations
 from package.inference import outcome_from_plan_results, outcome_from_type1
 from package.inference._schema import ITEM_FIELDS
 
