@@ -181,7 +181,7 @@ def _load_run_agent_eval():
     import importlib.util
     from pathlib import Path
 
-    path = Path(__file__).resolve().parents[2] / "scripts" / "evaluation" / "run_agent_eval.py"
+    path = Path(__file__).resolve().parents[3] / "scripts" / "evaluation" / "run_agent_eval.py"
     spec = importlib.util.spec_from_file_location("run_agent_eval_script", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -253,6 +253,33 @@ def test_run_planner_marks_an_unparsable_plan_as_not_ok_first_time(corpus):
     executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=1)
     traj = _load_run_agent_eval().run_planner(executor, _similar_request(), "planner", 2)
     assert traj["error"] and traj["first_attempt_ok"] is False and traj["reflections"] == 0
+
+
+def test_trajectory_error_chars_comes_from_yaml_and_must_be_positive(corpus, monkeypatch):
+    from package.agents import PlanExecutor
+    from package.config import load_config
+    from package.config.load_config import ConfigError
+    from package.tools import SQLTool
+    from tests.agents.test_plan_executor import ScriptedLLM
+
+    script = _load_run_agent_eval()
+    assert script._error_chars() == load_config("agent/agent_eval")["agent_eval"]["trajectory_error_chars"]
+
+    def with_chars(value):
+        def fake(name, *args, **kwargs):
+            cfg = load_config(name, *args, **kwargs)
+            if name == "agent/agent_eval":
+                cfg["agent_eval"]["trajectory_error_chars"] = value
+            return cfg
+        return fake
+
+    monkeypatch.setattr(script, "load_config", with_chars(12))
+    executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=0)
+    traj = script.run_planner(executor, _similar_request(), "planner", 2)
+    assert 0 < len(traj["error"]) <= 12
+    monkeypatch.setattr(script, "load_config", with_chars(0))
+    with pytest.raises(ConfigError):
+        script._error_chars()
 
 
 def test_resume_drops_planner_records_made_with_another_reflect_setting():

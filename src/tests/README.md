@@ -110,6 +110,9 @@ pytest tests/ --cov=package
 # Run only agent tests
 pytest tests/agents/
 
+# Run only evaluation / ablation tests
+pytest tests/evaluation/
+
 # Run only tool tests
 pytest tests/tools/
 

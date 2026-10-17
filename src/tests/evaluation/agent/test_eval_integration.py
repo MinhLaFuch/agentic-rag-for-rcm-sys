@@ -11,7 +11,7 @@ from package.evaluation.agent._schema import ANSWER_STATUSES
 from package.inference import compose_answer
 from package.inference._schema import STATUSES
 from package.tools import QueryTool
-from tests.agents.test_agent_eval import ITEM2ID, _load_run_agent_eval, _step, _trajectory
+from tests.evaluation.agent.test_agent_eval import ITEM2ID, _load_run_agent_eval, _step, _trajectory
 from tests.agents.test_plan_executor import ScriptedLLM, plan
 from tests.agents.inference.helpers import good_reply
 from tests.tools_helpers import VG_A, VG_B

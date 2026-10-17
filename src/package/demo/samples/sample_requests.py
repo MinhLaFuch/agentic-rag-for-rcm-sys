@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from package.evaluation.agent import TEMPLATES
+from package.agents import TEMPLATES
 
 
 def sample_requests(language: str = "vi") -> dict[str, str]:

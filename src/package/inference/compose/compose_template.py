@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from ._dataclass import AgentOutcome, Answer
-from ._helper import cut_title
+from .._dataclass import AgentOutcome, Answer
+from .cut_title import cut_title
 from ._prompt import ID_ONLY_NOTE, NO_RESULT_TEXT, OK_HEADER, PARTIAL_HEADER, TOOL_ERROR_TEXT
-from .classify_outcome import classify_outcome
-from .empty_usage import empty_usage
+from ..empty_usage import empty_usage
+from ..outcome import classify_outcome
 
 
 def _item_lines(number: int, item: dict) -> list[str]:

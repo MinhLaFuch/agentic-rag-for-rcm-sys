@@ -20,7 +20,6 @@ except ImportError:
     print("Please install with: pip install gradio")
     sys.exit(1)
 
-from package.evaluation.agent import TEMPLATES
 from package.config import get_data_paths, get_domains, load_config
 from package.demo import (
     DemoRequest,

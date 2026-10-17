@@ -13,7 +13,7 @@ from package.inference import (
     outcome_from_plan_results,
     outcome_from_type1,
 )
-from package.inference._helper import check_grounding
+from package.inference.grounding import check_grounding
 from package.tools import QueryTool
 from tests.agents.test_plan_executor import plan
 from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, good_reply, item, outcome, reply

@@ -1,6 +1,6 @@
 from ._dataclass import AgentRequest
 from ._helper import items_satisfying, items_without_price
-from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS, TEMPLATES
+from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
 from .build_requests import build_requests
 from .reference_groups import reference_groups
 from .score_trajectory import score_trajectory
@@ -12,7 +12,6 @@ __all__ = [
     "KINDS",
     "ORACLE_KINDS",
     "PLANNER_AGENTS",
-    "TEMPLATES",
     "AgentRequest",
     "build_requests",
     "items_satisfying",

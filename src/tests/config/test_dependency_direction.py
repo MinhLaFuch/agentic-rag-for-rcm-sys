@@ -4,7 +4,7 @@
     agents     -> must not import inference / demo / evaluation
     inference  -> may import agents (not demo / evaluation)
     evaluation -> may import agents / inference (not demo)
-    demo       -> may import agents / inference (not evaluation, see ALLOWED_EXCEPTIONS)
+    demo       -> may import agents / inference (not evaluation)
 
 Only ``package/`` is checked; ``scripts/`` are entry points and ``tests/`` are white-box, both are exempt.
 """
@@ -22,10 +22,7 @@ FORBIDDEN_IMPORTS = {
 }
 
 # (importing file, imported package) pairs that are allowed on purpose.
-ALLOWED_EXCEPTIONS = {
-    # The demo's sample requests reuse the request TEMPLATES of the agent evaluation instead of duplicating the texts.
-    ("package/demo/samples/sample_requests.py", "package.evaluation.agent"),
-}
+ALLOWED_EXCEPTIONS: set[tuple[str, str]] = set()
 
 
 def _is_under(dotted: str, package: str) -> bool:

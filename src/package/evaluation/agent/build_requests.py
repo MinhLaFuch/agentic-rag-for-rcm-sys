@@ -7,10 +7,11 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from ...agents import TEMPLATES
 from ...tools.corpus import ItemCorpus
 from ._dataclass import AgentRequest
 from ._helper import _deepest_category, _price_of, items_satisfying
-from ._schema import KIND_SEGMENTS, ORACLE_KINDS, TEMPLATES
+from ._schema import KIND_SEGMENTS, ORACLE_KINDS
 
 
 def build_requests(

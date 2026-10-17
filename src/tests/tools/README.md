@@ -3,7 +3,8 @@
 Run from the repository root with the project's virtual-environment interpreter (not a global `python`/`pip`):
 
     python -m pytest tests/tools -q                      # every standalone tool test (this folder is the single home of package/tools tests)
-    python -m pytest tests/agents -q                     # agent tests (PlanExecutor, LLM provider, MemoryTool, evaluation, ...)
+    python -m pytest tests/agents -q                     # agent tests (PlanExecutor, LLM provider, MemoryTool, inference, ...)
+    python -m pytest tests/evaluation -q                 # agent evaluation + ablation tests
     python -m pytest tests -q                            # everything
 
 or `tests/tools/run_tests.sh` / `run_tests.bat` (log + per-test input/output file in `tests/logs/`, like the other folders).

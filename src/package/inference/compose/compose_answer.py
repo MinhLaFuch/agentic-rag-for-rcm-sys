@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from ..api import LLMProvider
-from ._dataclass import AgentOutcome, Answer
-from ._limits import get_inference_limits
-from ._schema import MODES
+from ...api import LLMProvider
+from .._dataclass import AgentOutcome, Answer
+from .._limits import get_inference_limits
+from .._schema import MODES
 from .compose_llm import compose_llm
 from .compose_template import compose_template
 

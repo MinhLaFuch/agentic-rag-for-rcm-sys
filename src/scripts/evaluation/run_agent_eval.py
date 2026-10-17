@@ -49,6 +49,7 @@ from package.evaluation.agent import (
     summarize,
 )
 from package.config import get_data_paths, get_domains, load_config
+from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR
 from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
@@ -62,8 +63,6 @@ from package.tools.corpus import build_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
 from package.utils import ensure_utf8_stdout
-
-ERROR_CHARS = 300  # step/plan errors are cut to this many characters in the trajectory file
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -108,6 +107,14 @@ def is_resumable(
     return rec["agent"] not in PLANNER_AGENTS or rec.get("reflect_rounds", 0) == reflect_rounds  # no field = before plan-reflect = 0
 
 
+def _error_chars() -> int:
+    """Step/plan errors are cut to this many characters in the trajectory file (agent_eval.trajectory_error_chars)."""
+    chars = int(load_config("agent/agent_eval")["agent_eval"]["trajectory_error_chars"])
+    if chars <= 0:
+        raise ConfigError("configs/agent/agent_eval.yaml: trajectory_error_chars must be > 0")
+    return chars
+
+
 def run_planner(
     executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
 ) -> dict[str, Any]:
@@ -116,18 +123,19 @@ def run_planner(
     it runs after the agent's own timing (wall_seconds keeps its old meaning) and never touches recommended / usage.
     """
     traj = empty_trajectory(request, agent, sorted(executor.tools))
+    error_chars = _error_chars()
     started = time.perf_counter()
     results: list[dict[str, Any]] = []
     try:
         results = executor.run(request.text)
         traj["steps"] = [
             {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds")},
-             "error": None if r.get("error") is None else str(r["error"])[:ERROR_CHARS]}
+             "error": None if r.get("error") is None else str(r["error"])[:error_chars]}
             for r in results
         ]
         traj["recommended"] = extract_recommendations(results, k)
     except (ValueError, LLMProviderError) as exc:  # unparsable plan after retries, or the endpoint failed
-        traj["error"] = f"{type(exc).__name__}: {exc}"[:ERROR_CHARS]
+        traj["error"] = f"{type(exc).__name__}: {exc}"[:error_chars]
         traj["provider_error"] = isinstance(exc, LLMProviderError)
     traj.update(plan=executor.last_plan, ask_user=executor.last_question, truncated=executor.last_truncated,
                 usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
