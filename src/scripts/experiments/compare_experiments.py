@@ -15,17 +15,17 @@ import json
 from pathlib import Path
 from typing import Any
 
-from package.agents.evaluation.ablation._compare import (
+from package.agents.ablation._compare import (
     compare_two_groups,
     find_disagreements,
     pair_by_request_id,
 )
-from package.agents.evaluation.ablation._limits import get_ablation_limits
-from package.agents.evaluation.ablation._loader import (
+from package.agents.ablation._limits import get_ablation_limits
+from package.agents.ablation._loader import (
     load_group_data,
     validate_contrast_config,
 )
-from package.agents.evaluation.ablation._report import (
+from package.agents.ablation._report import (
     render_markdown_report,
     write_csv,
     write_disagreements,

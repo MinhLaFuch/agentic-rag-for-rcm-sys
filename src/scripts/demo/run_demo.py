@@ -199,7 +199,7 @@ def main() -> None:
         print(f"Eval-on: {args.eval_on}")
 
         # Load config cho sample users
-        sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max"]
+        sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
         print("Initializing LiveBackend...")
         backend = LiveBackend(tag=args.tag, domain=args.domain)
