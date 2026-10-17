@@ -1,0 +1,6 @@
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+# Recorded experiment outputs are artifacts, not source: keep them byte-for-byte.
+experiments/** -text
