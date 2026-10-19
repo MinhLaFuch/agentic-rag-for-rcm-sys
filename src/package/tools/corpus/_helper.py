@@ -19,7 +19,11 @@ def read_only_authorizer():
         getattr(sqlite3, "SQLITE_RECURSIVE", 33),
     }
 
-    def authorizer(action, arg1, *_):
+    def authorizer(action, arg1, arg2, *_):
+        # These single-opcode functions can allocate arbitrarily large blobs;
+        # SQLite's VM progress handler cannot interrupt work inside the C call.
+        if action == sqlite3.SQLITE_FUNCTION and (arg2 or "").lower() in {"zeroblob", "randomblob"}:
+            return sqlite3.SQLITE_DENY
         if action in allowed:
             return sqlite3.SQLITE_OK
         # FTS5 MATCH reads PRAGMA data_version; deny every other pragma.

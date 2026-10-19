@@ -28,7 +28,7 @@ import time
 import traceback
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
+ROOT = Path(__file__).resolve().parents[2]  # bootstrap only: needed to import `package` before PROJECT_ROOT exists
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd

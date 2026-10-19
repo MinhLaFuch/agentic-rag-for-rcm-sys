@@ -77,10 +77,16 @@ class LiveBackend:
 
         # Build item_id_to_metadata từ corpus
         self._item_id_to_metadata = {}
-        for item_id in list(item2id.keys())[:10000]:  # giới hạn để demo nhanh hơn
-            row = corpus.get_metadata(item_id)
-            if row:
-                self._item_id_to_metadata[item_id] = row
+        sample_item_ids = list(item2id.keys())[:10000]  # giới hạn để demo nhanh hơn
+        if sample_item_ids:
+            marks = ",".join("?" for _ in sample_item_ids)
+            rows, _ = corpus.select(
+                f"SELECT item_id, domain, title, store, price, average_rating, rating_number, main_category "
+                f"FROM items WHERE item_id IN ({marks})",
+                sample_item_ids,
+                max_rows=len(sample_item_ids),
+            )
+            self._item_id_to_metadata = {row["item_id"]: row for row in rows}
 
         # Fit ItemKNN
         print("Đang fit ItemKNN...")
