@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import importlib.metadata
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -9,6 +12,38 @@ import yaml
 
 from ._helper import _git_commit
 from .hardware_info import hardware_info
+
+
+def _source_fingerprint() -> str:
+    """Hash implementation/config sources so runs remain identifiable without Git."""
+    project_root = Path(__file__).resolve().parents[3]
+    files = [project_root / "pyproject.toml"]
+    for folder in ("package", "scripts", "configs"):
+        base = project_root / folder
+        if base.exists():
+            files.extend(path for path in base.rglob("*") if path.suffix in {".py", ".yaml", ".yml"})
+    digest = hashlib.sha256()
+    for path in sorted(set(files)):
+        if not path.is_file():
+            continue
+        digest.update(path.relative_to(project_root).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        with path.open("rb") as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(chunk)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _environment_versions() -> dict[str, str | None]:
+    versions: dict[str, str | None] = {}
+    for distribution in ("numpy", "pandas", "scipy", "pyarrow", "PyYAML", "pytest", "torch"):
+        try:
+            versions[distribution] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            versions[distribution] = None
+    versions["python"] = sys.version.split()[0]
+    return versions
 
 
 def save_experiment(
@@ -29,6 +64,8 @@ def save_experiment(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "seed": seed,
         "git_commit": _git_commit(),
+        "source_fingerprint": _source_fingerprint(),
+        "environment": _environment_versions(),
         "hardware": hardware_info(),
         "runtime_seconds": round(runtime_seconds, 2),
         "dataset": dataset_info,

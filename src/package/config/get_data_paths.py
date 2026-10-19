@@ -21,6 +21,16 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
     def root(key: str) -> Path:
         return PROJECT_ROOT / paths[key]
 
+    def artifact_dir(key: str, filename: str) -> Path:
+        """Resolve tagged artifacts, while accepting the earlier flat layout."""
+        tagged = root(key) / tag
+        if (tagged / filename).exists():
+            return tagged
+        flat = root(key)
+        if (flat / filename).exists():
+            return flat
+        return tagged
+
     return DataPaths(
         tag=tag,
         raw_dir=root("raw_dir"),
@@ -28,8 +38,8 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
         filtered_dir=root("filtered_dir") / tag,
         mapped_dir=root("mapped_dir") / tag,
         splits_dir=root("splits_dir") / tag,
-        item_knn_dir=root("item_knn_dir") / tag,
-        corpus_dir=root("corpus_dir") / tag,
+        item_knn_dir=artifact_dir("item_knn_dir", f"item_knn_{tag}_validation.npz"),
+        corpus_dir=artifact_dir("corpus_dir", f"corpus_{tag}.sqlite"),
         log_dir=root("log_dir") / tag,
         experiments_dir=root("experiments_dir"),
     )

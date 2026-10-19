@@ -14,7 +14,6 @@ from package.tools.ranking.reco_model_tool import RecoModelTool
 from package.tools.retrieval.semantic_search_tool import SemanticSearchTool
 from package.tools.sql_query.query_tool import QueryTool
 
-
 def build_tools(knn, scorer, user2id, item2id, interactions, corpus):
     # 1 chỗ duy nhất liệt kê tool nào agent được dùng — thêm/bớt tool chỉ sửa ở đây
     return [

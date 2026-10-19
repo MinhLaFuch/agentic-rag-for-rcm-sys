@@ -17,6 +17,7 @@ def load_corpus(
     meta_files: list[tuple[str, str]],
     item2id: dict[str, int],
     min_coverage: float,
+    allow_missing_sources: bool = False,
 ) -> tuple[ItemCorpus, float]:
     """Load ItemCorpus from SQLite file with validation.
 
@@ -25,6 +26,8 @@ def load_corpus(
         meta_files: List of (domain, path) tuples for metadata files (for validation).
         item2id: Mapping from namespaced item_id to integer id (for validation).
         min_coverage: Minimum coverage threshold to validate against saved file.
+        allow_missing_sources: Skip source-file checks only for missing paths; available sources, schema,
+            mapping hash, item count, and saved corpus metadata are still validated.
 
     Returns:
         (corpus, coverage) where coverage is taken from the saved metadata.
@@ -78,19 +81,33 @@ def load_corpus(
 
     # Validate source hashes
     current_hashes = []
-    for domain, meta_path in meta_files:
+    missing_sources = []
+    for index, (domain, meta_path) in enumerate(meta_files):
         meta_path = Path(meta_path)
         if not meta_path.exists():
-            raise FileNotFoundError(f"Meta file not found: {meta_path}")
+            if not allow_missing_sources:
+                raise FileNotFoundError(f"Meta file not found: {meta_path}")
+            missing_sources.append(str(meta_path))
+            current_hashes.append(None)
+            continue
         stat = meta_path.stat()
         file_key = f"{meta_path}:{stat.st_size}:{stat.st_mtime}"
         current_hashes.append(hashlib.sha256(file_key.encode("utf-8")).hexdigest())
 
-    if current_hashes != metadata["source_hashes"]:
+    saved_hashes = metadata["source_hashes"]
+    if len(saved_hashes) != len(current_hashes):
+        raise ValueError("Source metadata list mismatch: rebuild corpus with the current domain set.")
+    mismatched_sources = [
+        index for index, current in enumerate(current_hashes)
+        if current is not None and current != saved_hashes[index]
+    ]
+    if mismatched_sources:
         raise ValueError(
-            "Source file metadata mismatch: meta files have changed since corpus was saved. "
+            f"Source file metadata mismatch at indexes {mismatched_sources}: meta files have changed since corpus was saved. "
             "Re-build with --save-corpus."
         )
+    if missing_sources:
+        print("  Corpus source validation skipped for missing metadata files: " + ", ".join(missing_sources))
 
     # Validate mapping hash
     item_keys = sorted(item2id.keys())

@@ -140,6 +140,8 @@ def test_sql_empty_filter_lists_are_ignored_consistently(corpus):
         "WITH x AS (SELECT 1) UPDATE items SET title = 'hacked'",
         "SELECT * FROM items; ATTACH DATABASE ':memory:' AS other",
         "SELECT load_extension('nope')",
+        "SELECT length(zeroblob(450000000))",
+        "SELECT length(randomblob(450000000))",
         "  \n\t drop table items",
         "",
         "   ;  ",

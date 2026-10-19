@@ -103,15 +103,20 @@ def check_compatibility(
     """
     cfg_a = config_a.get("config", {})
     cfg_b = config_b.get("config", {})
+    run_a = config_a.get("run", {})
+    run_b = config_b.get("run", {})
+    # Experiment config.yaml files persist execution metadata under `run`,
+    # while older callers/tests may still pass the legacy top-level layout.
+    seed_a, seed_b = run_a.get("seed", cfg_a.get("seed")), run_b.get("seed", cfg_b.get("seed"))
     
-    if cfg_a.get("seed") != cfg_b.get("seed"):
-        return False, f"seed mismatch: {cfg_a.get('seed')} vs {cfg_b.get('seed')}"
+    if seed_a != seed_b:
+        return False, f"seed mismatch: {seed_a} vs {seed_b}"
     
     if cfg_a.get("per_segment") != cfg_b.get("per_segment"):
         return False, f"per_segment mismatch: {cfg_a.get('per_segment')} vs {cfg_b.get('per_segment')}"
     
-    dataset_a = config_a.get("dataset", {})
-    dataset_b = config_b.get("dataset", {})
+    dataset_a = run_a.get("dataset", config_a.get("dataset", {}))
+    dataset_b = run_b.get("dataset", config_b.get("dataset", {}))
     
     if dataset_a.get("eval_on") != dataset_b.get("eval_on"):
         return False, f"eval_on mismatch: {dataset_a.get('eval_on')} vs {dataset_b.get('eval_on')}"

@@ -90,6 +90,23 @@ def test_check_compatibility_match():
     assert reason == ""
 
 
+def test_check_compatibility_reads_experiment_run_metadata():
+    config_a = {
+        "run": {"seed": 42, "dataset": {"eval_on": "validation"}},
+        "config": {"per_segment": 2, "language": "vi", "k": 10},
+    }
+    config_b = {
+        "run": {"seed": 43, "dataset": {"eval_on": "test"}},
+        "config": {"per_segment": 2, "language": "vi", "k": 10},
+    }
+    compatible, reason = check_compatibility(config_a, config_b)
+    assert not compatible and "seed mismatch" in reason
+
+    config_b["run"]["seed"] = 42
+    compatible, reason = check_compatibility(config_a, config_b)
+    assert not compatible and "eval_on mismatch" in reason
+
+
 def test_check_compatibility_seed_mismatch():
     """Hai config với seed khác nhau phải trả (False, reason)."""
     config_a = {

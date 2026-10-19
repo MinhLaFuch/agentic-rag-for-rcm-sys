@@ -1,0 +1,26 @@
+run:
+  timestamp: '2026-10-19T16:05:12.724689+00:00'
+  seed: 42
+  git_commit: null
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 440.67
+  dataset:
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    id_format: namespaced
+    metadata_coverage: 1.0
+config:
+  budgets:
+  - 50
+  - 100
+  - 200
+  per_segment: 100
+  seed_items: 10
+  query_items: 3
+  neighbors: 20
+  sparse_max: 4

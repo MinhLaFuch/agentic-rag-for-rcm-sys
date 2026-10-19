@@ -7,6 +7,7 @@ listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent
   constrained / cold_text  category (+ price ceiling) taken from held-out items = ORACLE scenario, an upper bound
   ambiguous                missing information; the right move is to ask back instead of inventing ids
 Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
+By default, target-informed oracle request kinds are excluded; use ``--request-scope oracle`` to run only those cases.
 
 Inference (final answer, package/inference): after type1 / planner / planner_memory the agent's outcome is turned into a text answer.
 It only PRESENTS what the agent chose, so `recommended`, task_success, recall... are unchanged; the answer is judged by its own columns
@@ -27,6 +28,7 @@ Nothing here touches the test split unless you pass --eval-on test.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import time
@@ -45,6 +47,7 @@ from package.evaluation.agent import (
     PLANNER_AGENTS,
     AgentRequest,
     build_requests,
+    filter_requests_by_scope,
     score_trajectory,
     summarize,
 )
@@ -64,11 +67,12 @@ from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
+from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.tools.recommenders.load_item_knn import load_item_knn
 from package.utils import ensure_utf8_stdout
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
-    "task_success", "recall@{k}", "ndcg@{k}", "constraint_satisfaction", "tool_selection_ok",
+    "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
     "asked_clarification", "invented_ids", "n_steps", "first_attempt_ok", "reflections", "llm_latency_seconds", "completion_tokens",
     "answer_status_ok", "answer_grounded", "answer_fallback",
 )
@@ -179,7 +183,14 @@ def main() -> None:
     ap.add_argument("--inference-mode", choices=list(MODES),
                     help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
+    ap.add_argument("--request-scope", choices=("realistic", "oracle", "all"), default="realistic",
+                    help="realistic loại request dùng target metadata; oracle chỉ chạy các request đó; all gộp cả hai nhóm")
     ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
+    ap.add_argument(
+        "--allow-missing-corpus-sources",
+        action="store_true",
+        help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
+    )
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
@@ -219,6 +230,7 @@ def main() -> None:
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
 
     # ---- corpus + models + tools
+    knn_artifact_status = "fit_fresh_no_prebuilt"
     if args.no_prebuilt:
         print("Build corpus in RAM (--no-prebuilt)")
         corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
@@ -232,11 +244,17 @@ def main() -> None:
                 f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
             )
         print(f"Load corpus from {corpus_path}")
-        corpus, coverage = load_corpus(corpus_path, meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        corpus, coverage = load_corpus(
+            corpus_path, meta_files, item2id, float(cfg["min_metadata_coverage"]),
+            allow_missing_sources=args.allow_missing_corpus_sources,
+        )
         file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
         print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
 
     knn_k = int(baselines["item_knn"]["k"])
+    fit_pairs = fit_df[["user_idx", "item_idx"]]
+    knn_fit_data_hash = None
+    knn_cache_data_hash = None
     if args.no_prebuilt:
         print("Fit ItemKNN on fit data (--no-prebuilt)")
         t0 = time.perf_counter()
@@ -252,10 +270,29 @@ def main() -> None:
                 f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {args.eval_on}\n"
                 f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
             )
+        cache_meta_path = item_knn_path.with_suffix(".meta.json")
+        if cache_meta_path.exists():
+            knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
         print(f"Load ItemKNN from {item_knn_path}")
-        knn = load_item_knn(item_knn_path, knn_k, fit_df[["user_idx", "item_idx"]])
-        fit_time = getattr(knn, "_fit_time", None)
-        print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
+        try:
+            knn = load_item_knn(item_knn_path, knn_k, fit_pairs)
+            knn_artifact_status = "cache_validated"
+            knn_fit_data_hash = knn._fit_data_hash
+            fit_time = getattr(knn, "_fit_time", None)
+            print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
+        except ValueError as exc:
+            if "Data hash mismatch" not in str(exc):
+                raise
+            print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
+            knn_fit_data_hash = getattr(exc, "current_data_hash", None)
+            t0 = time.perf_counter()
+            knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+            knn._fit_time = time.perf_counter() - t0
+            knn_artifact_status = "refit_after_data_hash_mismatch"
+            print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
+
+    if knn_fit_data_hash is None:
+        knn_fit_data_hash = item_knn_data_hash(fit_pairs)
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
     tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
@@ -284,6 +321,7 @@ def main() -> None:
         language=cfg["language"], k=k, price_slack=float(cfg["price_slack"]), price_round_to=float(cfg["price_round_to"]),
         rng=np.random.default_rng(seed),
     )
+    requests = filter_requests_by_scope(requests, args.request_scope)
     counts = pd.Series([f"{r.kind}/{r.segment}" for r in requests]).value_counts().sort_index()
     print("requests:", ", ".join(f"{name}={n}" for name, n in counts.items()), f"| agents: {agents}")
     text_of = {r.request_id: r.text for r in requests}
@@ -351,15 +389,23 @@ def main() -> None:
     exp_dir = save_experiment(
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+                "request_scope": args.request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
                 "inference_mode": inference_mode if any(a in INFERENCE_AGENTS for a in agents) else None,
-                "llm_model": load_config("agent/llm").get("model")},
+                "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
+                "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
+                "knn_cache_has_mapping_hash": False},
         metrics={"k": k, "summary": summary},
         seed=seed,
-        dataset_info={"splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
+        dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": len(item2id), "metadata_coverage": round(coverage, 4), "n_requests": len(requests),
-                      "profile_as_of_timestamp": as_of},
+                      "profile_as_of_timestamp": as_of,
+                      "mapping_hash": hashlib.sha256("".join(sorted(item2id)).encode()).hexdigest(),
+                      "split_files": {name: {"path": str(data_paths.split_path(name)),
+                                             "size_bytes": data_paths.split_path(name).stat().st_size,
+                                             "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns}
+                                      for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
         notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "

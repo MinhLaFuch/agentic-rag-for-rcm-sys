@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import time
+from pathlib import Path
 
 import pandas as pd
 
@@ -78,12 +79,19 @@ def main() -> None:
     assert best is not None
     metrics: dict = {"selection_metric": metric, "validation_trials": trials, "selected": best}
     dataset_info = {
+        "tag": paths.tag,
         "splits_dir": splits_dir,
         "num_users": num_users,
         "num_items": num_items,
         "train_interactions": int(train_matrix.nnz),
         "validation_interactions": int(validation_matrix.nnz),
         "final_test_ran": args.run_final_test,
+        "split_files": {
+            name: {"path": str(Path(splits_dir) / f"{name}.parquet"),
+                   "size_bytes": (Path(splits_dir) / f"{name}.parquet").stat().st_size,
+                   "mtime_ns": (Path(splits_dir) / f"{name}.parquet").stat().st_mtime_ns}
+            for name in ("train", "validation", "test")
+        },
     }
 
     if args.run_final_test:

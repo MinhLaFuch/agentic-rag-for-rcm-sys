@@ -81,8 +81,17 @@ def evaluate_recommender(
     batch = max(16, min(1024, batch_elements // max(1, num_items)))
 
     per_user: dict[str, list[np.ndarray]] = {}
+    item_per_user: dict[str, dict[str, list[np.ndarray]]] = {"warm_item": {}, "cold_item": {}}
     recommended: dict[int, set] = {k: set() for k in ks}
     n_rel_all = np.diff(target.indptr)[users]
+    item_seen = np.asarray(model.train_matrix.sum(axis=0)).ravel() > 0
+    target_coo = target.tocoo()
+    warm_target_count = np.bincount(
+        target_coo.row[item_seen[target_coo.col]], minlength=target.shape[0]
+    )
+    cold_target_count = np.bincount(
+        target_coo.row[~item_seen[target_coo.col]], minlength=target.shape[0]
+    )
 
     for start in range(0, len(users), batch):
         u = users[start : start + batch]
@@ -93,11 +102,28 @@ def evaluate_recommender(
         valid_mask = top >= 0
         # For invalid positions, set hits to False (no hit)
         hits = np.where(valid_mask, np.take_along_axis(gt, top, axis=1), False)
+        safe_top = np.where(valid_mask, top, 0)
+        recommended_item_seen = item_seen[safe_top] & valid_mask
 
         n_rel = n_rel_all[start : start + batch]
         for k in ks:
-            for name, values in ranking_metrics_at_k(hits, n_rel, k).items():
+            metrics = ranking_metrics_at_k(hits, n_rel, k)
+            for name, values in metrics.items():
                 per_user.setdefault(name, []).append(values)
+
+            for segment, target_counts, is_seen in (
+                ("warm_item", warm_target_count, True),
+                ("cold_item", cold_target_count, False),
+            ):
+                segment_relevant = target_counts[u]
+                user_mask = segment_relevant > 0
+                if not user_mask.any():
+                    continue
+                segment_hits = hits & recommended_item_seen if is_seen else hits & ~recommended_item_seen
+                for name, values in ranking_metrics_at_k(
+                    segment_hits[user_mask], segment_relevant[user_mask], k
+                ).items():
+                    item_per_user[segment].setdefault(name, []).append(values)
             # Only add valid item indices (>= 0) to recommended set
             valid_top_k = top[:, :k][valid_mask[:, :k]]
             recommended[k].update(np.unique(valid_top_k).tolist())
@@ -112,9 +138,15 @@ def evaluate_recommender(
         if mask.any():
             by_segment[seg] = {n: float(v[mask].mean()) for n, v in metric_arrays.items()}
 
-    item_seen = np.asarray(model.train_matrix.sum(axis=0)).ravel() > 0
-    target_coo = target.tocoo()
     seen_ratio = float(item_seen[target_coo.col].mean()) if target_coo.nnz else 0.0
+    by_item_segment: dict[str, dict[str, float | int]] = {}
+    for segment, metrics in item_per_user.items():
+        if metrics:
+            first_metric_parts = next(iter(metrics.values()))
+            by_item_segment[segment] = {
+                "num_users": int(sum(len(part) for part in first_metric_parts)),
+                **{name: float(np.concatenate(parts).mean()) for name, parts in metrics.items()},
+            }
 
     return EvaluationResult(
         overall={n: float(v.mean()) for n, v in metric_arrays.items()},
@@ -122,4 +154,5 @@ def evaluate_recommender(
         num_users=num_users,
         catalog_coverage={f"catalog_coverage@{k}": len(recommended[k]) / num_items for k in ks},
         target_item_seen_ratio=seen_ratio,
+        by_item_segment=by_item_segment,
     )

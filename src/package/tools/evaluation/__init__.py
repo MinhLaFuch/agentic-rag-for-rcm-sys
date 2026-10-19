@@ -1,5 +1,8 @@
 from ._dataclass import EvaluationResult
 from .evaluate_recommender import evaluate_recommender
+from .candidate_retrieval_metrics import candidate_retrieval_metrics
+from .item_familiarity_metrics import item_familiarity_metrics
+from .latency_summary import latency_summary
 from .next_experiment_dir import next_experiment_dir
 from .save_experiment import save_experiment
 from .metrics import ranking_metrics_at_k
@@ -12,6 +15,9 @@ from .select_fit_target import select_fit_target
 __all__ = [
     "EvaluationResult",
     "evaluate_recommender",
+    "candidate_retrieval_metrics",
+    "item_familiarity_metrics",
+    "latency_summary",
     "next_experiment_dir",
     "save_experiment",
     "ranking_metrics_at_k",
