@@ -119,7 +119,7 @@ def test_empty_filter_values_mean_no_filter(world):
 def test_user_values_are_bound_parameters_not_sql_text():
     evil = "x' OR 1=1 --"
     where, params, _ = compile_filters(
-        {"title_contains": evil, "store": evil, "categories_any": [evil], "exclude_item_ids": [evil]}, {"D"}
+        {"title_contains": evil, "store": evil, "categories_any": [evil], "exclude_item_ids": [evil]}, {"D"}, corpus=None
     )
     assert "OR 1=1" not in where and "x'" not in where
     assert where.count("?") == len(params)

@@ -25,7 +25,9 @@ class SQLTool(Tool):
 
     name = "SQLTool"
     description = (
-        "Retrieve candidate items with structured filters. Unknown filter keys are rejected."
+        "Retrieve candidate items with structured filters (domain, category, price, rating, store). "
+        "Does not require a text query; use SemanticSearchTool for keyword-based retrieval. "
+        "Categories must be exact names from the catalog (case-sensitive). Unknown filter keys are rejected."
     )
     input_schema = {
         "filters": {
@@ -76,7 +78,7 @@ class SQLTool(Tool):
             raise ToolInputError(f"`descending` must be a boolean (true/false), got {descending!r}")
         limit = check_top_k(limit, name="limit")
 
-        where, params, normalized = compile_filters(filters, set(self.corpus.domains()))
+        where, params, normalized = compile_filters(filters, set(self.corpus.domains()), corpus=self.corpus)
         direction = "DESC" if descending else "ASC"
         cols = ", ".join(ITEM_COLUMNS)
         # NULLs last, then item_id so results are deterministic

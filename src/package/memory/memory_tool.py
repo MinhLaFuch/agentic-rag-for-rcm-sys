@@ -19,13 +19,14 @@ from ..tools.base import Tool, validate_int
 from ..tools.corpus import ItemCorpus
 
 MEMORY_DEFAULT_TOP_N_CATEGORIES = get_tool_limits().memory_default_top_n_categories
+MEMORY_RECENT_ITEMS = get_tool_limits().memory_recent_items
 
 
 class MemoryTool(Tool):
     name = "MemoryTool"
     description = (
         "Retrieve a lightweight summary of a user's past purchase pattern "
-        "(top categories, price range) derived from their interaction history. "
+        "(top categories, price range, recent items) derived from their interaction history. "
         "Read-only — no write/update, since there is no dialogue to extract "
         "preferences from in this dataset."
     )
@@ -37,6 +38,7 @@ class MemoryTool(Tool):
         "user_id": "str", "known": "bool  -- False = no history (unknown user or 0 interactions: cold start)", "n_interactions": "int",
         "top_categories": "list[str]  -- e.g. use as filters.categories_any via \"$1.top_categories\"",
         "price_range": "{min, max} | None  -- e.g. \"$1.price_range.max\" for filters.price_max",
+        "recent_items": "list[str]  -- namespaced item ids, most recent first; use as ItemCFTool.items via \"$1.recent_items\"",
     }
 
     def __init__(
@@ -46,7 +48,7 @@ class MemoryTool(Tool):
         item2id: dict[str, int],
         corpus: ItemCorpus,
         logger=None,
-        as_of_timestamp: int | None = None,  # nếu có: ném LeakageError khi interactions chứa dòng timestamp > mốc này
+        as_of_timestamp: int | None = None,  # nếu có: chỉ dùng interactions với timestamp <= mốc này
     ) -> None:
         super().__init__(logger)
         if as_of_timestamp is not None:
@@ -57,13 +59,27 @@ class MemoryTool(Tool):
         self.user2id = user2id
         self.id2item = {v: k for k, v in item2id.items()}
         self.corpus = corpus
+        self.as_of_timestamp = as_of_timestamp
 
     def execute(self, user_id: str, top_n_categories: int = MEMORY_DEFAULT_TOP_N_CATEGORIES) -> dict[str, Any]:
         top_n_categories = validate_int(top_n_categories, "top_n_categories")
         uidx = self.user2id.get(user_id)  # user lạ hoặc 0 tương tác: known=False (cold-start, như RecoModelTool), không ném lỗi
-        hist_idx = [] if uidx is None else self.interactions.loc[self.interactions["user_idx"] == uidx, "item_idx"].tolist()
+
+        # Apply as_of_timestamp filter if set (leakage prevention)
+        user_interactions = self.interactions
+        if self.as_of_timestamp is not None and "timestamp" in user_interactions.columns:
+            user_interactions = user_interactions[user_interactions["timestamp"] <= self.as_of_timestamp]
+
+        hist_idx = [] if uidx is None else user_interactions.loc[user_interactions["user_idx"] == uidx, "item_idx"].tolist()
         if not hist_idx:
-            return {"user_id": user_id, "known": False, "n_interactions": 0, "top_categories": [], "price_range": None}
+            return {"user_id": user_id, "known": False, "n_interactions": 0, "top_categories": [], "price_range": None, "recent_items": []}
+
+        # Get recent items: sort by timestamp descending if available, otherwise original order
+        user_hist = user_interactions[user_interactions["user_idx"] == uidx]
+        if "timestamp" in user_hist.columns:
+            user_hist = user_hist.sort_values("timestamp", ascending=False)
+        recent_hist_idx = user_hist["item_idx"].head(MEMORY_RECENT_ITEMS).tolist()
+        recent_items = [self.id2item[i] for i in recent_hist_idx if i in self.id2item]
 
         item_ids = [self.id2item[i] for i in hist_idx if i in self.id2item]
         placeholders = ",".join("?" for _ in item_ids)
@@ -88,4 +104,5 @@ class MemoryTool(Tool):
             "n_interactions": len(hist_idx),
             "top_categories": top_categories,
             "price_range": price_range,
+            "recent_items": recent_items,
         }

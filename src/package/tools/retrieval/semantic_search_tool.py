@@ -34,8 +34,11 @@ class SemanticSearchTool(Tool):
 
     name = "SemanticSearchTool"
     description = (
-        "Search items by keywords. Pass ENGLISH keywords (the catalog is English): "
-        "translate the user's request first. Returns ranked candidates with a relevance score."
+        "Search items by keywords (BM25 over title, store, categories). "
+        "Requires a text query; use SQLTool for purely structured filters without keywords. "
+        "Pass ENGLISH keywords (the catalog is English): translate the user's request first. "
+        "Categories must be exact names from the catalog (case-sensitive). "
+        "Returns ranked candidates with a relevance score."
     )
     input_schema = {
         "query": "str  -- keywords, e.g. 'mechanical keyboard quiet'; English",
@@ -94,7 +97,7 @@ class SemanticSearchTool(Tool):
         unknown = set(filters) - FILTER_KEYS
         if unknown:
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")
-        where, params, normalized_filters = compile_filters(filters, set(self.corpus.domains()))
+        where, params, normalized_filters = compile_filters(filters, set(self.corpus.domains()), corpus=self.corpus)
 
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)

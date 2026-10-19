@@ -71,7 +71,11 @@ class ItemCFTool(Tool):
             raise ToolInputError(f"`items` must be a list of non-empty item id strings, got invalid element(s): {bad!r}")
         seeds = list(dict.fromkeys(items))
         if not seeds:
-            raise ToolInputError("`items` must contain at least one item id")
+            raise ToolInputError(
+                "`items` must contain at least one item id. "
+                "For personalized recommendations, get seed items from MemoryTool.recent_items "
+                "or from a retrieval step (SemanticSearchTool/SQLTool)."
+            )
         top_k = check_top_k(top_k, name="top_k")
         if not isinstance(exclude_input, bool):
             raise ToolInputError(f"`exclude_input` must be a boolean (true/false), got {exclude_input!r}")

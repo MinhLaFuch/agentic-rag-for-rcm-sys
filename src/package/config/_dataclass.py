@@ -18,8 +18,17 @@ class DataPaths:
     filtered_dir: Path
     mapped_dir: Path
     splits_dir: Path
+    item_knn_dir: Path  # cached ItemKNN similarity matrices: resource/item_knn/<tag>/
+    corpus_dir: Path  # cached ItemCorpus databases: resource/corpus/<tag>/
     log_dir: Path  # pipeline/tool logs: experiments/logs/<tag>/ (NOT experiment results, NOT test logs)
     experiments_dir: Path  # experiment artifacts: experiments/exp_NNN/
+
+    @property
+    def corpus_path(self) -> Path:
+        return self.corpus_dir / f"corpus_{self.tag}.sqlite"
+
+    def item_knn_path(self, eval_on: str) -> Path:
+        return self.item_knn_dir / f"item_knn_{self.tag}_{eval_on}.npz"
 
     def review_path(self, domain: str) -> Path:
         return self.raw_dir / f"{domain}.jsonl.gz"

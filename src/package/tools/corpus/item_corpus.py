@@ -14,6 +14,7 @@ Three tables:
 
 from __future__ import annotations
 
+import difflib
 import sqlite3
 import time
 import warnings
@@ -179,7 +180,11 @@ class ItemCorpus:
             fetched = cur.fetchall()
         except (sqlite3.Error, sqlite3.Warning) as exc:
             if time.monotonic() > deadline:
-                raise SQLTimeOutError("query exceeded the time budget") from exc
+                raise SQLTimeOutError(
+                    "query exceeded the time budget. "
+                    "Try narrowing with fewer domains/categories, or add keywords (for SemanticSearchTool), "
+                    "or reduce the result limit."
+                ) from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
         finally:
             self._conn.set_progress_handler(None, 0)
@@ -196,7 +201,11 @@ class ItemCorpus:
             result = int(cur.fetchone()[0])
         except (sqlite3.Error, sqlite3.Warning) as exc:
             if time.monotonic() > deadline:
-                raise SQLTimeOutError("query exceeded the time budget") from exc
+                raise SQLTimeOutError(
+                    "query exceeded the time budget. "
+                    "Try narrowing with fewer domains/categories, or add keywords (for SemanticSearchTool), "
+                    "or reduce the result limit."
+                ) from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
         finally:
             self._conn.set_progress_handler(None, 0)
@@ -215,3 +224,63 @@ class ItemCorpus:
             cur = self._conn.execute(f"SELECT item_id, domain FROM items WHERE item_id IN ({marks})", chunk)
             out.update(cur.fetchall())
         return out
+
+    def categories(self) -> list[str]:
+        """Return all distinct category names, sorted alphabetically."""
+        return [r[0] for r in self._conn.execute("SELECT DISTINCT category FROM item_categories ORDER BY category")]
+
+    def category_exists(self, category: str, case_sensitive: bool = True) -> bool:
+        """
+        Check if a category exists in the catalog.
+
+        Args:
+            category: Category name to check
+            case_sensitive: If False, matches regardless of case (SQLite LOWER semantics for ASCII)
+
+        Returns:
+            True if category exists (exact match, or case-insensitive match if case_sensitive=False)
+        """
+        if case_sensitive:
+            cur = self._conn.execute("SELECT 1 FROM item_categories WHERE category = ? LIMIT 1", (category,))
+        else:
+            # Case-insensitive for ASCII letters only (SQLite LOWER semantics)
+            cur = self._conn.execute("SELECT 1 FROM item_categories WHERE LOWER(category) = LOWER(?) LIMIT 1", (category,))
+        return cur.fetchone() is not None
+
+    def normalize_category_case(self, category: str) -> str | None:
+        """
+        If category exists with different case only, return the canonical form.
+        Otherwise return None.
+
+        Args:
+            category: Category name to normalize
+
+        Returns:
+            Canonical category name if exists with different case, None otherwise
+        """
+        if self.category_exists(category, case_sensitive=True):
+            return category  # Already exact match
+        if self.category_exists(category, case_sensitive=False):
+            # Find the actual canonical form
+            cur = self._conn.execute("SELECT DISTINCT category FROM item_categories WHERE LOWER(category) = LOWER(?)", (category,))
+            row = cur.fetchone()
+            return row[0] if row else None
+        return None
+
+    def suggest_categories(self, category: str, max_suggestions: int = 5) -> list[str]:
+        """
+        Suggest similar category names using string similarity.
+
+        Args:
+            category: Category name to find suggestions for
+            max_suggestions: Maximum number of suggestions to return
+
+        Returns:
+            List of similar category names (at most max_suggestions)
+        """
+        all_cats = self.categories()
+        if not all_cats:
+            return []
+        # Use difflib for fuzzy matching (built-in, no extra dependency)
+        suggestions = difflib.get_close_matches(category, all_cats, n=max_suggestions, cutoff=0.6)
+        return suggestions

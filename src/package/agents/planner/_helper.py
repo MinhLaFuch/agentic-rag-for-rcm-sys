@@ -4,6 +4,7 @@ import json
 from ._schema import ID_ARG_KEYS, _REF
 from .._limits import get_agent_limits
 from ..results import extract_recommendations
+from ...tools import get_tool_limits
 
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:
@@ -35,7 +36,17 @@ def _resolve_refs(obj: Any, results: list[dict[str, Any]]) -> Any:
         try:
             return _resolve_path(results[n - 1]["data"], parts)
         except KeyError as exc:
-            raise ValueError(f"{obj}: {exc.args[0]}") from exc
+            # List available fields from the step's output
+            step_data = results[n - 1]["data"]
+            tool_name = results[n - 1].get("tool", "unknown")
+            if isinstance(step_data, dict):
+                available = _format_available_fields(step_data)
+                raise ValueError(
+                    f"{obj}: {exc.args[0]}. "
+                    f"Step {n} ({tool_name}) returned: {available}"
+                ) from exc
+            else:
+                raise ValueError(f"{obj}: {exc.args[0]}") from exc
     if isinstance(obj, dict):
         return {k: _resolve_refs(v, results) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -43,7 +54,27 @@ def _resolve_refs(obj: Any, results: list[dict[str, Any]]) -> Any:
     return obj
 
 
+def _format_available_fields(data: dict[str, Any], indent: int = 0) -> str:
+    """Format available fields from step output for error messages."""
+    parts = []
+    for key, value in data.items():
+        if isinstance(value, dict):
+            sub = _format_available_fields(value, indent + 1)
+            parts.append(f"{key}: {{{sub}}}")
+        elif isinstance(value, list):
+            if value and isinstance(value[0], dict):
+                sub = _format_available_fields(value[0], indent + 1)
+                parts.append(f"{key}: [{{{sub}}}, ...]")
+            else:
+                parts.append(f"{key}: list[{len(value)}]")
+        else:
+            parts.append(key)
+    return ", ".join(parts)
+
+
 def _extract_plan(text: str) -> tuple[list[dict[str, Any]], str | None]:
+    if text is None or (isinstance(text, str) and not text.strip()):
+        raise ValueError("LLM returned None or empty text")
     # model hay bọc ```json ... ``` dù đã bật JSON mode (và có endpoint không ép JSON mode thật)
     cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip())
     try:
@@ -117,3 +148,60 @@ def _step_report(results: list[dict[str, Any]]) -> str:
         else:
             lines.append(f"{n}. {r['tool']}: FAILED: {str(r['error'])[:get_agent_limits().reflect_error_chars]}")
     return "\n".join(lines)
+
+
+def _summarize_output(data: dict[str, Any], tool_name: str) -> dict[str, Any]:
+    """Summarize tool output for trajectory logging: size + sample data, cut to max_output_summary_chars."""
+    limits = get_tool_limits()
+    max_chars = limits.max_output_summary_chars
+    summary: dict[str, Any] = {}
+
+    # MemoryTool output is small, include whole thing
+    if tool_name == "MemoryTool":
+        summary = data.copy()
+    else:
+        # For other tools, summarize list-like fields (candidates, ranked, items)
+        for key, value in data.items():
+            if isinstance(value, list):
+                if value:
+                    summary[key] = {
+                        "n": len(value),
+                        "first_ids": [v.get("item_id") if isinstance(v, dict) else v for v in value[:3]],
+                        "keys": list(value[0].keys()) if isinstance(value[0], dict) else ["item_id"],
+                    }
+                else:
+                    summary[key] = {"n": 0, "first_ids": [], "keys": []}
+            elif isinstance(value, (str, int, float, bool, type(None))):
+                summary[key] = value
+            elif isinstance(value, dict):
+                summary[key] = {k: v for k, v in value.items() if isinstance(v, (str, int, float, bool, type(None)))}
+
+    # Cut string values to max_chars
+    def _cut(obj: Any) -> Any:
+        if isinstance(obj, str) and len(obj) > max_chars:
+            return obj[:max_chars] + "..."
+        if isinstance(obj, dict):
+            return {k: _cut(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_cut(v) for v in obj]
+        return obj
+
+    return _cut(summary)
+
+
+def _simplify_args_for_log(args: dict[str, Any]) -> dict[str, Any]:
+    """Simplify resolved args for trajectory logging: truncate long lists, keep structure."""
+    simplified = {}
+    for key, value in args.items():
+        if isinstance(value, (list, tuple)):
+            if len(value) > 5:
+                simplified[key] = f"<{type(value).__name__} length={len(value)} first_3={value[:3]}>"
+            else:
+                simplified[key] = value
+        elif isinstance(value, dict):
+            simplified[key] = {k: v for k, v in list(value.items())[:5]}
+        elif isinstance(value, str) and len(value) > 100:
+            simplified[key] = value[:100] + "..."
+        else:
+            simplified[key] = value
+    return simplified

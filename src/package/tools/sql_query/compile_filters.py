@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import math
 from typing import Any
 
@@ -119,9 +120,70 @@ def _ascii_lower(text: str) -> str:
 _ASCII_LOWER = {c: c + 32 for c in range(ord("A"), ord("Z") + 1)}
 
 
+def _validate_and_normalize_categories(
+    categories: list[str],
+    corpus: Any,  # ItemCorpus - avoid circular import
+    domains_known: set[str],
+) -> tuple[list[str], dict[str, str]]:
+    """
+    Validate categories and normalize case if they exist with different case only.
+
+    Args:
+        categories: List of category names to validate
+        corpus: ItemCorpus instance for validation
+        domains_known: Set of valid domain names
+
+    Returns:
+        Tuple of (normalized categories list, dict mapping original->normalized)
+
+    Raises:
+        ToolInputError: If category doesn't exist
+    """
+    normalized_map: dict[str, str] = {}
+    normalized_cats: list[str] = []
+
+    for cat in categories:
+        # Check exact match first
+        if corpus.category_exists(cat, case_sensitive=True):
+            normalized_map[cat] = cat
+            normalized_cats.append(cat)
+            continue
+
+        # Check case-insensitive match
+        canonical = corpus.normalize_category_case(cat)
+        if canonical:
+            normalized_map[cat] = canonical
+            normalized_cats.append(canonical)
+            continue
+
+        # Category doesn't exist - check if it's a domain name (common mistake)
+        if cat in domains_known:
+            raise ToolInputError(
+                f"'{cat}' is a domain name, not a category. "
+                f"Use `domain: '{cat}'` to filter by domain, not categories_any/categories_all. "
+                f"Category must be a specific category name within the catalog."
+            )
+
+        # Category doesn't exist - suggest similar ones
+        suggestions = corpus.suggest_categories(cat, max_suggestions=5)
+        if suggestions:
+            suggestion_text = f" Did you mean: {', '.join(suggestions[:3])}?"
+        else:
+            suggestion_text = ""
+
+        raise ToolInputError(
+            f"category '{cat}' not found in the catalog.{suggestion_text} "
+            f"Category must be an exact category name from the catalog (case-sensitive). "
+            f"Use `domain` to filter by domain."
+        )
+
+    return normalized_cats, normalized_map
+
+
 def compile_filters(
     filters: dict[str, Any],
     domains_known: set[str],
+    corpus: Any = None,  # ItemCorpus - optional for backward compatibility
 ) -> tuple[str, list[Any], dict[str, Any]]:
     """
     Compile structured filters to parameterised SQL WHERE clause and params.
@@ -129,12 +191,13 @@ def compile_filters(
     Args:
         filters: Dictionary of filter conditions (same as SQLTool input_schema)
         domains_known: Set of valid domain names for validation
+        corpus: ItemCorpus instance for category validation (optional)
 
     Returns:
         Tuple of (WHERE clause string, list of parameter values, normalized filters)
 
     Raises:
-        ToolInputError: If unknown filter keys or invalid domains are provided
+        ToolInputError: If unknown filter keys or invalid domains/categories are provided
     """
     clauses: list[str] = ["1=1"]
     params: list[Any] = []
@@ -207,6 +270,13 @@ def compile_filters(
                 raise ToolInputError(
                     f"categories_any must be string(s), got non-string values: {non_string}"
                 )
+            # Validate categories exist and normalize case if corpus provided
+            if corpus is not None:
+                validated_cats, normalized_map = _validate_and_normalize_categories(cats, corpus, domains_known)
+                # Add note if case was normalized
+                if normalized_map and any(k != v for k, v in normalized_map.items()):
+                    normalized["_note"] = "categories normalized to exact catalog names"
+                cats = validated_cats
             clauses.append(
                 "EXISTS (SELECT 1 FROM item_categories c WHERE c.item_id = items.item_id "
                 f"AND c.category IN ({','.join('?' * len(cats))}))"
@@ -222,6 +292,13 @@ def compile_filters(
                 raise ToolInputError(
                     f"categories_all must be string(s), got non-string values: {non_string}"
                 )
+            # Validate categories exist and normalize case if corpus provided
+            if corpus is not None:
+                validated_cats, normalized_map = _validate_and_normalize_categories(cats, corpus, domains_known)
+                # Add note if case was normalized
+                if normalized_map and any(k != v for k, v in normalized_map.items()):
+                    normalized["_note"] = "categories normalized to exact catalog names"
+                cats = validated_cats
             clauses.append(
                 "(SELECT COUNT(DISTINCT c.category) FROM item_categories c WHERE "
                 f"c.item_id = items.item_id AND c.category IN ({','.join('?' * len(cats))})) = ?"

@@ -28,6 +28,8 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
         filtered_dir=root("filtered_dir") / tag,
         mapped_dir=root("mapped_dir") / tag,
         splits_dir=root("splits_dir") / tag,
+        item_knn_dir=root("item_knn_dir") / tag,
+        corpus_dir=root("corpus_dir") / tag,
         log_dir=root("log_dir") / tag,
         experiments_dir=root("experiments_dir"),
     )

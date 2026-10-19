@@ -17,10 +17,12 @@ class ToolLimits:
     max_candidates: int
     max_query_rows: int
     sql_time_budget_seconds: float
+    max_output_summary_chars: int
     sql_default_limit: int
     item_cf_default_top_k: int
     query_default_max_rows: int
     memory_default_top_n_categories: int
+    memory_recent_items: int
     semantic_default_limit: int
     semantic_max_query_tokens: int
 
@@ -33,17 +35,19 @@ def get_tool_limits() -> ToolLimits:
         max_candidates=int(cfg["max_candidates"]),
         max_query_rows=int(cfg["max_query_rows"]),
         sql_time_budget_seconds=float(cfg["sql_time_budget_seconds"]),
+        max_output_summary_chars=int(cfg["max_output_summary_chars"]),
         sql_default_limit=int(defaults["sql_limit"]),
         item_cf_default_top_k=int(defaults["item_cf_top_k"]),
         query_default_max_rows=int(defaults["query_max_rows"]),
         memory_default_top_n_categories=int(defaults["memory_top_n_categories"]),
+        memory_recent_items=int(defaults["memory_recent_items"]),
         semantic_default_limit=int(search["default_limit"]),
         semantic_max_query_tokens=int(search["max_query_tokens"]),
     )
     for name, value in vars(limits).items():
         if value <= 0:
             raise ConfigError(f"configs/agent/tools.yaml: {name} must be > 0, got {value!r}")
-    capped_by_candidates = ("sql_default_limit", "item_cf_default_top_k", "semantic_default_limit")
+    capped_by_candidates = ("sql_default_limit", "item_cf_default_top_k", "semantic_default_limit", "memory_recent_items")
     for name in capped_by_candidates:
         if getattr(limits, name) > limits.max_candidates:
             raise ConfigError(f"configs/agent/tools.yaml: {name} must be <= max_candidates")
@@ -56,9 +60,11 @@ _LIMITS = get_tool_limits()
 MAX_CANDIDATES = _LIMITS.max_candidates
 MAX_QUERY_ROWS = _LIMITS.max_query_rows
 SQL_TIME_BUDGET_SECONDS = _LIMITS.sql_time_budget_seconds
+MAX_OUTPUT_SUMMARY_CHARS = _LIMITS.max_output_summary_chars
 SQL_DEFAULT_LIMIT = _LIMITS.sql_default_limit
 ITEM_CF_DEFAULT_TOP_K = _LIMITS.item_cf_default_top_k
 QUERY_DEFAULT_MAX_ROWS = _LIMITS.query_default_max_rows
 MEMORY_DEFAULT_TOP_N_CATEGORIES = _LIMITS.memory_default_top_n_categories
+MEMORY_RECENT_ITEMS = _LIMITS.memory_recent_items
 SEMANTIC_DEFAULT_LIMIT = _LIMITS.semantic_default_limit
 SEMANTIC_MAX_QUERY_TOKENS = _LIMITS.semantic_max_query_tokens

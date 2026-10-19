@@ -5,6 +5,7 @@ This module defines:
 - Index definitions for query performance
 - FTS5 full-text search configuration and population
 """
+import hashlib
 
 # ---- table schemas ------------------------------------------------------- #
 
@@ -65,3 +66,25 @@ SELECT i.rowid, i.title, i.store, i.main_category,
                  WHERE c.item_id = i.item_id), '')
 FROM items i
 """
+
+# ---- schema fingerprint ------------------------------------------------- #
+
+# Version of the from_dataframe logic - increment when changing construction logic
+CORPUS_LOGIC_VERSION = 1
+
+# Fingerprint of the schema (CREATE TABLE, CREATE INDEX, FTS) - used to detect outdated corpus files
+# This hash is computed from the SQL strings above; if _sql.py changes, regenerate this hash.
+_CORPUS_SCHEMA_FINGERPRINT = hashlib.sha256(
+    (
+        ITEMS_TABLE_SCHEMA +
+        CATEGORIES_TABLE_SCHEMA +
+        FTS_TABLE_SCHEMA +
+        "".join(ITEMS_INDEXES) +
+        "".join(CATEGORIES_INDEXES) +
+        FTS_POPULATE_SQL
+    ).encode("utf-8")
+).hexdigest()
+
+def get_corpus_schema_fingerprint() -> str:
+    """Return the schema fingerprint for corpus file validation."""
+    return _CORPUS_SCHEMA_FINGERPRINT

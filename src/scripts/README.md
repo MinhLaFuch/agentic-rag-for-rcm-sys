@@ -7,11 +7,9 @@ This directory contains all executable scripts organized by category for better 
 ### 📁 `data_pipeline/`
 Data processing and preparation scripts for the full pipeline from raw data to train/validation/test splits.
 
-- **`stage1_clean_domain.py`** - Clean raw review data for a single domain (Stage 1 of the pipeline)
-- **`stage2_merge_filter.py`** - Merge multiple domains and apply k-core filtering (Stage 2)
-- **`stage3_map_split.py`** - Create ID mappings and temporal splits with leakage checks (Stage 3)
+- **`run_pipeline.py`** - Run the full data pipeline or selected stages (clean domains, merge & filter, map & split)
 
-**Usage**: Run in sequence: stage1 → stage2 → stage3
+**Usage**: Run all stages or specific stages with `--stages` flag
 
 ---
 
@@ -80,7 +78,7 @@ Experiment comparison and analysis scripts.
 
 | Task | Script Category | Script | Output Location |
 |------|----------------|--------|-----------------|
-| Process raw data | `data_pipeline/` | `stage1_clean_domain.py`, `stage2_merge_filter.py`, `stage3_map_split.py` | `resource/` (data), `experiments/logs/` (logs) |
+| Process raw data | `data_pipeline/` | `run_pipeline.py` | `resource/` (data), `experiments/logs/` (logs) |
 | Run baseline models | `evaluation/` | `run_baselines.py` | `experiments/baselines/` |
 | Evaluate agents | `evaluation/` | `run_agent_eval.py` | `experiments/agent_eval/` |
 | Launch demo UI | `demo/` | `run_demo.py` | N/A (interactive) |
@@ -100,8 +98,11 @@ PYTHONPATH=. python scripts/demo/run_demo.py --mock
 # Example: Run agent evaluation
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2
 
-# Example: Run data pipeline
-PYTHONPATH=. python scripts/data_pipeline/stage1_clean_domain.py --domain Video_Games
+# Example: Run data pipeline (all stages)
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all
+
+# Example: Run only stage 3 (map & split)
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 3 --tag mytag
 ```
 
 ## Notes

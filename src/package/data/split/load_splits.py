@@ -20,7 +20,7 @@ def load_splits(
     for name in SPLIT_NAMES:
         path = split_path(splits_dir, name)
         if not path.exists():
-            raise FileNotFoundError(f"{path} không tồn tại — chạy stage3_map_split.sh trước.")
+            raise FileNotFoundError(f"{path} không tồn tại — chạy python scripts/data_pipeline/run_pipeline.py --stages 3 --tag <tag> trước.")
         available = set(pq.ParquetFile(path).schema.names)
         frames.append(pd.read_parquet(path, columns=[c for c in columns if c in available]))
     return frames[0], frames[1], frames[2]

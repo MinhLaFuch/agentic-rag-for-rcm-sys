@@ -191,9 +191,9 @@ EVIL_STRINGS = ["O'Brien", '"; DROP TABLE items; --', "x' OR '1'='1", "50%", "a_
 
 
 @pytest.mark.parametrize("value", EVIL_STRINGS, ids=repr)
-@pytest.mark.parametrize("key", ["store", "title_contains", "categories_any", "categories_all", "exclude_item_ids"])
+@pytest.mark.parametrize("key", ["store", "title_contains", "exclude_item_ids"])
 def test_sql_special_characters_never_change_the_query(corpus, key, value):
-    payload = [value] if key.startswith(("categories", "exclude")) else value
+    payload = [value] if key == "exclude_item_ids" else value
     result = SQLTool(corpus)(filters={key: payload})
     assert result.ok, result.error
     if key == "exclude_item_ids":

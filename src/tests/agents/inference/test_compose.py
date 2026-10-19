@@ -16,7 +16,7 @@ from package.inference import (
 from package.inference.grounding import check_grounding
 from package.tools import QueryTool
 from tests.agents.test_plan_executor import plan
-from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, good_reply, item, outcome, reply
+from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, NoneOrEmptyLLM, good_reply, item, outcome, reply
 from tests.tools_helpers import VG_A, VG_B
 
 A, B, C = "Video_Games::a", "Video_Games::b", "Electronics::c"
@@ -107,13 +107,63 @@ def test_json_in_a_code_fence_is_accepted():
     assert answer.composer == "llm" and answer.grounded
 
 
-def test_provider_error_falls_back_and_never_raises():
+def test_provider_error_retries_and_falls_back():
     llm = FailingLLM()
     answer = compose_answer(outcome(three()), llm, **KW)
     assert answer.status == "ok" and answer.composer == "template" and answer.grounded
     assert answer.fallback_reason.startswith("provider_error") and len(answer.fallback_reason) <= 400
-    assert len(llm.calls) == 1  # a provider error is not retried like a bad reply
-    assert answer.usage == {"attempts": 1, "prompt_tokens": 0, "completion_tokens": 0, "latency_seconds": 0.0}
+    assert len(llm.calls) == 2  # retries once (llm_retries=1)
+    assert answer.usage["attempts"] == 2
+    assert [i["item_id"] for i in answer.items] == [A, B, C]
+
+
+def test_provider_error_fails_once_then_succeeds():
+    llm = FailingLLM(fail_once=True, success_items=three())
+    answer = compose_answer(outcome(three()), llm, **{**KW, "llm_retries": 1})
+    assert answer.status == "ok" and answer.composer == "llm" and answer.grounded
+    assert answer.fallback_reason is None
+    assert len(llm.calls) == 2  # first fails, second succeeds
+    assert answer.usage["attempts"] == 2
+    assert [i["item_id"] for i in answer.items] == [A, B, C]
+
+
+def test_none_response_retries_and_falls_back():
+    llm = NoneOrEmptyLLM([None, good_reply(three())])
+    answer = compose_answer(outcome(three()), llm, **{**KW, "llm_retries": 1})
+    assert answer.status == "ok" and answer.composer == "llm" and answer.grounded
+    assert answer.fallback_reason is None
+    assert len(llm.calls) == 2
+    assert answer.usage["attempts"] == 2
+    assert [i["item_id"] for i in answer.items] == [A, B, C]
+
+
+def test_empty_response_retries_and_falls_back():
+    llm = NoneOrEmptyLLM(["", good_reply(three())])
+    answer = compose_answer(outcome(three()), llm, **{**KW, "llm_retries": 1})
+    assert answer.status == "ok" and answer.composer == "llm" and answer.grounded
+    assert answer.fallback_reason is None
+    assert len(llm.calls) == 2
+    assert answer.usage["attempts"] == 2
+    assert [i["item_id"] for i in answer.items] == [A, B, C]
+
+
+def test_none_response_exhausted_retries_falls_back():
+    llm = NoneOrEmptyLLM([None, None])
+    answer = compose_answer(outcome(three()), llm, **{**KW, "llm_retries": 1})
+    assert answer.status == "ok" and answer.composer == "template" and answer.grounded
+    assert answer.fallback_reason == "empty_reply: LLM returned None or empty text"
+    assert len(llm.calls) == 2
+    assert answer.usage["attempts"] == 2
+    assert [i["item_id"] for i in answer.items] == [A, B, C]
+
+
+def test_empty_response_exhausted_retries_falls_back():
+    llm = NoneOrEmptyLLM(["", ""])
+    answer = compose_answer(outcome(three()), llm, **{**KW, "llm_retries": 1})
+    assert answer.status == "ok" and answer.composer == "template" and answer.grounded
+    assert answer.fallback_reason == "empty_reply: LLM returned None or empty text"
+    assert len(llm.calls) == 2
+    assert answer.usage["attempts"] == 2
     assert [i["item_id"] for i in answer.items] == [A, B, C]
 
 

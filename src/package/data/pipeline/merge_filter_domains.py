@@ -1,40 +1,45 @@
-import argparse
+"""Stage 2: merge domains and apply k-core filtering."""
+
+from __future__ import annotations
+
 import sys
 
 import pandas as pd
 
-from package.config import get_data_paths, get_domains, load_config
-from package.data import tag_domain
-from package.data.clean import clean_interactions
-from package.data.domain import domain_breakdown, merge_domains
-from package.data.filter import k_core_filter
-from package.data.loader import estimate_memory_usage_mb, optimize_interaction_dtypes
+from ...config import DataPaths, load_config
+from .. import tag_domain
+from ..clean import clean_interactions
+from ..domain import domain_breakdown, merge_domains
+from ..filter import k_core_filter
+from ..loader import estimate_memory_usage_mb, optimize_interaction_dtypes
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--domain",
-        action="append",
-        help="Tên domain (phải đã chạy Stage 1). Lặp lại cho mỗi domain; mặc định: tất cả trong domains.yaml.",
-    )
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml). Stage 3 phải dùng cùng tag.")
-    parser.add_argument("--force", action="store_true", help="Ghi đè output cũ nếu có.")
-    parser.add_argument(
-        "--cold-start-report",
-        action="store_true",
-        help="In số user warm khi lọc riêng từng domain so với khi gộp (tốn thêm RAM/thời gian).",
-    )
-    args = parser.parse_args()
+def merge_filter_domains(
+    paths: DataPaths,
+    domains: list[str],
+    force: bool = False,
+    cold_start_report: bool = False,
+) -> dict:
+    """Merge multiple domains and apply k-core filtering.
 
+    Args:
+        paths: DataPaths configuration.
+        domains: List of domain names to merge.
+        force: Overwrite existing output.
+        cold_start_report: Print cold-start statistics (expensive).
+
+    Returns:
+        Report dictionary with statistics.
+
+    Raises:
+        SystemExit: If k-core filtering removes all data (BLOCKED).
+    """
     filtering_config = load_config("data/filtering")
     min_user = filtering_config["filtering"]["min_user_interactions"]
     min_item = filtering_config["filtering"]["min_item_interactions"]
-    domains = args.domain or get_domains()
-    paths = get_data_paths(args.tag)
     output_path = paths.filtered_path
 
-    if output_path.exists() and not args.force:
+    if output_path.exists() and not force:
         raise FileExistsError(f"{output_path} đã tồn tại. Dùng --force để ghi đè.")
 
     print(f"=== STAGE 2: merge + filter domains={domains} tag={paths.tag} ===")
@@ -44,14 +49,14 @@ def main() -> None:
         path = paths.cleaned_path(domain)
         if not path.exists():
             raise FileNotFoundError(
-                f"Không tìm thấy {path} — chạy stage1_clean_domain.py cho domain '{domain}' trước."
+                f"Không tìm thấy {path} — chạy python scripts/data_pipeline/run_pipeline.py --stages 1 --domain {domain} trước."
             )
         df = pd.read_parquet(path)
         print(f"  loaded domain={domain} rows={len(df)} memory_mb={estimate_memory_usage_mb(df):.1f}")
         tagged_dfs.append(tag_domain(df, domain))
 
     merged = merge_domains(tagged_dfs)
-    del tagged_dfs  # giải phóng ngay, không giữ 2 bản copy trong RAM
+    del tagged_dfs
     print(f"merged total_rows={len(merged)} memory_mb={estimate_memory_usage_mb(merged):.1f}")
 
     breakdown = domain_breakdown(merged)
@@ -64,8 +69,6 @@ def main() -> None:
     merged, dedupe_report = clean_interactions(merged)
     print(f"post_merge_dedupe dropped={dedupe_report['num_dropped_duplicates']}")
 
-    # k-core chạy TRÊN DỮ LIỆU ĐÃ GỘP: min_user_interactions tính trên tổng interaction
-    # của user qua mọi domain, không phải riêng từng domain.
     before_users = merged["user_id"].nunique()
     filtered = k_core_filter(merged, min_user_interactions=min_user, min_item_interactions=min_item)
     print(
@@ -74,8 +77,7 @@ def main() -> None:
         f"rows_after={len(filtered)}"
     )
 
-    if args.cold_start_report:
-        # Bao nhiêu user "sống lại" nhờ gộp domain (giảm cold-start): nếu combined > sum(per_domain).
+    if cold_start_report:
         per_domain_warm = {}
         for domain in domains:
             single = merged[merged["domain"] == domain]
@@ -88,7 +90,11 @@ def main() -> None:
     del merged
 
     if len(filtered) == 0:
-        sys.exit("BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/data/filtering.yaml")
+        sys.exit(
+            "BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/data/filtering.yaml. "
+            "Nếu vẫn OOM: chạy ít domain cùng lúc với tag riêng (--domain D1 --domain D2 --tag mytag), "
+            "hoặc tăng tạm filtering.min_user_interactions/min_item_interactions."
+        )
 
     filtered = optimize_interaction_dtypes(filtered)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -96,11 +102,4 @@ def main() -> None:
 
     print(f"=== STAGE 2 DONE: saved {len(filtered)} rows -> {output_path} ===")
 
-
-if __name__ == "__main__":
-    main()
-
-# NẾU VẪN OOM Ở STAGE NÀY:
-# - Giảm số domain load cùng lúc: chạy với 2 domain trước (TAG riêng), rồi thêm domain thứ 3.
-# - Tăng tạm filtering.min_user_interactions / min_item_interactions trong configs/data/filtering.yaml
-#   để loại bớt dữ liệu sớm hơn.
+    return {"num_rows": len(filtered), "num_users": filtered["user_id"].nunique(), "num_items": filtered["parent_asin"].nunique()}

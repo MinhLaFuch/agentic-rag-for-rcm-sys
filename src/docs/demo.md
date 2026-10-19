@@ -263,7 +263,7 @@ Reason: ...
 - Mapping không có format `Domain::asin`
 
 **Giải pháp:**
-1. Kiểm tra dữ liệu đã được xử lý (xem `scripts/data_pipeline/stage1_clean_domain.py`, `scripts/data_pipeline/stage2_merge_filter.py`, `scripts/data_pipeline/stage3_map_split.py`)
+1. Kiểm tra dữ liệu đã được xử lý (xem `scripts/data_pipeline/run_pipeline.py`)
 2. Kiểm tra tag và domain
 3. Chạy với `--mock` để demo không cần dữ liệu
 
@@ -273,10 +273,10 @@ RuntimeError: Mapping has plain item ids; need namespaced 'Domain::asin' ids
 ```
 
 **Nguyên nhân:**
-- Mapping cũ chưa chạy qua stage3 (chưa thêm prefix domain)
+- Mapping cũ chưa chạy qua pipeline stage 3 (chưa thêm prefix domain)
 
 **Giải pháp:**
-1. Chạy lại stage3: `python scripts/data_pipeline/stage3_map_split.py`
+1. Chạy lại pipeline stage 3: `python scripts/data_pipeline/run_pipeline.py --stages 3 --tag <tag>`
 2. Hoặc dùng tag có mapping mới
 
 ## Tài liệu liên quan

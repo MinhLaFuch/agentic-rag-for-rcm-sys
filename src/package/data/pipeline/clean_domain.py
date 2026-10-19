@@ -1,4 +1,7 @@
-import argparse
+"""Stage 1: clean interactions for a single domain."""
+
+from __future__ import annotations
+
 import os
 import sqlite3
 import tempfile
@@ -9,42 +12,47 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from package.config import get_data_paths, load_config
-from package.data.clean import clean_interactions, iter_reviews_dataframes
-from package.data.loader import estimate_memory_usage_mb
+from ...config import DataPaths, load_config
+from ..clean import clean_interactions, iter_reviews_dataframes
+from ..loader import estimate_memory_usage_mb
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--domain", required=True)
-    parser.add_argument("--review-path", help="Mặc định: <raw_dir>/<domain>.jsonl.gz trong data_paths.yaml")
-    parser.add_argument("--output-dir", help="Mặc định: cleaned_dir trong data_paths.yaml")
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        help="Số review đọc và xử lý mỗi lần (mặc định: cleaning.chunk_size trong cleaning.yaml).",
-    )
-    parser.add_argument("--force", action="store_true", help="Xóa output cũ (nếu có) và chạy lại.")
-    args = parser.parse_args()
+def clean_domain(
+    paths: DataPaths,
+    domain: str,
+    review_path: Path | None = None,
+    output_dir: Path | None = None,
+    chunk_size: int | None = None,
+    force: bool = False,
+) -> dict:
+    """Clean interactions for a single domain.
 
-    if args.chunk_size is not None and args.chunk_size <= 0:
-        parser.error("--chunk-size phải là số nguyên dương")
+    Args:
+        paths: DataPaths configuration.
+        domain: Domain name.
+        review_path: Override path to review file (default: paths.review_path(domain)).
+        output_dir: Override output directory (default: paths.cleaned_dir).
+        chunk_size: Number of reviews to process per chunk (default: config).
+        force: Overwrite existing output.
 
-    paths = get_data_paths()
-    if args.output_dir:  # override only the root; the <domain>/interactions.parquet layout stays DataPaths' job
-        paths = replace(paths, cleaned_dir=Path(args.output_dir))
-    review_path = Path(args.review_path) if args.review_path else paths.review_path(args.domain)
-    chunk_size = args.chunk_size or load_config("data/cleaning")["cleaning"]["chunk_size"]
+    Returns:
+        Report dictionary with statistics.
+    """
+    if output_dir:
+        paths = replace(paths, cleaned_dir=Path(output_dir))
+    review_path = Path(review_path) if review_path else paths.review_path(domain)
+    chunk_size = chunk_size or load_config("data/cleaning")["cleaning"]["chunk_size"]
+
     if not review_path.exists():
-        raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{args.domain}' về trước.")
+        raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{domain}' về trước.")
 
-    print(f"=== STAGE 1: clean domain={args.domain}, chunk_size={chunk_size} ===")
+    print(f"=== STAGE 1: clean domain={domain}, chunk_size={chunk_size} ===")
 
-    output_path = paths.cleaned_path(args.domain)
+    output_path = paths.cleaned_path(domain)
     output_dir = output_path.parent
     output_dir.mkdir(parents=True, exist_ok=True)
     if output_path.exists():
-        if not args.force:
+        if not force:
             raise FileExistsError(f"{output_path} đã tồn tại. Dùng --force để chạy lại và ghi đè.")
         output_path.unlink()
 
@@ -136,6 +144,4 @@ def main() -> None:
     )
     print(f"=== STAGE 1 DONE: saved {report['num_output']} rows -> {output_path} ===")
 
-
-if __name__ == "__main__":
-    main()
+    return report

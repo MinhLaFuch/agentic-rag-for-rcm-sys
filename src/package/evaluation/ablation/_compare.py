@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from collections import defaultdict
-from pathlib import Path
 from typing import Any
 
-from package.evaluation.agent import ORACLE_KINDS
-from ._loader import check_compatibility, load_group_data
-from ._limits import get_ablation_limits
+from ._loader import check_compatibility
 from ._statistics import bootstrap_ci, mcnemar_test
 
 
@@ -253,7 +249,7 @@ def compare_two_groups(
                     disagreement["n_both_wrong"],
                 )
                 if mcnemar:
-                    results[king_key][metric_formatted]["mcnemar"] = {
+                    results[kind_key][metric_formatted]["mcnemar"] = {
                         "b": mcnemar[0],
                         "c": mcnemar[1],
                         "p": mcnemar[2],

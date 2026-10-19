@@ -48,20 +48,23 @@ from package.evaluation.agent import (
     score_trajectory,
     summarize,
 )
-from package.config import get_data_paths, get_domains, load_config
+from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR
 from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
+from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
-from package.tools.corpus import build_corpus
+from package.tools.corpus.build_corpus import _build_corpus_with_timing
+from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
+from package.tools.recommenders.load_item_knn import load_item_knn
 from package.utils import ensure_utf8_stdout
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
@@ -129,7 +132,7 @@ def run_planner(
     try:
         results = executor.run(request.text)
         traj["steps"] = [
-            {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds")},
+            {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds", "args", "output_summary", "note")},
              "error": None if r.get("error") is None else str(r["error"])[:error_chars]}
             for r in results
         ]
@@ -176,6 +179,7 @@ def main() -> None:
     ap.add_argument("--inference-mode", choices=list(MODES),
                     help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
+    ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
@@ -191,14 +195,14 @@ def main() -> None:
     per_segment = args.per_segment or int(cfg["per_segment"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     data_paths = get_data_paths(args.tag)
-    meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
+    meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py / candidate_recall.py)
     train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
     fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     if "timestamp" not in fit_df.columns:
-        raise SystemExit("Splits have no `timestamp` column: re-run stage3_map_split.sh")
+        raise SystemExit("Splits have no `timestamp` column: re-run python scripts/data_pipeline/run_pipeline.py --stages 3 --tag <tag>")
     as_of = int(target_df["timestamp"].min())
     check_profile_snapshot(as_of_timestamp=as_of, source_interactions=fit_df)  # nothing the agent can read is from the future
 
@@ -215,11 +219,44 @@ def main() -> None:
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
 
     # ---- corpus + models + tools
-    print("Build corpus")
-    corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
+    if args.no_prebuilt:
+        print("Build corpus in RAM (--no-prebuilt)")
+        corpus, meta, coverage, build_times = _build_corpus_with_timing(meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        print(f"Corpus: built in {sum(build_times.values()):.2f}s")
+    else:
+        corpus_path = data_paths.corpus_path
+        if not corpus_path.exists():
+            raise SystemExit(
+                f"Corpus file not found: {corpus_path}\n"
+                f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
+                f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
+            )
+        print(f"Load corpus from {corpus_path}")
+        corpus, coverage = load_corpus(corpus_path, meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
+        print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
 
-    print("Fit ItemKNN on fit data")
-    knn = ItemKNNRecommender(int(baselines["item_knn"]["k"])).fit(fit_df[["user_idx", "item_idx"]])
+    knn_k = int(baselines["item_knn"]["k"])
+    if args.no_prebuilt:
+        print("Fit ItemKNN on fit data (--no-prebuilt)")
+        t0 = time.perf_counter()
+        knn = ItemKNNRecommender(knn_k).fit(fit_df[["user_idx", "item_idx"]])
+        fit_time = time.perf_counter() - t0
+        knn._fit_time = fit_time
+        print(f"ItemKNN: fitted in {fit_time:.1f}s")
+    else:
+        item_knn_path = data_paths.item_knn_path(args.eval_on)
+        if not item_knn_path.exists():
+            raise SystemExit(
+                f"ItemKNN file not found: {item_knn_path}\n"
+                f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {args.eval_on}\n"
+                f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
+            )
+        print(f"Load ItemKNN from {item_knn_path}")
+        knn = load_item_knn(item_knn_path, knn_k, fit_df[["user_idx", "item_idx"]])
+        fit_time = getattr(knn, "_fit_time", None)
+        print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
+
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
     tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
 

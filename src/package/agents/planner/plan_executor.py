@@ -6,7 +6,7 @@ from typing import Any
 from ...api import LLMMessage, LLMProvider
 from ...api import LLMProviderError
 from ...tools.base import Tool
-from ._helper import _blocks_reflect, _extract_plan, _invented_ids, _reflect_problem, _resolve_refs, _step_report, _unknown_args
+from ._helper import _blocks_reflect, _extract_plan, _invented_ids, _reflect_problem, _resolve_refs, _simplify_args_for_log, _step_report, _summarize_output, _unknown_args
 from .._limits import get_agent_limits
 from ._prompt import SYSTEM_PROMPT
 from ..toolkit import build_tool_prompt
@@ -151,6 +151,8 @@ class PlanExecutor:
             tool = self.tools.get(name) if name else None
             raw_args = step.get("args") or {}
             entry: dict[str, Any] = {"tool": name, "ok": False, "data": {}, "error": None, "invented_ids": []}
+            # Log args before validation (for debugging failed steps)
+            entry["args"] = _simplify_args_for_log(raw_args)
             if tool is None:
                 entry["error"] = "unknown tool"
             elif invented := _invented_ids(raw_args, user_request):
@@ -160,8 +162,14 @@ class PlanExecutor:
                 entry["error"] = unknown  # actionable, and the tool is not called with args it does not declare
             else:
                 try:
-                    res = tool(agent="planner", **_resolve_refs(raw_args, results))
+                    resolved_args = _resolve_refs(raw_args, results)
+                    res = tool(agent="planner", **resolved_args)
                     entry.update(ok=res.ok, data=res.data, error=res.error)
+                    # Update args with resolved values
+                    entry["args"] = _simplify_args_for_log(resolved_args)
+                    entry["output_summary"] = _summarize_output(res.data, name)
+                    if "note" in res.data:
+                        entry["note"] = res.data["note"]
                 except Exception as exc:  # ref hỏng hoặc args sai tên/kiểu (TypeError...) không được làm hỏng các step còn lại
                     entry["error"] = f"{type(exc).__name__}: {exc}"
             entry["latency_seconds"] = round(time.perf_counter() - started, 6)

@@ -18,5 +18,7 @@ paths:
   filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
   mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
   splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
+  item_knn_dir: "resource/item_knn"  # <run_tag>/item_knn_<tag>_<eval_on>.npz — cached ItemKNN similarity matrix
+  corpus_dir: "resource/corpus"      # <run_tag>/corpus_<tag>.sqlite — cached ItemCorpus SQLite database
   log_dir: "experiments/logs"       # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
   experiments_dir: "experiments"     # exp_NNN/… (baselines, tuning); candidate_recall ghi vào <experiments_dir>/<experiments_subdir>

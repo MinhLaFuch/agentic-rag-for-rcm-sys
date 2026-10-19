@@ -44,12 +44,18 @@ def compose_llm(
             resp = llm.complete(messages, temperature=temperature, max_tokens=max_tokens, response_format_json=True)
         except LLMProviderError as exc:
             usage["attempts"] += 1
-            return replace(template, fallback_reason=cut(f"provider_error: {exc}"), usage=usage)
+            error, reason = f"provider_error: {exc}", f"provider_error: {exc}"
+            if attempt == llm_retries:
+                return replace(template, fallback_reason=cut(reason), usage=usage)
+            messages = [*messages, LLMMessage(role="user", content=RETRY_NOTICE.format(error=error))]
+            continue
         usage["attempts"] += 1
         usage["prompt_tokens"] += resp.prompt_tokens or 0
         usage["completion_tokens"] += resp.completion_tokens or 0
         usage["latency_seconds"] += resp.latency_seconds or 0.0
         try:
+            if resp.text is None or (isinstance(resp.text, str) and not resp.text.strip()):
+                raise ValueError("empty_reply: LLM returned None or empty text")
             text, mentioned = parse_llm_reply(resp.text)
             problem = check_grounding(text, mentioned, outcome, check_numbers=check_numbers, price_tolerance=price_tolerance)
             if problem is None:
@@ -60,5 +66,5 @@ def compose_llm(
             error, reason = str(exc), str(exc)
         if attempt == llm_retries:
             break
-        messages = [*messages, LLMMessage(role="assistant", content=resp.text), LLMMessage(role="user", content=RETRY_NOTICE.format(error=error))]
+        messages = [*messages, LLMMessage(role="assistant", content=resp.text or ""), LLMMessage(role="user", content=RETRY_NOTICE.format(error=error))]
     return replace(template, fallback_reason=cut(reason), usage=usage)

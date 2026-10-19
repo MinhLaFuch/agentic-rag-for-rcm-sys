@@ -21,6 +21,6 @@ def test_load_splits_returns_three_frames_and_skips_missing_columns(tmp_path):
     assert infer_matrix_shape(train, val, test) == (2, 4)
 
 
-def test_load_splits_missing_file_points_to_stage3(tmp_path):
-    with pytest.raises(FileNotFoundError, match="stage3"):
+def test_load_splits_missing_file_points_to_pipeline(tmp_path):
+    with pytest.raises(FileNotFoundError, match="run_pipeline.py"):
         load_splits(tmp_path)

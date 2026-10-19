@@ -51,9 +51,6 @@ All pipeline and tool execution logs (consolidated from various stages).
 - `phase3_video_games.log` - Phase 3 processing log for Video_Games
 - `pipeline_video_games.log` - Full pipeline execution log
 - `run_tool.log` - Tool validation and execution log
-- `stage1_electronics.log` - Stage 1 cleaning log for Electronics
-- `stage1_toys_and_games.log` - Stage 1 cleaning log for Toys_and_Games
-- `stage1_video_games.log` - Stage 1 cleaning log for Video_Games
 
 **Log sources:**
 - Data pipeline stages (stage1, stage2, stage3)
@@ -91,9 +88,7 @@ Data pipeline experiment results (reserved for future use).
 - Pipeline benchmarking outputs
 
 **Related scripts:**
-- `scripts/data_pipeline/stage1_clean_domain.py`
-- `scripts/data_pipeline/stage2_merge_filter.py`
-- `scripts/data_pipeline/stage3_map_split.py`
+- `scripts/data_pipeline/run_pipeline.py`
 
 ---
 
@@ -161,8 +156,8 @@ PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2
 
 ### Pipeline with Logging
 ```bash
-PYTHONPATH=. python scripts/data_pipeline/stage1_clean_domain.py --domain Video_Games
-# Logs appear in experiments/logs/stage1_video_games.log
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all
+# Logs appear in experiments/logs/
 ```
 
 ### Tool Validation
@@ -176,9 +171,8 @@ PYTHONPATH=. python scripts/tools/run_tools.py
 ## Log Naming Convention
 
 Logs follow these naming patterns:
-- `<stage>_<domain>.log` - Stage-specific logs (e.g., `stage1_video_games.log`)
-- `<phase>_<domain>.log` - Phase-specific logs (e.g., `phase3_video_games.log`)
 - `<script_name>.log` - Script-specific logs (e.g., `run_tool.log`, `eda_video_games.log`)
+- `<phase>_<domain>.log` - Phase-specific logs (e.g., `phase3_video_games.log`)
 - `test_results_YYYYMMDD_HHMMSS.md` - Test result reports
 
 ---

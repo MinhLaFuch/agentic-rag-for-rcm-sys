@@ -1,38 +1,42 @@
-import argparse
-import sys
+"""Stage 3: ID mapping, temporal split, and leakage checks."""
+
+from __future__ import annotations
 
 import pandas as pd
 
-from package.config import get_data_paths, load_config
-from package.data.leakage import (
+from ...config import DataPaths, load_config
+from ..leakage import (
     check_no_duplicate_across_splits,
     check_profile_snapshot,
     check_split_temporal_order,
 )
-from package.data.mapping import apply_id_mapping, build_id_mappings, save_mappings
-from package.data.split import compute_temporal_cutoffs, save_splits, temporal_split
+from ..mapping import apply_id_mapping, build_id_mappings, save_mappings
+from ..split import compute_temporal_cutoffs, save_splits, temporal_split
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml). Phải khớp Stage 2.")
-    parser.add_argument("--force", action="store_true", help="Ghi đè splits cũ nếu có.")
-    args = parser.parse_args()
+def map_split(paths: DataPaths, force: bool = False) -> dict:
+    """Apply ID mapping, temporal split, and leakage checks.
 
+    Args:
+        paths: DataPaths configuration.
+        force: Overwrite existing splits.
+
+    Returns:
+        Report dictionary with statistics.
+    """
     split_config = load_config("data/split")
     train_ratio = split_config["split"]["train_ratio"]
     val_ratio = split_config["split"]["validation_ratio"]
     test_ratio = split_config["split"]["test_ratio"]
-    paths = get_data_paths(args.tag)
 
     print(f"=== STAGE 3: ID mapping + temporal split + leakage check (tag={paths.tag}) ===")
 
     if not paths.filtered_path.exists():
         raise FileNotFoundError(
-            f"Không tìm thấy {paths.filtered_path} — chạy stage2_merge_filter.py (cùng tag) trước."
+            f"Không tìm thấy {paths.filtered_path} — chạy python scripts/data_pipeline/run_pipeline.py --stages 2 --tag {paths.tag} trước."
         )
-    if paths.split_path("train").exists() and not args.force:
-        sys.exit(f"{paths.splits_dir} đã có splits. Dùng --force để ghi đè.")
+    if paths.split_path("train").exists() and not force:
+        raise FileExistsError(f"{paths.splits_dir} đã có splits. Dùng --force để ghi đè.")
 
     df = pd.read_parquet(paths.filtered_path)
     print(f"loaded rows={len(df)} users={df['user_id'].nunique()} items={df['parent_asin'].nunique()}")
@@ -60,6 +64,10 @@ def main() -> None:
 
     print(f"=== STAGE 3 DONE: saved splits -> {paths.splits_dir} ===")
 
-
-if __name__ == "__main__":
-    main()
+    return {
+        "num_users": len(user2id),
+        "num_items": len(item2id),
+        "train_rows": len(train),
+        "val_rows": len(validation),
+        "test_rows": len(test),
+    }

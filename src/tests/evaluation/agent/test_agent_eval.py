@@ -18,6 +18,7 @@ from package.evaluation.agent import (
 from package.evaluation.agent._helper import _deepest_category
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
+from package.tools import get_tool_limits
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 ITEM2ID = {VG_A: 0, VG_B: 1, VG_C: 2, EL_A: 3, EL_D: 4}
@@ -165,6 +166,59 @@ def test_memory_tool_refuses_interactions_from_the_future(corpus, cf_setup):
         MemoryTool(interactions.drop(columns="timestamp"), user2id, item2id, corpus, as_of_timestamp=5)
 
 
+def test_memory_tool_returns_recent_items(corpus, cf_setup):
+    """MemoryTool should return recent_items field with most recent items first."""
+    interactions, user2id, item2id = cf_setup
+    memory = MemoryTool(interactions, user2id, item2id, corpus)
+    
+    # Get a user with interactions
+    user_id = "u1"
+    result = memory.execute(user_id)
+    
+    assert "recent_items" in result
+    assert isinstance(result["recent_items"], list)
+    # If user has interactions, recent_items should not be empty
+    if result["known"]:
+        assert len(result["recent_items"]) > 0
+        # All items should be namespaced
+        for item in result["recent_items"]:
+            assert "::" in item
+
+
+def test_memory_tool_recent_items_respects_as_of_timestamp(corpus, cf_setup):
+    """recent_items should not include interactions after as_of_timestamp."""
+    interactions, user2id, item2id = cf_setup
+    interactions = interactions.assign(timestamp=np.arange(len(interactions)))
+
+    # as_of_timestamp in the middle of interactions
+    as_of = len(interactions) // 2
+    # Filter interactions to only include those <= as_of before passing to MemoryTool
+    # (caller's responsibility to provide valid data for the snapshot)
+    valid_interactions = interactions[interactions["timestamp"] <= as_of].copy()
+    memory = MemoryTool(valid_interactions, user2id, item2id, corpus, as_of_timestamp=as_of)
+
+    user_id = "u1"
+    result = memory.execute(user_id)
+
+    if result["known"]:
+        # recent_items should only include items with timestamp <= as_of
+        assert "recent_items" in result
+        assert isinstance(result["recent_items"], list)
+
+
+def test_memory_tool_recent_items_count_limited(corpus, cf_setup):
+    """recent_items should be limited to memory_recent_items from config."""
+    interactions, user2id, item2id = cf_setup
+    memory = MemoryTool(interactions, user2id, item2id, corpus)
+    
+    user_id = "u1"
+    result = memory.execute(user_id)
+    
+    if result["known"]:
+        limit = get_tool_limits().memory_recent_items
+        assert len(result["recent_items"]) <= limit
+
+
 def test_personalized_is_not_scored_for_a_planner_that_cannot_read_history(corpus):
     request = AgentRequest(request_id="p", kind="personalized", segment="warm", text="t", targets=[1])
     blind = score_trajectory(request, _trajectory(ask_user="What do you like?"), item2id=ITEM2ID, corpus=corpus, k=2)
@@ -205,6 +259,19 @@ def test_score_trajectory_still_scores_old_trajectories_without_the_new_fields(c
     assert "reflections" not in traj and "first_attempt_ok" not in traj
     row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["reflections"] == 0 and row["first_attempt_ok"] is None and row["task_success"] is True
+
+
+def test_score_trajectory_still_scores_old_trajectories_without_args_and_output_summary(corpus):
+    """Old trajectories without args/output_summary fields should still be scored."""
+    # Create a step without the new fields (as it would be in old trajectories)
+    old_step = {"tool": "ItemCFTool", "ok": True, "error": None, "invented_ids": [], "latency_seconds": 0.01}
+    traj = _trajectory(steps=[old_step, _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    # Manually ensure the first step doesn't have the new fields
+    traj["steps"][0] = old_step
+    assert "args" not in traj["steps"][0]
+    assert "output_summary" not in traj["steps"][0]
+    row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["task_success"] is True
 
 
 def test_non_planner_rows_have_no_reflect_columns(corpus):

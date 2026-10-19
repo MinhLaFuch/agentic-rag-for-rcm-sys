@@ -6,7 +6,7 @@ import pandas as pd
 
 from .agent_tools import AgentTools
 from ...memory.memory_tool import MemoryTool
-from ...tools import ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool
+from ...tools import ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool, SQLTool
 from ...tools.score import CandidateScorer
 from ...tools.recommenders import Recommender
 
@@ -27,5 +27,6 @@ def build_tools(
         reco=RecoModelTool(scorer, user2id, item2id, corpus=corpus, logger=logger),
         query=QueryTool(corpus, logger=logger),
         search=SemanticSearchTool(corpus, logger=logger),
+        sql=SQLTool(corpus, logger=logger),
         memory=MemoryTool(interactions, user2id, item2id, corpus, logger=logger, as_of_timestamp=as_of_timestamp),
     )

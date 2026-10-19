@@ -95,3 +95,34 @@ def test_corpus_from_parquet_works(tmp_path):
 
         corpus = ItemCorpus.from_parquet(parquet_path)
         assert corpus._conn.execute("SELECT COUNT(*) FROM items").fetchone()[0] == 2
+
+
+def test_corpus_category_methods(corpus):
+    """Test category validation methods."""
+    # Test categories() returns sorted list
+    cats = corpus.categories()
+    assert isinstance(cats, list)
+    assert all(isinstance(c, str) for c in cats)
+
+    # Test category_exists with exact match
+    if cats:
+        assert corpus.category_exists(cats[0], case_sensitive=True)
+        assert not corpus.category_exists("NONEXISTENT_CATEGORY", case_sensitive=True)
+
+    # Test category_exists case-insensitive
+    if cats:
+        # With case-sensitive=False, should match regardless of case
+        assert corpus.category_exists(cats[0].lower(), case_sensitive=False) or corpus.category_exists(cats[0].upper(), case_sensitive=False)
+
+    # Test normalize_category_case
+    if cats:
+        # Exact match returns itself
+        assert corpus.normalize_category_case(cats[0]) == cats[0]
+        # Non-existent returns None
+        assert corpus.normalize_category_case("NONEXISTENT_CATEGORY") is None
+
+    # Test suggest_categories
+    if cats:
+        suggestions = corpus.suggest_categories("test", max_suggestions=3)
+        assert isinstance(suggestions, list)
+        assert len(suggestions) <= 3
