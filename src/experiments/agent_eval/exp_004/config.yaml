@@ -1,0 +1,34 @@
+run:
+  timestamp: '2026-10-19T17:33:17.136342+00:00'
+  seed: 42
+  git_commit: 61674c859b2aa0f2fb0a560bf5c3ed544d458453
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.10
+    cpu_count: 16
+  runtime_seconds: 1456.53
+  dataset:
+    splits_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    metadata_coverage: 1.0
+    n_requests: 146
+    profile_as_of_timestamp: 1617737606549
+config:
+  agents:
+  - baseline
+  - type1
+  - planner
+  - planner_memory
+  k: 10
+  per_segment: 20
+  n_ambiguous: 6
+  language: vi
+  price_slack: 1.25
+  price_round_to: 5
+  sparse_max: 4
+  item_knn_k: 20
+  reflect_rounds: 1
+  inference_mode: llm
+  llm_model: gpt-5.4
