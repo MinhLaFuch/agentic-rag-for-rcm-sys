@@ -54,8 +54,8 @@ def save_corpus(
         file_key = f"{meta_path}:{stat.st_size}:{stat.st_mtime}"
         source_hashes.append(hashlib.sha256(file_key.encode("utf-8")).hexdigest())
 
-    # Compute item2id hash (fast: hash sorted keys by first 1000 items)
-    item_keys = sorted(item2id.keys())[:1000]
+    # Compute item2id hash (hash all keys by sorted order)
+    item_keys = sorted(item2id.keys())
     mapping_hash = hashlib.sha256("".join(item_keys).encode("utf-8")).hexdigest()
 
     # Build metadata

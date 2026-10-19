@@ -28,60 +28,32 @@ def build_corpus(
     meta_files: list[tuple[str, str]],
     item2id: dict[str, int],
     min_coverage: float,
-) -> tuple[ItemCorpus, pd.DataFrame, float]:
+    timing: bool = False,
+) -> tuple[ItemCorpus, pd.DataFrame, float] | tuple[ItemCorpus, pd.DataFrame, float, dict[str, float]]:
     """
     meta_files: [(domain, đường dẫn meta)].
     item2id: mapping từ namespaced item_id ('Domain::asin') sang integer id.
     min_coverage: tỉ lệ tối thiểu item mapping phải có metadata, dưới mức này ném ValueError
     (thường do sai file meta hoặc sai định dạng id).
-    Trả về (corpus, bảng metadata đã lọc, độ phủ ước lượng) — bảng này còn dùng để dựng text cho query mô phỏng.
+    timing: nếu True, trả về thêm dict thời gian từng bước.
+    Trả về (corpus, bảng metadata đã lọc, độ phủ ước lượng) hoặc (corpus, meta, coverage, build_times) nếu timing=True.
     """
 
     def in_mapping(domain: str, asin: str) -> bool:
         return namespaced_item_id(domain, asin) in item2id
 
-    meta = load_item_metadata(meta_files, keep=in_mapping)
-    corpus = ItemCorpus.from_dataframe(meta)
-    sample = list(islice(item2id, COVERAGE_SAMPLE))
-    coverage = len(corpus.item_domains(sample)) / max(1, len(sample))
-    if coverage < min_coverage:
-        raise ValueError(
-            f"Chỉ {coverage:.1%} item mapping có metadata (cần ≥ {min_coverage:.0%}): "
-            "kiểm tra resource/raw/meta_<Domain>.jsonl.gz và định dạng id."
-        )
-    return corpus, meta, coverage
-
-
-def _build_corpus_with_timing(
-    meta_files: list[tuple[str, str]],
-    item2id: dict[str, int],
-    min_coverage: float,
-) -> tuple[ItemCorpus, pd.DataFrame, float, dict[str, float]]:
-    """
-    Same as build_corpus, but also returns timing information for each build step.
-
-    Returns:
-        (corpus, meta, coverage, build_times) where build_times is a dict with keys:
-        - load_meta: time to load and parse metadata files
-        - to_sql: time to create items table
-        - categories: time to create item_categories table
-        - indexes: time to create indexes
-        - fts: time to populate FTS5 table
-    """
-
-    def in_mapping(domain: str, asin: str) -> bool:
-        return namespaced_item_id(domain, asin) in item2id
-
-    build_times = {}
+    build_times = {} if timing else None
 
     # Step (a): load metadata
-    t0 = time.perf_counter()
+    t0 = time.perf_counter() if timing else None
     meta = load_item_metadata(meta_files, keep=in_mapping)
-    build_times["load_meta"] = time.perf_counter() - t0
-    print(f"  Corpus load_meta: {build_times['load_meta']:.2f}s")
+    if timing:
+        build_times["load_meta"] = time.perf_counter() - t0
+        print(f"  Corpus load_meta: {build_times['load_meta']:.2f}s")
 
     # Step (b): to_sql items table
-    t0 = time.perf_counter()
+    if timing:
+        t0 = time.perf_counter()
 
     # Prepare dataframe (copied from ItemCorpus.from_dataframe)
     df = meta.copy()
@@ -103,11 +75,13 @@ def _build_corpus_with_timing(
 
     conn = sqlite3.connect(":memory:")
     df[list(ITEM_COLUMNS)].to_sql("items", conn, index=False)
-    build_times["to_sql"] = time.perf_counter() - t0
-    print(f"  Corpus to_sql: {build_times['to_sql']:.2f}s")
+    if timing:
+        build_times["to_sql"] = time.perf_counter() - t0
+        print(f"  Corpus to_sql: {build_times['to_sql']:.2f}s")
 
     # Step (c): build item_categories
-    t0 = time.perf_counter()
+    if timing:
+        t0 = time.perf_counter()
     cats = df["categories"] if "categories" in df.columns else pd.Series([None] * len(df))
     rows = []
     for item_id, cs in zip(df["item_id"], cats):
@@ -115,25 +89,30 @@ def _build_corpus_with_timing(
             rows.append((item_id, cat))
     conn.execute(CATEGORIES_TABLE_SCHEMA)
     conn.executemany("INSERT INTO item_categories VALUES (?, ?)", rows)
-    build_times["categories"] = time.perf_counter() - t0
-    print(f"  Corpus categories: {build_times['categories']:.2f}s")
+    if timing:
+        build_times["categories"] = time.perf_counter() - t0
+        print(f"  Corpus categories: {build_times['categories']:.2f}s")
 
     # Step (d): create indexes
-    t0 = time.perf_counter()
+    if timing:
+        t0 = time.perf_counter()
     for idx_sql in ITEMS_INDEXES:
         conn.execute(idx_sql)
     for idx_sql in CATEGORIES_INDEXES:
         conn.execute(idx_sql)
-    build_times["indexes"] = time.perf_counter() - t0
-    print(f"  Corpus indexes: {build_times['indexes']:.2f}s")
+    if timing:
+        build_times["indexes"] = time.perf_counter() - t0
+        print(f"  Corpus indexes: {build_times['indexes']:.2f}s")
 
     # Step (e): populate FTS
-    t0 = time.perf_counter()
+    if timing:
+        t0 = time.perf_counter()
     conn.execute(FTS_TABLE_SCHEMA)
     conn.execute(FTS_POPULATE_SQL)
     conn.commit()
-    build_times["fts"] = time.perf_counter() - t0
-    print(f"  Corpus fts: {build_times['fts']:.2f}s")
+    if timing:
+        build_times["fts"] = time.perf_counter() - t0
+        print(f"  Corpus fts: {build_times['fts']:.2f}s")
 
     # Create corpus
     corpus = ItemCorpus(conn)
@@ -147,4 +126,6 @@ def _build_corpus_with_timing(
             "kiểm tra resource/raw/meta_<Domain>.jsonl.gz và định dạng id."
         )
 
-    return corpus, meta, coverage, build_times
+    if timing:
+        return corpus, meta, coverage, build_times
+    return corpus, meta, coverage

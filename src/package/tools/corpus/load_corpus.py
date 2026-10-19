@@ -93,7 +93,7 @@ def load_corpus(
         )
 
     # Validate mapping hash
-    item_keys = sorted(item2id.keys())[:1000]
+    item_keys = sorted(item2id.keys())
     current_mapping_hash = hashlib.sha256("".join(item_keys).encode("utf-8")).hexdigest()
     if current_mapping_hash != metadata["mapping_hash"]:
         raise ValueError(

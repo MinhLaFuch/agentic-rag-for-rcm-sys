@@ -60,7 +60,7 @@ from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
-from package.tools.corpus.build_corpus import _build_corpus_with_timing
+from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
@@ -221,7 +221,7 @@ def main() -> None:
     # ---- corpus + models + tools
     if args.no_prebuilt:
         print("Build corpus in RAM (--no-prebuilt)")
-        corpus, meta, coverage, build_times = _build_corpus_with_timing(meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:
         corpus_path = data_paths.corpus_path

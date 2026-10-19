@@ -10,7 +10,7 @@ from ...data.mapping import load_mappings
 from ...tools.evaluation import select_fit_target
 from .build_meta_files import build_meta_files
 from ...tools.corpus import save_corpus
-from ...tools.corpus.build_corpus import _build_corpus_with_timing
+from ...tools.corpus.build_corpus import build_corpus
 from ...tools.recommenders import ItemKNNRecommender
 from ...tools.recommenders.save_item_knn import save_item_knn
 
@@ -69,7 +69,7 @@ def build_artifacts(
             raise FileExistsError(f"{corpus_path} đã tồn tại. Dùng --force để ghi đè.")
 
         print("Build corpus")
-        corpus, meta, coverage, build_times = _build_corpus_with_timing(meta_files, item2id, min_coverage)
+        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, min_coverage, timing=True)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
         save_time = save_corpus(corpus, corpus_path, meta_files, item2id, min_coverage, coverage, build_times)

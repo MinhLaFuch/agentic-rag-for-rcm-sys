@@ -195,7 +195,27 @@ def test_load_fails_with_mapping_change(tmp_path):
 
     save_corpus(corpus, corpus_path, meta_files, item2id, 0.5, 1.0, {})
 
-    # Change item2id
+    # Change item2id (change middle key)
+    different_item2id = {"TestDomain::B001": 0, "TestDomain::B003": 1}
+
+    with pytest.raises(ValueError, match="Mapping hash mismatch"):
+        load_corpus(corpus_path, meta_files, different_item2id, 0.5)
+
+
+def test_load_fails_with_mapping_change_last_key(tmp_path):
+    """Loading should fail if item2id changed (change last key to test full hash)."""
+    meta = _make_sample_meta()
+    corpus = ItemCorpus.from_dataframe(meta)
+
+    corpus_path = tmp_path / "test.sqlite"
+    meta_file_path = tmp_path / "meta_TestDomain.jsonl.gz"
+    meta_file_path.write_text("fake")
+    meta_files = [("TestDomain", str(meta_file_path))]
+    item2id = {"TestDomain::B001": 0, "TestDomain::B002": 1}
+
+    save_corpus(corpus, corpus_path, meta_files, item2id, 0.5, 1.0, {})
+
+    # Change item2id (change last key - would be missed if only hashing first 1000)
     different_item2id = {"TestDomain::B001": 0, "TestDomain::B003": 1}
 
     with pytest.raises(ValueError, match="Mapping hash mismatch"):
