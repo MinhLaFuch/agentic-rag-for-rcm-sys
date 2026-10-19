@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -12,6 +12,7 @@ class EvaluationResult:
     num_users: dict[str, int]
     catalog_coverage: dict[str, float]
     target_item_seen_ratio: float
+    by_item_segment: dict[str, dict[str, float | int]] = field(default_factory=dict)
 
     def to_metrics(self, fit_seconds: float) -> dict:
         """Dạng dict ghi vào metrics.json (dùng chung cho run_baselines / tune_baselines)."""
@@ -21,5 +22,6 @@ class EvaluationResult:
             "num_users": self.num_users,
             "catalog_coverage": self.catalog_coverage,
             "target_item_seen_ratio": self.target_item_seen_ratio,
+            "by_item_segment": self.by_item_segment,
             "fit_seconds": round(fit_seconds, 2),
         }

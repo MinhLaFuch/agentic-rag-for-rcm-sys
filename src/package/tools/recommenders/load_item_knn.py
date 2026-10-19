@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
+from .item_knn_data_hash import item_knn_data_hash
 from .item_knn_recommender import ItemKNNRecommender
 
 
@@ -58,19 +59,15 @@ def load_item_knn(
         )
 
     # Validate data hash
-    users = fit_pairs["user_idx"].to_numpy(dtype=np.int64)
-    items = fit_pairs["item_idx"].to_numpy(dtype=np.int64)
-    order = np.lexsort((items, users))
-    combined = np.column_stack((users[order], items[order])).tobytes()
-    import hashlib
-
-    current_hash = hashlib.sha256(combined).hexdigest()
+    current_hash = item_knn_data_hash(fit_pairs)
     saved_hash = metadata["data_hash"]
     if current_hash != saved_hash:
-        raise ValueError(
+        error = ValueError(
             "Data hash mismatch: fit data has changed since the model was saved. "
             "Re-fit with --save-item-knn."
         )
+        error.current_data_hash = current_hash
+        raise error
 
     # Validate num_rows
     if len(fit_pairs) != metadata["num_rows"]:
@@ -115,5 +112,6 @@ def load_item_knn(
 
     # Store fit time from metadata
     model._fit_time = metadata.get("fit_time_seconds")
+    model._fit_data_hash = current_hash
 
     return model

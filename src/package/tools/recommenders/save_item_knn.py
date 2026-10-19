@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import time
 from pathlib import Path
@@ -11,6 +10,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
+
+from .item_knn_data_hash import item_knn_data_hash
 
 
 def save_item_knn(
@@ -38,14 +39,7 @@ def save_item_knn(
     if not {"user_idx", "item_idx"}.issubset(fit_pairs.columns):
         raise ValueError("fit_pairs must have user_idx and item_idx columns")
 
-    # Compute hash of fit data (fast: hash sorted values, not full df)
-    # This is much faster than re-fitting and detects data changes
-    users = fit_pairs["user_idx"].to_numpy(dtype=np.int64)
-    items = fit_pairs["item_idx"].to_numpy(dtype=np.int64)
-    # Sort to ensure consistent hash regardless of row order
-    order = np.lexsort((items, users))
-    combined = np.column_stack((users[order], items[order])).tobytes()
-    data_hash = hashlib.sha256(combined).hexdigest()
+    data_hash = item_knn_data_hash(fit_pairs)
 
     # Fit timing
     fit_time = getattr(model, "_fit_time", None)

@@ -14,6 +14,7 @@ from package.evaluation.agent import (
     reference_groups,
     score_trajectory,
     summarize,
+    filter_requests_by_scope,
 )
 from package.evaluation.agent._helper import _deepest_category
 from package.data.leakage import LeakageError
@@ -74,6 +75,18 @@ def test_build_requests_makes_every_kind_with_the_right_ground_truth(corpus):
     assert reqs["ambiguous-none-0"].user_id is None and reqs["ambiguous-none-0"].targets == []
 
 
+def test_request_scope_keeps_target_informed_cases_separate(corpus):
+    requests = list(_requests(corpus).values())
+    realistic = filter_requests_by_scope(requests, "realistic")
+    oracle = filter_requests_by_scope(requests, "oracle")
+    assert realistic and all(not request.oracle for request in realistic)
+    assert oracle and all(request.oracle for request in oracle)
+    assert {request.request_id for request in realistic}.isdisjoint({request.request_id for request in oracle})
+    assert len(filter_requests_by_scope(requests, "all")) == len(requests)
+    with pytest.raises(ValueError, match="scope"):
+        filter_requests_by_scope(requests, "unknown")
+
+
 def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
     assert [r.to_dict() for r in _requests(corpus).values()] == [r.to_dict() for r in _requests(corpus).values()]
     with pytest.raises(ValueError):
@@ -113,9 +126,20 @@ def test_score_trajectory_ranking_and_tool_selection(corpus):
     row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["recall@2"] == 1.0 and row["hit_rate@2"] == 1.0 and row["mrr@2"] == 0.5
     assert row["ndcg@2"] == pytest.approx(1 / math.log2(3))
+    assert row["precision@2"] == pytest.approx(0.5)
+    assert row["map@2"] == pytest.approx(0.5)
     assert row["tool_selection_ok"] is True and row["task_success"] is True and row["n_steps"] == 2
     wrong_order = _trajectory(steps=[_step("RecoModelTool"), _step("ItemCFTool")], recommended=[VG_A])
     assert score_trajectory(request, wrong_order, item2id=ITEM2ID, corpus=corpus, k=2)["tool_selection_ok"] is False
+
+
+def test_score_trajectory_deduplicates_recommendations_before_ranking(corpus):
+    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_B, VG_B])
+    row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["n_recommended"] == 1
+    assert row["precision@2"] == pytest.approx(0.5)  # one unique result and one unfilled rank
+    assert row["recall@2"] == row["hit_rate@2"] == row["ndcg@2"] == row["map@2"] == 1.0
 
 
 def test_failed_plan_scores_zero_not_missing(corpus):

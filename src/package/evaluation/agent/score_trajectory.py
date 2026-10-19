@@ -63,7 +63,8 @@ def score_trajectory(
     agent = trajectory["agent"]
     is_planner = agent in PLANNER_AGENTS
     steps = trajectory["steps"]
-    rec = list(trajectory["recommended"])[:k]
+    # A duplicate item must not occupy multiple ranking positions or inflate recall.
+    rec = list(dict.fromkeys(trajectory["recommended"]))[:k]
     usage = trajectory.get("usage") or {}
     plan_valid = trajectory["error"] is None
     asked = bool(plan_valid and is_planner and not steps and trajectory.get("ask_user"))
@@ -101,7 +102,7 @@ def score_trajectory(
     else:
         row["tool_selection_ok"] = None
 
-    ranking_keys = (f"recall@{k}", f"hit_rate@{k}", f"ndcg@{k}", f"mrr@{k}")
+    ranking_keys = (f"precision@{k}", f"recall@{k}", f"hit_rate@{k}", f"ndcg@{k}", f"mrr@{k}", f"map@{k}")
     if request.kind != "ambiguous" and request.targets:
         relevant = set(request.targets)
         hits = np.zeros((1, k))

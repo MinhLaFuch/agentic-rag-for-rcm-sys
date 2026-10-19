@@ -7,6 +7,7 @@ Chạy các baseline trên splits của stage 3.
 
 import argparse
 import time
+from pathlib import Path
 
 from package.config import get_data_paths, load_config
 from package.data.split import infer_matrix_shape, load_splits
@@ -46,12 +47,19 @@ def main() -> None:
     target_matrix = build_interaction_matrix(target_df, num_users, num_items)
 
     dataset_info = {
+        "tag": paths.tag,
         "splits_dir": splits_dir,
         "eval_on": args.eval_on,
         "num_users": num_users,
         "num_items": num_items,
         "fit_interactions": int(fit_matrix.nnz),
         "target_interactions": int(target_matrix.nnz),
+        "split_files": {
+            name: {"path": str(Path(splits_dir) / f"{name}.parquet"),
+                   "size_bytes": (Path(splits_dir) / f"{name}.parquet").stat().st_size,
+                   "mtime_ns": (Path(splits_dir) / f"{name}.parquet").stat().st_mtime_ns}
+            for name in ("train", "validation", "test")
+        },
     }
     print(f"=== BASELINE REPORT (eval_on={args.eval_on}) ===")
     print(f"dataset {dataset_info}")

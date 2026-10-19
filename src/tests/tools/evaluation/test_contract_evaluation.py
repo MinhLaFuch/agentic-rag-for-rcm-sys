@@ -142,9 +142,22 @@ def test_target_item_seen_ratio(world):
     assert evaluate_recommender(PopularityMatrixRecommender().fit(world.train), world.train, world.target, [3]).target_item_seen_ratio == 1.0
 
 
+def test_ranking_metrics_are_reported_by_target_item_familiarity(world):
+    train = world.train.tolil(copy=True)
+    train[:, 5] = 0  # Item 5 is absent from fit, while item 4 remains seen.
+    train = train.tocsr()
+    target = sp.csr_matrix(([1.0, 1.0], ([0, 1], [4, 5])), shape=(6, 6))
+    result = evaluate_recommender(PopularityMatrixRecommender().fit(train), train, target, [2])
+    assert result.by_item_segment["warm_item"]["num_users"] == 1
+    assert result.by_item_segment["cold_item"]["num_users"] == 1
+    assert "recall@2" in result.by_item_segment["warm_item"]
+    assert "ndcg@2" in result.by_item_segment["cold_item"]
+    assert "by_item_segment" in result.to_metrics(fit_seconds=0)
+
+
 def test_result_is_finite_and_json_serialisable(result):
     metrics = result.to_metrics(fit_seconds=1.2345)
-    assert metrics["fit_seconds"] == 1.23 and set(metrics) >= {"overall", "by_segment", "num_users", "catalog_coverage", "target_item_seen_ratio"}
+    assert metrics["fit_seconds"] == 1.23 and set(metrics) >= {"overall", "by_segment", "num_users", "catalog_coverage", "target_item_seen_ratio", "by_item_segment"}
     json.dumps(metrics, allow_nan=False)  # raises on NaN/inf or numpy scalars
     assert isinstance(result, EvaluationResult)
     assert all(math.isfinite(v) for v in result.overall.values())
