@@ -1,0 +1,2291 @@
+{
+  "k_values": [
+    5,
+    10,
+    20
+  ],
+  "catalog_size": 678281,
+  "retrieval": {
+    "union_rr": {
+      "cold": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 4147,
+          "recall": 0.02072086859500653,
+          "hit_rate": 0.075,
+          "candidate_coverage": 0.02001446829033036,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.000147431521743938
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 4147,
+          "recall": 0.02072086859500653,
+          "hit_rate": 0.075,
+          "candidate_coverage": 0.02001446829033036,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.000147431521743938
+        },
+        "mean_target_seen_in_fit": 0.0,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 1.13769993185997e-06,
+            "p50": 9.00006853044033e-07,
+            "p95": 2.3000029614195228e-06
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 1.0166999563807623e-06,
+            "p50": 6.999907782301307e-07,
+            "p95": 1.6999983927235007e-06
+          }
+        }
+      },
+      "sparse": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2261,
+          "recall": 0.02291352813852814,
+          "hit_rate": 0.042,
+          "candidate_coverage": 0.019460415745245468,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.07901297544822869
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2260,
+          "recall": 0.02291352813852814,
+          "hit_rate": 0.042,
+          "candidate_coverage": 0.019469026548672566,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.07901297544822869
+        },
+        "mean_target_seen_in_fit": 0.0005,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 0.0010752107000153047,
+            "p50": 0.0008136499964166433,
+            "p95": 0.0020344949880382037
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 0.3793490431999817,
+            "p50": 0.3414555499984999,
+            "p95": 0.9543101949973788
+          }
+        }
+      },
+      "warm": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2201,
+          "recall": 0.017922883597883597,
+          "hit_rate": 0.036,
+          "candidate_coverage": 0.016810540663334848,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.07979141388303668
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2199,
+          "recall": 0.017922883597883597,
+          "hit_rate": 0.036,
+          "candidate_coverage": 0.01682582992269213,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.07979141388303668
+        },
+        "mean_target_seen_in_fit": 0.00075,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 0.0009922001001104945,
+            "p50": 0.0009360500043840148,
+            "p95": 0.0011876800053869372
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 0.2691922486996482,
+            "p50": 0.29809484999714186,
+            "p95": 0.5354705050085613
+          }
+        }
+      }
+    },
+    "union_all": {
+      "cold": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 4147,
+          "recall": 0.02072086859500653,
+          "hit_rate": 0.075,
+          "candidate_coverage": 0.02001446829033036,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.000147431521743938
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 4147,
+          "recall": 0.02072086859500653,
+          "hit_rate": 0.075,
+          "candidate_coverage": 0.02001446829033036,
+          "mean_candidate_set_size": 100.0,
+          "catalog_coverage": 0.000147431521743938
+        },
+        "mean_target_seen_in_fit": 0.0,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 1.13769993185997e-06,
+            "p50": 9.00006853044033e-07,
+            "p95": 2.3000029614195228e-06
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 1.0166999563807623e-06,
+            "p50": 6.999907782301307e-07,
+            "p95": 1.6999983927235007e-06
+          }
+        }
+      },
+      "sparse": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2261,
+          "recall": 0.035296861471861465,
+          "hit_rate": 0.064,
+          "candidate_coverage": 0.03007518796992481,
+          "mean_candidate_set_size": 239.437,
+          "catalog_coverage": 0.15969487572259874
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2260,
+          "recall": 0.035296861471861465,
+          "hit_rate": 0.064,
+          "candidate_coverage": 0.03008849557522124,
+          "mean_candidate_set_size": 239.437,
+          "catalog_coverage": 0.15969487572259874
+        },
+        "mean_target_seen_in_fit": 0.0005,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 0.0010752107000153047,
+            "p50": 0.0008136499964166433,
+            "p95": 0.0020344949880382037
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 0.3793490431999817,
+            "p50": 0.3414555499984999,
+            "p95": 0.9543101949973788
+          }
+        }
+      },
+      "warm": {
+        "all_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2201,
+          "recall": 0.029249074074074073,
+          "hit_rate": 0.057,
+          "candidate_coverage": 0.029986369831894594,
+          "mean_candidate_set_size": 271.19,
+          "catalog_coverage": 0.18013330758196086
+        },
+        "unseen_validation_targets": {
+          "users": 1000,
+          "target_interactions": 2199,
+          "recall": 0.029249074074074073,
+          "hit_rate": 0.057,
+          "candidate_coverage": 0.030013642564802184,
+          "mean_candidate_set_size": 271.19,
+          "catalog_coverage": 0.18013330758196086
+        },
+        "mean_target_seen_in_fit": 0.00075,
+        "candidate_generation_latency_seconds": {
+          "item_cf": {
+            "n": 1000,
+            "mean": 0.0009922001001104945,
+            "p50": 0.0009360500043840148,
+            "p95": 0.0011876800053869372
+          },
+          "semantic": {
+            "n": 1000,
+            "mean": 0.2691922486996482,
+            "p50": 0.29809484999714186,
+            "p95": 0.5354705050085613
+          }
+        }
+      }
+    }
+  },
+  "ranking": {
+    "union_rr": {
+      "popularity_weight_0": {
+        "popularity_weight": 0.0,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.002,
+                "recall@5": 0.0024055555555555557,
+                "hit_rate@5": 0.009,
+                "ndcg@5": 0.0021446608984783907,
+                "mrr@5": 0.003533333333333333,
+                "map@5": 0.0010699999999999998
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036748138516893183,
+                "mrr@10": 0.005313888888888888,
+                "map@10": 0.0013817857142857143
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004621579598126248,
+                "mrr@20": 0.00596523199023199,
+                "map@20": 0.001552830179080179
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0005978338996210368,
+              "p50": 0.0004178500021225773,
+              "p95": 0.0014309749953099525
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001433926000172505,
+              "p50": 0.00013025000225752592,
+              "p95": 0.000184510007238714
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 1.0,
+              "top_k_boundary_tie": 1.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.00682313082630945,
+              "10": 0.013497355815657523,
+              "20": 0.02677503866391658
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005392423600016628,
+              "p50": 0.00531819999741856,
+              "p95": 0.005933329994149972
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018602599983569236,
+              "p50": 0.00018200000340584666,
+              "p95": 0.0002239250017737504
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.4402606060606061,
+              "top_k_boundary_tie": 0.431
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009732140737910783,
+                "mrr@20": 0.001538690476190476,
+                "map@20": 0.000622172619047619
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006836399663266404,
+              "10": 0.013475241087395931,
+              "20": 0.02660696672912849
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005334240000127465,
+              "p50": 0.005250550006167032,
+              "p95": 0.005924610011425102
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00017830590011726598,
+              "p50": 0.00017249998927582055,
+              "p95": 0.00021850499033462256
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.38009737373737373,
+              "top_k_boundary_tie": 0.548
+            }
+          }
+        }
+      },
+      "baseline": {
+        "popularity_weight": 1e-06,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00036373209994053466,
+              "p50": 0.00034339999547228217,
+              "p95": 0.0004916249898087699
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00014004430004570167,
+              "p50": 0.00012919999426230788,
+              "p95": 0.00018763000189210276
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068290280871792074,
+              "10": 0.013495881500440083,
+              "20": 0.026738180783480593
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0051431244001432785,
+              "p50": 0.005071500003396068,
+              "p95": 0.005462024999724235
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00017336849980347324,
+              "p50": 0.00016804999904707074,
+              "p95": 0.0002011100026720669
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.019083636363636365,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009732140737910783,
+                "mrr@20": 0.001538690476190476,
+                "map@20": 0.000622172619047619
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006843771239353601,
+              "10": 0.01348261266348313,
+              "20": 0.026623184196520322
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00526003359988681,
+              "p50": 0.00517704999219859,
+              "p95": 0.005610819996945793
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00017827470001066103,
+              "p50": 0.00017440000374335796,
+              "p95": 0.00020471500101848503
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.017954949494949496,
+              "top_k_boundary_tie": 0.528
+            }
+          }
+        }
+      },
+      "popularity_weight_0.0001": {
+        "popularity_weight": 0.0001,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00037248729998827913,
+              "p50": 0.0003462000022409484,
+              "p95": 0.0005440350090793799
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001455090001982171,
+              "p50": 0.0001306000049225986,
+              "p95": 0.00023195000467239875
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068290280871792074,
+              "10": 0.013494407185222644,
+              "20": 0.026738180783480593
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00520466549989942,
+              "p50": 0.005145499999343883,
+              "p95": 0.005557799999223788
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001775264000025345,
+              "p50": 0.0001735500045469962,
+              "p95": 0.000204309998662211
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.019083636363636365,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009732140737910783,
+                "mrr@20": 0.001538690476190476,
+                "map@20": 0.000622172619047619
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006843771239353601,
+              "10": 0.01348261266348313,
+              "20": 0.026623184196520322
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005344818199999281,
+              "p50": 0.005295100003422704,
+              "p95": 0.005751874994894024
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018280729993421118,
+              "p50": 0.00018049999926006421,
+              "p95": 0.00021165499565540809
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.017954949494949496,
+              "top_k_boundary_tie": 0.529
+            }
+          }
+        }
+      },
+      "popularity_weight_0.001": {
+        "popularity_weight": 0.001,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00037692400005471426,
+              "p50": 0.00034330000198679045,
+              "p95": 0.0005084199998236726
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00013755570027569773,
+              "p50": 0.00012939999578520656,
+              "p95": 0.00019180499148205855
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006826079456744329,
+              "10": 0.013491458554787766,
+              "20": 0.026739655098698033
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005324692399939522,
+              "p50": 0.0052651000005425885,
+              "p95": 0.005792735001159599
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018522029991436284,
+              "p50": 0.00018259999342262745,
+              "p95": 0.00021566499781329178
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.019083636363636365,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009732140737910783,
+                "mrr@20": 0.001538690476190476,
+                "map@20": 0.000622172619047619
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006843771239353601,
+              "10": 0.01348261266348313,
+              "20": 0.02662023556608544
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005357484699969064,
+              "p50": 0.005292850000842009,
+              "p95": 0.0057330449941218825
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018357730006391648,
+              "p50": 0.00018165000074077398,
+              "p95": 0.0002118299977155402
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.017954949494949496,
+              "top_k_boundary_tie": 0.527
+            }
+          }
+        }
+      },
+      "popularity_weight_0.01": {
+        "popularity_weight": 0.01,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00036831980018178003,
+              "p50": 0.0003466499983915128,
+              "p95": 0.00045815999619662755
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00013351390029129107,
+              "p50": 0.0001299499999731779,
+              "p95": 0.00016040499904192984
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0017133556723596725,
+                "mrr@5": 0.0025,
+                "map@5": 0.0013333333333333333
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.00217008752200523,
+                "mrr@10": 0.002736111111111111,
+                "map@10": 0.0014953703703703702
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.00217008752200523,
+                "mrr@20": 0.002736111111111111,
+                "map@20": 0.0014953703703703702
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068069133589176165,
+              "10": 0.013448703413482022,
+              "20": 0.026692477011739973
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005502253800092148,
+              "p50": 0.00535755000601057,
+              "p95": 0.005888144997879863
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019224019972898532,
+              "p50": 0.00018570000247564167,
+              "p95": 0.00022594000183744344
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.019083636363636365,
+              "top_k_boundary_tie": 0.418
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008594495815061883,
+                "mrr@5": 0.0015,
+                "map@5": 0.000625
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009895762648368888,
+                "mrr@10": 0.0016428571428571427,
+                "map@10": 0.0006607142857142857
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0010243264375357575,
+                "mrr@20": 0.0017053571428571428,
+                "map@20": 0.0006638392857142857
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006827553771961768,
+              "10": 0.013459023620004099,
+              "20": 0.026545045489996033
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005510777799820061,
+              "p50": 0.005389550002291799,
+              "p95": 0.006248919991776346
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019265160002396442,
+              "p50": 0.00018745000124908984,
+              "p95": 0.00024384500793530602
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.017954949494949496,
+              "top_k_boundary_tie": 0.526
+            }
+          }
+        }
+      }
+    },
+    "union_all": {
+      "popularity_weight_0": {
+        "popularity_weight": 0.0,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.002,
+                "recall@5": 0.0024055555555555557,
+                "hit_rate@5": 0.009,
+                "ndcg@5": 0.0021446608984783907,
+                "mrr@5": 0.003533333333333333,
+                "map@5": 0.0010699999999999998
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036748138516893183,
+                "mrr@10": 0.005313888888888888,
+                "map@10": 0.0013817857142857143
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004621579598126248,
+                "mrr@20": 0.00596523199023199,
+                "map@20": 0.001552830179080179
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00038264139989041725,
+              "p50": 0.0003529499954311177,
+              "p95": 0.0005667599922162479
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001467465000023367,
+              "p50": 0.00013250000483822078,
+              "p95": 0.00021217999965301708
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 1.0,
+              "top_k_boundary_tie": 1.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.00682313082630945,
+              "10": 0.013492932870005204,
+              "20": 0.026739655098698033
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 239437,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 239437,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006111873600137187,
+              "p50": 0.005932250001933426,
+              "p95": 0.0074528099969029425
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00020140470009937417,
+              "p50": 0.0001884500015876256,
+              "p95": 0.0002903399989008903
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.5787131109110526,
+              "top_k_boundary_tie": 0.431
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009719013924769232,
+                "mrr@20": 0.0015317460317460316,
+                "map@20": 0.0006218253968253969
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006817233565439692,
+              "10": 0.013433960261307628,
+              "20": 0.02651408487042981
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 271190,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 271190,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0062099850001832236,
+              "p50": 0.006108749999839347,
+              "p95": 0.007034769999154378
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001923441998224007,
+              "p50": 0.00018659999477677047,
+              "p95": 0.0002309099982085172
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.4052530493016391,
+              "top_k_boundary_tie": 0.551
+            }
+          }
+        }
+      },
+      "baseline": {
+        "popularity_weight": 1e-06,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0004075363998563262,
+              "p50": 0.0003536000003805384,
+              "p95": 0.0006362150124914479
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001513184000941692,
+              "p50": 0.0001336999994236976,
+              "p95": 0.00024584500861237754
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068290280871792074,
+              "10": 0.013495881500440083,
+              "20": 0.026739655098698033
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 239437,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 239437,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005918358500217437,
+              "p50": 0.005893400011700578,
+              "p95": 0.0064774599915836005
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001856041999271838,
+              "p50": 0.00018280000949744135,
+              "p95": 0.00020880500378552824
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.015575271173447954,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009719013924769232,
+                "mrr@20": 0.0015317460317460316,
+                "map@20": 0.0006218253968253969
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006824605141526889,
+              "10": 0.013441331837394826,
+              "20": 0.02652735370738676
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 271190,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 271190,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006153567599903908,
+              "p50": 0.006100449994846713,
+              "p95": 0.006831734994193539
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019089209999947342,
+              "p50": 0.0001849999971454963,
+              "p95": 0.0002269099961267784
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.01458160951118422,
+              "top_k_boundary_tie": 0.531
+            }
+          }
+        }
+      },
+      "popularity_weight_0.0001": {
+        "popularity_weight": 0.0001,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00042067119989951606,
+              "p50": 0.00036559998989105225,
+              "p95": 0.0006754500034730878
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001585524000111036,
+              "p50": 0.00013849999231752008,
+              "p95": 0.0002916999932494943
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068290280871792074,
+              "10": 0.013494407185222644,
+              "20": 0.026739655098698033
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 239437,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 239437,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00578592809989641,
+              "p50": 0.005785099994682241,
+              "p95": 0.006251054995664162
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018665960007638205,
+              "p50": 0.00018320000526728109,
+              "p95": 0.00020891000385745426
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.015575271173447954,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009719013924769232,
+                "mrr@20": 0.0015317460317460316,
+                "map@20": 0.0006218253968253969
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006824605141526889,
+              "10": 0.013441331837394826,
+              "20": 0.02652735370738676
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 271190,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 271190,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006222738200071035,
+              "p50": 0.0061674000025959685,
+              "p95": 0.006909264998103026
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019293069980631116,
+              "p50": 0.00018864999583456665,
+              "p95": 0.00022742000001017002
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.01458160951118422,
+              "top_k_boundary_tie": 0.531
+            }
+          }
+        }
+      },
+      "popularity_weight_0.001": {
+        "popularity_weight": 0.001,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00037112880003405737,
+              "p50": 0.00034914999559987336,
+              "p95": 0.0004712099937023595
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00013873599986254702,
+              "p50": 0.00013190000026952475,
+              "p95": 0.00018304501063539643
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0013561315332572981,
+                "mrr@5": 0.0018333333333333333,
+                "map@5": 0.0009166666666666665
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.0018072483834754745,
+                "mrr@10": 0.0020583333333333335,
+                "map@10": 0.001075
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.0018072483834754745,
+                "mrr@20": 0.0020583333333333335,
+                "map@20": 0.001075
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006826079456744329,
+              "10": 0.013491458554787766,
+              "20": 0.02674112941391547
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 239437,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 239437,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006154832600106601,
+              "p50": 0.006087699999625329,
+              "p95": 0.006799374998081474
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019347429990011734,
+              "p50": 0.00018629999976838008,
+              "p95": 0.00024582500918768346
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.015575271173447954,
+              "top_k_boundary_tie": 0.419
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008083372177615092,
+                "mrr@5": 0.0013333333333333333,
+                "map@5": 0.0005833333333333334
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009384639010922098,
+                "mrr@10": 0.001476190476190476,
+                "map@10": 0.0006190476190476191
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0009719013924769232,
+                "mrr@20": 0.0015317460317460316,
+                "map@20": 0.0006218253968253969
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006824605141526889,
+              "10": 0.013441331837394826,
+              "20": 0.026524405076951883
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 271190,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 271190,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006150354500059621,
+              "p50": 0.006110249996709172,
+              "p95": 0.006741564993717475
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018994860007660462,
+              "p50": 0.00018619999900693074,
+              "p95": 0.00021752501052105797
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.01458160951118422,
+              "top_k_boundary_tie": 0.528
+            }
+          }
+        }
+      },
+      "popularity_weight_0.01": {
+        "popularity_weight": 0.01,
+        "per_segment": {
+          "cold": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0016,
+                "recall@5": 0.002105555555555556,
+                "hit_rate@5": 0.008,
+                "ndcg@5": 0.001882250743453707,
+                "mrr@5": 0.003333333333333333,
+                "map@5": 0.0009500000000000001
+              },
+              "10": {
+                "precision@10": 0.0025,
+                "recall@10": 0.006247222222222222,
+                "hit_rate@10": 0.023,
+                "ndcg@10": 0.0036576752282135253,
+                "mrr@10": 0.005280555555555555,
+                "map@10": 0.0013684523809523808
+              },
+              "20": {
+                "precision@20": 0.0019000000000000002,
+                "recall@20": 0.008320238095238094,
+                "hit_rate@20": 0.033,
+                "ndcg@20": 0.004610882610709882,
+                "mrr@20": 0.005944970552323493,
+                "map@20": 0.001542663668031315
+              }
+            },
+            "catalog_coverage": {
+              "5": 7.3715760871969e-06,
+              "10": 1.47431521743938e-05,
+              "20": 2.94863043487876e-05
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 0,
+            "target_items_unseen_in_fit": 4147,
+            "filtering": {
+              "retrieval_raw_union_candidates": 100000,
+              "retrieval_seen_dropped": 0,
+              "input_candidates": 100000,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 100000,
+              "retrieval_seen_loss_rate": 0.0,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0003826553998078452,
+              "p50": 0.0003647500052466057,
+              "p95": 0.0004782249896379653
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.0001423899000219535,
+              "p50": 0.00013840000610798597,
+              "p95": 0.00017659999211900869
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.0,
+              "top_k_boundary_tie": 0.0
+            }
+          },
+          "sparse": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0006000000000000001,
+                "recall@5": 0.0018333333333333333,
+                "hit_rate@5": 0.003,
+                "ndcg@5": 0.0017133556723596725,
+                "mrr@5": 0.0025,
+                "map@5": 0.0013333333333333333
+              },
+              "10": {
+                "precision@10": 0.0005,
+                "recall@10": 0.0031666666666666666,
+                "hit_rate@10": 0.005,
+                "ndcg@10": 0.00217008752200523,
+                "mrr@10": 0.002736111111111111,
+                "map@10": 0.0014953703703703702
+              },
+              "20": {
+                "precision@20": 0.00025,
+                "recall@20": 0.0031666666666666666,
+                "hit_rate@20": 0.005,
+                "ndcg@20": 0.00217008752200523,
+                "mrr@20": 0.002736111111111111,
+                "map@20": 0.0014953703703703702
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.0068069133589176165,
+              "10": 0.013448703413482022,
+              "20": 0.026693951326957413
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 1,
+            "target_items_unseen_in_fit": 2260,
+            "filtering": {
+              "retrieval_raw_union_candidates": 244804,
+              "retrieval_seen_dropped": 1396,
+              "input_candidates": 239437,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 239437,
+              "retrieval_seen_loss_rate": 0.005702521200633977,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.005850883899984183,
+              "p50": 0.005826499997056089,
+              "p95": 0.006421520001458702
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00018816480014356785,
+              "p50": 0.00018509999790694565,
+              "p95": 0.00021321000822354107
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.015575271173447954,
+              "top_k_boundary_tie": 0.418
+            }
+          },
+          "warm": {
+            "users": 1000,
+            "metrics": {
+              "5": {
+                "precision@5": 0.0004,
+                "recall@5": 0.00075,
+                "hit_rate@5": 0.002,
+                "ndcg@5": 0.0008594495815061883,
+                "mrr@5": 0.0015,
+                "map@5": 0.000625
+              },
+              "10": {
+                "precision@10": 0.00030000000000000003,
+                "recall@10": 0.001,
+                "hit_rate@10": 0.003,
+                "ndcg@10": 0.0009895762648368888,
+                "mrr@10": 0.0016428571428571427,
+                "map@10": 0.0006607142857142857
+              },
+              "20": {
+                "precision@20": 0.0002,
+                "recall@20": 0.0010185185185185186,
+                "hit_rate@20": 0.004,
+                "ndcg@20": 0.0010230137562216024,
+                "mrr@20": 0.0016984126984126984,
+                "map@20": 0.0006634920634920635
+              }
+            },
+            "catalog_coverage": {
+              "5": 0.006811336304569935,
+              "10": 0.013419217109133236,
+              "20": 0.026450689316079915
+            },
+            "sampled_users": 1000,
+            "users_with_unseen_targets": 1000,
+            "users_without_unseen_targets": 0,
+            "target_items_seen_in_fit": 2,
+            "target_items_unseen_in_fit": 2199,
+            "filtering": {
+              "retrieval_raw_union_candidates": 292057,
+              "retrieval_seen_dropped": 2581,
+              "input_candidates": 271190,
+              "removed_seen": 0,
+              "removed_unscored": 0,
+              "returned_ranked": 271190,
+              "retrieval_seen_loss_rate": 0.008837316003382901,
+              "unscored_loss_rate": 0.0,
+              "total_loss_rate_after_merge": 0.0
+            },
+            "ranking_latency_seconds": {
+              "n": 1000,
+              "mean": 0.006330101800034754,
+              "p50": 0.0062500499916495755,
+              "p95": 0.007142575005855178
+            },
+            "metadata_fetch_latency_seconds": {
+              "n": 1000,
+              "mean": 0.00019499340002948883,
+              "p50": 0.00018889999773819,
+              "p95": 0.00024050999782048165
+            },
+            "metadata_fetch_success_rate": 1.0,
+            "ties": {
+              "tie_pair_rate": 0.01458160951118422,
+              "top_k_boundary_tie": 0.523
+            }
+          }
+        }
+      }
+    }
+  },
+  "runtime_seconds": 1138.1013047999877
+}

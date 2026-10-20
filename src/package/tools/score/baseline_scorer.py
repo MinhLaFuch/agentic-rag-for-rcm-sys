@@ -17,9 +17,12 @@ class BaselineScorer:
     ItemKNNRecommender.recommend).  Users with no history get popularity only.
     """
 
-    def __init__(self, model: Any) -> None:
+    def __init__(self, model: Any, popularity_weight: float = 1e-6) -> None:
         self.model = model
         self.name = type(model).__name__
+        if not np.isfinite(popularity_weight) or popularity_weight < 0:
+            raise ValueError("popularity_weight must be a finite non-negative number")
+        self.popularity_weight = float(popularity_weight)
 
         # Validate model has required attributes
         required_attrs = ["scores", "user_items", "num_items"]
@@ -93,7 +96,7 @@ class BaselineScorer:
         item_idxs = np.asarray(item_idxs, dtype=np.int64)
         valid = (item_idxs >= 0) & (item_idxs < self.num_items)
         safe = np.where(valid, item_idxs, 0)
-        scores = np.where(valid, self._pop_norm[safe] * 1e-6, 0.0)
+        scores = np.where(valid, self._pop_norm[safe] * self.popularity_weight, 0.0)
         if self.similarity is not None and self.is_known_user(user_idx):
             cf = (self.user_items.getrow(user_idx) @ self.similarity).tocsr()
             scores = scores + np.where(valid, cf[:, safe].toarray().ravel(), 0.0)

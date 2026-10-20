@@ -2,3 +2,6 @@
 !.gitignore
 !.gitmodules
 resource
+# Keep bulky ranking-evaluation raw artifacts local; commit summaries instead.
+/src/experiments/ranking_eval/exp_*/candidate_lists.jsonl
+/src/experiments/ranking_eval/exp_*/scored.jsonl
