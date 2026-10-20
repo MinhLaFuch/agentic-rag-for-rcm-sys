@@ -34,6 +34,14 @@ class DataPaths:
         return self.raw_dir / f"{domain}.jsonl.gz"
 
     def meta_path(self, domain: str) -> Path:
+        # Product metadata can live separately from review dumps and may be
+        # plain JSONL. Prefer it when present; retain the legacy raw layout.
+        metadata_path = self.raw_dir.parent / "metadata" / f"meta_{domain}.jsonl"
+        if metadata_path.exists():
+            return metadata_path
+        plain_raw_path = self.raw_dir / f"meta_{domain}.jsonl"
+        if plain_raw_path.exists():
+            return plain_raw_path
         return self.raw_dir / f"meta_{domain}.jsonl.gz"
 
     def cleaned_path(self, domain: str) -> Path:

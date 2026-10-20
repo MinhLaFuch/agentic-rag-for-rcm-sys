@@ -33,6 +33,7 @@ import json
 import shutil
 import time
 from itertools import islice
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -65,10 +66,9 @@ from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
+from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
-from package.tools.recommenders.load_item_knn import load_item_knn
 from package.utils import ensure_utf8_stdout
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
@@ -183,6 +183,7 @@ def main() -> None:
     ap.add_argument("--inference-mode", choices=list(MODES),
                     help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
+    ap.add_argument("--trajectory-file", help="Tên file JSONL riêng trong log_dir (tránh ghi đè log của lần chạy khác)")
     ap.add_argument("--request-scope", choices=("realistic", "oracle", "all"), default="realistic",
                     help="realistic loại request dùng target metadata; oracle chỉ chạy các request đó; all gộp cả hai nhóm")
     ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
@@ -253,46 +254,19 @@ def main() -> None:
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
-    knn_fit_data_hash = None
+    knn_fit_data_hash = item_knn_data_hash(fit_pairs)
     knn_cache_data_hash = None
-    if args.no_prebuilt:
-        print("Fit ItemKNN on fit data (--no-prebuilt)")
-        t0 = time.perf_counter()
-        knn = ItemKNNRecommender(knn_k).fit(fit_df[["user_idx", "item_idx"]])
-        fit_time = time.perf_counter() - t0
-        knn._fit_time = fit_time
-        print(f"ItemKNN: fitted in {fit_time:.1f}s")
-    else:
-        item_knn_path = data_paths.item_knn_path(args.eval_on)
-        if not item_knn_path.exists():
-            raise SystemExit(
-                f"ItemKNN file not found: {item_knn_path}\n"
-                f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {args.eval_on}\n"
-                f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
-            )
-        cache_meta_path = item_knn_path.with_suffix(".meta.json")
-        if cache_meta_path.exists():
-            knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
-        print(f"Load ItemKNN from {item_knn_path}")
-        try:
-            knn = load_item_knn(item_knn_path, knn_k, fit_pairs)
-            knn_artifact_status = "cache_validated"
-            knn_fit_data_hash = knn._fit_data_hash
-            fit_time = getattr(knn, "_fit_time", None)
-            print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
-        except ValueError as exc:
-            if "Data hash mismatch" not in str(exc):
-                raise
-            print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
-            knn_fit_data_hash = getattr(exc, "current_data_hash", None)
-            t0 = time.perf_counter()
-            knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
-            knn._fit_time = time.perf_counter() - t0
-            knn_artifact_status = "refit_after_data_hash_mismatch"
-            print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
-
-    if knn_fit_data_hash is None:
-        knn_fit_data_hash = item_knn_data_hash(fit_pairs)
+    item_knn_path = data_paths.item_knn_path(args.eval_on)
+    cache_meta_path = item_knn_path.with_suffix(".meta.json")
+    if cache_meta_path.exists():
+        knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
+    knn_artifact_status = "fit_fresh_cache_ignored"
+    print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
+    t0 = time.perf_counter()
+    knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+    fit_time = time.perf_counter() - t0
+    knn._fit_time = fit_time
+    print(f"ItemKNN: fitted in {fit_time:.1f}s")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
     tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
@@ -326,7 +300,10 @@ def main() -> None:
     print("requests:", ", ".join(f"{name}={n}" for name, n in counts.items()), f"| agents: {agents}")
     text_of = {r.request_id: r.text for r in requests}
 
-    traj_path = data_paths.log_dir / cfg["trajectory_file"]
+    trajectory_name = args.trajectory_file or cfg["trajectory_file"]
+    if Path(trajectory_name).name != trajectory_name or not trajectory_name.endswith(".jsonl"):
+        ap.error("--trajectory-file must be a simple .jsonl filename")
+    traj_path = data_paths.log_dir / trajectory_name
     traj_path.parent.mkdir(parents=True, exist_ok=True)
     done: dict[tuple[str, str], dict[str, Any]] = {}
     if args.resume and traj_path.exists():
@@ -386,6 +363,15 @@ def main() -> None:
             shown = "  ".join(f"{c}={stats[c]:.3f}" for c in columns if c in stats)
             print(f"{agent:<14} {kind:<13} n={stats['n']:<4} {shown}")
 
+    metadata_source_records = {
+        domain: {
+            "path": path,
+            "exists": Path(path).exists(),
+            "size_bytes": Path(path).stat().st_size if Path(path).exists() else None,
+            "sha256": sha256_file(path) if Path(path).exists() else None,
+        }
+        for domain, path in meta_files
+    }
     exp_dir = save_experiment(
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
         config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
@@ -393,9 +379,21 @@ def main() -> None:
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
                 "inference_mode": inference_mode if any(a in INFERENCE_AGENTS for a in agents) else None,
+                "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_has_mapping_hash": False},
+                "knn_cache_has_mapping_hash": False,
+                "corpus_artifacts": {
+                    "mode": "built_from_metadata_in_memory" if args.no_prebuilt else "loaded_prebuilt",
+                    "metadata_sources": metadata_source_records,
+                    "sqlite_path": None if args.no_prebuilt else str(data_paths.corpus_path),
+                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt else None,
+                    "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
+                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt else None,
+                    "source_hash_semantics": "path_size_mtime_fingerprint; source content hashes are not present in format_version 1",
+                    "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
+                    "allow_missing_sources": bool(args.allow_missing_corpus_sources),
+                }},
         metrics={"k": k, "summary": summary},
         seed=seed,
         dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,

@@ -10,3 +10,5 @@ Requires-Dist: scipy<1.19.0,>=1.14.0
 Requires-Dist: pyarrow<19.0.0,>=18.0.0
 Provides-Extra: dev
 Requires-Dist: pytest<9.2.0,>=9.1.0; extra == "dev"
+Provides-Extra: demo
+Requires-Dist: gradio<5.0.0,>=4.0.0; extra == "demo"

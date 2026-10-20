@@ -2,134 +2,78 @@
   "k": 10,
   "summary": {
     "baseline": {
-      "cold_text": {
-        "all": {
-          "n": 20,
-          "constraint_satisfaction": 0.01,
-          "hit_rate@10": 0.0,
-          "mrr@10": 0.0,
-          "n_recommended": 10.0,
-          "ndcg@10": 0.0,
-          "plan_valid": 1.0,
-          "recall@10": 0.0,
-          "task_success": 0.0,
-          "wall_seconds": 0.0
-        },
-        "cold": {
-          "n": 20,
-          "constraint_satisfaction": 0.01,
-          "hit_rate@10": 0.0,
-          "mrr@10": 0.0,
-          "n_recommended": 10.0,
-          "ndcg@10": 0.0,
-          "plan_valid": 1.0,
-          "recall@10": 0.0,
-          "task_success": 0.0,
-          "wall_seconds": 0.0
-        }
-      },
-      "constrained": {
-        "all": {
-          "n": 40,
-          "constraint_satisfaction": 0.005,
-          "hit_rate@10": 0.0,
-          "mrr@10": 0.0,
-          "n_recommended": 10.0,
-          "ndcg@10": 0.0,
-          "plan_valid": 1.0,
-          "price_unknown_rate": 0.48,
-          "recall@10": 0.0,
-          "task_success": 0.0,
-          "wall_seconds": 0.002025
-        },
-        "sparse": {
-          "n": 20,
-          "constraint_satisfaction": 0.005,
-          "hit_rate@10": 0.0,
-          "mrr@10": 0.0,
-          "n_recommended": 10.0,
-          "ndcg@10": 0.0,
-          "plan_valid": 1.0,
-          "price_unknown_rate": 0.5199999999999998,
-          "recall@10": 0.0,
-          "task_success": 0.0,
-          "wall_seconds": 0.0020000000000000005
-        },
-        "warm": {
-          "n": 20,
-          "constraint_satisfaction": 0.005,
-          "hit_rate@10": 0.0,
-          "mrr@10": 0.0,
-          "n_recommended": 10.0,
-          "ndcg@10": 0.0,
-          "plan_valid": 1.0,
-          "price_unknown_rate": 0.43999999999999995,
-          "recall@10": 0.0,
-          "task_success": 0.0,
-          "wall_seconds": 0.0020500000000000006
-        }
-      },
       "personalized": {
         "all": {
-          "n": 40,
+          "n": 4,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
           "plan_valid": 1.0,
+          "precision@10": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0019250000000000003
+          "wall_seconds": 0.0034999999999999996
         },
         "sparse": {
-          "n": 20,
+          "n": 2,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
           "plan_valid": 1.0,
+          "precision@10": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0018500000000000003
+          "wall_seconds": 0.0035
         },
         "warm": {
-          "n": 20,
+          "n": 2,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
           "plan_valid": 1.0,
+          "precision@10": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0020000000000000005
+          "wall_seconds": 0.0035
         }
       },
       "similar": {
         "all": {
-          "n": 40,
+          "n": 4,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
           "plan_valid": 1.0,
+          "precision@10": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0020499999999999997
+          "wall_seconds": 0.13325
         },
         "sparse": {
-          "n": 20,
+          "n": 2,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
           "plan_valid": 1.0,
+          "precision@10": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0020000000000000005
+          "wall_seconds": 0.263
         },
         "warm": {
-          "n": 20,
+          "n": 2,
           "hit_rate@10": 0.0,
+          "map@10": 0.0,
           "mrr@10": 0.0,
           "n_recommended": 10.0,
           "ndcg@10": 0.0,
