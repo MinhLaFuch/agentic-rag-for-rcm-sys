@@ -14,10 +14,14 @@ from package.api import LLMProviderError
 from package.config import get_data_paths, load_config
 from package.data import ITEM_ID_SEPARATOR
 from package.data.mapping import load_mappings
+from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
 from package.tools.corpus import build_corpus
+from package.tools.corpus.load_corpus import load_corpus
+from package.tools.evaluation import select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
+from package.tools.recommenders.load_item_knn import load_item_knn
 from ..adapter import adapt_from_plan_executor
 from ..adapter import adapt_from_plan_executor_error
 from ..view import DemoItem, DemoRequest, DemoResult
@@ -26,10 +30,20 @@ from ..view import DemoItem, DemoRequest, DemoResult
 class LiveBackend:
     """Backend thật: tải dữ liệu một lần, xử lý request tuần tự."""
 
-    def __init__(self, tag: str | None = None, domain: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        tag: str | None = None,
+        domain: list[str] | None = None,
+        eval_on: str = "validation",
+        use_prebuilt: bool = True,
+        allow_missing_corpus_sources: bool = False,
+    ) -> None:
         self._lock = threading.Lock()
         self._tag = tag
         self._domain = domain
+        self._eval_on = eval_on
+        self._use_prebuilt = use_prebuilt
+        self._allow_missing_corpus_sources = allow_missing_corpus_sources
         self._executor_planner: PlanExecutor | None = None
         self._executor_planner_memory: PlanExecutor | None = None
         self._type1_agent: Type1Agent | None = None
@@ -56,11 +70,11 @@ class LiveBackend:
 
         # Load paths
         data_paths = get_data_paths(self._tag)
-        meta_files = [(d, str(data_paths.meta_path(d))) for d in (self._domain or [])]
+        meta_files = build_meta_files(data_paths, self._domain)
 
         # Load splits
         train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
-        fit_df = train  # đơn giản hóa: dùng train cho fit
+        fit_df = select_fit_target(train, val, test, self._eval_on)[0]
         # Đơn giản hóa: bỏ qua check_profile_snapshot cho demo (không cần leakage check nghiêm ngặt)
         as_of = None  # demo không cần chống leakage
 
@@ -73,7 +87,25 @@ class LiveBackend:
 
         # Build corpus
         print("Đang nạp corpus...")
-        corpus, _, _ = build_corpus(meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]))
+        if self._use_prebuilt:
+            corpus_path = data_paths.corpus_path
+            if not corpus_path.exists():
+                raise RuntimeError(
+                    f"Corpus file not found: {corpus_path}\n"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
+                    f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
+                )
+            print(f"Load corpus from {corpus_path}")
+            corpus, coverage = load_corpus(
+                corpus_path, meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]),
+                allow_missing_sources=self._allow_missing_corpus_sources,
+            )
+            file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
+            print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
+        else:
+            print("Build corpus in RAM (--no-prebuilt)")
+            corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]), timing=True)
+            print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
         # Build item_id_to_metadata từ corpus
         self._item_id_to_metadata = {}
@@ -89,8 +121,36 @@ class LiveBackend:
             self._item_id_to_metadata = {row["item_id"]: row for row in rows}
 
         # Fit ItemKNN
-        print("Đang fit ItemKNN...")
-        knn = ItemKNNRecommender(int(baselines_cfg["item_knn"]["k"])).fit(fit_df[["user_idx", "item_idx"]])
+        print("Đang nạp ItemKNN...")
+        knn_k = int(baselines_cfg["item_knn"]["k"])
+        fit_pairs = fit_df[["user_idx", "item_idx"]]
+        if self._use_prebuilt:
+            item_knn_path = data_paths.item_knn_path(self._eval_on)
+            if not item_knn_path.exists():
+                raise RuntimeError(
+                    f"ItemKNN file not found: {item_knn_path}\n"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {self._eval_on}\n"
+                    f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
+                )
+            print(f"Load ItemKNN from {item_knn_path}")
+            try:
+                knn = load_item_knn(item_knn_path, knn_k, fit_pairs)
+                fit_time = getattr(knn, "_fit_time", None)
+                print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
+            except ValueError as exc:
+                if "Data hash mismatch" not in str(exc):
+                    raise
+                print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
+                t0 = time.perf_counter()
+                knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+                knn._fit_time = time.perf_counter() - t0
+                print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
+        else:
+            print("Fit ItemKNN on fit data (--no-prebuilt)")
+            t0 = time.perf_counter()
+            knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+            knn._fit_time = time.perf_counter() - t0
+            print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
 
         # Build tools
         logger = ToolCallLogger()
