@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from package.tools.evaluation import candidate_retrieval_metrics, item_familiarity_metrics, latency_summary
+from package.tools.evaluation import candidate_retrieval_metrics, item_familiarity_metrics, latency_summary, sha256_file
 from scripts.evaluation.candidate_recall import drop_seen, sample_users
 
 
@@ -56,6 +56,12 @@ def test_latency_summary_and_input_validation():
         candidate_retrieval_metrics([], [], 0)
     with pytest.raises(ValueError, match="finite"):
         latency_summary([float("nan")])
+
+
+def test_sha256_file_fingerprints_file_contents(tmp_path):
+    path = tmp_path / "artifact.bin"
+    path.write_bytes(b"artifact")
+    assert sha256_file(path) == "c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c"
 
 
 def test_candidate_helpers_deduplicate_and_sample_deterministically():

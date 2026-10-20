@@ -1,0 +1,1816 @@
+{
+  "history": {
+    "cold": {
+      "users": 100,
+      "users_without_any_query_or_history": 100,
+      "target_items_seen_in_fit": 0.7888448773448775,
+      "mean_union_all_size": 200.0,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.011928571428571429,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.015037593984962405,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.016428571428571428,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.020050125313283207,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.03826190476190476,
+            "hit_rate": 0.12,
+            "candidate_coverage": 0.03759398496240601,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.011928571428571429,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.015037593984962405,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.016428571428571428,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.020050125313283207,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.03826190476190476,
+            "hit_rate": 0.12,
+            "candidate_coverage": 0.03759398496240601,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.011928571428571429,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.015037593984962405,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.016428571428571428,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.020050125313283207,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 399,
+            "recall": 0.03826190476190476,
+            "hit_rate": 0.12,
+            "candidate_coverage": 0.03759398496240601,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.013108320251177395,
+              "hit_rate": 0.04395604395604396,
+              "candidate_coverage": 0.01812688821752266,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.018602825745682887,
+              "hit_rate": 0.06593406593406594,
+              "candidate_coverage": 0.02416918429003021,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.04717425431711146,
+              "hit_rate": 0.13186813186813187,
+              "candidate_coverage": 0.045317220543806644,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.013108320251177395,
+              "hit_rate": 0.04395604395604396,
+              "candidate_coverage": 0.01812688821752266,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.018602825745682887,
+              "hit_rate": 0.06593406593406594,
+              "candidate_coverage": 0.02416918429003021,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.04717425431711146,
+              "hit_rate": 0.13186813186813187,
+              "candidate_coverage": 0.045317220543806644,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.013108320251177395,
+              "hit_rate": 0.04395604395604396,
+              "candidate_coverage": 0.01812688821752266,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.018602825745682887,
+              "hit_rate": 0.06593406593406594,
+              "candidate_coverage": 0.02416918429003021,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 91,
+              "target_interactions": 331,
+              "recall": 0.04717425431711146,
+              "hit_rate": 0.13186813186813187,
+              "candidate_coverage": 0.045317220543806644,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 46,
+              "target_interactions": 68,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 100,
+          "total_seconds": 0.00041560002136975527,
+          "mean_seconds": 4.156000213697552e-06,
+          "p50_seconds": 3.999994078185409e-06,
+          "p95_seconds": 6.115002906881272e-06
+        },
+        "item_cf": {
+          "calls": 100,
+          "total_seconds": 0.0007100000657374039,
+          "mean_seconds": 7.1000006573740395e-06,
+          "p50_seconds": 1.400010660290718e-06,
+          "p95_seconds": 4.740004078485053e-06
+        },
+        "semantic": {
+          "calls": 100,
+          "total_seconds": 0.009991800019633956,
+          "mean_seconds": 9.991800019633957e-05,
+          "p50_seconds": 5.699999746866524e-06,
+          "p95_seconds": 1.2589991092681857e-05
+        },
+        "union_rr": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.0017924999265233055,
+            "mean_seconds": 1.7924999265233056e-05,
+            "p50_seconds": 1.2149990652687848e-05,
+            "p95_seconds": 1.8504994659451762e-05
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.002216900116764009,
+            "mean_seconds": 2.216900116764009e-05,
+            "p50_seconds": 1.95500033441931e-05,
+            "p95_seconds": 2.8014995768899096e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.0037170000141486526,
+            "mean_seconds": 3.7170000141486525e-05,
+            "p50_seconds": 3.325000579934567e-05,
+            "p95_seconds": 4.183499768259934e-05
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.0005995000246912241,
+            "mean_seconds": 5.995000246912241e-06,
+            "p50_seconds": 4.999994416721165e-06,
+            "p95_seconds": 7.704999734414735e-06
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.0008146999898599461,
+            "mean_seconds": 8.14699989859946e-06,
+            "p50_seconds": 7.700000423938036e-06,
+            "p95_seconds": 1.0500007192604244e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.0014567999605787918,
+            "mean_seconds": 1.4567999605787919e-05,
+            "p50_seconds": 1.4099998224992305e-05,
+            "p95_seconds": 1.7210000078193843e-05
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.011928571428571429,
+          "hit": 0.04
+        },
+        "100": {
+          "recall": 0.016428571428571428,
+          "hit": 0.06
+        },
+        "200": {
+          "recall": 0.03826190476190476,
+          "hit": 0.12
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.011928571428571429,
+          "hit": 0.04
+        },
+        "100": {
+          "recall": 0.016428571428571428,
+          "hit": 0.06
+        },
+        "200": {
+          "recall": 0.03826190476190476,
+          "hit": 0.12
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.011928571428571429,
+          "hit": 0.04
+        },
+        "100": {
+          "recall": 0.016428571428571428,
+          "hit": 0.06
+        },
+        "200": {
+          "recall": 0.03826190476190476,
+          "hit": 0.12
+        }
+      }
+    },
+    "sparse": {
+      "users": 100,
+      "users_without_any_query_or_history": 0,
+      "target_items_seen_in_fit": 0.7625000000000002,
+      "mean_union_all_size": 411.03,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01583333333333333,
+            "hit_rate": 0.03,
+            "candidate_coverage": 0.014492753623188406,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.519007608940838e-05
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01908333333333333,
+            "hit_rate": 0.05,
+            "candidate_coverage": 0.024154589371980676,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.00015038015217881676
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.023083333333333334,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.033816425120772944,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.0002978116739227547
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 44.9,
+            "catalog_coverage": 0.006458974967601923
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 60.15,
+            "catalog_coverage": 0.0085583998372356
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 60.15,
+            "catalog_coverage": 0.0085583998372356
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 38.5,
+            "catalog_coverage": 0.005589128989312689
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 77.0,
+            "catalog_coverage": 0.011120759685145242
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.02666666666666667,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.01932367149758454,
+            "mean_candidate_set_size": 154.0,
+            "catalog_coverage": 0.02191864433767126
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.0225,
+            "hit_rate": 0.03,
+            "candidate_coverage": 0.014492753623188406,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.004571851489279517
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.025833333333333333,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.01932367149758454,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.00893729884811752
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.027083333333333334,
+            "hit_rate": 0.05,
+            "candidate_coverage": 0.024154589371980676,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.016316246511401615
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.025833333333333333,
+            "hit_rate": 0.04,
+            "candidate_coverage": 0.01932367149758454,
+            "mean_candidate_set_size": 132.17,
+            "catalog_coverage": 0.011978811141694962
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.029083333333333333,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.028985507246376812,
+            "mean_candidate_set_size": 234.83,
+            "catalog_coverage": 0.01954057389194154
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.049749999999999996,
+            "hit_rate": 0.09,
+            "candidate_coverage": 0.05314009661835749,
+            "mean_candidate_set_size": 411.03,
+            "catalog_coverage": 0.03031044655533621
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.019076305220883532,
+              "hit_rate": 0.03614457831325301,
+              "candidate_coverage": 0.017964071856287425,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.519007608940838e-05
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.519007608940838e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.02299196787148594,
+              "hit_rate": 0.060240963855421686,
+              "candidate_coverage": 0.029940119760479042,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00015038015217881676
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00015038015217881676
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.027811244979919682,
+              "hit_rate": 0.07228915662650602,
+              "candidate_coverage": 0.041916167664670656,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.0002978116739227547
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.0002978116739227547
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.012048192771084338,
+              "hit_rate": 0.012048192771084338,
+              "candidate_coverage": 0.005988023952095809,
+              "mean_candidate_set_size": 44.66265060240964,
+              "catalog_coverage": 0.005339969717565434
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 45.38235294117647,
+              "catalog_coverage": 0.0022527536522473726
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.012048192771084338,
+              "hit_rate": 0.012048192771084338,
+              "candidate_coverage": 0.005988023952095809,
+              "mean_candidate_set_size": 59.325301204819276,
+              "catalog_coverage": 0.007028060641533523
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 62.088235294117645,
+              "catalog_coverage": 0.00306657565227391
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.012048192771084338,
+              "hit_rate": 0.012048192771084338,
+              "candidate_coverage": 0.005988023952095809,
+              "mean_candidate_set_size": 59.325301204819276,
+              "catalog_coverage": 0.007028060641533523
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 62.088235294117645,
+              "catalog_coverage": 0.00306657565227391
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.012048192771084338,
+              "hit_rate": 0.012048192771084338,
+              "candidate_coverage": 0.005988023952095809,
+              "mean_candidate_set_size": 39.1566265060241,
+              "catalog_coverage": 0.004729603217545531
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 35.294117647058826,
+              "catalog_coverage": 0.0017677039457098165
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.012048192771084338,
+              "hit_rate": 0.012048192771084338,
+              "candidate_coverage": 0.005988023952095809,
+              "mean_candidate_set_size": 78.3132530120482,
+              "catalog_coverage": 0.009403182456828365
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 70.58823529411765,
+              "catalog_coverage": 0.0035265620001149966
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.02811244979919679,
+              "hit_rate": 0.03614457831325301,
+              "candidate_coverage": 0.017964071856287425,
+              "mean_candidate_set_size": 156.6265060240964,
+              "catalog_coverage": 0.01856457721799667
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.029411764705882353,
+              "hit_rate": 0.029411764705882353,
+              "candidate_coverage": 0.025,
+              "mean_candidate_set_size": 141.1764705882353,
+              "catalog_coverage": 0.0070177404350114485
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.02710843373493976,
+              "hit_rate": 0.03614457831325301,
+              "candidate_coverage": 0.017964071856287425,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.003815527782733115
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.0015583511848334245
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.031124497991967866,
+              "hit_rate": 0.04819277108433735,
+              "candidate_coverage": 0.023952095808383235,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.007483624043722292
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00306657565227391
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.03263052208835341,
+              "hit_rate": 0.060240963855421686,
+              "candidate_coverage": 0.029940119760479042,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.013706708576533914
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.0055847060436603705
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.031124497991967866,
+              "hit_rate": 0.04819277108433735,
+              "candidate_coverage": 0.023952095808383235,
+              "mean_candidate_set_size": 132.50602409638554,
+              "catalog_coverage": 0.010023869163370343
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 129.41176470588235,
+              "catalog_coverage": 0.004033726434914143
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.03504016064257028,
+              "hit_rate": 0.07228915662650602,
+              "candidate_coverage": 0.03592814371257485,
+              "mean_candidate_set_size": 235.21686746987953,
+              "catalog_coverage": 0.016350155761402724
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 230.38235294117646,
+              "catalog_coverage": 0.006641790054564406
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 83,
+              "target_interactions": 167,
+              "recall": 0.055923694779116455,
+              "hit_rate": 0.0963855421686747,
+              "candidate_coverage": 0.059880239520958084,
+              "mean_candidate_set_size": 412.68674698795184,
+              "catalog_coverage": 0.02551007620735359
+            },
+            "cold_item": {
+              "users": 34,
+              "target_interactions": 40,
+              "recall": 0.029411764705882353,
+              "hit_rate": 0.029411764705882353,
+              "candidate_coverage": 0.025,
+              "mean_candidate_set_size": 400.29411764705884,
+              "catalog_coverage": 0.01024501644598625
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 100,
+          "total_seconds": 0.0010067999683087692,
+          "mean_seconds": 1.0067999683087692e-05,
+          "p50_seconds": 6.70000008540228e-06,
+          "p95_seconds": 2.1520003065234048e-05
+        },
+        "item_cf": {
+          "calls": 100,
+          "total_seconds": 0.13712570002826396,
+          "mean_seconds": 0.0013712570002826397,
+          "p50_seconds": 0.0009111499966820702,
+          "p95_seconds": 0.0023347549962636524
+        },
+        "semantic": {
+          "calls": 100,
+          "total_seconds": 46.673106900037965,
+          "mean_seconds": 0.46673106900037964,
+          "p50_seconds": 0.38674010000249837,
+          "p95_seconds": 1.197395545008475
+        },
+        "union_rr": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.0021673000883311033,
+            "mean_seconds": 2.1673000883311034e-05,
+            "p50_seconds": 1.5700003132224083e-05,
+            "p95_seconds": 4.968999928678385e-05
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.0027944000175921246,
+            "mean_seconds": 2.7944000175921247e-05,
+            "p50_seconds": 1.804999919841066e-05,
+            "p95_seconds": 6.490001178462989e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.005765300054918043,
+            "mean_seconds": 5.765300054918043e-05,
+            "p50_seconds": 3.070000093430281e-05,
+            "p95_seconds": 0.000122070010547759
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.0015231999423122033,
+            "mean_seconds": 1.5231999423122034e-05,
+            "p50_seconds": 1.0599993402138352e-05,
+            "p95_seconds": 3.919499213225208e-05
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.002698599884752184,
+            "mean_seconds": 2.698599884752184e-05,
+            "p50_seconds": 1.5600002370774746e-05,
+            "p95_seconds": 6.197500551934353e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.0038542999827768654,
+            "mean_seconds": 3.854299982776865e-05,
+            "p50_seconds": 2.7099995349999517e-05,
+            "p95_seconds": 0.00010957500344375148
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.01583333333333333,
+          "hit": 0.03
+        },
+        "100": {
+          "recall": 0.01908333333333333,
+          "hit": 0.05
+        },
+        "200": {
+          "recall": 0.023083333333333334,
+          "hit": 0.06
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.01,
+          "hit": 0.01
+        },
+        "100": {
+          "recall": 0.01,
+          "hit": 0.01
+        },
+        "200": {
+          "recall": 0.01,
+          "hit": 0.01
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.01,
+          "hit": 0.01
+        },
+        "100": {
+          "recall": 0.01,
+          "hit": 0.01
+        },
+        "200": {
+          "recall": 0.02666666666666667,
+          "hit": 0.04
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.0225,
+          "hit": 0.03
+        },
+        "100": {
+          "recall": 0.025833333333333333,
+          "hit": 0.04
+        },
+        "200": {
+          "recall": 0.027083333333333334,
+          "hit": 0.05
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.025833333333333333,
+          "hit": 0.04
+        },
+        "100": {
+          "recall": 0.029083333333333333,
+          "hit": 0.06
+        },
+        "200": {
+          "recall": 0.049749999999999996,
+          "hit": 0.09
+        }
+      }
+    },
+    "warm": {
+      "users": 100,
+      "users_without_any_query_or_history": 0,
+      "target_items_seen_in_fit": 0.805142857142857,
+      "mean_union_all_size": 483.82,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.018690476190476188,
+            "hit_rate": 0.05,
+            "candidate_coverage": 0.033816425120772944,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.813870652428713e-05
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.028690476190476186,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.03864734299516908,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.0001533287826136955
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.03369047619047619,
+            "hit_rate": 0.07,
+            "candidate_coverage": 0.043478260869565216,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.00030223461957507285
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.0016666666666666666,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.0071799151089297795
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.003928571428571429,
+            "hit_rate": 0.03,
+            "candidate_coverage": 0.014492753623188406,
+            "mean_candidate_set_size": 99.36,
+            "catalog_coverage": 0.013818756533059307
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.003928571428571429,
+            "hit_rate": 0.03,
+            "candidate_coverage": 0.014492753623188406,
+            "mean_candidate_set_size": 139.39,
+            "catalog_coverage": 0.018669253598434868
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 37.5,
+            "catalog_coverage": 0.00549182418496169
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.0008333333333333333,
+            "hit_rate": 0.01,
+            "candidate_coverage": 0.004830917874396135,
+            "mean_candidate_set_size": 75.0,
+            "catalog_coverage": 0.01086275452209335
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.0025,
+            "hit_rate": 0.02,
+            "candidate_coverage": 0.00966183574879227,
+            "mean_candidate_set_size": 150.0,
+            "catalog_coverage": 0.02125225385938866
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01369047619047619,
+            "hit_rate": 0.05,
+            "candidate_coverage": 0.028985507246376812,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.004568902858844638
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.01369047619047619,
+            "hit_rate": 0.05,
+            "candidate_coverage": 0.028985507246376812,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.009075884478556822
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.020357142857142855,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.03864734299516908,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.01792767304406286
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.020357142857142855,
+            "hit_rate": 0.06,
+            "candidate_coverage": 0.03864734299516908,
+            "mean_candidate_set_size": 136.73,
+            "catalog_coverage": 0.012655521826499637
+          },
+          "100": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.031190476190476192,
+            "hit_rate": 0.07,
+            "candidate_coverage": 0.04830917874396135,
+            "mean_candidate_set_size": 271.79,
+            "catalog_coverage": 0.024492798707320417
+          },
+          "200": {
+            "users": 100,
+            "target_interactions": 207,
+            "recall": 0.03785714285714285,
+            "hit_rate": 0.09,
+            "candidate_coverage": 0.057971014492753624,
+            "mean_candidate_set_size": 483.82,
+            "catalog_coverage": 0.039434983436068535
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.021974616292798108,
+              "hit_rate": 0.056818181818181816,
+              "candidate_coverage": 0.040697674418604654,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.813870652428713e-05
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.666439130684775e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.03333825265643447,
+              "hit_rate": 0.06818181818181818,
+              "candidate_coverage": 0.046511627906976744,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.0001533287826136955
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00015038015217881676
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.044701889020070835,
+              "hit_rate": 0.07954545454545454,
+              "candidate_coverage": 0.05232558139534884,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.00030223461957507285
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.00030223461957507285
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.0018939393939393938,
+              "hit_rate": 0.011363636363636364,
+              "candidate_coverage": 0.005813953488372093,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.006329235228467258
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.002177563576157964
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.004550373868555687,
+              "hit_rate": 0.03409090909090909,
+              "candidate_coverage": 0.01744186046511628,
+              "mean_candidate_set_size": 99.32954545454545,
+              "catalog_coverage": 0.012210278630832945
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 99.23333333333333,
+              "catalog_coverage": 0.004272565500139323
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.004550373868555687,
+              "hit_rate": 0.03409090909090909,
+              "candidate_coverage": 0.01744186046511628,
+              "mean_candidate_set_size": 139.0681818181818,
+              "catalog_coverage": 0.016466626663580432
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 147.43333333333334,
+              "catalog_coverage": 0.006240776315420895
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 37.5,
+              "catalog_coverage": 0.004835753913201166
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 41.666666666666664,
+              "catalog_coverage": 0.001832573815277149
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.0010330578512396695,
+              "hit_rate": 0.011363636363636364,
+              "candidate_coverage": 0.005813953488372093,
+              "mean_candidate_set_size": 75.0,
+              "catalog_coverage": 0.009563882815529256
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 83.33333333333333,
+              "catalog_coverage": 0.003625341119683435
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.0029269972451790634,
+              "hit_rate": 0.022727272727272728,
+              "candidate_coverage": 0.011627906976744186,
+              "mean_candidate_set_size": 150.0,
+              "catalog_coverage": 0.01875623819626379
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 166.66666666666666,
+              "catalog_coverage": 0.0071061993480578105
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.01629279811097993,
+              "hit_rate": 0.056818181818181816,
+              "candidate_coverage": 0.03488372093023256,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.004027829174044386
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.0014271371304813197
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.01629279811097993,
+              "hit_rate": 0.056818181818181816,
+              "candidate_coverage": 0.03488372093023256,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.008002583000260953
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.0028542742609626395
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.023868555686737503,
+              "hit_rate": 0.06818181818181818,
+              "candidate_coverage": 0.046511627906976744,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.015844465641821015
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.005683485163228809
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.023868555686737503,
+              "hit_rate": 0.06818181818181818,
+              "candidate_coverage": 0.046511627906976744,
+              "mean_candidate_set_size": 136.7840909090909,
+              "catalog_coverage": 0.011166463456885862
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 140.26666666666668,
+              "catalog_coverage": 0.004038149380566462
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.03626524990161353,
+              "hit_rate": 0.07954545454545454,
+              "candidate_coverage": 0.05813953488372093,
+              "mean_candidate_set_size": 271.82954545454544,
+              "catalog_coverage": 0.021641473076792657
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 279.43333333333334,
+              "catalog_coverage": 0.0079406617611285
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 88,
+              "target_interactions": 172,
+              "recall": 0.0495228256591893,
+              "hit_rate": 0.10227272727272728,
+              "candidate_coverage": 0.06976744186046512,
+              "mean_candidate_set_size": 483.53409090909093,
+              "catalog_coverage": 0.03484838879461462
+            },
+            "cold_item": {
+              "users": 30,
+              "target_interactions": 35,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 507.56666666666666,
+              "catalog_coverage": 0.013444280467829705
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 100,
+          "total_seconds": 0.000919400088605471,
+          "mean_seconds": 9.19400088605471e-06,
+          "p50_seconds": 7.599999662488699e-06,
+          "p95_seconds": 1.9610003801062702e-05
+        },
+        "item_cf": {
+          "calls": 100,
+          "total_seconds": 0.13747100003820378,
+          "mean_seconds": 0.0013747100003820378,
+          "p50_seconds": 0.0009989499958464876,
+          "p95_seconds": 0.0028004099964164197
+        },
+        "semantic": {
+          "calls": 100,
+          "total_seconds": 48.84651020006277,
+          "mean_seconds": 0.48846510200062765,
+          "p50_seconds": 0.3926267999995616,
+          "p95_seconds": 1.2506529400008728
+        },
+        "union_rr": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.002570200012996793,
+            "mean_seconds": 2.5702000129967928e-05,
+            "p50_seconds": 1.6600002709310502e-05,
+            "p95_seconds": 5.4799995996290815e-05
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.0031784999591764063,
+            "mean_seconds": 3.178499959176406e-05,
+            "p50_seconds": 2.0099992980249226e-05,
+            "p95_seconds": 7.272000002558343e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.0047342000470962375,
+            "mean_seconds": 4.7342000470962375e-05,
+            "p50_seconds": 3.239999932702631e-05,
+            "p95_seconds": 0.00012024501265841536
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 100,
+            "total_seconds": 0.0017027999710990116,
+            "mean_seconds": 1.7027999710990116e-05,
+            "p50_seconds": 1.1249998351559043e-05,
+            "p95_seconds": 4.1774997225729745e-05
+          },
+          "100": {
+            "calls": 100,
+            "total_seconds": 0.003005000064149499,
+            "mean_seconds": 3.005000064149499e-05,
+            "p50_seconds": 1.8399994587525725e-05,
+            "p95_seconds": 7.397500667138954e-05
+          },
+          "200": {
+            "calls": 100,
+            "total_seconds": 0.005371499981265515,
+            "mean_seconds": 5.371499981265515e-05,
+            "p50_seconds": 3.290000313427299e-05,
+            "p95_seconds": 0.00012627499818336217
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.018690476190476188,
+          "hit": 0.05
+        },
+        "100": {
+          "recall": 0.028690476190476186,
+          "hit": 0.06
+        },
+        "200": {
+          "recall": 0.03369047619047619,
+          "hit": 0.07
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.0016666666666666666,
+          "hit": 0.01
+        },
+        "100": {
+          "recall": 0.003928571428571429,
+          "hit": 0.03
+        },
+        "200": {
+          "recall": 0.003928571428571429,
+          "hit": 0.03
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0008333333333333333,
+          "hit": 0.01
+        },
+        "200": {
+          "recall": 0.0025,
+          "hit": 0.02
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.01369047619047619,
+          "hit": 0.05
+        },
+        "100": {
+          "recall": 0.01369047619047619,
+          "hit": 0.05
+        },
+        "200": {
+          "recall": 0.020357142857142855,
+          "hit": 0.06
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.020357142857142855,
+          "hit": 0.06
+        },
+        "100": {
+          "recall": 0.031190476190476192,
+          "hit": 0.07
+        },
+        "200": {
+          "recall": 0.03785714285714285,
+          "hit": 0.09
+        }
+      }
+    }
+  }
+}

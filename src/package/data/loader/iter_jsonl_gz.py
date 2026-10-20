@@ -4,7 +4,11 @@ from pathlib import Path
 from typing import Iterator
 
 def iter_jsonl_gz(path: str | Path) -> Iterator[dict]:
-    with gzip.open(path, "rt", encoding="utf-8") as f:
+    path = Path(path)
+    with path.open("rb") as probe:
+        is_gzip = probe.read(2) == b"\x1f\x8b"
+    opener = gzip.open if is_gzip else open
+    with opener(path, "rt", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:

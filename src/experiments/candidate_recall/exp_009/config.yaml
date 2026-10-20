@@ -1,0 +1,77 @@
+run:
+  timestamp: '2026-10-19T17:20:38.091545+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 0d88ec7f1a164aea4a5518f4a9004424a386a36db26e5e51b58ada7494d36c0e
+  environment:
+    numpy: 1.26.4
+    pandas: 2.2.3
+    scipy: 1.16.3
+    pyarrow: 18.1.0
+    PyYAML: 6.0.2
+    pytest: 8.3.5
+    torch: 2.5.1
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 79.44
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    id_format: namespaced
+    metadata_coverage: 1.0
+    mapping_hash: 13e3e5b362225fcb912db2c1d6bb5d6ef7a728c193547f9688296c4cd3ebc848
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+config:
+  budgets:
+  - 50
+  - 100
+  - 200
+  per_segment: 2
+  seed_items: 10
+  query_items: 3
+  neighbors: 20
+  query_modes:
+  - history
+  evaluation_protocol:
+    history: realistic_offline_proxy
+  sampled_user_ids:
+    cold:
+    - 2188147
+    - 30233
+    sparse:
+    - 1259243
+    - 1467980
+    warm:
+    - 1932181
+    - 18384
+  sparse_max: 4
+  knn_artifact_status: refit_after_data_hash_mismatch
+  knn_fit_seconds: 61.11494
+  knn_fit_data_hash: 090b6f0179c2f5f37308a59478bfe7c9317f0087d8d2a7d28ea0cceb1c00ab9e
+  knn_cache_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_has_mapping_hash: false
+  corpus_load_seconds: 1.067074
+  corpus_source_validation:
+    allow_missing_sources: true
+    missing_sources:
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Video_Games.jsonl.gz
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Toys_and_Games.jsonl.gz
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Electronics.jsonl.gz

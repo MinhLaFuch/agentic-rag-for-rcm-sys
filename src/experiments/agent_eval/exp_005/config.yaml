@@ -1,0 +1,75 @@
+run:
+  timestamp: '2026-10-19T18:08:00.639197+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 625507fa6764df3aa6a8bae2f9656f62864dd0cc960fc2dffd77d3c3ff432c1b
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 170.73
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    metadata_coverage: 1.0
+    n_requests: 86
+    profile_as_of_timestamp: 1617737606549
+    mapping_hash: 13e3e5b362225fcb912db2c1d6bb5d6ef7a728c193547f9688296c4cd3ebc848
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+config:
+  agents:
+  - baseline
+  - type1
+  k: 10
+  per_segment: 20
+  n_ambiguous: 6
+  language: vi
+  request_scope: realistic
+  price_slack: 1.25
+  price_round_to: 5
+  sparse_max: 4
+  item_knn_k: 20
+  reflect_rounds: null
+  inference_mode: template
+  trajectory_log: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\logs\multi_domain\agent_eval_phase4_seed42.jsonl
+  llm_model: gpt-5.4
+  knn_artifact_status: fit_fresh_cache_ignored
+  knn_fit_data_hash: 090b6f0179c2f5f37308a59478bfe7c9317f0087d8d2a7d28ea0cceb1c00ab9e
+  knn_cache_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_has_mapping_hash: false
+  corpus_artifacts:
+    sqlite_path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\corpus\corpus_multi_domain.sqlite
+    sqlite_sha256: 892c4a23477e04ca4d8192ac3c0ce9b1dae0096ed178fff82bb09d8f9a7e6a88
+    manifest_path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\corpus\corpus_multi_domain.meta.json
+    manifest_sha256: 91a6390f8560d57fc3dc77625aa1b6633f01e655be8222c57e73197e820ee0b2
+    source_hash_semantics: path_size_mtime_fingerprint; source content hashes are
+      not present in format_version 1
+    missing_sources:
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Video_Games.jsonl.gz
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Toys_and_Games.jsonl.gz
+    - D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\raw\meta_Electronics.jsonl.gz
+    allow_missing_sources: true

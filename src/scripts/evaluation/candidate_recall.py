@@ -55,13 +55,13 @@ from package.tools.evaluation import (
     latency_summary,
     next_experiment_dir,
     save_experiment,
+    sha256_file,
     segment_users_by_history,
     select_fit_target,
 )
 from package.tools.recommenders import build_interaction_matrix
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
-from package.tools.recommenders.load_item_knn import load_item_knn
 from package.utils import ensure_utf8_stdout
 
 MAX_CANDIDATES = get_tool_limits().max_candidates
@@ -155,6 +155,11 @@ def main() -> None:
         action="store_true",
         help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
     )
+    ap.add_argument(
+        "--no-prebuilt-corpus",
+        action="store_true",
+        help="Build corpus from configured metadata in memory, bypassing a cached corpus.",
+    )
     ap.add_argument("--experiments-dir", help="mặc định: <experiments_dir>/<candidate_recall.experiments_subdir>")
     args = ap.parse_args()
 
@@ -215,7 +220,7 @@ def main() -> None:
     # ---- corpus + tools
     print("Load/build corpus")
     corpus_started = time.perf_counter()
-    if data_paths.corpus_path.exists():
+    if data_paths.corpus_path.exists() and not args.no_prebuilt_corpus:
         corpus, coverage = load_corpus(
             data_paths.corpus_path,
             meta_files,
@@ -224,6 +229,8 @@ def main() -> None:
             allow_missing_sources=args.allow_missing_corpus_sources,
         )
     else:
+        if args.no_prebuilt_corpus:
+            print("  Bypassing cached corpus; building from configured metadata in memory")
         corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
     corpus_load_seconds = time.perf_counter() - corpus_started
     item_text = item_text_tables(corpus, namespaced)
@@ -231,31 +238,16 @@ def main() -> None:
 
     cached_knn_path = data_paths.item_knn_path(args.eval_on)
     knn_started = time.perf_counter()
-    knn_status = "fit_fresh"
+    knn_status = "fit_fresh_cache_ignored"
     fit_pairs = fit_df[["user_idx", "item_idx"]]
     knn_fit_data_hash = None
     knn_cache_data_hash = None
-    if args.neighbors == int(baselines["item_knn"]["k"]) and cached_knn_path.exists():
-        print(f"Load ItemKNN from {cached_knn_path}")
-        cache_meta_path = cached_knn_path.with_suffix(".meta.json")
-        if cache_meta_path.exists():
-            knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
-        try:
-            knn = load_item_knn(cached_knn_path, args.neighbors, fit_pairs)
-            knn_status = "cache_validated"
-            knn_fit_data_hash = knn._fit_data_hash
-        except ValueError as exc:
-            if "Data hash mismatch" not in str(exc):
-                raise
-            print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
-            knn_fit_data_hash = getattr(exc, "current_data_hash", None)
-            knn = ItemKNNRecommender(neighbors=args.neighbors).fit(fit_pairs)
-            knn_status = "refit_after_data_hash_mismatch"
-    else:
-        print("Fit ItemKNN on fit data")
-        knn = ItemKNNRecommender(neighbors=args.neighbors).fit(fit_pairs)
-    if knn_fit_data_hash is None:
-        knn_fit_data_hash = item_knn_data_hash(fit_pairs)
+    cache_meta_path = cached_knn_path.with_suffix(".meta.json")
+    if cache_meta_path.exists():
+        knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
+    print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
+    knn_fit_data_hash = item_knn_data_hash(fit_pairs)
+    knn = ItemKNNRecommender(neighbors=args.neighbors).fit(fit_pairs)
     knn_seconds = time.perf_counter() - knn_started
     item_cf = ItemCFTool(knn, item2id, logger=ToolCallLogger())
     search = SemanticSearchTool(corpus, logger=ToolCallLogger())
@@ -389,6 +381,15 @@ def main() -> None:
                     for n in budgets
                 ))
 
+    metadata_source_records = {
+        domain: {
+            "path": path,
+            "exists": Path(path).exists(),
+            "size_bytes": Path(path).stat().st_size if Path(path).exists() else None,
+            "sha256": sha256_file(path) if Path(path).exists() else None,
+        }
+        for domain, path in meta_files
+    }
     exp_dir = save_experiment(
         next_experiment_dir(args.experiments_dir),
         config={"budgets": budgets, "per_segment": args.per_segment, "seed_items": args.seed_items,
@@ -400,8 +401,17 @@ def main() -> None:
                 "knn_cache_has_mapping_hash": False,
                 "corpus_load_seconds": round(corpus_load_seconds, 6),
                 "corpus_source_validation": {
+                    "mode": "built_from_metadata_in_memory" if args.no_prebuilt_corpus else "loaded_prebuilt",
+                    "metadata_sources": metadata_source_records,
                     "allow_missing_sources": bool(args.allow_missing_corpus_sources),
                     "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
+                },
+                "corpus_artifacts": {
+                    "sqlite_path": None if args.no_prebuilt_corpus else str(data_paths.corpus_path),
+                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
+                    "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
+                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt_corpus else None,
+                    "source_hash_semantics": "path_size_mtime_fingerprint; source content hashes are not present in format_version 1",
                 }},
         metrics=metrics,
         seed=args.seed,

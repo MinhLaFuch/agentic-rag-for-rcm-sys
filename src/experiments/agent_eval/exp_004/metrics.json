@@ -1,0 +1,89 @@
+{
+  "k": 10,
+  "summary": {
+    "baseline": {
+      "personalized": {
+        "all": {
+          "n": 4,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0034999999999999996
+        },
+        "sparse": {
+          "n": 2,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0035
+        },
+        "warm": {
+          "n": 2,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0035
+        }
+      },
+      "similar": {
+        "all": {
+          "n": 4,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.13325
+        },
+        "sparse": {
+          "n": 2,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.263
+        },
+        "warm": {
+          "n": 2,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0035
+        }
+      }
+    }
+  }
+}
