@@ -37,8 +37,8 @@ ablation:
   # Muốn có khoảng tin cậy từ nhiều lần lặp: thêm exp vào cùng group, ví dụ reflect_0: [exp_005, exp_007]
   groups:
     reflect_1: [exp_004]        # reflect_rounds=1, Inference llm (lần chạy đầy đủ trong báo cáo)
-    reflect_0: [exp_005]        # reflect_rounds=0, Inference llm
-    infer_template: [exp_006]   # reflect_rounds=1, Inference template
+    reflect_0: [exp_007]        # reflect_rounds=0, Inference llm
+    infer_template: [exp_008]   # reflect_rounds=1, Inference template
 
   # Danh sách các contrast để so sánh
   # Mỗi contrast: name (tên), a (agent, group), b (agent, group), kinds (tuỳ chọn, nếu bỏ thì so tất cả)

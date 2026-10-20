@@ -1,0 +1,162 @@
+{
+  "k": 10,
+  "summary": {
+    "baseline": {
+      "personalized": {
+        "all": {
+          "n": 40,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.002
+        },
+        "sparse": {
+          "n": 20,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0020000000000000005
+        },
+        "warm": {
+          "n": 20,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0020000000000000005
+        }
+      },
+      "similar": {
+        "all": {
+          "n": 40,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.002375
+        },
+        "sparse": {
+          "n": 20,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0026000000000000003
+        },
+        "warm": {
+          "n": 20,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0021500000000000004
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "all": {
+          "n": 40,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 1.0,
+          "answer_status_tool_error": 0.0,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 0.0,
+          "inference_completion_tokens": 0.0,
+          "inference_latency_seconds": 0.0,
+          "inference_prompt_tokens": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.00815
+        },
+        "sparse": {
+          "n": 20,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 1.0,
+          "answer_status_tool_error": 0.0,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 0.0,
+          "inference_completion_tokens": 0.0,
+          "inference_latency_seconds": 0.0,
+          "inference_prompt_tokens": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.008800000000000002
+        },
+        "warm": {
+          "n": 20,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 1.0,
+          "answer_status_tool_error": 0.0,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 0.0,
+          "inference_completion_tokens": 0.0,
+          "inference_latency_seconds": 0.0,
+          "inference_prompt_tokens": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.0075000000000000015
+        }
+      }
+    }
+  }
+}

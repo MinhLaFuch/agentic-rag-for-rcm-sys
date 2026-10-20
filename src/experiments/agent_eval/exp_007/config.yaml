@@ -1,0 +1,62 @@
+run:
+  timestamp: '2026-10-20T11:51:56.321065+00:00'
+  seed: 42
+  git_commit: 66f9372cb109e39c382d4d82c14e36f768ad3b59
+  source_fingerprint: 61eea8f25a0dacffea0577c0edcb4c693ebca5115c622b64d8fdbc1c9446e023
+  environment:
+    numpy: 2.5.3
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.10
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.10
+    cpu_count: 16
+  runtime_seconds: 7062.86
+  dataset:
+    tag: multi_domain
+    splits_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    metadata_coverage: 1.0
+    n_requests: 146
+    profile_as_of_timestamp: 1617737606549
+    mapping_hash: 13e3e5b362225fcb912db2c1d6bb5d6ef7a728c193547f9688296c4cd3ebc848
+    split_files:
+      train:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2129059868
+        mtime_ns: 1791097998458712300
+      validation:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298584636
+        mtime_ns: 1791098002860050100
+      test:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296088629
+        mtime_ns: 1791098007175561600
+config:
+  agents:
+  - planner
+  - planner_memory
+  k: 10
+  per_segment: 20
+  n_ambiguous: 6
+  language: vi
+  request_scope: all
+  price_slack: 1.25
+  price_round_to: 5
+  sparse_max: 4
+  item_knn_k: 20
+  reflect_rounds: 0
+  inference_mode: llm
+  llm_model: gpt-5.4
+  knn_artifact_status: cache_validated
+  knn_fit_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_has_mapping_hash: false

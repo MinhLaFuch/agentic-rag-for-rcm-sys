@@ -1,0 +1,1816 @@
+{
+  "history": {
+    "cold": {
+      "users": 2,
+      "users_without_any_query_or_history": 2,
+      "target_items_seen_in_fit": 1.0,
+      "mean_union_all_size": 200.0,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 0.0,
+            "catalog_coverage": 0.0
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 12,
+            "recall": 0.07142857142857142,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.08333333333333333,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 0.0,
+              "catalog_coverage": 0.0
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 12,
+              "recall": 0.07142857142857142,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.08333333333333333,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 2,
+          "total_seconds": 1.4899997040629387e-05,
+          "mean_seconds": 7.4499985203146935e-06,
+          "p50_seconds": 7.4499985203146935e-06,
+          "p95_seconds": 9.744996350491418e-06
+        },
+        "item_cf": {
+          "calls": 2,
+          "total_seconds": 6.690000009257346e-05,
+          "mean_seconds": 3.345000004628673e-05,
+          "p50_seconds": 3.345000004628673e-05,
+          "p95_seconds": 6.1035000544507054e-05
+        },
+        "semantic": {
+          "calls": 2,
+          "total_seconds": 0.0005355000030249357,
+          "mean_seconds": 0.00026775000151246786,
+          "p50_seconds": 0.00026775000151246786,
+          "p95_seconds": 0.0005017050018068402
+        },
+        "union_rr": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 4.460000491235405e-05,
+            "mean_seconds": 2.2300002456177026e-05,
+            "p50_seconds": 2.2300002456177026e-05,
+            "p95_seconds": 3.3190000249305736e-05
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 3.3899996196851134e-05,
+            "mean_seconds": 1.6949998098425567e-05,
+            "p50_seconds": 1.6949998098425567e-05,
+            "p95_seconds": 1.8704998365137725e-05
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 5.2100003813393414e-05,
+            "mean_seconds": 2.6050001906696707e-05,
+            "p50_seconds": 2.6050001906696707e-05,
+            "p95_seconds": 2.6275003619957715e-05
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 1.2099990271963179e-05,
+            "mean_seconds": 6.0499951359815896e-06,
+            "p50_seconds": 6.0499951359815896e-06,
+            "p95_seconds": 7.894996087998152e-06
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 1.3800003216601908e-05,
+            "mean_seconds": 6.900001608300954e-06,
+            "p50_seconds": 6.900001608300954e-06,
+            "p95_seconds": 6.900001608300954e-06
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 2.439999661874026e-05,
+            "mean_seconds": 1.219999830937013e-05,
+            "p50_seconds": 1.219999830937013e-05,
+            "p95_seconds": 1.247000036528334e-05
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.07142857142857142,
+          "hit": 0.5
+        }
+      }
+    },
+    "sparse": {
+      "users": 2,
+      "users_without_any_query_or_history": 0,
+      "target_items_seen_in_fit": 1.0,
+      "mean_union_all_size": 448.5,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.3715760871969e-05
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000294863043487876
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 45.0,
+            "catalog_coverage": 0.00013268836956954418
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 49.0,
+            "catalog_coverage": 0.00014448289130905922
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 49.0,
+            "catalog_coverage": 0.00014448289130905922
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000294863043487876
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000589726086975752
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.00012236816304746852
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.00024473632609493703
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000485049706537556
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 145.0,
+            "catalog_coverage": 0.00035383565218545114
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 249.0,
+            "catalog_coverage": 0.0005867774565408732
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 5,
+            "recall": 0.125,
+            "hit_rate": 0.5,
+            "candidate_coverage": 0.2,
+            "mean_candidate_set_size": 448.5,
+            "catalog_coverage": 0.0010275977065552478
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 45.0,
+              "catalog_coverage": 0.00013268836956954418
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 49.0,
+              "catalog_coverage": 0.00014448289130905922
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 49.0,
+              "catalog_coverage": 0.00014448289130905922
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000589726086975752
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.00012236816304746852
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00024473632609493703
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000485049706537556
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 145.0,
+              "catalog_coverage": 0.00035383565218545114
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 249.0,
+              "catalog_coverage": 0.0005867774565408732
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 5,
+              "recall": 0.125,
+              "hit_rate": 0.5,
+              "candidate_coverage": 0.2,
+              "mean_candidate_set_size": 448.5,
+              "catalog_coverage": 0.0010275977065552478
+            },
+            "cold_item": {
+              "users": 0,
+              "target_interactions": 0,
+              "recall": null,
+              "hit_rate": null,
+              "candidate_coverage": null,
+              "mean_candidate_set_size": null,
+              "catalog_coverage": 0.0
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 2,
+          "total_seconds": 7.999995432328433e-06,
+          "mean_seconds": 3.999997716164216e-06,
+          "p50_seconds": 3.999997716164216e-06,
+          "p95_seconds": 4.629999239114113e-06
+        },
+        "item_cf": {
+          "calls": 2,
+          "total_seconds": 0.596885699997074,
+          "mean_seconds": 0.298442849998537,
+          "p50_seconds": 0.298442849998537,
+          "p95_seconds": 0.5655828749971988
+        },
+        "semantic": {
+          "calls": 2,
+          "total_seconds": 1.6914059000046109,
+          "mean_seconds": 0.8457029500023054,
+          "p50_seconds": 0.8457029500023054,
+          "p95_seconds": 1.1587306450015602
+        },
+        "union_rr": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 3.0399998649954796e-05,
+            "mean_seconds": 1.5199999324977398e-05,
+            "p50_seconds": 1.5199999324977398e-05,
+            "p95_seconds": 1.5739996888441966e-05
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 3.300000389572233e-05,
+            "mean_seconds": 1.6500001947861165e-05,
+            "p50_seconds": 1.6500001947861165e-05,
+            "p95_seconds": 1.7310001567238942e-05
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 8.189999789465219e-05,
+            "mean_seconds": 4.0949998947326094e-05,
+            "p50_seconds": 4.0949998947326094e-05,
+            "p95_seconds": 5.5755000357748937e-05
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 2.179999864893034e-05,
+            "mean_seconds": 1.089999932446517e-05,
+            "p50_seconds": 1.089999932446517e-05,
+            "p95_seconds": 1.1259998791501857e-05
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 3.070000093430281e-05,
+            "mean_seconds": 1.5350000467151403e-05,
+            "p50_seconds": 1.5350000467151403e-05,
+            "p95_seconds": 1.620500042918138e-05
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 5.510000482900068e-05,
+            "mean_seconds": 2.755000241450034e-05,
+            "p50_seconds": 2.755000241450034e-05,
+            "p95_seconds": 2.9035003899480215e-05
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.125,
+          "hit": 0.5
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.125,
+          "hit": 0.5
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "100": {
+          "recall": 0.125,
+          "hit": 0.5
+        },
+        "200": {
+          "recall": 0.125,
+          "hit": 0.5
+        }
+      }
+    },
+    "warm": {
+      "users": 2,
+      "users_without_any_query_or_history": 0,
+      "target_items_seen_in_fit": 0.8333333333333333,
+      "mean_union_all_size": 598.5,
+      "candidate_metrics": {
+        "popularity": {
+          "50": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 7.666439130684775e-05
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.00015038015217881676
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.0002992859891401941
+          }
+        },
+        "item_cf": {
+          "50": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000294863043487876
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 198.5,
+            "catalog_coverage": 0.0005853031413234338
+          }
+        },
+        "semantic": {
+          "50": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.000147431521743938
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.000294863043487876
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.000589726086975752
+          }
+        },
+        "union_rr": {
+          "50": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 50.0,
+            "catalog_coverage": 0.0001238424782649079
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 100.0,
+            "catalog_coverage": 0.00024621064131237643
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 200.0,
+            "catalog_coverage": 0.0004938955978421923
+          }
+        },
+        "union_all": {
+          "50": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 150.0,
+            "catalog_coverage": 0.00037152743479472374
+          },
+          "100": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 300.0,
+            "catalog_coverage": 0.0007401062391545687
+          },
+          "200": {
+            "users": 2,
+            "target_interactions": 8,
+            "recall": 0.0,
+            "hit_rate": 0.0,
+            "candidate_coverage": 0.0,
+            "mean_candidate_set_size": 598.5,
+            "catalog_coverage": 0.0014743152174393798
+          }
+        }
+      },
+      "item_familiarity_metrics": {
+        "popularity": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.666439130684775e-05
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00015038015217881676
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.0002992859891401941
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        },
+        "item_cf": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 198.5,
+              "catalog_coverage": 0.0005853031413234338
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 198.0,
+              "catalog_coverage": 0.0002919144130529972
+            }
+          }
+        },
+        "semantic": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.000147431521743938
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000294863043487876
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000589726086975752
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        },
+        "union_rr": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 0.0001238424782649079
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 50.0,
+              "catalog_coverage": 7.3715760871969e-05
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.00024621064131237643
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 100.0,
+              "catalog_coverage": 0.000147431521743938
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.0004938955978421923
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 200.0,
+              "catalog_coverage": 0.000294863043487876
+            }
+          }
+        },
+        "union_all": {
+          "50": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 150.0,
+              "catalog_coverage": 0.00037152743479472374
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 150.0,
+              "catalog_coverage": 0.00022114728261590698
+            }
+          },
+          "100": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 300.0,
+              "catalog_coverage": 0.0007401062391545687
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 300.0,
+              "catalog_coverage": 0.00044229456523181397
+            }
+          },
+          "200": {
+            "warm_item": {
+              "users": 2,
+              "target_interactions": 7,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 598.5,
+              "catalog_coverage": 0.0014743152174393798
+            },
+            "cold_item": {
+              "users": 1,
+              "target_interactions": 1,
+              "recall": 0.0,
+              "hit_rate": 0.0,
+              "candidate_coverage": 0.0,
+              "mean_candidate_set_size": 598.0,
+              "catalog_coverage": 0.0008816405000287491
+            }
+          }
+        }
+      },
+      "latency": {
+        "popularity": {
+          "calls": 2,
+          "total_seconds": 1.09999964479357e-05,
+          "mean_seconds": 5.49999822396785e-06,
+          "p50_seconds": 5.49999822396785e-06,
+          "p95_seconds": 7.839996396796777e-06
+        },
+        "item_cf": {
+          "calls": 2,
+          "total_seconds": 0.011657700000796467,
+          "mean_seconds": 0.0058288500003982335,
+          "p50_seconds": 0.0058288500003982335,
+          "p95_seconds": 0.007598835001408588
+        },
+        "semantic": {
+          "calls": 2,
+          "total_seconds": 0.3642351000016788,
+          "mean_seconds": 0.1821175500008394,
+          "p50_seconds": 0.1821175500008394,
+          "p95_seconds": 0.21652018499880796
+        },
+        "union_rr": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 2.61999957729131e-05,
+            "mean_seconds": 1.309999788645655e-05,
+            "p50_seconds": 1.309999788645655e-05,
+            "p95_seconds": 1.3189998571760953e-05
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 3.069999365834519e-05,
+            "mean_seconds": 1.5349996829172596e-05,
+            "p50_seconds": 1.5349996829172596e-05,
+            "p95_seconds": 1.566499595355708e-05
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 4.600000102072954e-05,
+            "mean_seconds": 2.300000051036477e-05,
+            "p50_seconds": 2.300000051036477e-05,
+            "p95_seconds": 2.327000256627798e-05
+          }
+        },
+        "union_all": {
+          "50": {
+            "calls": 2,
+            "total_seconds": 2.0300001779105514e-05,
+            "mean_seconds": 1.0150000889552757e-05,
+            "p50_seconds": 1.0150000889552757e-05,
+            "p95_seconds": 1.0284998643328435e-05
+          },
+          "100": {
+            "calls": 2,
+            "total_seconds": 3.170000854879618e-05,
+            "mean_seconds": 1.585000427439809e-05,
+            "p50_seconds": 1.585000427439809e-05,
+            "p95_seconds": 1.589500461705029e-05
+          },
+          "200": {
+            "calls": 2,
+            "total_seconds": 6.059999577701092e-05,
+            "mean_seconds": 3.029999788850546e-05,
+            "p50_seconds": 3.029999788850546e-05,
+            "p95_seconds": 3.056999994441867e-05
+          }
+        }
+      },
+      "popularity": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "item_cf": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "semantic": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "union_rr": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      },
+      "union_all": {
+        "50": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "100": {
+          "recall": 0.0,
+          "hit": 0.0
+        },
+        "200": {
+          "recall": 0.0,
+          "hit": 0.0
+        }
+      }
+    }
+  }
+}
