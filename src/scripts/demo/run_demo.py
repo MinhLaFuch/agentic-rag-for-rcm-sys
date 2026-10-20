@@ -39,6 +39,12 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--tag", help="Data tag (default: tag from run_tag.yaml)")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation", help="Split to load data from")
     ap.add_argument("--domain", action="append", help="Domain to load (repeatable; default: all)")
+    ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
+    ap.add_argument(
+        "--allow-missing-corpus-sources",
+        action="store_true",
+        help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
+    )
     ap.add_argument("--host", default="127.0.0.1", help="Host to run server (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=7860, help="Port to run server (default: 7860)")
     return ap.parse_args()
@@ -201,7 +207,13 @@ def main() -> None:
         sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
         print("Initializing LiveBackend...")
-        backend = LiveBackend(tag=args.tag, domain=args.domain)
+        backend = LiveBackend(
+            tag=args.tag,
+            domain=args.domain,
+            eval_on=args.eval_on,
+            use_prebuilt=not args.no_prebuilt,
+            allow_missing_corpus_sources=args.allow_missing_corpus_sources,
+        )
         try:
             backend.initialize()
         except Exception as exc:
@@ -214,7 +226,7 @@ def main() -> None:
             print("  - Check tag and domain")
             print("  - Check LLM_API_KEY environment variable")
             print("  - Run with --mock to demo without real data:")
-            print("    PYTHONPATH=. python scripts/run_demo.py --mock")
+            print("    PYTHONPATH=. python scripts/demo/run_demo.py --mock")
             sys.exit(1)
 
         print("Getting sample users...")

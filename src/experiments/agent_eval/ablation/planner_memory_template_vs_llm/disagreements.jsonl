@@ -1,0 +1,8 @@
+{"request_id": "similar-sparse-18", "text": "", "kind": "similar", "segment": "sparse", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "constrained-sparse-0", "text": "", "kind": "constrained", "segment": "sparse", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 1}}
+{"request_id": "constrained-warm-0", "text": "", "kind": "constrained", "segment": "warm", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "constrained-warm-8", "text": "", "kind": "constrained", "segment": "warm", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "constrained-warm-10", "text": "", "kind": "constrained", "segment": "warm", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "constrained-warm-19", "text": "", "kind": "constrained", "segment": "warm", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "cold_text-cold-0", "text": "", "kind": "cold_text", "segment": "cold", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}
+{"request_id": "cold_text-cold-1", "text": "", "kind": "cold_text", "segment": "cold", "a_trajectory": {"plan": [], "steps": [], "reflections": 0}, "b_trajectory": {"plan": [], "steps": [], "reflections": 0}}

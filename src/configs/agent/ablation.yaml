@@ -27,30 +27,46 @@ ablation:
     - reflections
     - llm_latency_seconds
     - completion_tokens
+    - answer_fallback            # tỉ lệ câu trả lời LLM bị thay bằng template
+    - inference_latency_seconds  # độ trễ riêng của bước Inference
+    - inference_completion_tokens
 
   # Nhóm (group): nhãn -> danh sách các thư mục exp_NNN của cấu hình đó
   # Ví dụ: config_a là cấu hình có reflect_rounds=0, config_b là reflect_rounds=1
   # Các thư mục là tương đối experiments_dir/agent_eval/
-  groups: {}
-    # Ví dụ: cấu hình baseline (không reflect, không memory)
-    # config_a: [exp_001]
-
-    # Ví dụ: cấu hình với reflect_rounds=1
-    # config_b: [exp_002, exp_003]  # nhiều lần lặp cho cùng cấu hình
+  # Muốn có khoảng tin cậy từ nhiều lần lặp: thêm exp vào cùng group, ví dụ reflect_0: [exp_005, exp_007]
+  groups:
+    reflect_1: [exp_004]        # reflect_rounds=1, Inference llm (lần chạy đầy đủ trong báo cáo)
+    reflect_0: [exp_007]        # reflect_rounds=0, Inference llm
+    infer_template: [exp_008]   # reflect_rounds=1, Inference template
 
   # Danh sách các contrast để so sánh
   # Mỗi contrast: name (tên), a (agent, group), b (agent, group), kinds (tuỳ chọn, nếu bỏ thì so tất cả)
   contrasts:
-    # Ví dụ: so planner với reflect_rounds=0 (config_a) và reflect_rounds=1 (config_b)
-    # - name: example_ab
-    #   a: [planner, config_a]
-    #   b: [planner, config_b]
+    # Tác dụng của reflect (a = không reflect, b = có reflect)
+    - name: planner_reflect0_vs_reflect1
+      a: [planner, reflect_0]
+      b: [planner, reflect_1]
+    - name: planner_memory_reflect0_vs_reflect1
+      a: [planner_memory, reflect_0]
+      b: [planner_memory, reflect_1]
 
-    # Ví dụ: so type1 và planner trên cùng lần chạy (cùng group)
-    # - name: example_agents_same_run
-    #   a: [type1, config_b]
-    #   b: [planner, config_b]
-    #   kinds: [similar]  # chỉ so kind "similar"
+    # Tác dụng của MemoryTool trên cùng một lần chạy (a = không memory, b = có memory)
+    - name: memory_vs_no_memory
+      a: [planner, reflect_1]
+      b: [planner_memory, reflect_1]
+      kinds: [similar, constrained, cold_text]  # personalized của planner không được chấm nên bỏ
+
+    # Inference: template so với llm (a = template, b = llm)
+    - name: planner_memory_template_vs_llm
+      a: [planner_memory, infer_template]
+      b: [planner_memory, reflect_1]
+    - name: planner_template_vs_llm
+      a: [planner, infer_template]
+      b: [planner, reflect_1]
+    - name: type1_template_vs_llm
+      a: [type1, infer_template]
+      b: [type1, reflect_1]
 
   # Đường dẫn xuất báo cáo (tương đối experiments_dir)
   output_subdir: "agent_eval/ablation"

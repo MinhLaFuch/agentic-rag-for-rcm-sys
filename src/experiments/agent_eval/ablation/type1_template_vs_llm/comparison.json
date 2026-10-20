@@ -1,0 +1,213 @@
+{
+  "contrast": "type1_template_vs_llm",
+  "agent_a": "type1",
+  "agent_b": "type1",
+  "group_a": "infer_template",
+  "group_b": "reflect_1",
+  "k": 10,
+  "bootstrap_resamples": 10000,
+  "confidence": 0.95,
+  "results": {
+    "similar/sparse": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "n": 0
+      },
+      "reflections": {
+        "n": 0
+      },
+      "llm_latency_seconds": {
+        "n": 0
+      },
+      "completion_tokens": {
+        "n": 0
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 12.638400000000184,
+        "diff": 12.638400000000184,
+        "ci_lower": 10.45570000000007,
+        "ci_upper": 15.41984999999986,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 795.2,
+        "diff": 795.2,
+        "ci_lower": 706.6,
+        "ci_upper": 901.6,
+        "n": 20
+      }
+    },
+    "similar/warm": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "n": 0
+      },
+      "reflections": {
+        "n": 0
+      },
+      "llm_latency_seconds": {
+        "n": 0
+      },
+      "completion_tokens": {
+        "n": 0
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 13.036599999999089,
+        "diff": 13.036599999999089,
+        "ci_lower": 10.634999999999128,
+        "ci_upper": 15.807699999999022,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 862.8,
+        "diff": 862.8,
+        "ci_lower": 741.0,
+        "ci_upper": 997.2,
+        "n": 20
+      }
+    },
+    "all_kinds": {
+      "similar": {
+        "task_success": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "recall@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "ndcg@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "n": 0
+        },
+        "reflections": {
+          "n": 0
+        },
+        "llm_latency_seconds": {
+          "n": 0
+        },
+        "completion_tokens": {
+          "n": 0
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 12.837499999999636,
+          "diff": 12.837499999999636,
+          "ci_lower": 11.175824999999895,
+          "ci_upper": 14.74057499999908,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 829.0,
+          "diff": 829.0,
+          "ci_lower": 752.575,
+          "ci_upper": 912.825,
+          "n": 40
+        }
+      }
+    },
+    "variance": {
+      "note": "Only 1 run per group, cannot compute variance"
+    },
+    "n_pairs": 40
+  }
+}
