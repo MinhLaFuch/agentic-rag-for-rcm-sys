@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ._dataclass import AgentRequest
+from package.evaluation.requests._dataclass import AgentRequest
 
 
 def filter_requests_by_scope(requests: list[AgentRequest], scope: str) -> list[AgentRequest]:

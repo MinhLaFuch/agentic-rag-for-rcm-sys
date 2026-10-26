@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from package.evaluation.agent import AgentRequest, score_trajectory, summarize
+from package.evaluation import AgentRequest, score_trajectory, summarize
 from tests.evaluation.agent.test_agent_eval import ITEM2ID, _step, _trajectory
 from tests.tools_helpers import VG_A, VG_B, VG_C, EL_A
 

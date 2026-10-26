@@ -7,12 +7,10 @@ from typing import Any
 
 import numpy as np
 
-from ...tools.corpus import ItemCorpus
-from ...tools.evaluation.metrics import ranking_metrics_at_k
-from ._dataclass import AgentRequest
-from ._helper import items_satisfying, items_without_price
-from ._schema import ANSWER_STATUSES, PLANNER_AGENTS
-from .reference_groups import reference_groups
+from package.tools.corpus import ItemCorpus
+from package.tools.evaluation.metrics import ranking_metrics_at_k
+from package.evaluation._schema import ANSWER_STATUSES, PLANNER_AGENTS
+from package.evaluation.requests import AgentRequest, items_satisfying, items_without_price, reference_groups
 
 
 def _follows(called: list[str], groups: list[tuple[str, ...]]) -> bool:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ._schema import REFERENCE_PLANS
+from package.evaluation._schema import REFERENCE_PLANS
 
 
 def reference_groups(kind: str, available_tools: set[str]) -> list[tuple[str, ...]]:

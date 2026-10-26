@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from ...tools.corpus import ItemCorpus
+from package.tools.corpus import ItemCorpus
 
 
 def _price_of(corpus: ItemCorpus, item_id: str) -> float | None:

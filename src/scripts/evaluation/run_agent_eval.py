@@ -41,7 +41,7 @@ import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools
 from package.agents import extract_recommendations, get_agent_limits
-from package.evaluation.agent import (
+from package.evaluation import (
     AGENTS,
     INFERENCE_AGENTS,
     ORACLE_KINDS,
