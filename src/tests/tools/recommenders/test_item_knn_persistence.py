@@ -209,3 +209,56 @@ def test_corrupted_file():
 
         with pytest.raises(Exception):  # scipy.sparse.load_npz will raise
             load_item_knn(path, k, fit_pairs)
+
+
+def test_dataset_bound_provenance(tmp_path):
+    import json
+    pairs = pd.DataFrame({"user_idx": [0, 0, 1, 1], "item_idx": [0, 1, 1, 2]})
+    model = ItemKNNRecommender(2).fit(pairs)
+    path = tmp_path / "model.npz"
+    context = dict(user2id={"u": 0, "v": 1}, item2id={"a": 0, "b": 1, "c": 2}, eval_on="validation", tag="D")
+    save_item_knn(model, path, 2, pairs, **context)
+    load_item_knn(path, 2, pairs.iloc[::-1], **context)
+    for changed in (dict(user2id={"u": 1, "v": 0}), dict(item2id={"a": 1, "b": 0, "c": 2}),
+                    dict(eval_on="test"), dict(tag="other")):
+        with pytest.raises(ValueError, match="provenance mismatch"):
+            load_item_knn(path, 2, pairs, **(context | changed))
+    with pytest.raises(ValueError, match="provenance mismatch"):
+        load_item_knn(path, 2, pairs)
+    with path.open("ab") as f:
+        f.write(b"changed")
+    with pytest.raises(ValueError, match="checksum"):
+        load_item_knn(path, 2, pairs, **context)
+
+
+def test_legacy_cache_requires_refit(tmp_path):
+    import json
+    pairs = pd.DataFrame({"user_idx": [0, 0], "item_idx": [0, 1]})
+    path = tmp_path / "model.npz"
+    save_item_knn(ItemKNNRecommender(2).fit(pairs), path, 2, pairs)
+    meta_path = path.with_suffix(".meta.json")
+    meta = json.loads(meta_path.read_text())
+    meta["format_version"] = 1
+    meta_path.write_text(json.dumps(meta))
+    with pytest.raises(ValueError, match="provenance required"):
+        load_item_knn(path, 2, pairs)
+
+
+def test_data_hash_retains_duplicate_events_and_rejects_fractional_ids():
+    from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+    pairs = pd.DataFrame({"user_idx": [0, 0], "item_idx": [0, 1]})
+    assert item_knn_data_hash(pairs) != item_knn_data_hash(pd.concat([pairs, pairs.iloc[:1]]))
+    with pytest.raises(ValueError, match="integers"):
+        item_knn_data_hash(pd.DataFrame({"user_idx": [0.5], "item_idx": [0]}))
+
+
+def test_same_count_changed_pairs_and_mapping_order(tmp_path):
+    from package.tools.recommenders.mapping_hash import mapping_hash
+    assert mapping_hash({"a": 0, "b": 1}) == mapping_hash({"b": 1, "a": 0})
+    pairs = pd.DataFrame({"user_idx": [0, 0, 1, 1], "item_idx": [0, 1, 1, 2]})
+    path = tmp_path / "model.npz"
+    save_item_knn(ItemKNNRecommender(2).fit(pairs), path, 2, pairs)
+    changed = pairs.copy()
+    changed.loc[0, "user_idx"] = 1
+    with pytest.raises(ValueError, match="Data hash mismatch"):
+        load_item_knn(path, 2, changed)

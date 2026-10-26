@@ -31,7 +31,10 @@ class DataPaths:
         return self.item_knn_dir / f"item_knn_{self.tag}_{eval_on}.npz"
 
     def review_path(self, domain: str) -> Path:
-        return self.raw_dir / f"{domain}.jsonl.gz"
+        candidates = (self.raw_dir / domain / f"{domain}.jsonl",
+                      self.raw_dir / domain / f"{domain}.jsonl.gz",
+                      self.raw_dir / f"{domain}.jsonl", self.raw_dir / f"{domain}.jsonl.gz")
+        return next((path for path in candidates if path.exists()), candidates[-1])
 
     def meta_path(self, domain: str) -> Path:
         # Product metadata can live separately from review dumps and may be

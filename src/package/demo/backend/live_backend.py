@@ -22,6 +22,8 @@ from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.load_item_knn import load_item_knn
+from package.tools.recommenders.fit_provenance import fit_provenance
+from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from ..adapter import adapt_from_plan_executor
 from ..adapter import adapt_from_plan_executor_error
 from ..view import DemoItem, DemoRequest, DemoResult
@@ -54,6 +56,7 @@ class LiveBackend:
         self._internal_id_to_item_id: dict[int, str] = {}
         self._fit_df: pd.DataFrame | None = None
         self._initialized = False
+        self._knn_provenance = {"status": "not_initialized"}
 
     def initialize(self) -> None:
         """Tải dữ liệu và dựng executor (chạy một lần khi khởi động)."""
@@ -134,23 +137,32 @@ class LiveBackend:
                 )
             print(f"Load ItemKNN from {item_knn_path}")
             try:
-                knn = load_item_knn(item_knn_path, knn_k, fit_pairs)
+                knn = load_item_knn(item_knn_path, knn_k, fit_pairs, user2id=user2id,
+                                     item2id=item2id, eval_on=self._eval_on, tag=data_paths.tag)
+                self._knn_provenance = {"status": "validated_cache", **knn._provenance}
                 fit_time = getattr(knn, "_fit_time", None)
                 print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
             except ValueError as exc:
-                if "Data hash mismatch" not in str(exc):
-                    raise
-                print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
+                print(f"  ItemKNN cache rejected ({exc}); fitting from current fit split and mappings")
+                self._knn_provenance = {"status": "refit_cache_rejected", "reason": str(exc)}
                 t0 = time.perf_counter()
                 knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
                 knn._fit_time = time.perf_counter() - t0
                 print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
         else:
+            self._knn_provenance = {"status": "refit_requested"}
             print("Fit ItemKNN on fit data (--no-prebuilt)")
             t0 = time.perf_counter()
             knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
             knn._fit_time = time.perf_counter() - t0
             print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
+
+        if not hasattr(knn, "_fit_data_hash"):
+            knn._fit_data_hash = item_knn_data_hash(fit_pairs)
+        self._knn_provenance.update(
+            fit_provenance(fit_pairs, user2id=user2id, item2id=item2id,
+                           eval_on=self._eval_on, tag=data_paths.tag))
+        self._knn_provenance.update(data_hash=knn._fit_data_hash, neighbors=knn_k)
 
         # Build tools
         logger = ToolCallLogger()

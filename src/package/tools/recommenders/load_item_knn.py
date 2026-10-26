@@ -10,6 +10,8 @@ import pandas as pd
 import scipy.sparse as sp
 
 from .item_knn_data_hash import item_knn_data_hash
+from .file_hash import file_hash
+from .fit_provenance import fit_provenance
 from .item_knn_recommender import ItemKNNRecommender
 
 
@@ -17,6 +19,7 @@ def load_item_knn(
     path: Path,
     k: int,
     fit_pairs: pd.DataFrame,
+    *, user2id=None, item2id=None, eval_on=None, tag=None,
 ) -> ItemKNNRecommender:
     """Load ItemKNNRecommender model from NPZ file with validation.
 
@@ -44,11 +47,17 @@ def load_item_knn(
         metadata = json.load(f)
 
     # Validate format version
-    if metadata.get("format_version") != 1:
+    if metadata.get("format_version") != 2:
         raise ValueError(
-            f"Unsupported format version {metadata.get('format_version')}, expected 1. "
+            f"Unsupported format version {metadata.get('format_version')}, expected 2 (provenance required). "
             "Re-fit with --save-item-knn to generate a new file."
         )
+
+    expected = fit_provenance(fit_pairs, user2id=user2id, item2id=item2id, eval_on=eval_on, tag=tag)
+    if metadata.get("provenance") != expected:
+        raise ValueError("ItemKNN provenance mismatch: mapping assignments, fit split, tag or scope changed; refit required")
+    if metadata.get("algorithm") != "binary_cosine_topk_v1" or metadata.get("data_hash_protocol") != "sorted_event_pairs_int64_le_v1":
+        raise ValueError("ItemKNN algorithm/hash protocol mismatch; refit required")
 
     # Validate k
     saved_k = metadata["k"]
@@ -91,7 +100,11 @@ def load_item_knn(
         )
 
     # Load similarity matrix
+    if file_hash(path) != metadata.get("artifact_sha256"):
+        raise ValueError("ItemKNN artifact checksum mismatch; refit required")
     similarity = sp.load_npz(path)
+    if similarity.shape != (current_num_items, current_num_items) or not np.isfinite(similarity.data).all():
+        raise ValueError("ItemKNN similarity shape or values invalid")
 
     # Reconstruct model
     # ItemKNNRecommender is just a pass-through to BaselineItemKNNRecommender
@@ -113,5 +126,6 @@ def load_item_knn(
     # Store fit time from metadata
     model._fit_time = metadata.get("fit_time_seconds")
     model._fit_data_hash = current_hash
+    model._provenance = expected
 
     return model

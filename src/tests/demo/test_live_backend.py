@@ -320,3 +320,37 @@ def test_live_backend_prebuilt_with_files_uses_load_functions():
     backend = LiveBackend(tag="test", use_prebuilt=True, allow_missing_corpus_sources=True)
     assert backend._use_prebuilt is True
     assert backend._allow_missing_corpus_sources is True
+
+
+@pytest.mark.parametrize("reject_cache", [False, True])
+def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache):
+    from dataclasses import replace
+    from package.demo.backend import live_backend as module
+    from package.tools.recommenders import ItemKNNRecommender
+    from package.tools.recommenders.fit_provenance import fit_provenance
+    from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+    interactions, user2id, item2id = cf_setup
+    fit = interactions.assign(timestamp=1)
+    empty = fit.iloc[:0]
+    paths = replace(get_data_paths("synthetic"), item_knn_dir=tmp_path, corpus_dir=tmp_path)
+    paths.item_knn_path("validation").touch()
+    paths.corpus_path.touch()
+    knn = ItemKNNRecommender(20).fit(fit)
+    context = dict(user2id=user2id, item2id=item2id, eval_on="validation", tag="synthetic")
+    knn._provenance = fit_provenance(fit, **context)
+    knn._fit_data_hash = item_knn_data_hash(fit)
+    loader = MagicMock(side_effect=ValueError("ItemKNN provenance mismatch")) if reject_cache else MagicMock(return_value=knn)
+    monkeypatch.setattr(module, "get_data_paths", lambda tag: paths)
+    monkeypatch.setattr(module, "load_splits", lambda *a: (fit, empty, empty))
+    monkeypatch.setattr(module, "load_mappings", lambda *a: (user2id, item2id))
+    monkeypatch.setattr(module, "build_meta_files", lambda *a: [])
+    monkeypatch.setattr(module, "load_corpus", lambda *a, **k: (corpus, 1.))
+    monkeypatch.setattr(module, "load_item_knn", loader)
+    monkeypatch.setattr(module, "build_llm_provider", lambda *a: MagicMock(health_check=lambda: True))
+    backend = LiveBackend(tag="synthetic")
+    backend.initialize()
+    assert backend._initialized
+    assert loader.call_args.kwargs == context
+    assert backend._knn_provenance["status"] == ("refit_cache_rejected" if reject_cache else "validated_cache")
+    assert backend._knn_provenance["data_hash"] == item_knn_data_hash(fit)
+    assert backend._knn_provenance["fit_splits"] == ["train"]

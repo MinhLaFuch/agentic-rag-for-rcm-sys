@@ -326,9 +326,65 @@ def test_metadata_contains_required_fields(tmp_path):
     for field in required_fields:
         assert field in metadata, f"Missing field: {field}"
 
-    assert metadata["format_version"] == 1
+    assert metadata["format_version"] == 2
     assert metadata["logic_version"] == CORPUS_LOGIC_VERSION
     assert metadata["schema_fingerprint"] == get_corpus_schema_fingerprint()
     assert metadata["num_items"] == 2
     assert metadata["min_coverage"] == 0.5
     assert metadata["coverage"] == 1.0
+
+
+def test_content_hash_portable_and_detects_same_size_same_mtime_change(tmp_path):
+    import os
+    corpus = ItemCorpus.from_dataframe(_make_sample_meta())
+    path = tmp_path / "corpus.sqlite"
+    original = tmp_path / "meta.jsonl"
+    original.write_bytes(b"abcd")
+    mapping = {"TestDomain::B001": 0, "TestDomain::B002": 1}
+    save_corpus(corpus, path, [("TestDomain", str(original))], mapping, .5, 1., {})
+    moved = tmp_path / "moved.jsonl"
+    moved.write_bytes(b"abcd")
+    load_corpus(path, [("TestDomain", str(moved))], mapping, .5)
+    stat = moved.stat()
+    moved.write_bytes(b"wxyz")
+    os.utime(moved, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+    with pytest.raises(ValueError, match="Source file metadata mismatch"):
+        load_corpus(path, [("TestDomain", str(moved))], mapping, .5)
+
+
+def test_corpus_rejects_assignment_permutation_and_artifact_tampering(tmp_path):
+    corpus = ItemCorpus.from_dataframe(_make_sample_meta())
+    path = tmp_path / "corpus.sqlite"
+    source = tmp_path / "meta.jsonl"
+    source.write_text("source")
+    files = [("TestDomain", str(source))]
+    mapping = {"TestDomain::B001": 0, "TestDomain::B002": 1}
+    save_corpus(corpus, path, files, mapping, .5, 1., {})
+    with pytest.raises(ValueError, match="Mapping hash mismatch"):
+        load_corpus(path, files, {"TestDomain::B001": 1, "TestDomain::B002": 0}, .5)
+    with path.open("ab") as f:
+        f.write(b"changed")
+    with pytest.raises(ValueError, match="checksum"):
+        load_corpus(path, files, mapping, .5)
+
+
+def test_legacy_corpus_keeps_strict_fingerprint_checks(tmp_path):
+    import hashlib
+    corpus = ItemCorpus.from_dataframe(_make_sample_meta())
+    path = tmp_path / "corpus.sqlite"
+    source = tmp_path / "meta.jsonl"
+    source.write_text("legacy source")
+    files = [("TestDomain", str(source))]
+    mapping = {"TestDomain::B001": 0, "TestDomain::B002": 1}
+    save_corpus(corpus, path, files, mapping, .5, 1., {})
+    manifest_path = path.with_suffix(".meta.json")
+    meta = json.loads(manifest_path.read_text())
+    stat = source.stat()
+    meta.update(format_version=1, source_hashes=[hashlib.sha256(f"{source}:{stat.st_size}:{stat.st_mtime}".encode()).hexdigest()],
+                mapping_hash=hashlib.sha256("".join(sorted(mapping)).encode()).hexdigest())
+    manifest_path.write_text(json.dumps(meta))
+    loaded, _ = load_corpus(path, files, mapping, .5)
+    assert loaded._source_provenance["format_version"] == 1
+    source.write_text("different content")
+    with pytest.raises(ValueError, match="Source file metadata mismatch"):
+        load_corpus(path, files, mapping, .5)

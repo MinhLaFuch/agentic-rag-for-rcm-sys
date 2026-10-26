@@ -5,3 +5,7 @@ resource
 # Keep bulky ranking-evaluation raw artifacts local; commit summaries instead.
 /src/experiments/ranking_eval/exp_*/candidate_lists.jsonl
 /src/experiments/ranking_eval/exp_*/scored.jsonl
+
+# Durable local evaluation checkpoints include models and full candidate payloads.
+/src/experiments/checkpoints/
+/src/experiments/ranking_eval/_checkpoints/

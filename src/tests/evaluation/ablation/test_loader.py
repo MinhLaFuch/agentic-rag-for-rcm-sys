@@ -206,3 +206,20 @@ def test_validate_contrast_config_group_not_found():
     
     with pytest.raises(ConfigError, match="Group 'config_c' not found"):
         validate_contrast_config(contrast, groups)
+
+
+def test_comparison_rejects_policy_and_protocol_mixing():
+    from copy import deepcopy
+    base = {"run": {"seed": 42, "dataset": {"eval_on": "validation"}},
+            "config": {"protocol": {"version": 2, "metadata_policy": {"name": "historical_static_catalog"}}}}
+    assert check_compatibility(base, deepcopy(base))[0]
+    snapshot = deepcopy(base)
+    snapshot["config"]["protocol"]["metadata_policy"]["name"] = "snapshot"
+    ok, reason = check_compatibility(base, snapshot)
+    assert not ok and "metadata_policy" in reason
+    legacy = deepcopy(base)
+    legacy["config"].pop("protocol")
+    assert not check_compatibility(base, legacy)[0]
+    other_requests = deepcopy(base)
+    other_requests["config"]["protocol"]["request_content_sha256"] = "different"
+    assert not check_compatibility(base, other_requests)[0]

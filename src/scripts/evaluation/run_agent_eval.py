@@ -70,6 +70,9 @@ from package.tools.evaluation import next_experiment_dir, save_experiment, segme
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
+from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.tools.recommenders.mapping_hash import mapping_hash
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -101,12 +104,15 @@ def attach_answer(traj: dict[str, Any], answer: Any, inference_mode: str) -> Non
 
 def is_resumable(
     rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int, inference_mode: str | None = None,
+    protocol_hash: str | None = None,
 ) -> bool:
     """
     A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds.
     Agents that get an answer (type1, planners) also need the same inference_mode, so LLM and template answers never mix in one
     experiment; a record without the field was written before Inference existed: it is reused and its answer columns stay empty.
     """
+    if protocol_hash is not None and rec.get("evaluation_protocol_hash") != protocol_hash:
+        return False
     if text_of.get(rec["request_id"]) != rec["text"] or rec["agent"] not in agents:
         return False
     if inference_mode is not None and rec["agent"] in INFERENCE_AGENTS and rec.get("inference_mode", inference_mode) != inference_mode:
@@ -192,6 +198,8 @@ def main() -> None:
         action="store_true",
         help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
     )
+    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
+                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
@@ -225,7 +233,7 @@ def main() -> None:
     num_users = len(user2id)
 
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
-    hist_size = np.bincount(fit_df["user_idx"].to_numpy(), minlength=num_users)
+    hist_size = np.bincount(fit_df.drop_duplicates(["user_idx", "item_idx"])["user_idx"].to_numpy(), minlength=num_users)
     seg_of = segment_users_by_history(target_by_user, hist_size, sparse_max)
     latest = fit_df[fit_df["user_idx"].isin(list(target_by_user))].sort_values("timestamp").drop_duplicates("user_idx", keep="last")
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
@@ -251,6 +259,12 @@ def main() -> None:
         )
         file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
         print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
+
+    metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=as_of)
+    # Agent request cohorts are recorded separately after request construction.
+    protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
+        target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
+        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent")
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
@@ -296,6 +310,22 @@ def main() -> None:
         rng=np.random.default_rng(seed),
     )
     requests = filter_requests_by_scope(requests, args.request_scope)
+    protocol_manifest["request_ids"] = [r.request_id for r in requests]
+    protocol_manifest["request_scope"] = args.request_scope
+    protocol_manifest["request_content_sha256"] = hashlib.sha256(
+        json.dumps([r.to_dict() for r in requests], sort_keys=True, default=str).encode()).hexdigest()
+    # Resume identity includes implementation, dataset, inputs and temporal policy.
+    from package.tools.evaluation.save_experiment import _source_fingerprint
+    resume_identity = {
+        "protocol": protocol_manifest, "fit_data_hash": knn_fit_data_hash,
+        "source_fingerprint": _source_fingerprint(), "seed": seed, "neighbors": knn_k,
+        "k": k, "reflect_rounds": reflect_rounds, "inference_mode": inference_mode,
+        "agent_config": cfg, "llm_config": load_config("agent/llm"),
+        "metadata_content_hashes": {d: sha256_file(p) if Path(p).exists() else None for d,p in meta_files},
+        "requests": [r.to_dict() for r in requests],
+    }
+    protocol_hash = hashlib.sha256(json.dumps(resume_identity, sort_keys=True, default=str).encode()).hexdigest()
+    protocol_manifest["resume_identity_sha256"] = protocol_hash
     counts = pd.Series([f"{r.kind}/{r.segment}" for r in requests]).value_counts().sort_index()
     print("requests:", ", ".join(f"{name}={n}" for name, n in counts.items()), f"| agents: {agents}")
     text_of = {r.request_id: r.text for r in requests}
@@ -305,11 +335,15 @@ def main() -> None:
         ap.error("--trajectory-file must be a simple .jsonl filename")
     traj_path = data_paths.log_dir / trajectory_name
     traj_path.parent.mkdir(parents=True, exist_ok=True)
+    if traj_path.exists() and not args.resume:
+        raise SystemExit(f"Trajectory already exists: {traj_path}; choose a new --trajectory-file or use --resume with the identical protocol")
     done: dict[tuple[str, str], dict[str, Any]] = {}
     if args.resume and traj_path.exists():
         for line in traj_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
-            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode):  # drop stale records (other text / agent / reflect_rounds)
+            if rec.get("evaluation_protocol_hash") != protocol_hash:
+                raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; choose a new --trajectory-file")
+            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode, protocol_hash):  # drop stale records (other text / agent / reflect_rounds)
                 done[(rec["request_id"], rec["agent"])] = rec
     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
@@ -342,6 +376,8 @@ def main() -> None:
                     traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
+                traj["evaluation_protocol_hash"] = protocol_hash
+                traj["metadata_policy"] = args.metadata_policy
                 trajectories.append(traj)
                 sink.write(json.dumps(traj, ensure_ascii=False) + "\n")
                 sink.flush()
@@ -374,7 +410,7 @@ def main() -> None:
     }
     exp_dir = save_experiment(
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
-        config={"agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+        config={"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": args.request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
@@ -382,7 +418,7 @@ def main() -> None:
                 "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_has_mapping_hash": False,
+                "knn_cache_used": False,
                 "corpus_artifacts": {
                     "mode": "built_from_metadata_in_memory" if args.no_prebuilt else "loaded_prebuilt",
                     "metadata_sources": metadata_source_records,
@@ -390,7 +426,7 @@ def main() -> None:
                     "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt else None,
                     "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
                     "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt else None,
-                    "source_hash_semantics": "path_size_mtime_fingerprint; source content hashes are not present in format_version 1",
+                    "source_hash_semantics": getattr(corpus, "_source_provenance", {"source_hash_protocol": "built_from_current_sources"}),
                     "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
                     "allow_missing_sources": bool(args.allow_missing_corpus_sources),
                 }},
@@ -399,10 +435,11 @@ def main() -> None:
         dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": len(item2id), "metadata_coverage": round(coverage, 4), "n_requests": len(requests),
                       "profile_as_of_timestamp": as_of,
-                      "mapping_hash": hashlib.sha256("".join(sorted(item2id)).encode()).hexdigest(),
+                      "mapping_hash": mapping_hash(item2id), "user_mapping_hash": mapping_hash(user2id),
+                      "mapping_hash_protocol": "sorted_key_index_json_v1",
                       "split_files": {name: {"path": str(data_paths.split_path(name)),
                                              "size_bytes": data_paths.split_path(name).stat().st_size,
-                                             "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns}
+                                             "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns, "sha256": sha256_file(data_paths.split_path(name))}
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
         notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "

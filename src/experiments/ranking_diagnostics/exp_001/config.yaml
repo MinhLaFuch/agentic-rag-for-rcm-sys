@@ -1,0 +1,117 @@
+run:
+  timestamp: '2026-10-26T04:52:10.123835+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 4f670bc5fd2ed7534303f264dc57ca0b8a25c3ed7edf0bf076fbb938e9cd5f2d
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 47.28
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+    user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+        sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+config:
+  source_experiment: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_008
+  source_sha256:
+    config.yaml: ce9b7ff118b8740502c117e96b3cec02f29e0b81a37dfca1000e67ce4767c287
+    metrics.json: 87ce72d2987a3d25be007648467d2a66630723cad0c976bf0882d3e2a84863c2
+    candidate_lists.jsonl: 7c810d7d122339879ca779d27f3188b056e4a4c53a79d1dcc07a1176d012fbcb
+    scored.jsonl: 25ef6f71ab8c99257c53f0c9f0b181e0129ec10c82acc3efafde311cda77f912
+  selection_pilot: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_007
+  selection_pilot_config_sha256: 114656d6f2c44375eb503e8697031387239d943e20e252472345539aafc8608d
+  protocol:
+    version: 2
+    evaluation_kind: ranking
+    item_knn:
+      scope: dataset_bound
+      user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+      item_mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+      eval_on: validation
+      fit_splits:
+      - train
+      tag: multi_domain
+    fit_timestamp_max: 1617737606134
+    target_timestamp_min: 1617737606549
+    metadata_policy:
+      name: historical_static_catalog
+      version: 1
+      as_of_timestamp: 1617737606549
+      masked_fields:
+      - price
+      - average_rating
+      - rating_number
+      aggregate_observed_at: null
+      metadata_temporal_validity: unverified
+      catalog_assumption: static titles/taxonomy/store/full item vocabulary; availability
+        as-of unverified
+      historical_causal_claim: false
+      snapshot_mutable_fields_used: false
+    label_policy: all observed review user-item pairs are binary positives, independent
+      of stars
+    cohort_policy: existing pre-split filtered cohort; future-informed selection
+    history_size: unique fit items, consistent with binary CSR
+    segment_population_users:
+      warm: 618723
+      sparse: 443377
+      cold: 67319
+    segment_sample_users:
+      cold: 5000
+      sparse: 5000
+      warm: 5000
+    sampling: seeded per-segment cap; pooled sample average is not population-weighted
+    item_warm_definition: any user interacted in fit; distinct from same-user repeat
+    candidate_target_denominator: all unique target items per user; seen filtering
+      may make repeat targets unretrievable
+    ranking_target_denominator: novel target items per user; empty-ground-truth users
+      excluded
+    query_provenance: fit-history title proxy, not observed user query; target-metadata
+      queries must be oracle
+    query_normalization: ascii_fold
+  policies:
+  - baseline
+  - semantic_first
+  - cf_first
+  - rrf_60
+  rrf_offset: 60
+  ks:
+  - 5
+  - 10
+  - 20
+  bootstrap_samples: 5000
+  paired_bootstrap: percentile within segment; exploratory, no multiplicity correction
+  oracle_scope: diagnostic only; uses labels; never deployable
+  candidate_pool: fixed to each baseline merge; no target info in replay policies
+  latency_scope: offline analysis runtime only; no measured production latency for
+    replay policies
