@@ -108,7 +108,8 @@ def build_artifacts(
             knn._fit_time = fit_time
             print(f"ItemKNN: fitted in {fit_time:.1f}s")
 
-            save_item_knn(knn, item_knn_path, knn_k, fit_df[["user_idx", "item_idx"]])
+            save_item_knn(knn, item_knn_path, knn_k, fit_df[["user_idx", "item_idx"]],
+                          user2id=user2id, item2id=item2id, eval_on=split, tag=paths.tag)
             print(f"ItemKNN: saved to {item_knn_path}")
 
             item_knn_reports[split] = {

@@ -14,5 +14,9 @@ def item_knn_data_hash(fit_pairs: pd.DataFrame) -> str:
         raise ValueError("fit_pairs must contain user_idx and item_idx columns")
     users = fit_pairs["user_idx"].to_numpy(dtype=np.int64)
     items = fit_pairs["item_idx"].to_numpy(dtype=np.int64)
+    for column in ("user_idx", "item_idx"):
+        values = fit_pairs[column]
+        if values.isna().any() or (values < 0).any() or not np.array_equal(values.to_numpy(), values.to_numpy(dtype=np.int64)):
+            raise ValueError("fit indices must be non-negative integers without nulls")
     order = np.lexsort((items, users))
-    return hashlib.sha256(np.column_stack((users[order], items[order])).tobytes()).hexdigest()
+    return hashlib.sha256(np.column_stack((users[order], items[order])).astype("<i8", copy=False).tobytes()).hexdigest()

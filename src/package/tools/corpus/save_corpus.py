@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sqlite3
 import time
@@ -10,6 +9,8 @@ from pathlib import Path
 
 from ._sql import get_corpus_schema_fingerprint, CORPUS_LOGIC_VERSION
 from .item_corpus import ItemCorpus
+from ..recommenders.file_hash import file_hash
+from ..recommenders.mapping_hash import mapping_hash
 
 
 def save_corpus(
@@ -43,31 +44,25 @@ def save_corpus(
     if not hasattr(corpus, "_conn") or corpus._conn is None:
         raise ValueError("Corpus has no valid connection")
 
-    # Compute source file metadata hash
-    source_hashes = []
-    for domain, meta_path in meta_files:
-        meta_path = Path(meta_path)
-        if not meta_path.exists():
-            raise FileNotFoundError(f"Meta file not found: {meta_path}")
-        stat = meta_path.stat()
-        # Hash path + size + mtime to detect changes
-        file_key = f"{meta_path}:{stat.st_size}:{stat.st_mtime}"
-        source_hashes.append(hashlib.sha256(file_key.encode("utf-8")).hexdigest())
-
-    # Compute item2id hash (hash all keys by sorted order)
-    item_keys = sorted(item2id.keys())
-    mapping_hash = hashlib.sha256("".join(item_keys).encode("utf-8")).hexdigest()
+    if getattr(corpus, "_evaluation_metadata_policy", None) is not None:
+        raise ValueError("save the source corpus before applying an evaluation metadata policy")
+    source_hashes = [file_hash(meta_path) for _, meta_path in meta_files]
+    assignment_hash = mapping_hash(item2id)
 
     # Build metadata
     metadata = {
-        "format_version": 1,
+        "format_version": 2,
+        "source_hash_protocol": "sha256_file_bytes_v1",
+        "source_domains": [domain for domain, _ in meta_files],
+        "metadata_temporal_validity": "unverified",
+        "mapping_hash_protocol": "sorted_key_index_json_v1",
         "schema_fingerprint": get_corpus_schema_fingerprint(),
         "logic_version": CORPUS_LOGIC_VERSION,
         "num_items": len(item2id),
         "min_coverage": min_coverage,
         "coverage": coverage,
         "source_hashes": source_hashes,
-        "mapping_hash": mapping_hash,
+        "mapping_hash": assignment_hash,
         "build_times": build_times,
         "created_at": time.time(),
     }
@@ -85,6 +80,8 @@ def save_corpus(
         dst_conn.commit()
     finally:
         dst_conn.close()
+
+    metadata["artifact_sha256"] = file_hash(tmp_path)
 
     # Write metadata
     meta_path = path.with_suffix(".meta.json")

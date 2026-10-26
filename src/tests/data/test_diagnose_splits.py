@@ -233,3 +233,40 @@ def test_diagnose_splits_missing_required_columns():
 
     with pytest.raises(ValueError, match="train missing columns"):
         diagnose_splits(train, validation, validation)
+
+
+def test_runtime_fit_zero_history_and_unique_pairs():
+    train = pd.DataFrame({"user_idx": [0, 0], "item_idx": [0, 0]})
+    val = pd.DataFrame({"user_idx": [0, 1, 1], "item_idx": [0, 2, 2], "domain": ["A", "B", "B"]})
+    test = pd.DataFrame({"user_idx": [2, 1], "item_idx": [2, 2], "domain": ["B", "B"]})
+    d = diagnose_splits(train, val, test)
+    assert d.val_repeat_pairs_pct == 50  # 1/2 pairs, NOT 1/3 rows
+    assert d.val_history_len_stats == {"min": 0., "median": .5, "p90": .9}
+    assert d.test_reachable_pct == 50  # item 2 is in validation, not train
+    assert d.test_items_in_train_pct == 0  # explicit train-only legacy field
+    assert d.fit_diagnostics["test"]["cold_user_pct"] == 50
+    assert d.fit_diagnostics["test"]["history_unique_items_including_zero"]["median"] == .5
+    assert d.domain_diagnostics["validation"]["B"]["cold_user_pct"] == 100
+
+
+def test_all_empty_diagnostics():
+    empty = pd.DataFrame(columns=["user_idx", "item_idx"])
+    d = diagnose_splits(empty, empty, empty)
+    assert d.test_reachable_pct == 0
+    assert d.fit_diagnostics["validation"]["catalog_eligible_macro_recall_at_10_upper_bound"] is None
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_numeric_diagnostic_matches_independent_set_reference(seed):
+    import numpy as np
+    rng = np.random.default_rng(seed)
+    frames = [pd.DataFrame({"user_idx": rng.integers(0, 12, n), "item_idx": rng.integers(0, 15, n)}) for n in (50, 30, 25)]
+    d = diagnose_splits(*frames)
+    sets = [set(zip(f.user_idx, f.item_idx)) for f in frames]
+    for name, target, fit in (("validation", sets[1], sets[0]), ("test", sets[2], sets[0] | sets[1])):
+        items = {i for _, i in fit}
+        users = {u for u, _ in target}
+        expected = sum(i in items and (u,i) not in fit for u,i in target) / len(target) * 100
+        assert d.fit_diagnostics[name]["novel_item_warm_unique_pair_pct"] == pytest.approx(expected)
+        ceiling = sum(min(10, sum(v == u and i in items and (v,i) not in fit for v,i in target)) / sum(v == u for v,_ in target) for u in users) / len(users)
+        assert d.fit_diagnostics[name]["catalog_eligible_macro_recall_at_10_upper_bound"] == pytest.approx(ceiling)
