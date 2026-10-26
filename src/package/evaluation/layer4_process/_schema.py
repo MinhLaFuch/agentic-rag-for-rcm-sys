@@ -10,4 +10,8 @@ COLUMNS = (
     "reflections",
     "first_attempt_ok",
     "tool_selection_ok",
+    "args_valid_rate",
+    "price_arg_ok",
+    "category_arg_ok",
+    "used_ranker",
 )

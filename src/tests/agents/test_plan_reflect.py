@@ -8,7 +8,8 @@ from package.config.load_config import ConfigError
 from package.tools import QueryTool, SQLTool
 from package.tools.base import Tool
 from package.tools.corpus import _error as corpus_error
-from tests.agents.test_plan_executor import ScriptedLLM, plan
+from tests.agents.test_plan_executor import plan
+from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A
 
 GOOD = {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
@@ -38,9 +39,9 @@ def test_failed_step_is_reflected_and_the_fixed_plan_wins(corpus):
     assert [r["ok"] for r in results] == [True]
     assert ex.last_reflections == 1 and ex.last_first_attempt_ok is False
     assert len(llm.calls) == 2
-    notice = llm.calls[1][-1]
+    notice = llm.calls[1]["messages"][-1]
     assert notice.role == "user" and "unknown arg" in notice.content and "SQLTool" in notice.content
-    assert llm.calls[1][-2].role == "assistant"  # the old plan is replayed as the assistant turn
+    assert llm.calls[1]["messages"][-2].role == "assistant"  # the old plan is replayed as the assistant turn
     assert ex.last_plan == [GOOD] and ex.last_attempt_plans == [[BAD_ARG], [GOOD]]
 
 
@@ -49,13 +50,13 @@ def test_broken_reference_is_reflected(corpus):
     ex = make(corpus, llm)
     assert all(r["ok"] for r in ex.run("find games"))
     assert ex.last_reflections == 1
-    assert "summary" in llm.calls[1][-1].content
+    assert "summary" in llm.calls[1]["messages"][-1].content
 
 
 def test_notice_lists_keys_of_ok_steps_not_their_data(corpus):
     llm = ScriptedLLM(plan(GOOD, BAD_REF), plan(GOOD))
     make(corpus, llm).run("find games")
-    notice = llm.calls[1][-1].content
+    notice = llm.calls[1]["messages"][-1].content
     assert "candidates" in notice and "total_matches" in notice
     assert "Video_Games::" not in notice  # no item data leaks into the notice
 
@@ -88,7 +89,7 @@ def test_two_rounds_accumulate_the_conversation(corpus):
     llm = ScriptedLLM(plan(BAD_ARG), plan(BAD_REF), plan(GOOD))
     ex = make(corpus, llm, reflect_rounds=2)
     assert ex.run("find games")[0]["ok"] and ex.last_reflections == 2 and len(llm.calls) == 3
-    assert [m.role for m in llm.calls[2]] == ["system", "user", "assistant", "user", "assistant", "user"]
+    assert [m.role for m in llm.calls[2]["messages"]] == ["system", "user", "assistant", "user", "assistant", "user"]
 
 
 def test_non_json_reflect_reply_keeps_the_previous_result(corpus):
@@ -129,7 +130,7 @@ def test_ok_plan_without_any_item_is_reflected(corpus):
     results = ex.run("find games")
     assert results[0]["ok"] and results[0]["data"]["candidates"]
     assert ex.last_reflections == 1 and ex.last_first_attempt_ok is False
-    assert "no step returned any item" in llm.calls[1][-1].content
+    assert "no step returned any item" in llm.calls[1]["messages"][-1].content
 
 
 def test_usage_sums_both_calls(corpus):

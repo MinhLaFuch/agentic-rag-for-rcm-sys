@@ -52,6 +52,8 @@ from package.evaluation import (
     score_trajectory,
     summarize,
 )
+from package.evaluation._schema import EVAL_SCHEMA_VERSION
+from package.evaluation.build_run_provenance import build_run_provenance
 from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR
@@ -136,7 +138,7 @@ def run_planner(
     try:
         results = executor.run(request.text)
         traj["steps"] = [
-            {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds", "args", "output_summary", "note")},
+            {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds", "args", "output_summary", "note", "error_kind")},
              "error": None if r.get("error") is None else str(r["error"])[:error_chars]}
             for r in results
         ]
@@ -285,6 +287,12 @@ def main() -> None:
         runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds)
         runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds)
 
+    # Build provenance (hashes of prompts, tool schemas, git state, limits)
+    provenance = build_run_provenance(
+        planner_tools=tools.for_planner(),
+        memory_tools=tools.for_planner_memory() if "planner_memory" in agents else None,
+    )
+
     def answerer(outcome: Any) -> Any:
         return compose_answer(outcome, llm, mode=inference_mode)
 
@@ -383,6 +391,8 @@ def main() -> None:
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
                 "knn_cache_has_mapping_hash": False,
+                "eval_schema_version": EVAL_SCHEMA_VERSION,
+                "provenance": provenance,
                 "corpus_artifacts": {
                     "mode": "built_from_metadata_in_memory" if args.no_prebuilt else "loaded_prebuilt",
                     "metadata_sources": metadata_source_records,

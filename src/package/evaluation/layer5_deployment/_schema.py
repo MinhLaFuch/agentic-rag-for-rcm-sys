@@ -10,4 +10,6 @@ COLUMNS = (
     "inference_prompt_tokens",
     "inference_completion_tokens",
     "inference_latency_seconds",
+    "provider_error",
+    "sql_time_budget_hits",
 )

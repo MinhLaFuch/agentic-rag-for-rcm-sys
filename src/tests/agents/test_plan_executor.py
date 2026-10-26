@@ -10,20 +10,8 @@ from package.api._dataclass import LLMResponse
 from package.tools import BaselineScorer, QueryTool, SQLTool, ToolCallLogger, ItemCFTool
 from package.memory.memory_tool import MemoryTool
 from package.tools.recommenders import ItemKNNRecommender
+from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A
-
-
-class ScriptedLLM(LLMProvider):
-    provider_name = "scripted"
-
-    def __init__(self, *replies: str) -> None:
-        self.replies = list(replies)
-        self.calls: list[list] = []
-
-    def complete(self, messages, *, temperature=0.0, max_tokens=512, response_format_json=False):
-        self.calls.append(list(messages))
-        return LLMResponse(text=self.replies.pop(0), prompt_tokens=10, completion_tokens=5, latency_seconds=0.1,
-                           provider_name="scripted", model_name="scripted-0")
 
 
 def plan(*steps, ask_user=None) -> str:
@@ -37,7 +25,7 @@ def test_retries_once_on_invalid_json_then_succeeds(corpus):
     assert results[0]["ok"]
     assert executor.last_usage["attempts"] == 2
     assert executor.last_usage["prompt_tokens"] == 20 and executor.last_usage["completion_tokens"] == 10
-    retry_messages = llm.calls[1]
+    retry_messages = llm.calls[1]["messages"]
     assert retry_messages[-2].role == "assistant" and "rejected" in retry_messages[-1].content
 
 

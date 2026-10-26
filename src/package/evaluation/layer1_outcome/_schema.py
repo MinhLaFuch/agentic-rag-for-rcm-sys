@@ -8,4 +8,8 @@ COLUMNS = (
     "ndcg@k",
     "mrr@k",
     "map@k",
+    "seen_item_rate",
+    "seed_in_result",
+    "distinct_domains",
+    "distinct_main_categories",
 )

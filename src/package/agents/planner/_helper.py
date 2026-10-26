@@ -121,7 +121,23 @@ def _invented_ids(args: Any, request: str) -> list[str]:
 
 
 def _is_time_budget(error: Any) -> bool:
+    """Check if an error string indicates a SQL time budget violation."""
     return isinstance(error, str) and ("time budget" in error or "SQLTimeOutError" in error)
+
+
+def _is_bad_reference(error: Any) -> bool:
+    """Check if an error indicates a bad reference (step not run/failed/path not found)."""
+    if not isinstance(error, str):
+        return False
+    return "step" in error and ("has not run yet" in error or "failed" in error or "not found" in error)
+
+
+def check_time_budget_error(error: Any) -> bool:
+    """
+    Public function to check if an error indicates a SQL time budget violation.
+    Used by both planner reflection and evaluation layer 5.
+    """
+    return _is_time_budget(error)
 
 
 def _blocks_reflect(results: list[dict[str, Any]]) -> bool:

@@ -22,9 +22,10 @@ def score_trajectory(
     item2id: Mapping[str, int],
     corpus: ItemCorpus,
     k: int,
+    seen_item_ids: set[int] | None = None,
 ) -> dict[str, Any]:
     """
-    trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds}], recommended[item_id],
+    trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds, error_kind}], recommended[item_id],
                  usage{attempts, prompt_tokens, completion_tokens, latency_seconds}, error, truncated,
                  tools_available, wall_seconds, reflections, first_attempt_ok,
                  answer_status, answer_grounded, answer_fallback, inference_usage}   (the last four: Inference, see below)
@@ -41,14 +42,14 @@ def score_trajectory(
     """
     agent = trajectory["agent"]
     is_planner = agent in PLANNER_AGENTS
-    
+
     # Score each layer independently
-    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k)
+    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids)
     layer2 = score_layer2_interaction(request, trajectory, corpus=corpus)
     layer3 = score_layer3_grounding(trajectory)
     layer4 = score_layer4_process(request, trajectory)
     layer5 = score_layer5_deployment(trajectory)
-    
+
     # Combine all layers into one row
     row: dict[str, Any] = {
         "request_id": request.request_id,
@@ -61,11 +62,11 @@ def score_trajectory(
     row.update(layer3)
     row.update(layer4)
     row.update(layer5)
-    
+
     # Special case: personalized planner without MemoryTool cannot honestly personalize
     # This override is applied in the combiner, not in individual layers
     if request.kind == "personalized" and is_planner and "MemoryTool" not in trajectory.get("tools_available", []):
         # a planner that cannot read the user's history has no honest way to personalize: not scored (asking back is fine)
         row["tool_selection_ok"] = row["task_success"] = None
-    
+
     return row

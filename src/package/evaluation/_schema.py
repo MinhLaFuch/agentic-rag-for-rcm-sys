@@ -1,5 +1,7 @@
 """Contracts of the agent evaluation (fixed in code on purpose; tunables are in configs/agent/agent_eval.yaml)."""
 
+EVAL_SCHEMA_VERSION = 2
+
 SEGMENTS = ("cold", "sparse", "warm")
 AGENTS = ("baseline", "type1", "planner", "planner_memory")
 PLANNER_AGENTS = ("planner", "planner_memory")
