@@ -1,0 +1,362 @@
+{
+  "variants": {
+    "cf_1": {
+      "users": 100,
+      "eligible_users": 100,
+      "empty_ground_truth": 0,
+      "metrics": {
+        "precision@5": 0.0,
+        "recall@5": 0.0,
+        "hit_rate@5": 0.0,
+        "ndcg@5": 0.0,
+        "mrr@5": 0.0,
+        "map@5": 0.0,
+        "precision@10": 0.0,
+        "recall@10": 0.0,
+        "hit_rate@10": 0.0,
+        "ndcg@10": 0.0,
+        "mrr@10": 0.0,
+        "map@10": 0.0
+      },
+      "catalog_coverage_at10": 0.001452200489177789,
+      "outcomes": {
+        "ok": 100
+      },
+      "metadata_incomplete_requests": 0,
+      "mean_candidates": 19.99,
+      "mean_eligible_candidates": 19.84,
+      "candidate_recall": 0.0,
+      "stage_latency": {
+        "ItemCFTool": {
+          "calls": 100,
+          "mean": 0.00041477699999859397,
+          "p95": 0.0005825800000081926
+        },
+        "RecoModelTool": {
+          "calls": 100,
+          "mean": 0.005963213000006818,
+          "p95": 0.009060604999945099
+        },
+        "QueryTool": {
+          "calls": 100,
+          "mean": 0.00016434199999537213,
+          "p95": 0.0002324400000020432
+        }
+      },
+      "latency": {
+        "mean": 0.00707087500000057,
+        "p95": 0.010378015000020467
+      }
+    },
+    "cf_bm25": {
+      "users": 100,
+      "eligible_users": 100,
+      "empty_ground_truth": 0,
+      "metrics": {
+        "precision@5": 0.0,
+        "recall@5": 0.0,
+        "hit_rate@5": 0.0,
+        "ndcg@5": 0.0,
+        "mrr@5": 0.0,
+        "map@5": 0.0,
+        "precision@10": 0.0,
+        "recall@10": 0.0,
+        "hit_rate@10": 0.0,
+        "ndcg@10": 0.0,
+        "mrr@10": 0.0,
+        "map@10": 0.0
+      },
+      "catalog_coverage_at10": 0.001452200489177789,
+      "outcomes": {
+        "ok": 100
+      },
+      "metadata_incomplete_requests": 0,
+      "mean_candidates": 44.46,
+      "mean_eligible_candidates": 44.31,
+      "candidate_recall": 0.0175,
+      "stage_latency": {
+        "ItemCFTool": {
+          "calls": 0,
+          "mean": null,
+          "p95": null
+        },
+        "RecoModelTool": {
+          "calls": 100,
+          "mean": 0.006422327000000791,
+          "p95": 0.007055359999989718
+        },
+        "QueryTool": {
+          "calls": 100,
+          "mean": 0.00018107299999940097,
+          "p95": 0.00019983500001217178
+        },
+        "CFBM25Retriever": {
+          "calls": 100,
+          "mean": 0.3148631770000009,
+          "p95": 0.6610881999999776
+        }
+      },
+      "latency": {
+        "mean": 0.32184467299999425,
+        "p95": 0.6688604749999768
+      },
+      "content_sources": {
+        "requests": 100,
+        "mean_sizes": {
+          "cf": 19.99,
+          "bm25": 25.0,
+          "bm25_unique": 24.47
+        },
+        "stage_latency": {
+          "ItemCFTool": {
+            "calls": 100,
+            "mean": 0.0003823860000017021,
+            "p95": 0.0005008050000355978
+          },
+          "QueryTool": {
+            "calls": 100,
+            "mean": 5.633000000159427e-05,
+            "p95": 8.256000002972994e-05
+          },
+          "SemanticSearchTool": {
+            "calls": 100,
+            "mean": 0.31435934600000165,
+            "p95": 0.6604408049999875
+          }
+        }
+      },
+      "paired_ndcg10": {
+        "mean_delta": 0.0,
+        "familywise95_ci": [
+          0.0,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 0,
+        "unchanged": 100
+      },
+      "guardrails": {
+        "ndcg_effect": false,
+        "paired_lower_positive": false,
+        "recall": true,
+        "hit": true,
+        "coverage": true,
+        "latency": false,
+        "errors": true,
+        "missing_metadata": true
+      }
+    }
+  },
+  "history_segments": {
+    "3": {
+      "cf_1": {
+        "users": 26,
+        "eligible_users": 26,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 26
+        }
+      },
+      "cf_bm25": {
+        "users": 26,
+        "eligible_users": 26,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 26
+        }
+      }
+    },
+    "2": {
+      "cf_1": {
+        "users": 21,
+        "eligible_users": 21,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 21
+        }
+      },
+      "cf_bm25": {
+        "users": 21,
+        "eligible_users": 21,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 21
+        }
+      }
+    },
+    "1": {
+      "cf_1": {
+        "users": 19,
+        "eligible_users": 19,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 19
+        }
+      },
+      "cf_bm25": {
+        "users": 19,
+        "eligible_users": 19,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 19
+        }
+      }
+    },
+    "4": {
+      "cf_1": {
+        "users": 34,
+        "eligible_users": 34,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 34
+        }
+      },
+      "cf_bm25": {
+        "users": 34,
+        "eligible_users": 34,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 34
+        }
+      }
+    }
+  },
+  "history_length_outcomes": {
+    "3": {
+      "variant_cf_1_ok": 26,
+      "variant_cf_bm25_ok": 26
+    },
+    "2": {
+      "variant_cf_1_ok": 21,
+      "variant_cf_bm25_ok": 21
+    },
+    "1": {
+      "variant_cf_1_ok": 19,
+      "variant_cf_bm25_ok": 19
+    },
+    "4": {
+      "variant_cf_1_ok": 34,
+      "variant_cf_bm25_ok": 34
+    }
+  },
+  "decision": "development comparison only; no automatic production promotion",
+  "checkpoint_timing": {
+    "sessions": [
+      {
+        "seconds": 18.056201200000032,
+        "status": "interrupted"
+      },
+      {
+        "seconds": 107.66886199999999,
+        "status": "running"
+      }
+    ],
+    "committed_active_seconds": 125.72506320000002,
+    "interrupted_tail_timing": "hard kills may lose elapsed timing since last committed batch; downtime excluded"
+  },
+  "latency_scope": "Type1 chain + recent-seed selection; excludes full-frame history lookup, UI, setup and warmup; resumed sessions may mix conditions"
+}

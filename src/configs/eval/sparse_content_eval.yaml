@@ -1,0 +1,18 @@
+sparse_content_eval:
+  variant_ids: [cf_1, cf_bm25]
+  stream_prefix: variant_
+  k: 10
+  ks: [5, 10]
+  query: latest_fit_item_title_only
+  normalization: ascii_fold
+  allocation: half_cf_half_bm25
+  merge: stable_union_cf_first
+  primary_metric: ndcg@10
+  comparisons: 1
+  family_alpha: 0.05
+  ndcg_absolute_min: 0.0005
+  ndcg_relative_min: 0.10
+  recall_hit_retention_min: 0.95
+  coverage_retention_min: 0.80
+  chain_p95_ratio_max: 1.10
+  qualification: development_only_until_untouched_confirmation

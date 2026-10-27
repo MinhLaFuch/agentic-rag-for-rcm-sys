@@ -1,0 +1,134 @@
+{
+  "counts": {
+    "cold:overall": {
+      "novel_target_pairs": 21841,
+      "not_in_fit_catalog": 3964,
+      "not_returned_by_any_source": 21426,
+      "returned_raw_but_lost_in_source_filter_or_budget": 0,
+      "union_rr_hits": 415,
+      "union_rr_merge_budget_loss": 0,
+      "union_all_hits": 415,
+      "union_all_merge_budget_loss": 0
+    },
+    "cold:Video_Games": {
+      "novel_target_pairs": 1994,
+      "not_in_fit_catalog": 354,
+      "not_returned_by_any_source": 1977,
+      "returned_raw_but_lost_in_source_filter_or_budget": 0,
+      "union_rr_hits": 17,
+      "union_rr_merge_budget_loss": 0,
+      "union_all_hits": 17,
+      "union_all_merge_budget_loss": 0
+    },
+    "cold:Electronics": {
+      "novel_target_pairs": 12189,
+      "not_in_fit_catalog": 2093,
+      "not_returned_by_any_source": 11798,
+      "returned_raw_but_lost_in_source_filter_or_budget": 0,
+      "union_rr_hits": 391,
+      "union_rr_merge_budget_loss": 0,
+      "union_all_hits": 391,
+      "union_all_merge_budget_loss": 0
+    },
+    "cold:Toys_and_Games": {
+      "novel_target_pairs": 7658,
+      "not_in_fit_catalog": 1517,
+      "not_returned_by_any_source": 7651,
+      "returned_raw_but_lost_in_source_filter_or_budget": 0,
+      "union_rr_hits": 7,
+      "union_rr_merge_budget_loss": 0,
+      "union_all_hits": 7,
+      "union_all_merge_budget_loss": 0
+    },
+    "sparse:overall": {
+      "novel_target_pairs": 11430,
+      "not_in_fit_catalog": 2047,
+      "not_returned_by_any_source": 11049,
+      "returned_raw_but_lost_in_source_filter_or_budget": 2,
+      "union_rr_hits": 234,
+      "union_rr_merge_budget_loss": 145,
+      "union_all_hits": 379,
+      "union_all_merge_budget_loss": 0
+    },
+    "sparse:Electronics": {
+      "novel_target_pairs": 7409,
+      "not_in_fit_catalog": 1255,
+      "not_returned_by_any_source": 7070,
+      "returned_raw_but_lost_in_source_filter_or_budget": 1,
+      "union_rr_hits": 208,
+      "union_rr_merge_budget_loss": 130,
+      "union_all_hits": 338,
+      "union_all_merge_budget_loss": 0
+    },
+    "sparse:Toys_and_Games": {
+      "novel_target_pairs": 3312,
+      "not_in_fit_catalog": 653,
+      "not_returned_by_any_source": 3280,
+      "returned_raw_but_lost_in_source_filter_or_budget": 1,
+      "union_rr_hits": 20,
+      "union_rr_merge_budget_loss": 11,
+      "union_all_hits": 31,
+      "union_all_merge_budget_loss": 0
+    },
+    "sparse:Video_Games": {
+      "novel_target_pairs": 709,
+      "not_in_fit_catalog": 139,
+      "not_returned_by_any_source": 699,
+      "returned_raw_but_lost_in_source_filter_or_budget": 0,
+      "union_rr_hits": 6,
+      "union_rr_merge_budget_loss": 4,
+      "union_all_hits": 10,
+      "union_all_merge_budget_loss": 0
+    },
+    "warm:overall": {
+      "novel_target_pairs": 10883,
+      "not_in_fit_catalog": 1944,
+      "not_returned_by_any_source": 10466,
+      "returned_raw_but_lost_in_source_filter_or_budget": 23,
+      "union_rr_hits": 233,
+      "union_rr_merge_budget_loss": 161,
+      "union_all_hits": 394,
+      "union_all_merge_budget_loss": 0
+    },
+    "warm:Electronics": {
+      "novel_target_pairs": 7766,
+      "not_in_fit_catalog": 1319,
+      "not_returned_by_any_source": 7414,
+      "returned_raw_but_lost_in_source_filter_or_budget": 14,
+      "union_rr_hits": 206,
+      "union_rr_merge_budget_loss": 132,
+      "union_all_hits": 338,
+      "union_all_merge_budget_loss": 0
+    },
+    "warm:Toys_and_Games": {
+      "novel_target_pairs": 2469,
+      "not_in_fit_catalog": 486,
+      "not_returned_by_any_source": 2419,
+      "returned_raw_but_lost_in_source_filter_or_budget": 8,
+      "union_rr_hits": 21,
+      "union_rr_merge_budget_loss": 21,
+      "union_all_hits": 42,
+      "union_all_merge_budget_loss": 0
+    },
+    "warm:Video_Games": {
+      "novel_target_pairs": 648,
+      "not_in_fit_catalog": 139,
+      "not_returned_by_any_source": 633,
+      "returned_raw_but_lost_in_source_filter_or_budget": 1,
+      "union_rr_hits": 6,
+      "union_rr_merge_budget_loss": 8,
+      "union_all_hits": 14,
+      "union_all_merge_budget_loss": 0
+    }
+  },
+  "query_availability": {
+    "cold_users": 5000,
+    "cold_with_query": 0,
+    "sparse_users": 5000,
+    "sparse_with_query": 5000,
+    "warm_users": 5000,
+    "warm_with_query": 5000
+  },
+  "users": 15000,
+  "fit_catalog_items": 577389
+}

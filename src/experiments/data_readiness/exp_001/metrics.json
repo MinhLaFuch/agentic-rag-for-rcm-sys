@@ -1,0 +1,73 @@
+{
+  "source_events": 4570962,
+  "source_users": 2766656,
+  "source_items": 137249,
+  "missing_required": 0,
+  "rating_policy": "all reviews binary interactions, unchanged",
+  "core": {
+    "convergence_checks": 13,
+    "train_unique_pairs": 673016,
+    "users": 77760,
+    "items": 19998,
+    "min_user_degree": 5,
+    "min_item_degree": 5,
+    "median_user_degree": 6.0,
+    "median_item_degree": 12.0,
+    "pair_identity_sha256": "78b694d0a39a75bed4c3da672f374bcdeb1c72090f36d79d5b1ddc2203c333bc"
+  },
+  "splits": {
+    "train": {
+      "original_events": 3694120,
+      "original_unique_pairs": 3680540,
+      "original_users": 2234952,
+      "original_items": 108777,
+      "timestamp_min": 911332729000,
+      "timestamp_max": 1617737531876,
+      "conditional_events": 680027,
+      "conditional_unique_pairs": 673016,
+      "conditional_users_with_target": 77760,
+      "conditional_items": 19998,
+      "events_outside_conditional": 3014093
+    },
+    "validation": {
+      "original_events": 448366,
+      "original_unique_pairs": 447743,
+      "original_users": 363607,
+      "original_items": 40460,
+      "timestamp_min": 1617737606549,
+      "timestamp_max": 1651701097048,
+      "conditional_events": 9127,
+      "conditional_unique_pairs": 9088,
+      "conditional_users_with_target": 5640,
+      "conditional_items": 3266,
+      "events_outside_conditional": 439239,
+      "novel_pairs_all_prefit_history": 447572,
+      "repeat_pairs": 171,
+      "conditional_novel_pairs": 9025,
+      "conditional_users_with_novel_target": 5622,
+      "full_cold_user_count": 282163,
+      "full_unseen_item_pairs": 99660,
+      "pairs_excluded_user_only": 219014,
+      "pairs_excluded_item_only": 11192,
+      "pairs_excluded_both": 208449
+    },
+    "test": {
+      "original_events": 428476,
+      "original_unique_pairs": 427569,
+      "original_users": 325231,
+      "original_items": 40542,
+      "timestamp_min": 1651701290837,
+      "timestamp_max": 1694509355529,
+      "conditional_events": 4113,
+      "conditional_unique_pairs": 4093,
+      "conditional_users_with_target": 2854,
+      "conditional_items": 1857,
+      "events_outside_conditional": 424363
+    }
+  },
+  "legacy_simulation_comparison": {
+    "expected_train_pairs": 673016,
+    "actual_matches_counts": true,
+    "scope": "count match only; pair identity not compared to old simulation which had no persisted ID set"
+  }
+}

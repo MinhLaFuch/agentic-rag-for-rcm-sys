@@ -55,6 +55,7 @@ def save_experiment(
     dataset_info: dict[str, Any],
     runtime_seconds: float,
     notes: str = "",
+    write_readme: bool = True,
 ) -> Path:
     """Save experiment results to directory with config, metrics, and README."""
     out = Path(output_dir)
@@ -75,6 +76,8 @@ def save_experiment(
         yaml.safe_dump({"run": record, "config": config}, f, sort_keys=False, allow_unicode=True)
     with open(out / "metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
+    if not write_readme:
+        return out
     with open(out / "README.md", "w", encoding="utf-8") as f:
         f.write(f"# {out.name}\n\n")
         f.write(f"- timestamp: {record['timestamp']}\n- seed: {seed}\n")

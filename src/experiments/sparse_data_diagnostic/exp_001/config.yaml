@@ -1,0 +1,56 @@
+run:
+  timestamp: '2026-10-27T02:20:58.951249+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: ed1e1f517a4009927efd14a9811ac9771770b34392ab1c852ae915d9aeeceba5
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 15.89
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+    user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+        sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+config:
+  source: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\sparse_content_eval\exp_003
+  source_hashes:
+    config.yaml: 2ac1c07d923aef335d1bd1d8df5272556744fb141cac33fcb5e4ab05c5ea99c3
+    metrics.json: ef03bb339102f78f6a37ab655fc7a89d85cb7fc74b6ab37771cca40d0d23b68b
+    records.jsonl: f0d1bc7b0455a26298ad2fd17755c5583906e193a2400cbc9f355d74732bd784
+    requests.jsonl: 154187a1e4bb07917fd0cb9c543608eccbcae4d889f568ceeade6d18bfdc09ef
+  train_sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+  diagnostic_corpus: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\corpus\corpus_multi_domain.sqlite
+  diagnostic_corpus_sha256: 892c4a23477e04ca4d8192ac3c0ce9b1dae0096ed178fff82bb09d8f9a7e6a88
+  selection: unchanged saved 5000 sparse requests, no core filtering, no target-based
+    query construction

@@ -1,0 +1,151 @@
+{
+  "source_experiment": "src\\experiments\\ranking_eval\\exp_009",
+  "scope": "supplemental fixed-pool coverage; eligible novel-target users only; no latency benchmark",
+  "catalog_size": 678281,
+  "rows": [
+    {
+      "merge": "union_rr",
+      "segment": "cold",
+      "policy": "baseline",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_rr",
+      "segment": "cold",
+      "policy": "popularity_first",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_rr",
+      "segment": "cold",
+      "policy": "rrf_60",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_all",
+      "segment": "cold",
+      "policy": "baseline",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_all",
+      "segment": "cold",
+      "policy": "popularity_first",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_all",
+      "segment": "cold",
+      "policy": "rrf_60",
+      "users": 5000,
+      "unique_top10": 10,
+      "catalog_coverage_at10": 1.47431521743938e-05
+    },
+    {
+      "merge": "union_rr",
+      "segment": "sparse",
+      "policy": "baseline",
+      "users": 4999,
+      "unique_top10": 39829,
+      "catalog_coverage_at10": 0.05872050079539306
+    },
+    {
+      "merge": "union_rr",
+      "segment": "sparse",
+      "policy": "popularity_first",
+      "users": 4999,
+      "unique_top10": 14,
+      "catalog_coverage_at10": 2.0640413044151317e-05
+    },
+    {
+      "merge": "union_rr",
+      "segment": "sparse",
+      "policy": "rrf_60",
+      "users": 4999,
+      "unique_top10": 24845,
+      "catalog_coverage_at10": 0.036629361577281395
+    },
+    {
+      "merge": "union_all",
+      "segment": "sparse",
+      "policy": "baseline",
+      "users": 4999,
+      "unique_top10": 39828,
+      "catalog_coverage_at10": 0.05871902648017562
+    },
+    {
+      "merge": "union_all",
+      "segment": "sparse",
+      "policy": "popularity_first",
+      "users": 4999,
+      "unique_top10": 14,
+      "catalog_coverage_at10": 2.0640413044151317e-05
+    },
+    {
+      "merge": "union_all",
+      "segment": "sparse",
+      "policy": "rrf_60",
+      "users": 4999,
+      "unique_top10": 24730,
+      "catalog_coverage_at10": 0.036459815327275866
+    },
+    {
+      "merge": "union_rr",
+      "segment": "warm",
+      "policy": "baseline",
+      "users": 4997,
+      "unique_top10": 39937,
+      "catalog_coverage_at10": 0.05887972683887651
+    },
+    {
+      "merge": "union_rr",
+      "segment": "warm",
+      "policy": "popularity_first",
+      "users": 4997,
+      "unique_top10": 15,
+      "catalog_coverage_at10": 2.2114728261590696e-05
+    },
+    {
+      "merge": "union_rr",
+      "segment": "warm",
+      "policy": "rrf_60",
+      "users": 4997,
+      "unique_top10": 24216,
+      "catalog_coverage_at10": 0.03570201730551202
+    },
+    {
+      "merge": "union_all",
+      "segment": "warm",
+      "policy": "baseline",
+      "users": 4997,
+      "unique_top10": 39727,
+      "catalog_coverage_at10": 0.05857012064321424
+    },
+    {
+      "merge": "union_all",
+      "segment": "warm",
+      "policy": "popularity_first",
+      "users": 4997,
+      "unique_top10": 15,
+      "catalog_coverage_at10": 2.2114728261590696e-05
+    },
+    {
+      "merge": "union_all",
+      "segment": "warm",
+      "policy": "rrf_60",
+      "users": 4997,
+      "unique_top10": 24031,
+      "catalog_coverage_at10": 0.035429268990285735
+    }
+  ]
+}

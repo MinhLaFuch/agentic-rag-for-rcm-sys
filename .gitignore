@@ -9,4 +9,14 @@ resource
 # Durable local evaluation checkpoints include models and full candidate payloads.
 /src/experiments/checkpoints/
 /src/experiments/ranking_eval/_checkpoints/
-src/src.zip
+
+# Policy-chain evaluations also contain full local candidate and response payloads.
+/src/experiments/policy_chain_eval/exp_*/candidate_lists.jsonl
+/src/experiments/policy_chain_eval/exp_*/policy_records.jsonl
+/src/experiments/sparse_seed_eval/exp_*/records.jsonl
+/src/experiments/sparse_seed_eval/exp_*/requests.jsonl
+/src/experiments/sparse_ranking_replay/exp_*/replays.jsonl
+/src/experiments/sparse_content_eval/exp_*/records.jsonl
+/src/experiments/sparse_content_eval/exp_*/requests.jsonl
+/src/experiments/sparse_content_replay/exp_*/replays.jsonl
+/src/experiments/sparse_guard_replay/exp_*/replays.jsonl

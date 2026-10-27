@@ -24,6 +24,7 @@ from package.tools.evaluation.metrics import ranking_metrics_at_k
 from package.tools.evaluation.stage_progress import StageProgress
 from package.tools.recommenders.file_hash import file_hash
 from package.tools.recommenders.mapping_hash import mapping_hash
+from package.tools.evaluation.candidate_policy_order import candidate_policy_order
 
 SOURCES = ("popularity", "item_cf", "semantic")
 POLICIES = ("baseline", "popularity_first", "semantic_first", "cf_first", "rrf_60")
@@ -39,17 +40,11 @@ def _score_rows(path, merge):
 
 def _replay_order(pool, sources, policy):
     """No target, user label or held-out metadata enters this ordering."""
+    if policy in ("rrf_60", "popularity_first"):
+        return candidate_policy_order(pool, sources, policy)
     allowed = set(pool)
-    if policy == "rrf_60":
-        scores = dict.fromkeys(pool, 0.)
-        for names in sources.values():
-            for rank, item in enumerate(dict.fromkeys(names), 1):
-                if item in allowed:
-                    scores[item] += 1. / (60. + rank)
-        return sorted(pool, key=lambda i: -scores[i])  # stable input-order ties
     priority = {"semantic_first": ("semantic", "item_cf", "popularity"),
-                "cf_first": ("item_cf", "semantic", "popularity"),
-                "popularity_first": ("popularity", "item_cf", "semantic")}[policy]
+                "cf_first": ("item_cf", "semantic", "popularity")}[policy]
     return list(dict.fromkeys([i for source in priority for i in sources[source] if i in allowed] + pool))
 
 

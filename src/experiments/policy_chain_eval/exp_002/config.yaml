@@ -1,0 +1,464 @@
+run:
+  timestamp: '2026-10-26T13:11:47.100718+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 09cb62bab4317bdda0075a1eaab62dc141afd0031ad0daa4053d6a8d5ff32f6b
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 271.11
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+    user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+        sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+config:
+  source: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_009
+  identity:
+    mode: fresh
+    seed: 42
+    per_segment: 100
+    bootstrap_samples: 10000
+    files:
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+      sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+      sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+      sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Video_Games.jsonl
+      sha256: 3ad94dfaa8dfed23c5f420aa9ddec415d00f2b8ec9f2d796f487b4b2c4d256de
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Toys_and_Games.jsonl
+      sha256: caca4bc34518426d45e2924d1042923d9d3cd89eb69f4daeb0b3a9c87e278a9a
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Electronics.jsonl
+      sha256: 5eb4dabd539586c49654297319ef178b62a2fe8e43108376feda125f04455d93
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\mapped\multi_domain\item2id.json
+      sha256: 3724b8fa3abffbd26a894fa3a6b9f1cce93cb85ffed7919d79577daedef4d7ce
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\mapped\multi_domain\user2id.json
+      sha256: 0209b4c085de29b04ba8e39706a68ea695d3c997e7247dcc1ce4ae1b1a64b752
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_006\config.yaml
+      sha256: f1d662073701cc2733e1b96942efdab4b2a49407844ce50fcbe8f9f3181f59a0
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_007\config.yaml
+      sha256: 114656d6f2c44375eb503e8697031387239d943e20e252472345539aafc8608d
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_008\config.yaml
+      sha256: ce9b7ff118b8740502c117e96b3cec02f29e0b81a37dfca1000e67ce4767c287
+    - path: src\experiments\ranking_eval\exp_009\candidate_lists.jsonl
+      sha256: faff7061299129bbb64ef13a1419362e852588eb1dc3da1e7794f5ba7d4dce05
+    - path: src\experiments\ranking_eval\exp_009\scored.jsonl
+      sha256: 6c97f361dbeb5143727c200ed595e72c0679e5091cbd9beeb8ed6bc206363414
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\ranking_eval\exp_009\config.yaml
+      sha256: 6516ba879fedd238bfab1c28331d326d178e7145e190b9706d307b32a42e5b58
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\checkpoints\ranking_disjoint_seed43\fit_item_knn.npz
+      sha256: 9562ad3f4e48b4ddf8db1ea9a74cd1add23a9e0a74d5015ca0f44dded7a5e140
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\checkpoints\ranking_disjoint_seed43\fit_item_knn.meta.json
+      sha256: e7997d25ee2c8aeb01aedc61a93ce783fe8de772d8599e1ee24dadc0fcde8c17
+    - path: D:\DACNTT\src\agentic-rag-for-rcm-sys\POLICY_EVALUATION_ACCEPTANCE.md
+      sha256: b17a945c56e0817bf798ae49d19f5b871688bc9344e4404c1a30d4ddfc217f9e
+    code: 09cb62bab4317bdda0075a1eaab62dc141afd0031ad0daa4053d6a8d5ff32f6b
+    environment:
+      numpy: 2.5.4
+      pandas: 3.0.6
+      scipy: 1.18.1
+      pyarrow: 18.1.0
+      PyYAML: 6.0.3
+      pytest: 9.1.1
+      torch: null
+      python: 3.12.2
+  policies:
+  - baseline
+  - popularity_first
+  - rrf_60
+  primary_merge: union_all
+  ks:
+  - 5
+  - 10
+  - 20
+  baseline_weight: 1.0e-06
+  rrf_offset: 60
+  sampled_user_ids:
+    cold:
+    - 529117
+    - 1462956
+    - 1680582
+    - 2705995
+    - 1898096
+    - 2745473
+    - 612199
+    - 741581
+    - 2474268
+    - 601472
+    - 830893
+    - 1489948
+    - 331752
+    - 826752
+    - 449084
+    - 1900298
+    - 885155
+    - 1328579
+    - 1037045
+    - 755849
+    - 444431
+    - 1236566
+    - 91772
+    - 576585
+    - 2013877
+    - 1799718
+    - 834873
+    - 1373820
+    - 2563720
+    - 50572
+    - 1497750
+    - 2197492
+    - 1241502
+    - 860604
+    - 1408424
+    - 1600633
+    - 468151
+    - 1196418
+    - 300917
+    - 470772
+    - 1453215
+    - 1463690
+    - 169813
+    - 301034
+    - 1786642
+    - 1303184
+    - 1501588
+    - 1962956
+    - 2180599
+    - 2747213
+    - 545079
+    - 2071562
+    - 1274740
+    - 851706
+    - 1088255
+    - 2234143
+    - 792948
+    - 2225388
+    - 997184
+    - 2132765
+    - 1620777
+    - 604672
+    - 602585
+    - 1362590
+    - 1639316
+    - 774223
+    - 1788297
+    - 2361510
+    - 1879896
+    - 1665755
+    - 2335026
+    - 2404215
+    - 211784
+    - 1041204
+    - 856380
+    - 1145016
+    - 1715261
+    - 207120
+    - 2257751
+    - 334288
+    - 749901
+    - 730479
+    - 973849
+    - 97815
+    - 838902
+    - 2039246
+    - 1895056
+    - 1101895
+    - 712693
+    - 1884661
+    - 2056728
+    - 1646258
+    - 276159
+    - 2534146
+    - 1720949
+    - 1041234
+    - 242096
+    - 2452337
+    - 568420
+    - 1898145
+    sparse:
+    - 254584
+    - 1078304
+    - 850198
+    - 285385
+    - 1336715
+    - 424516
+    - 2648115
+    - 685451
+    - 1529121
+    - 896285
+    - 20965
+    - 738372
+    - 1732066
+    - 2414504
+    - 759068
+    - 1318653
+    - 905215
+    - 1682136
+    - 1602521
+    - 1884756
+    - 950989
+    - 979974
+    - 1431018
+    - 1887501
+    - 2354854
+    - 2039055
+    - 1056145
+    - 755148
+    - 524387
+    - 1165742
+    - 1822720
+    - 1170050
+    - 875830
+    - 1717598
+    - 2559735
+    - 550924
+    - 1734265
+    - 926137
+    - 308652
+    - 766200
+    - 2576178
+    - 2204112
+    - 2475085
+    - 1646204
+    - 334917
+    - 1729478
+    - 2075267
+    - 2236716
+    - 1462169
+    - 1774784
+    - 953892
+    - 2696989
+    - 1667823
+    - 1302893
+    - 2504437
+    - 1853940
+    - 1941578
+    - 1089172
+    - 1428787
+    - 234517
+    - 2413364
+    - 793615
+    - 900631
+    - 1472474
+    - 324436
+    - 923152
+    - 1829674
+    - 2023508
+    - 126551
+    - 611995
+    - 2683818
+    - 351229
+    - 1937214
+    - 1392532
+    - 1321752
+    - 2110674
+    - 994779
+    - 1501234
+    - 591962
+    - 2284696
+    - 1199027
+    - 380465
+    - 2443129
+    - 633208
+    - 2146950
+    - 1745341
+    - 1179444
+    - 2736676
+    - 95345
+    - 649001
+    - 1376964
+    - 2710698
+    - 896653
+    - 1565413
+    - 1330771
+    - 1999205
+    - 2550448
+    - 2647827
+    - 155297
+    - 2510814
+    warm:
+    - 2335306
+    - 1008563
+    - 137841
+    - 35397
+    - 194654
+    - 2014868
+    - 1738421
+    - 248135
+    - 1254038
+    - 115084
+    - 2216646
+    - 1646468
+    - 627577
+    - 2724485
+    - 2233957
+    - 2383053
+    - 91069
+    - 336838
+    - 1109604
+    - 682174
+    - 2711923
+    - 1068871
+    - 2253439
+    - 2656772
+    - 8283
+    - 1851320
+    - 1280665
+    - 2288608
+    - 1560782
+    - 2599328
+    - 1622072
+    - 1685059
+    - 1675531
+    - 1889941
+    - 386805
+    - 1049949
+    - 423663
+    - 44485
+    - 1351540
+    - 926243
+    - 37401
+    - 564772
+    - 316967
+    - 1390513
+    - 1578071
+    - 374245
+    - 1797493
+    - 965691
+    - 351094
+    - 1884529
+    - 1548891
+    - 1818109
+    - 1965422
+    - 2663074
+    - 1264330
+    - 893566
+    - 1419798
+    - 66136
+    - 722015
+    - 2367924
+    - 2486167
+    - 1186225
+    - 1790173
+    - 2057537
+    - 2530101
+    - 2362665
+    - 835477
+    - 342724
+    - 288948
+    - 2486350
+    - 400256
+    - 69153
+    - 2026386
+    - 6229
+    - 378480
+    - 2604705
+    - 745666
+    - 739085
+    - 389693
+    - 579692
+    - 466632
+    - 1896868
+    - 167903
+    - 1259223
+    - 1091249
+    - 1599846
+    - 970631
+    - 1096176
+    - 749043
+    - 1202423
+    - 2402218
+    - 109163
+    - 2233878
+    - 1273749
+    - 1762651
+    - 2527462
+    - 969240
+    - 35933
+    - 636749
+    - 1954901
+  source_protocol:
+    version: 2
+    evaluation_kind: ranking
+    item_knn:
+      scope: dataset_bound
+      user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+      item_mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+      eval_on: validation
+      fit_splits:
+      - train
+      tag: multi_domain
+    fit_timestamp_max: 1617737606134
+    target_timestamp_min: 1617737606549
+    metadata_policy:
+      name: historical_static_catalog
+      version: 1
+      as_of_timestamp: 1617737606549
+      masked_fields:
+      - price
+      - average_rating
+      - rating_number
+      aggregate_observed_at: null
+      metadata_temporal_validity: unverified
+      catalog_assumption: static titles/taxonomy/store/full item vocabulary; availability
+        as-of unverified
+      historical_causal_claim: false
+      snapshot_mutable_fields_used: false
+    label_policy: all observed review user-item pairs are binary positives, independent
+      of stars
+    cohort_policy: existing pre-split filtered cohort; future-informed selection
+    history_size: unique fit items, consistent with binary CSR
+    segment_population_users:
+      warm: 613723
+      sparse: 438377
+      cold: 62319
+    segment_sample_users:
+      cold: 5000
+      sparse: 5000
+      warm: 5000
+    sampling: seeded per-segment cap; pooled sample average is not population-weighted
+    item_warm_definition: any user interacted in fit; distinct from same-user repeat
+    candidate_target_denominator: all unique target items per user; seen filtering
+      may make repeat targets unretrievable
+    ranking_target_denominator: novel target items per user; empty-ground-truth users
+      excluded
+    query_provenance: fit-history title proxy, not observed user query; target-metadata
+      queries must be oracle
+    query_normalization: ascii_fold
+  metadata_coverage: 1.0
+  warmup: first request per segment/session, all policies, excluded
+  fallback: none; failures recorded before quality aggregation
+  production_changed: false
+  sample_scope: development prefix of source cohort; not untouched qualification

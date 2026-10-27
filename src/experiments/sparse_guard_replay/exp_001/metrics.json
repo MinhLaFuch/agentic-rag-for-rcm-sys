@@ -1,0 +1,500 @@
+{
+  "overall": {
+    "variants": {
+      "cf_1": {
+        "users": 5000,
+        "eligible_users": 4999,
+        "metrics": {
+          "precision@10": 0.000520104020804161,
+          "recall@10": 0.002261221475064244,
+          "hit_rate@10": 0.004600920184036807,
+          "ndcg@10": 0.001311619541579276,
+          "mrr@10": 0.001466404391989509,
+          "map@10": 0.000704498042465636
+        },
+        "catalog_coverage_at10": 0.05297656870824924
+      },
+      "saved_rrf": {
+        "users": 5000,
+        "eligible_users": 4999,
+        "metrics": {
+          "precision@10": 0.0007401480296059216,
+          "recall@10": 0.003411451521073445,
+          "hit_rate@10": 0.007001400280056011,
+          "ndcg@10": 0.0019212555859968463,
+          "mrr@10": 0.002181706182506342,
+          "map@10": 0.0009951395040912945
+        },
+        "catalog_coverage_at10": 0.05712234309968877
+      },
+      "baseline_top5_guard": {
+        "users": 5000,
+        "eligible_users": 4999,
+        "metrics": {
+          "precision@10": 0.0007801560312062416,
+          "recall@10": 0.0036448315304086457,
+          "hit_rate@10": 0.0072014402880576115,
+          "ndcg@10": 0.0018500265614230839,
+          "mrr@10": 0.0018517989312148147,
+          "map@10": 0.0008972350025560667
+        },
+        "catalog_coverage_at10": 0.057095805425774866
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 23,
+      "guard_hit_users": 36,
+      "lost_hit_users": 7,
+      "gained_hit_users": 20,
+      "lost_target_pairs": 8,
+      "gained_target_pairs": 21
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0005384070198438073,
+        "familywise95_ci": [
+          3.284918128854018e-05,
+          0.0010619192107277186
+        ],
+        "improved": 21,
+        "worse": 9
+      },
+      "saved_rrf": {
+        "mean_delta": -7.122902457376192e-05,
+        "familywise95_ci": [
+          -0.0004216316633205544,
+          0.00031869226361938747
+        ],
+        "improved": 12,
+        "worse": 21
+      }
+    }
+  },
+  "history:3": {
+    "variants": {
+      "cf_1": {
+        "users": 1429,
+        "eligible_users": 1428,
+        "metrics": {
+          "precision@10": 0.0005602240896358543,
+          "recall@10": 0.003326330532212885,
+          "hit_rate@10": 0.0056022408963585435,
+          "ndcg@10": 0.0017719836967458864,
+          "mrr@10": 0.0015717398070339247,
+          "map@10": 0.0010192966075319018
+        },
+        "catalog_coverage_at10": 0.017884917902757116
+      },
+      "saved_rrf": {
+        "users": 1429,
+        "eligible_users": 1428,
+        "metrics": {
+          "precision@10": 0.0008403361344537815,
+          "recall@10": 0.00507703081232493,
+          "hit_rate@10": 0.008403361344537815,
+          "ndcg@10": 0.0026089408733239784,
+          "mrr@10": 0.002260348583877996,
+          "map@10": 0.001433629007158419
+        },
+        "catalog_coverage_at10": 0.018632395717998882
+      },
+      "baseline_top5_guard": {
+        "users": 1429,
+        "eligible_users": 1428,
+        "metrics": {
+          "precision@10": 0.0008403361344537815,
+          "recall@10": 0.00507703081232493,
+          "hit_rate@10": 0.008403361344537815,
+          "ndcg@10": 0.0024570012644708045,
+          "mrr@10": 0.001998299319727891,
+          "map@10": 0.0012909330398826197
+        },
+        "catalog_coverage_at10": 0.018620601196259367
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 8,
+      "guard_hit_users": 12,
+      "lost_hit_users": 2,
+      "gained_hit_users": 6,
+      "lost_target_pairs": 2,
+      "gained_target_pairs": 6
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0006850175677249182,
+        "familywise95_ci": [
+          -0.0002470335966964825,
+          0.0017496838011358377
+        ],
+        "improved": 6,
+        "worse": 3
+      },
+      "saved_rrf": {
+        "mean_delta": -0.00015193960885317341,
+        "familywise95_ci": [
+          -0.0009382809810622399,
+          0.000582108688636333
+        ],
+        "improved": 5,
+        "worse": 6
+      }
+    }
+  },
+  "inspected_pilot": {
+    "variants": {
+      "cf_1": {
+        "users": 100,
+        "eligible_users": 100,
+        "metrics": {
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "catalog_coverage_at10": 0.001452200489177789
+      },
+      "saved_rrf": {
+        "users": 100,
+        "eligible_users": 100,
+        "metrics": {
+          "precision@10": 0.001,
+          "recall@10": 0.0025,
+          "hit_rate@10": 0.01,
+          "ndcg@10": 0.0016812753627111746,
+          "mrr@10": 0.0025,
+          "map@10": 0.000625
+        },
+        "catalog_coverage_at10": 0.0014625206956998648
+      },
+      "baseline_top5_guard": {
+        "users": 100,
+        "eligible_users": 100,
+        "metrics": {
+          "precision@10": 0.001,
+          "recall@10": 0.0025,
+          "hit_rate@10": 0.01,
+          "ndcg@10": 0.0013012668333070054,
+          "mrr@10": 0.0014285714285714286,
+          "map@10": 0.00035714285714285714
+        },
+        "catalog_coverage_at10": 0.001459572065264986
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 0,
+      "guard_hit_users": 1,
+      "lost_hit_users": 0,
+      "gained_hit_users": 1,
+      "lost_target_pairs": 0,
+      "gained_target_pairs": 1
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0013012668333070054,
+        "familywise95_ci": [
+          0.0,
+          0.005205067333228021
+        ],
+        "improved": 1,
+        "worse": 0
+      },
+      "saved_rrf": {
+        "mean_delta": -0.00038000852940416914,
+        "familywise95_ci": [
+          -0.0015200341176166766,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 1
+      }
+    }
+  },
+  "history:2": {
+    "variants": {
+      "cf_1": {
+        "users": 907,
+        "eligible_users": 907,
+        "metrics": {
+          "precision@10": 0.00033076074972436607,
+          "recall@10": 0.0009187798603454611,
+          "hit_rate@10": 0.002205071664829107,
+          "ndcg@10": 0.00044377702434818397,
+          "mrr@10": 0.0003430111478623055,
+          "map@10": 0.00015050489140897082
+        },
+        "catalog_coverage_at10": 0.011797470369949917
+      },
+      "saved_rrf": {
+        "users": 907,
+        "eligible_users": 907,
+        "metrics": {
+          "precision@10": 0.0005512679162072767,
+          "recall@10": 0.0018743109151047408,
+          "hit_rate@10": 0.005512679162072767,
+          "ndcg@10": 0.001309915425243778,
+          "mrr@10": 0.0019753766997427417,
+          "map@10": 0.0006569276001470048
+        },
+        "catalog_coverage_at10": 0.012167523489527201
+      },
+      "baseline_top5_guard": {
+        "users": 907,
+        "eligible_users": 907,
+        "metrics": {
+          "precision@10": 0.000661521499448732,
+          "recall@10": 0.002058066887173833,
+          "hit_rate@10": 0.005512679162072767,
+          "ndcg@10": 0.0009944746070492535,
+          "mrr@10": 0.0008483400710523093,
+          "map@10": 0.00033994854832782067
+        },
+        "catalog_coverage_at10": 0.012157203283005126
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 2,
+      "guard_hit_users": 5,
+      "lost_hit_users": 1,
+      "gained_hit_users": 4,
+      "lost_target_pairs": 1,
+      "gained_target_pairs": 4
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0005506975827010694,
+        "familywise95_ci": [
+          -0.00038130691964666566,
+          0.001572627235484
+        ],
+        "improved": 5,
+        "worse": 1
+      },
+      "saved_rrf": {
+        "mean_delta": -0.0003154408181945245,
+        "familywise95_ci": [
+          -0.0009595362192686736,
+          6.777386344771062e-05
+        ],
+        "improved": 1,
+        "worse": 4
+      }
+    }
+  },
+  "history:1": {
+    "variants": {
+      "cf_1": {
+        "users": 683,
+        "eligible_users": 683,
+        "metrics": {
+          "precision@10": 0.001171303074670571,
+          "recall@10": 0.0036659533731276043,
+          "hit_rate@10": 0.008784773060029283,
+          "ndcg@10": 0.0021250353778236018,
+          "mrr@10": 0.002977061981454368,
+          "map@10": 0.0009150805270863836
+        },
+        "catalog_coverage_at10": 0.00915107455464623
+      },
+      "saved_rrf": {
+        "users": 683,
+        "eligible_users": 683,
+        "metrics": {
+          "precision@10": 0.0014641288433382138,
+          "recall@10": 0.004105192026129068,
+          "hit_rate@10": 0.01171303074670571,
+          "ndcg@10": 0.0025544744435792082,
+          "mrr@10": 0.0037736177926514674,
+          "map@10": 0.0010776162588022032
+        },
+        "catalog_coverage_at10": 0.009339786902478471
+      },
+      "baseline_top5_guard": {
+        "users": 683,
+        "eligible_users": 683,
+        "metrics": {
+          "precision@10": 0.0014641288433382138,
+          "recall@10": 0.004105192026129068,
+          "hit_rate@10": 0.01171303074670571,
+          "ndcg@10": 0.002367276770191329,
+          "mrr@10": 0.003411652606381743,
+          "map@10": 0.0009139185200678612
+        },
+        "catalog_coverage_at10": 0.009332415326391275
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 6,
+      "guard_hit_users": 8,
+      "lost_hit_users": 3,
+      "gained_hit_users": 5,
+      "lost_target_pairs": 4,
+      "gained_target_pairs": 6
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0002422413923677277,
+        "familywise95_ci": [
+          -0.0018412439203660863,
+          0.0022733517623101307
+        ],
+        "improved": 5,
+        "worse": 4
+      },
+      "saved_rrf": {
+        "mean_delta": -0.00018719767338787942,
+        "familywise95_ci": [
+          -0.0007119002517668698,
+          0.00025891501423979925
+        ],
+        "improved": 2,
+        "worse": 5
+      }
+    }
+  },
+  "history:4": {
+    "variants": {
+      "cf_1": {
+        "users": 1981,
+        "eligible_users": 1981,
+        "metrics": {
+          "precision@10": 0.00035335689045936394,
+          "recall@10": 0.001623759044253744,
+          "hit_rate@10": 0.0035335689045936395,
+          "ndcg@10": 0.0010966625165392996,
+          "mrr@10": 0.0013839811542991755,
+          "map@10": 0.0006586179819395366
+        },
+        "catalog_coverage_at10": 0.024240690805138285
+      },
+      "saved_rrf": {
+        "users": 1981,
+        "eligible_users": 1981,
+        "metrics": {
+          "precision@10": 0.0005047955577990914,
+          "recall@10": 0.002675416456335185,
+          "hit_rate@10": 0.005047955577990914,
+          "ndcg@10": 0.001487122550040829,
+          "mrr@10": 0.0016706329174779452,
+          "map@10": 0.0008054694198056137
+        },
+        "catalog_coverage_at10": 0.025386233729088683
+      },
+      "baseline_top5_guard": {
+        "users": 1981,
+        "eligible_users": 1981,
+        "metrics": {
+          "precision@10": 0.0005552751135790004,
+          "recall@10": 0.003180212014134276,
+          "hit_rate@10": 0.005552751135790005,
+          "ndcg@10": 0.0016258689915473671,
+          "mrr@10": 0.0016678284977123946,
+          "map@10": 0.0008628398355808756
+        },
+        "catalog_coverage_at10": 0.02536411900082709
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 7,
+      "guard_hit_users": 11,
+      "lost_hit_users": 1,
+      "gained_hit_users": 5,
+      "lost_target_pairs": 1,
+      "gained_target_pairs": 5
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0005292064750080674,
+        "familywise95_ci": [
+          -9.764078930705241e-05,
+          0.00131741541515298
+        ],
+        "improved": 5,
+        "worse": 1
+      },
+      "saved_rrf": {
+        "mean_delta": 0.00013874644150653766,
+        "familywise95_ci": [
+          -0.0005158635512683688,
+          0.0009239538443620082
+        ],
+        "improved": 4,
+        "worse": 6
+      }
+    }
+  },
+  "remaining_development": {
+    "variants": {
+      "cf_1": {
+        "users": 4900,
+        "eligible_users": 4899,
+        "metrics": {
+          "precision@10": 0.0005307205552153503,
+          "recall@10": 0.0023073782718608196,
+          "hit_rate@10": 0.004694835680751174,
+          "ndcg@10": 0.001338392751246132,
+          "mrr@10": 0.0014963371209543897,
+          "map@10": 0.0007188784883212317
+        },
+        "catalog_coverage_at10": 0.05214505492561342
+      },
+      "saved_rrf": {
+        "users": 4900,
+        "eligible_users": 4899,
+        "metrics": {
+          "precision@10": 0.0007348438456827928,
+          "recall@10": 0.0034300563694317516,
+          "hit_rate@10": 0.00694019187589304,
+          "ndcg@10": 0.0019261541412792643,
+          "mrr@10": 0.002175209064370117,
+          "map@10": 0.0010026949134420047
+        },
+        "catalog_coverage_at10": 0.05615224368661366
+      },
+      "baseline_top5_guard": {
+        "users": 4900,
+        "eligible_users": 4899,
+        "metrics": {
+          "precision@10": 0.0007756685037762813,
+          "recall@10": 0.003668200208310435,
+          "hit_rate@10": 0.007144315166360482,
+          "ndcg@10": 0.0018612280255609908,
+          "mrr@10": 0.0018604379902604033,
+          "map@10": 0.0009082595411438032
+        },
+        "catalog_coverage_at10": 0.05612865464313463
+      }
+    },
+    "hit_regressions": {
+      "baseline_hit_users": 23,
+      "guard_hit_users": 35,
+      "lost_hit_users": 7,
+      "gained_hit_users": 19,
+      "lost_target_pairs": 8,
+      "gained_target_pairs": 20
+    },
+    "paired_ndcg10": {
+      "cf_1": {
+        "mean_delta": 0.0005228352743148585,
+        "familywise95_ci": [
+          2.1131701075498932e-05,
+          0.001062930445141334
+        ],
+        "improved": 20,
+        "worse": 9
+      },
+      "saved_rrf": {
+        "mean_delta": -6.492611571827292e-05,
+        "familywise95_ci": [
+          -0.00043409270773218917,
+          0.0003312079262672506
+        ],
+        "improved": 12,
+        "worse": 20
+      }
+    }
+  },
+  "qualification": "exploratory inspected validation; no production selection, no serving latency claim; source error retained"
+}

@@ -26,9 +26,18 @@ def _extract_items_from_results(
     """Trích xuất DemoItem từ kết quả PlanExecutor."""
     limits = get_demo_limits()
     rec_ids = extract_recommendations(results, k=limits.max_items_display)
+    metadata = {key: dict(value) for key, value in item_id_to_metadata.items() if key in rec_ids}
+    for result in results:
+        if not result.get("ok"):
+            continue
+        data = result.get("data") or {}
+        for field in ("candidates", "ranked", "items"):
+            for row in data.get(field, []):
+                if isinstance(row, dict) and row.get("item_id") in rec_ids:
+                    metadata.setdefault(row["item_id"], {}).update(row)
     items = []
     for item_id in rec_ids:
-        meta = item_id_to_metadata.get(item_id, {})
+        meta = metadata.get(item_id, {})
         items.append(
             DemoItem(
                 item_id=item_id,

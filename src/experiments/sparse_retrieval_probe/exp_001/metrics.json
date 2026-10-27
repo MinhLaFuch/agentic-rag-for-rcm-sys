@@ -1,0 +1,618 @@
+{
+  "counts": {
+    "cf:no_train_cooccurrence": 27,
+    "bm25:no_lexical_match": 22,
+    "cf:truncated_below_cutoff": 5,
+    "bm25:outside_top25": 10
+  },
+  "details": [
+    {
+      "user_idx": 692709,
+      "seed_item": "Video_Games::B00UMRFI8U",
+      "target_item": "Toys_and_Games::B07CLXSHB8",
+      "history_unique_items": 4,
+      "train_seed_users": 141,
+      "train_target_users": 441,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.03766217827796936,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Mad Catz Street Fighter V Arcade FightStick TE2+ for PlayStation4 and PlayStation3",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.016638000000057218
+    },
+    {
+      "user_idx": 179938,
+      "seed_item": "Electronics::B077BB9QZW",
+      "target_item": "Electronics::B076HFYGLR",
+      "history_unique_items": 4,
+      "train_seed_users": 952,
+      "train_target_users": 365,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.02291746251285076,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Ethernet Cable - 6ft x5 - Internet, Patch & Network Cable with Break-Proof Design for Maximum US Internet speeds (Ideal for Gaming/Networks/LANs/Router/Modem/Switch, Blue RJ45 Plug) by CableDirect",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.9878977999997005
+    },
+    {
+      "user_idx": 1369785,
+      "seed_item": "Electronics::B081TZ8TBM",
+      "target_item": "Electronics::B0C4T9BHWX",
+      "history_unique_items": 4,
+      "train_seed_users": 17,
+      "train_target_users": 311,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.060633908957242966,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "BA-BOLING Stubby Antenna for Chevy Silverado GMC Sierra 2007-2022 (M7 Thread) 7 Inch Copper Core Fit OEM 22876544 22876545 22936386 (NO Screws)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.3261549999997442
+    },
+    {
+      "user_idx": 1247788,
+      "seed_item": "Electronics::B0B65J97JZ",
+      "target_item": "Toys_and_Games::B08WYX7HQP",
+      "history_unique_items": 3,
+      "train_seed_users": 44,
+      "train_target_users": 0,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.05698028951883316,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Kingsons Laptop Sling Backpack Anti Theft Bag, Hiking Daypack 13 Inch Waterproof Nylon Travel Bags for Men, Single Shoulder Camping Dayback with USB Charging Port for Traveling",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.6148872000003394
+    },
+    {
+      "user_idx": 1165143,
+      "seed_item": "Toys_and_Games::B09ZKXZPCX",
+      "target_item": "Toys_and_Games::B0BMNFLMQJ",
+      "history_unique_items": 2,
+      "train_seed_users": 987,
+      "train_target_users": 153,
+      "cooccurrence_users": 1,
+      "cache_cutoff": 0.022507457062602043,
+      "cf": {
+        "reason": "truncated_below_cutoff",
+        "cosine": 0.0025733313343703295
+      },
+      "query": "Fat Brain Toys Dimpl Duo Baby Toys & Gifts for Ages 1 to 2, includes one plastic board, 6 silicone buttons",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 13593,
+      "bm25_score": 7.55192236054408,
+      "rank_probe_seconds": 0.7003187000000253
+    },
+    {
+      "user_idx": 843369,
+      "seed_item": "Video_Games::B097R6VM1F",
+      "target_item": "Electronics::B08C4K4SMW",
+      "history_unique_items": 2,
+      "train_seed_users": 104,
+      "train_target_users": 265,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.043852899223566055,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Redragon K512 Shiva RGB Backlit Membrane Gaming Keyboard with Multimedia Keys, Linear Mechanical-Feel Switch, 6 Extra On-Board Macro Keys, Dedicated Media Control, Detachable Wrist Rest, White",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.834273999999823
+    },
+    {
+      "user_idx": 645173,
+      "seed_item": "Video_Games::B01CJFGUZW",
+      "target_item": "Electronics::B07MTCMHZX",
+      "history_unique_items": 2,
+      "train_seed_users": 449,
+      "train_target_users": 566,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.02724684216082096,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Cooler Master Devastator II - Blue LED Gaming Keyboard & Mouse Combo Bundle (SGB-3030-KKMF1-US)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.8217113999999128
+    },
+    {
+      "user_idx": 2489109,
+      "seed_item": "Electronics::B07D4F2P26",
+      "target_item": "Electronics::B016NUTG5K",
+      "history_unique_items": 4,
+      "train_seed_users": 609,
+      "train_target_users": 2778,
+      "cooccurrence_users": 1,
+      "cache_cutoff": 0.020261023193597794,
+      "cf": {
+        "reason": "truncated_below_cutoff",
+        "cosine": 0.0007688209922138332
+      },
+      "query": "Toshiba 43LF621U19 43-inch Smart 4K UHD TV - Fire TV",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 37759,
+      "bm25_score": 3.3623685781189567,
+      "rank_probe_seconds": 0.1857866999998805
+    },
+    {
+      "user_idx": 543060,
+      "seed_item": "Electronics::B0B3D813DL",
+      "target_item": "Electronics::B07CP27NVG",
+      "history_unique_items": 2,
+      "train_seed_users": 72,
+      "train_target_users": 18,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.048112522810697556,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Hisense 32-Inch 32H5500F Class H55 Series Android Smart TV with Voice Remote (2020 Model)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.3268600000001243
+    },
+    {
+      "user_idx": 2679294,
+      "seed_item": "Electronics::B0026NTV86",
+      "target_item": "Electronics::B0856W45VL",
+      "history_unique_items": 4,
+      "train_seed_users": 8,
+      "train_target_users": 254,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.0980580672621727,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "BJC Series-FE Bonded-Pair High-Speed HDMI Cable with Ethernet, 5 Foot, Black",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.39081700000042474
+    },
+    {
+      "user_idx": 1955432,
+      "seed_item": "Electronics::B00QOOZ4DE",
+      "target_item": "Electronics::B09G3MBH6V",
+      "history_unique_items": 4,
+      "train_seed_users": 2068,
+      "train_target_users": 4707,
+      "cooccurrence_users": 10,
+      "cache_cutoff": 0.015549259260296822,
+      "cf": {
+        "reason": "truncated_below_cutoff",
+        "cosine": 0.003205181546241284
+      },
+      "query": "Mounting Dream TV Wall Mount Swivel and Tilt for Most 26-55 Inch TV, TV Mount Perfect Center Design, Full Motion TV Mount Bracket with Articulation, up to VESA 400x400mm, 60 lbs, MD2377",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 77145,
+      "bm25_score": 3.6670006820749483,
+      "rank_probe_seconds": 0.4792344999996203
+    },
+    {
+      "user_idx": 225421,
+      "seed_item": "Video_Games::B0BN942894",
+      "target_item": "Electronics::B01K8B8YA8",
+      "history_unique_items": 1,
+      "train_seed_users": 3375,
+      "train_target_users": 48861,
+      "cooccurrence_users": 86,
+      "cache_cutoff": 0.014054566621780396,
+      "cf": {
+        "reason": "truncated_below_cutoff",
+        "cosine": 0.006697001359716032
+      },
+      "query": "BENGOO Stereo Pro Gaming Headset for PS4, PC, Xbox One Controller, Noise Cancelling Over Ear Headphones with Mic, LED Light, Bass Surround, Soft Memory Earmuffs for Laptop Mac Wii Accessory Kits",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 1.0887597000000824
+    },
+    {
+      "user_idx": 218432,
+      "seed_item": "Toys_and_Games::B07XZ1P4FX",
+      "target_item": "Electronics::B09FK3QHX1",
+      "history_unique_items": 4,
+      "train_seed_users": 22,
+      "train_target_users": 0,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.08703882247209549,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Funko Mystery Minis: AD Icons",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.14182940000046074
+    },
+    {
+      "user_idx": 589759,
+      "seed_item": "Electronics::B07KJZPPLR",
+      "target_item": "Toys_and_Games::B09QT3FH5H",
+      "history_unique_items": 2,
+      "train_seed_users": 614,
+      "train_target_users": 0,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.023299960419535637,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "HDIIAOZ Phone Charger Founus Fast Charging Cable 6FT 3 Pack Nylon Braided High Speed Charging Cord Compatible with iPhone Xs X 8 8 Plus 7 7 Plus 6s 6s Plus 6 6 Plus iPad iPod Nano-(Blue,Orange,Green)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.6380173999996259
+    },
+    {
+      "user_idx": 1154684,
+      "seed_item": "Toys_and_Games::B07MJC134L",
+      "target_item": "Toys_and_Games::B09V13ZYSG",
+      "history_unique_items": 4,
+      "train_seed_users": 15,
+      "train_target_users": 0,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.06454972177743912,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Unifix Cubes, Ten Assorted Colors, Set of 500",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.20544019999942975
+    },
+    {
+      "user_idx": 1199561,
+      "seed_item": "Toys_and_Games::B081C6MRXG",
+      "target_item": "Electronics::B08F6GPRH6",
+      "history_unique_items": 3,
+      "train_seed_users": 25,
+      "train_target_users": 1489,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.057735029608011246,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Tomat Mavic Mini 2 SE Carrying Case, Portable Travel Bag for DJI Mini 2/Mini 2 SE Fly More Combo Drone Accessories",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 97485,
+      "bm25_score": 3.443464128082859,
+      "rank_probe_seconds": 1.0862787999994907
+    },
+    {
+      "user_idx": 2321807,
+      "seed_item": "Electronics::B07MLY3JKV",
+      "target_item": "Electronics::B0BXK1FY57",
+      "history_unique_items": 4,
+      "train_seed_users": 4919,
+      "train_target_users": 4,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.019721122458577156,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Echo Flex - Plug-in mini smart speaker with Alexa",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.22953439999946568
+    },
+    {
+      "user_idx": 2726448,
+      "seed_item": "Electronics::B077W8X98W",
+      "target_item": "Electronics::B08THP2YNS",
+      "history_unique_items": 1,
+      "train_seed_users": 19,
+      "train_target_users": 2,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.06917144358158112,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "New XRT500 LED TV Remote Replacement with Keyboard fit for VIZIO TV M422I-B1 M492I-B2 M502I-B1 M552I-B2 M602I-B3 M652I-B2 M702I-B3 P502UI-B1 P502UI-B1E P552UI-B2 P602UI-B3 P702UI-B3 (Bk: 500-1)",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 73,
+      "bm25_score": 21.61284152452913,
+      "rank_probe_seconds": 0.37035000000014406
+    },
+    {
+      "user_idx": 190256,
+      "seed_item": "Video_Games::B07HVPZP1Q",
+      "target_item": "Electronics::B09JKFM15D",
+      "history_unique_items": 4,
+      "train_seed_users": 809,
+      "train_target_users": 57,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.020298555493354797,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "PORTHOLIC Wii to HDMI Converter 1080P for Full HD Device, Wii HDMI Adapter with 3,5mm Audio Jack&HDMI Output Compatible with Nintendo Wii, Wii U, HDTV, Monitor-Supports All Wii Display Modes 720P, NTS",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.8098030999999537
+    },
+    {
+      "user_idx": 2547421,
+      "seed_item": "Electronics::B07VXXBTX4",
+      "target_item": "Electronics::B083JFTZMN",
+      "history_unique_items": 3,
+      "train_seed_users": 9555,
+      "train_target_users": 2023,
+      "cooccurrence_users": 9,
+      "cache_cutoff": 0.02702115662395954,
+      "cf": {
+        "reason": "truncated_below_cutoff",
+        "cosine": 0.002047053637666765
+      },
+      "query": "Echo Show 8 (1st Gen, 2019 release) -- HD smart display with Alexa - stay connected with video calling - Sandstone",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 2995,
+      "bm25_score": 10.264955514920082,
+      "rank_probe_seconds": 0.5126209999998537
+    },
+    {
+      "user_idx": 1084505,
+      "seed_item": "Electronics::B09W4DTMQX",
+      "target_item": "Electronics::B09Q3NR84W",
+      "history_unique_items": 1,
+      "train_seed_users": 424,
+      "train_target_users": 943,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.02803860791027546,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "LED Bluetooth Mouse for Laptop iPad MacBook pro Wireless Mouse for Laptop MacBook Air Mac Chromebook",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.4436377000001812
+    },
+    {
+      "user_idx": 2488183,
+      "seed_item": "Electronics::B01MYWS7LO",
+      "target_item": "Electronics::B0BMF477PV",
+      "history_unique_items": 3,
+      "train_seed_users": 15,
+      "train_target_users": 480,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.07453560084104538,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Seagate BarraCuda Pro Performance Internal Hard Drive SATA HDD 2TB 6GB/s 128MB Cache 3.5-Inch (ST2000DM009)",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 36923,
+      "bm25_score": 4.000991545810175,
+      "rank_probe_seconds": 0.28272000000015396
+    },
+    {
+      "user_idx": 1943418,
+      "seed_item": "Toys_and_Games::B00LNI6KXY",
+      "target_item": "Toys_and_Games::B081PX4QNZ",
+      "history_unique_items": 4,
+      "train_seed_users": 5,
+      "train_target_users": 261,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.18257418274879456,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Gator Skin 8 inch Glowround Ball",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 39761,
+      "bm25_score": 2.2679225996980676,
+      "rank_probe_seconds": 0.25185810000039055
+    },
+    {
+      "user_idx": 1159029,
+      "seed_item": "Electronics::B01M2ZOEDN",
+      "target_item": "Toys_and_Games::B07C4NGT17",
+      "history_unique_items": 4,
+      "train_seed_users": 78,
+      "train_target_users": 3107,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.0427960529923439,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "bayite Leather Bands Compatible with Fitbit Alta and Alta HR, Suede Grey 5.5\" - 8.1\"",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.22500490000038553
+    },
+    {
+      "user_idx": 2077071,
+      "seed_item": "Electronics::B08CMTWF5M",
+      "target_item": "Electronics::B0C8B49RM1",
+      "history_unique_items": 4,
+      "train_seed_users": 2,
+      "train_target_users": 17,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.02106313779950142,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "GVIEWIN Aurora Series AirPods Pro Case, Stylish Marble Full Body Protective Hard Shell Women Cute Cover with Wrist Strap for AirPod Pro Charging Case 2019 [Front LED Visible] (Green/Gold)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.5278954999994312
+    },
+    {
+      "user_idx": 2672711,
+      "seed_item": "Electronics::B000PC62O6",
+      "target_item": "Electronics::B07S4KJV6W",
+      "history_unique_items": 3,
+      "train_seed_users": 94,
+      "train_target_users": 1305,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.04210759326815605,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "MicroSD 2 GB Memory Card and SD Adapter - Cell Phone Memory Card",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.3768086999998559
+    },
+    {
+      "user_idx": 1385165,
+      "seed_item": "Electronics::B07L4B5DCT",
+      "target_item": "Toys_and_Games::B08X2PZLNS",
+      "history_unique_items": 2,
+      "train_seed_users": 698,
+      "train_target_users": 133,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.026764387264847755,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Rankie USB 3.0 Cable, Type A to Type A, 1-Pack 15ft",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.28977800000029674
+    },
+    {
+      "user_idx": 55714,
+      "seed_item": "Video_Games::B07QVKZVW4",
+      "target_item": "Electronics::B08G4WM2CR",
+      "history_unique_items": 2,
+      "train_seed_users": 84,
+      "train_target_users": 11,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.048795003443956375,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "SENICC 2 Pack Gaming Headset with Microphone for PS4 Xbox One, Over Ear 3.5mm PC Headphone with Lightweight Design Noise Cancelling Volume Control for Laptop, Mac, iPad, Tablet",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 68869,
+      "bm25_score": 5.381514015404285,
+      "rank_probe_seconds": 1.1511692000003677
+    },
+    {
+      "user_idx": 932382,
+      "seed_item": "Toys_and_Games::B07SS52JFK",
+      "target_item": "Toys_and_Games::B08TW7XGYK",
+      "history_unique_items": 1,
+      "train_seed_users": 59,
+      "train_target_users": 0,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.053149398416280746,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "400 Premium Ultra Clear, Perfect for Double sleeving, fits Standard Size Trading Cards Magic The Gathering, Pokemon, Dragon Ball Super by Pro Support",
+      "bm25_reason": "outside_top25",
+      "bm25_rank": 1855,
+      "bm25_score": 18.333585536793926,
+      "rank_probe_seconds": 0.5749912000001132
+    },
+    {
+      "user_idx": 1960498,
+      "seed_item": "Toys_and_Games::B01MS9I8MF",
+      "target_item": "Electronics::B08CVPTK8L",
+      "history_unique_items": 2,
+      "train_seed_users": 26,
+      "train_target_users": 154,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.0800640732049942,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Giant Inflatable Flamingo Pool Float, Swim Raft Floatie Lounger - Over 6' Huge! Captain Floaty",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.04463489999943704
+    },
+    {
+      "user_idx": 1644565,
+      "seed_item": "Electronics::B07DP87MXF",
+      "target_item": "Electronics::B07JB4BTVF",
+      "history_unique_items": 4,
+      "train_seed_users": 126,
+      "train_target_users": 31,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.039840955287218094,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "Timetec Hynix IC 4GB DDR3 1333MHz PC3-10600 Non ECC Unbuffered 1.5V CL9 1Rx8 Single Rank 204 Pin SODIMM Laptop Notebook Computer Memory Ram Module Upgrade(High Density 4GB)",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.5775245999993786
+    },
+    {
+      "user_idx": 1384806,
+      "seed_item": "Electronics::B000VRREPG",
+      "target_item": "Electronics::B00VV6X1UI",
+      "history_unique_items": 4,
+      "train_seed_users": 1061,
+      "train_target_users": 43,
+      "cooccurrence_users": 0,
+      "cache_cutoff": 0.021708374843001366,
+      "cf": {
+        "reason": "no_train_cooccurrence",
+        "cosine": 0.0
+      },
+      "query": "VideoSecu 2 Heavy Duty PA DJ Club Adjustable Height Satellite Speaker Stand Mount - Extends 26.5\" to 47\" (i.e. Bose, Harmon Kardon, JBL, KEF, Klipsch, Sony, Yamaha, Pioneer and Others) 1B7",
+      "bm25_reason": "no_lexical_match",
+      "bm25_rank": null,
+      "bm25_score": null,
+      "rank_probe_seconds": 0.315399800000705
+    }
+  ]
+}
