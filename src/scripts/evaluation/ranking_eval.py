@@ -42,6 +42,7 @@ from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
 from package.tools.recommenders.mapping_hash import mapping_hash
 from package.tools.recommenders.file_hash import file_hash
+from package.tools.evaluation.confirmation_cohort import confirmation_cohort
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
@@ -133,6 +134,8 @@ def main() -> None:
     ap.add_argument("--batch-size", type=int, default=50)
     ap.add_argument("--progress-every", type=int, default=100)
     ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
+    ap.add_argument("--exclude-users-from", action="append", type=Path, default=[],
+                    help="Prior experiment config.yaml; repeat to exclude all previously inspected cohorts")
     args = ap.parse_args()
 
     if args.per_segment < 1 or args.candidate_budget < 1:
@@ -172,6 +175,9 @@ def main() -> None:
     }
     if not identity["mapping_files"]:
         raise ValueError("no mapping JSON files found")
+    identity["exclusion_manifests"] = [{"path": str(p.resolve()), "sha256": file_hash(p)}
+                                       for p in args.exclude_users_from]
+    identity["parameters"]["exclude_users_from"] = [str(p.resolve()) for p in args.exclude_users_from]
     if args.candidates_from:
         identity["frozen_artifacts"] = {name:file_hash(args.candidates_from/name) for name in ("config.yaml","metrics.json","candidate_lists.jsonl","scored.jsonl")}
     variants = {("baseline" if np.isclose(w,1e-6,rtol=0,atol=1e-15) else f"popularity_weight_{w:g}"):w for w in weights}
@@ -219,7 +225,12 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     history_sizes = np.diff(fit_matrix.indptr)
     sparse_max = int(load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"])
     segments_by_user = segment_users_by_history(list(target_by_user), history_sizes, sparse_max)
+    excluded = confirmation_cohort(getattr(args, "exclude_users_from", []), tag=paths.tag,
+                              split=args.eval_on, user_hash=mapping_hash(user2id), item_hash=mapping_hash(item2id))
+    segments_by_user = {u: s for u, s in segments_by_user.items() if u not in excluded}
     sampled = sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed))
+    if excluded and any(len(group) != args.per_segment for group in sampled.values()):
+        raise ValueError("insufficient untouched users for requested per-segment sample")
     users = {u for group in sampled.values() for u in group}
     sampled_fit = fit_df[fit_df["user_idx"].isin(users)]
     sampled_fit = sampled_fit.sort_values("timestamp")
@@ -284,6 +295,8 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     config = {
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
+        "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),
+                              "scope": "disjoint from declared manifests only; not proof of never-inspected users"},
         "candidate_budget_per_source": args.candidate_budget, "candidate_merges": list(MERGES),
         "retrieval": {"sources": ["popularity", "item_cf", "semantic"], "seed_items": args.seed_items,
                       "query_items": args.query_items, "semantic_query_mode": "titles_from_fit_history",
@@ -570,6 +583,7 @@ def _finalize(args, paths, store, ks, variants, exp_root):
         raise ValueError("implementation/environment changed during evaluation; results not published")
     print("[provenance] revalidating input hashes before publication",flush=True)
     inputs = list(identity["split_files"].values()) + list(identity["metadata_files"].values())
+    inputs += identity.get("exclusion_manifests", [])
     inputs += [{"path":p,"sha256":h} for p,h in identity["mapping_files"].items()]
     for entry in inputs:
         path = Path(entry["path"])

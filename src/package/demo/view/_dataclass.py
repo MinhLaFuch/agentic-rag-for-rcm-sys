@@ -40,6 +40,7 @@ class DemoResult:
     trace: DemoTrace | None
     usage: dict[str, Any]
     error: str | None  # thông báo lỗi rút gọn (chỉ khi status="tool_error")
+    recommendation_source: str | None = None
 
 
 @dataclass
@@ -50,3 +51,5 @@ class DemoRequest:
     reflect_rounds: int  # 0 hoặc 1
     use_memory: bool
     mode: str  # "planner" hoặc "type1"
+    intent_query: str | None = None
+    intent_filters: dict[str, Any] | None = None

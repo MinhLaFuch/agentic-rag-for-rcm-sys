@@ -1,0 +1,61 @@
+run:
+  timestamp: '2026-10-27T00:31:16.375978+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 7e5e243b22700a8c7d086eec8b02abdda3efda6b9a89ebca3ed2642d1b744f30
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 6.068174699999986
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+    user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+        sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+config:
+  source: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\sparse_content_eval\exp_001
+  source_hashes:
+    config.yaml: eccf9dcf6392921f59d93704a125e1ebae6f262630929c23ceacb1a2e15d916a
+    metrics.json: cb19533d6de9b92c3bae820f0d7ff8bafafffdf2d966d5798e555ec831bcfed7
+    records.jsonl: 6650fc6e98f692ca364b7f1c401b4200b8f93f6332da70a6228dd84945cffb05
+    requests.jsonl: e21828d2f04175d676c4423211b4d953f58909da0cd142ece071b2a71dace32f
+  policy: equal-source RRF60; stable union-order ties; no target-dependent weights
+  comparisons: 2
+  bootstrap_samples: 10000
+  ndcg_absolute_min: 0.0005
+  ndcg_relative_min: 0.1
+  recall_hit_retention_min: 0.95
+  coverage_retention_min: 0.8
+  interpretation: source retrieval ranks, NOT full-history CF scorer scores; saved
+    hybrid is fixed-pool control
+  production_changed: false

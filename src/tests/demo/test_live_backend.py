@@ -1,4 +1,3 @@
-"""Test cho LiveBackend với ScriptedLLM (không cần LLM thật)."""
 
 import json
 from pathlib import Path
@@ -323,7 +322,8 @@ def test_live_backend_prebuilt_with_files_uses_load_functions():
 
 
 @pytest.mark.parametrize("reject_cache", [False, True])
-def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache):
+@pytest.mark.parametrize("offline", [False, True])
+def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache, offline):
     from dataclasses import replace
     from package.demo.backend import live_backend as module
     from package.tools.recommenders import ItemKNNRecommender
@@ -346,11 +346,17 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     monkeypatch.setattr(module, "build_meta_files", lambda *a: [])
     monkeypatch.setattr(module, "load_corpus", lambda *a, **k: (corpus, 1.))
     monkeypatch.setattr(module, "load_item_knn", loader)
-    monkeypatch.setattr(module, "build_llm_provider", lambda *a: MagicMock(health_check=lambda: True))
+    provider_factory = MagicMock(return_value=MagicMock(health_check=lambda: True))
+    monkeypatch.setattr(module, "build_llm_provider", provider_factory)
     backend = LiveBackend(tag="synthetic")
-    backend.initialize()
+    backend.initialize(initialize_planner=not offline)
     assert backend._initialized
     assert loader.call_args.kwargs == context
     assert backend._knn_provenance["status"] == ("refit_cache_rejected" if reject_cache else "validated_cache")
     assert backend._knn_provenance["data_hash"] == item_knn_data_hash(fit)
     assert backend._knn_provenance["fit_splits"] == ["train"]
+    if offline:
+        provider_factory.assert_not_called()
+        assert backend._type1_agent is not None
+        backend._ensure_planner()
+    provider_factory.assert_called_once()

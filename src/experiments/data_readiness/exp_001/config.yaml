@@ -1,0 +1,62 @@
+run:
+  timestamp: '2026-10-26T13:30:51.302819+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 09cb62bab4317bdda0075a1eaab62dc141afd0031ad0daa4053d6a8d5ff32f6b
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 51.2
+  dataset:
+    tag: video_games_traincore5_v1_preflight
+    source: cleaned Video_Games
+    source_sha256: 2fa5c8da127e9b7ca57ba85d1c271b156ba03c01aaf166bea8b334f4a3783164
+config:
+  proposed_tag: video_games_traincore5_v1
+  domain: Video_Games
+  cutoffs:
+    train_max_inclusive: 1617737606134
+    validation_max_inclusive: 1651701127817
+    unit: epoch milliseconds
+    utc:
+    - '2021-04-06T19:33:26.134000+00:00'
+    - '2022-05-04T21:52:07.817000+00:00'
+  cutoff_selection: fixed calendar values inherited from existing multi_domain split,
+    not recomputed on new cohort
+  core:
+    min_unique_users_per_item: 5
+    min_unique_items_per_user: 5
+    fit_split: train only
+    convergence_required: true
+  inputs:
+    cleaned:
+      path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\cleaned\Video_Games\interactions.parquet
+      sha256: 2fa5c8da127e9b7ca57ba85d1c271b156ba03c01aaf166bea8b334f4a3783164
+    cutoff_reference:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+  holdout_policy: original events preserved; conditional membership is a separate
+    in-memory mask
+  novelty_policy: exclude pairs observed in full pre-core train, not only retained
+    core
+  test_scope: structural counts only; no ratings/quality used for selection
+  outputs_not_built:
+  - dataset splits
+  - mappings
+  - corpus
+  - ItemKNN
+  - baseline

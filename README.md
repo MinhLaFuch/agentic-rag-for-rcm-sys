@@ -13,6 +13,12 @@ Nghiên cứu và Ứng dụng Mô hình Agentic RAG trong Hệ thống Cá nhâ
 Research-grade project: Traditional RecSys + Sequential Recommendation + Retrieval + LLM-powered Agentic Recommendation trên một domain của Amazon Reviews 2023.
 
 # Tóm tắt trong folder `src`
+
+**Đánh giá code/runtime hiện tại:** xem [CURRENT_SYSTEM_REVIEW.md](CURRENT_SYSTEM_REVIEW.md).
+Các mô tả phase, đường dẫn và lệnh cũ bên dưới mang tính lịch sử, chưa phản ánh
+đầy đủ implementation hiện tại. Tests và baseline đã chạy; chưa đủ bằng chứng
+để tuyên bố chất lượng recommendation đạt production. Không dùng các thống kê
+EDA cũ bên dưới thay cho protocol cold/sparse/warm hiện tại.
 Xem `docs/` để hiểu đầy đủ ngữ cảnh trước khi đọc code:
 
 - `docs/research_review.md` — các paper nền tảng đã research

@@ -1,0 +1,1059 @@
+{
+  "variants": {
+    "cf_1": {
+      "users": 500,
+      "eligible_users": 500,
+      "empty_ground_truth": 0,
+      "metrics": {
+        "precision@5": 0.0012000000000000001,
+        "recall@5": 0.0025,
+        "hit_rate@5": 0.006,
+        "ndcg@5": 0.0018634298674412148,
+        "mrr@5": 0.0020666666666666663,
+        "map@5": 0.0012133333333333334,
+        "precision@10": 0.001,
+        "recall@10": 0.0039000000000000003,
+        "hit_rate@10": 0.008,
+        "ndcg@10": 0.002339770786002396,
+        "mrr@10": 0.0022666666666666664,
+        "map@10": 0.0013733333333333336
+      },
+      "catalog_coverage_at10": 0.006771529793699072,
+      "outcomes": {
+        "ok": 499,
+        "no_result": 1
+      },
+      "metadata_incomplete_requests": 0,
+      "tool_error_rate": 0.0,
+      "fallback_requests": 0,
+      "fallback_rate": 0.0,
+      "fallback_reasons": {},
+      "fallback_policy": "cf_only_on_no_title_tokens_v1; other retrieval errors remain visible",
+      "mean_candidates": 19.792,
+      "mean_eligible_candidates": 19.608,
+      "candidate_recall": 0.0039000000000000003,
+      "stage_latency": {
+        "ItemCFTool": {
+          "calls": 500,
+          "mean": 0.0005588839999654737,
+          "p95": 0.0012313749991335497
+        },
+        "RecoModelTool": {
+          "calls": 500,
+          "mean": 0.006784608799960552,
+          "p95": 0.011696515000403447
+        },
+        "QueryTool": {
+          "calls": 499,
+          "mean": 0.00023376432867286908,
+          "p95": 0.0005085400009193108
+        }
+      },
+      "latency": {
+        "mean": 0.008260020199981228,
+        "p95": 0.014705220000178085
+      }
+    },
+    "cf_bm25_rrf": {
+      "users": 500,
+      "eligible_users": 500,
+      "empty_ground_truth": 0,
+      "metrics": {
+        "precision@5": 0.0012000000000000001,
+        "recall@5": 0.0026,
+        "hit_rate@5": 0.006,
+        "ndcg@5": 0.001536768393962637,
+        "mrr@5": 0.0016666666666666666,
+        "map@5": 0.0007583333333333333,
+        "precision@10": 0.0008,
+        "recall@10": 0.003,
+        "hit_rate@10": 0.008,
+        "ndcg@10": 0.0016438067585028452,
+        "mrr@10": 0.0019523809523809522,
+        "map@10": 0.0007488095238095238
+      },
+      "catalog_coverage_at10": 0.0069219099458778886,
+      "outcomes": {
+        "ok": 500
+      },
+      "metadata_incomplete_requests": 0,
+      "tool_error_rate": 0.0,
+      "fallback_requests": 0,
+      "fallback_rate": 0.0,
+      "fallback_reasons": {},
+      "fallback_policy": "cf_only_on_no_title_tokens_v1; other retrieval errors remain visible",
+      "mean_candidates": 44.202,
+      "mean_eligible_candidates": 44.018,
+      "candidate_recall": 0.011800000000000001,
+      "stage_latency": {
+        "ItemCFTool": {
+          "calls": 0,
+          "mean": null,
+          "p95": null
+        },
+        "RecoModelTool": {
+          "calls": 500,
+          "mean": 0.006910328399997525,
+          "p95": 0.010463099999378753
+        },
+        "QueryTool": {
+          "calls": 500,
+          "mean": 0.00023171660003936268,
+          "p95": 0.00047580500058757013
+        },
+        "CFBM25Retriever": {
+          "calls": 500,
+          "mean": 0.3073609868000567,
+          "p95": 0.6600503699999534
+        }
+      },
+      "latency": {
+        "mean": 0.3150332284000433,
+        "p95": 0.6681566600009318
+      },
+      "content_sources": {
+        "requests": 500,
+        "top10_source_share": {
+          "cf_only": 0.4732,
+          "bm25_only": 0.4678,
+          "both": 0.059
+        },
+        "fallback_requests": 0,
+        "mean_sizes": {
+          "cf": 19.792,
+          "bm25": 25.0,
+          "bm25_unique": 24.41
+        },
+        "stage_latency": {
+          "ItemCFTool": {
+            "calls": 500,
+            "mean": 0.0005262395999488945,
+            "p95": 0.001134990000628021
+          },
+          "QueryTool": {
+            "calls": 500,
+            "mean": 7.763660003547557e-05,
+            "p95": 0.00017579999985173345
+          },
+          "SemanticSearchTool": {
+            "calls": 500,
+            "mean": 0.30666381559999356,
+            "p95": 0.6591211949998977
+          },
+          "CandidateMerge": {
+            "calls": 500,
+            "mean": 1.5641400041204178e-05,
+            "p95": 2.3704998602624977e-05
+          }
+        }
+      },
+      "paired_ndcg10": {
+        "mean_delta": -0.0006959640274995509,
+        "familywise95_ci": [
+          -0.002418916773651667,
+          0.0007721212071141462
+        ],
+        "improved": 2,
+        "worse": 3,
+        "unchanged": 495
+      },
+      "guardrails": {
+        "ndcg_effect": false,
+        "paired_lower_positive": false,
+        "recall": false,
+        "hit": true,
+        "coverage": true,
+        "latency": false,
+        "errors": true,
+        "missing_metadata": true
+      }
+    },
+    "cf_bm25_history": {
+      "users": 500,
+      "eligible_users": 500,
+      "empty_ground_truth": 0,
+      "metrics": {
+        "precision@5": 0.0008,
+        "recall@5": 0.0006,
+        "hit_rate@5": 0.004,
+        "ndcg@5": 0.00076422760201129,
+        "mrr@5": 0.0015,
+        "map@5": 0.000325,
+        "precision@10": 0.001,
+        "recall@10": 0.004,
+        "hit_rate@10": 0.01,
+        "ndcg@10": 0.0019893160116574607,
+        "mrr@10": 0.002452380952380952,
+        "map@10": 0.0007821428571428571
+      },
+      "catalog_coverage_at10": 0.006932230152399964,
+      "outcomes": {
+        "ok": 500
+      },
+      "metadata_incomplete_requests": 0,
+      "tool_error_rate": 0.0,
+      "fallback_requests": 0,
+      "fallback_rate": 0.0,
+      "fallback_reasons": {},
+      "fallback_policy": "cf_only_on_no_title_tokens_v1; other retrieval errors remain visible",
+      "mean_candidates": 44.406,
+      "mean_eligible_candidates": 44.222,
+      "candidate_recall": 0.009066666666666666,
+      "stage_latency": {
+        "ItemCFTool": {
+          "calls": 0,
+          "mean": null,
+          "p95": null
+        },
+        "RecoModelTool": {
+          "calls": 500,
+          "mean": 0.007009678399968834,
+          "p95": 0.010654645000158775
+        },
+        "QueryTool": {
+          "calls": 500,
+          "mean": 0.00023152699996717275,
+          "p95": 0.0004759550006383504
+        },
+        "CFBM25Retriever": {
+          "calls": 500,
+          "mean": 0.3825864396000361,
+          "p95": 0.7700614400012454
+        }
+      },
+      "latency": {
+        "mean": 0.39020005619995574,
+        "p95": 0.7775483800003712
+      },
+      "content_sources": {
+        "requests": 500,
+        "top10_source_share": {
+          "cf_only": 0.4816,
+          "bm25_only": 0.4798,
+          "both": 0.0386
+        },
+        "fallback_requests": 0,
+        "mean_sizes": {
+          "cf": 19.792,
+          "bm25": 25.0,
+          "bm25_unique": 24.614
+        },
+        "stage_latency": {
+          "ItemCFTool": {
+            "calls": 500,
+            "mean": 0.0004906889999838313,
+            "p95": 0.0009750949999215657
+          },
+          "QueryTool": {
+            "calls": 500,
+            "mean": 0.00010714520003966755,
+            "p95": 0.0002398199996605399
+          },
+          "SemanticSearchTool": {
+            "calls": 500,
+            "mean": 0.3818106437999959,
+            "p95": 0.7687267350003821
+          },
+          "CandidateMerge": {
+            "calls": 500,
+            "mean": 1.4914199975464725e-05,
+            "p95": 2.4399998528679136e-05
+          }
+        }
+      },
+      "paired_ndcg10": {
+        "mean_delta": -0.00035045477434493533,
+        "familywise95_ci": [
+          -0.004487714499087628,
+          0.003024630572660337
+        ],
+        "improved": 4,
+        "worse": 3,
+        "unchanged": 493
+      },
+      "guardrails": {
+        "ndcg_effect": false,
+        "paired_lower_positive": false,
+        "recall": true,
+        "hit": true,
+        "coverage": true,
+        "latency": false,
+        "errors": true,
+        "missing_metadata": true
+      }
+    }
+  },
+  "history_segments": {
+    "3": {
+      "cf_1": {
+        "users": 125,
+        "eligible_users": 125,
+        "metrics": {
+          "precision@5": 0.0016,
+          "recall@5": 0.008,
+          "hit_rate@5": 0.008,
+          "ndcg@5": 0.00504743802857166,
+          "mrr@5": 0.004,
+          "map@5": 0.004,
+          "precision@10": 0.0008,
+          "recall@10": 0.008,
+          "hit_rate@10": 0.008,
+          "ndcg@10": 0.00504743802857166,
+          "mrr@10": 0.004,
+          "map@10": 0.004
+        },
+        "outcomes": {
+          "ok": 124,
+          "no_result": 1
+        }
+      },
+      "cf_bm25_rrf": {
+        "users": 125,
+        "eligible_users": 125,
+        "metrics": {
+          "precision@5": 0.0016,
+          "recall@5": 0.008,
+          "hit_rate@5": 0.008,
+          "ndcg@5": 0.0034454124645871445,
+          "mrr@5": 0.002,
+          "map@5": 0.002,
+          "precision@10": 0.0008,
+          "recall@10": 0.008,
+          "hit_rate@10": 0.008,
+          "ndcg@10": 0.0034454124645871445,
+          "mrr@10": 0.002,
+          "map@10": 0.002
+        },
+        "outcomes": {
+          "ok": 125
+        }
+      },
+      "cf_bm25_history": {
+        "users": 125,
+        "eligible_users": 125,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0008,
+          "recall@10": 0.008,
+          "hit_rate@10": 0.008,
+          "ndcg@10": 0.0028496574968641776,
+          "mrr@10": 0.0013333333333333333,
+          "map@10": 0.0013333333333333333
+        },
+        "outcomes": {
+          "ok": 125
+        }
+      }
+    },
+    "2": {
+      "cf_1": {
+        "users": 111,
+        "eligible_users": 111,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 111
+        }
+      },
+      "cf_bm25_rrf": {
+        "users": 111,
+        "eligible_users": 111,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 111
+        }
+      },
+      "cf_bm25_history": {
+        "users": 111,
+        "eligible_users": 111,
+        "metrics": {
+          "precision@5": 0.0,
+          "recall@5": 0.0,
+          "hit_rate@5": 0.0,
+          "ndcg@5": 0.0,
+          "mrr@5": 0.0,
+          "map@5": 0.0,
+          "precision@10": 0.0,
+          "recall@10": 0.0,
+          "hit_rate@10": 0.0,
+          "ndcg@10": 0.0,
+          "mrr@10": 0.0,
+          "map@10": 0.0
+        },
+        "outcomes": {
+          "ok": 111
+        }
+      }
+    },
+    "1": {
+      "cf_1": {
+        "users": 71,
+        "eligible_users": 71,
+        "metrics": {
+          "precision@5": 0.0028169014084507044,
+          "recall@5": 0.0028169014084507044,
+          "hit_rate@5": 0.014084507042253521,
+          "ndcg@5": 0.002388452149814198,
+          "mrr@5": 0.004694835680751174,
+          "map@5": 0.0009389671361502347,
+          "precision@10": 0.004225352112676057,
+          "recall@10": 0.01267605633802817,
+          "hit_rate@10": 0.028169014084507043,
+          "ndcg@10": 0.0063917256589876,
+          "mrr@10": 0.006103286384976526,
+          "map@10": 0.002347417840375587
+        },
+        "outcomes": {
+          "ok": 71
+        }
+      },
+      "cf_bm25_rrf": {
+        "users": 71,
+        "eligible_users": 71,
+        "metrics": {
+          "precision@5": 0.0028169014084507044,
+          "recall@5": 0.0035211267605633804,
+          "hit_rate@5": 0.014084507042253521,
+          "ndcg@5": 0.002367993468607288,
+          "mrr@5": 0.0035211267605633804,
+          "map@5": 0.0008802816901408451,
+          "precision@10": 0.0028169014084507044,
+          "recall@10": 0.006338028169014085,
+          "hit_rate@10": 0.028169014084507043,
+          "ndcg@10": 0.003960294901816753,
+          "mrr@10": 0.005533199195171026,
+          "map@10": 0.0012826961770623741
+        },
+        "outcomes": {
+          "ok": 71
+        }
+      },
+      "cf_bm25_history": {
+        "users": 71,
+        "eligible_users": 71,
+        "metrics": {
+          "precision@5": 0.0028169014084507044,
+          "recall@5": 0.0035211267605633804,
+          "hit_rate@5": 0.014084507042253521,
+          "ndcg@5": 0.002367993468607288,
+          "mrr@5": 0.0035211267605633804,
+          "map@5": 0.0008802816901408451,
+          "precision@10": 0.0028169014084507044,
+          "recall@10": 0.006338028169014085,
+          "hit_rate@10": 0.028169014084507043,
+          "ndcg@10": 0.003960294901816753,
+          "mrr@10": 0.005533199195171026,
+          "map@10": 0.0012826961770623741
+        },
+        "outcomes": {
+          "ok": 71
+        }
+      }
+    },
+    "4": {
+      "cf_1": {
+        "users": 193,
+        "eligible_users": 193,
+        "metrics": {
+          "precision@5": 0.0010362694300518134,
+          "recall@5": 0.00025906735751295336,
+          "hit_rate@5": 0.0051813471502590676,
+          "ndcg@5": 0.0006798190544680922,
+          "mrr@5": 0.0010362694300518134,
+          "map@5": 0.0002072538860103627,
+          "precision@10": 0.0005181347150259067,
+          "recall@10": 0.00025906735751295336,
+          "hit_rate@10": 0.0051813471502590676,
+          "ndcg@10": 0.0004411560499565854,
+          "mrr@10": 0.0010362694300518134,
+          "map@10": 0.00010362694300518135
+        },
+        "outcomes": {
+          "ok": 193
+        }
+      },
+      "cf_bm25_rrf": {
+        "users": 193,
+        "eligible_users": 193,
+        "metrics": {
+          "precision@5": 0.0010362694300518134,
+          "recall@5": 0.00025906735751295336,
+          "hit_rate@5": 0.0051813471502590676,
+          "ndcg@5": 0.0008786533815378656,
+          "mrr@5": 0.0017271157167530224,
+          "map@5": 0.0003454231433506045,
+          "precision@10": 0.0005181347150259067,
+          "recall@10": 0.00025906735751295336,
+          "hit_rate@10": 0.0051813471502590676,
+          "ndcg@10": 0.0005701859230520212,
+          "mrr@10": 0.0017271157167530224,
+          "map@10": 0.00017271157167530224
+        },
+        "outcomes": {
+          "ok": 193
+        }
+      },
+      "cf_bm25_history": {
+        "users": 193,
+        "eligible_users": 193,
+        "metrics": {
+          "precision@5": 0.0010362694300518134,
+          "recall@5": 0.00025906735751295336,
+          "hit_rate@5": 0.0051813471502590676,
+          "ndcg@5": 0.0011087371229768267,
+          "mrr@5": 0.0025906735751295338,
+          "map@5": 0.0005181347150259067,
+          "precision@10": 0.0010362694300518134,
+          "recall@10": 0.0028497409326424875,
+          "hit_rate@10": 0.010362694300518135,
+          "ndcg@10": 0.0018511392781954338,
+          "mrr@10": 0.0034542314335060447,
+          "map@10": 0.000690846286701209
+        },
+        "outcomes": {
+          "ok": 193
+        }
+      }
+    }
+  },
+  "history_length_outcomes": {
+    "3": {
+      "variant_cf_1_ok": 124,
+      "variant_cf_1_no_result": 1,
+      "variant_cf_bm25_rrf_ok": 125,
+      "variant_cf_bm25_history_ok": 125
+    },
+    "2": {
+      "variant_cf_1_ok": 111,
+      "variant_cf_bm25_rrf_ok": 111,
+      "variant_cf_bm25_history_ok": 111
+    },
+    "1": {
+      "variant_cf_1_ok": 71,
+      "variant_cf_bm25_rrf_ok": 71,
+      "variant_cf_bm25_history_ok": 71
+    },
+    "4": {
+      "variant_cf_1_ok": 193,
+      "variant_cf_bm25_rrf_ok": 193,
+      "variant_cf_bm25_history_ok": 193
+    }
+  },
+  "decision": "development comparison only; no automatic production promotion",
+  "checkpoint_timing": {
+    "sessions": [
+      {
+        "seconds": 864.7425585000001,
+        "status": "running"
+      }
+    ],
+    "committed_active_seconds": 864.7425585000001,
+    "interrupted_tail_timing": "hard kills may lose elapsed timing since last committed batch; downtime excluded"
+  },
+  "latency_scope": "Type1 chain + recent-seed selection; excludes full-frame history lookup, UI, setup and warmup; resumed sessions may mix conditions; excludes separate exact-count equivalence verification; ranking includes delegated model eligibility/scoring overhead",
+  "title_policy_scope": "cf_only_on_no_title_tokens_v1; prior pilot used error-on-unsearchable-title; historical experiments are unchanged",
+  "count_equivalence_checks": 500,
+  "count_equivalence_checks_by_variant": {
+    "cf_bm25_rrf": 500,
+    "cf_bm25_history": 500
+  },
+  "hit_regressions": {
+    "overall": {
+      "users": 500,
+      "eligible_users": 500,
+      "baseline_hit_users": 4,
+      "tuned_hit_users": 4,
+      "gained_hit_users": 1,
+      "lost_hit_users": 1,
+      "retained_hit_users": 3,
+      "lost_target_pairs": 2,
+      "gained_target_pairs": 1
+    },
+    "history_segments": {
+      "3": {
+        "users": 125,
+        "eligible_users": 125,
+        "baseline_hit_users": 1,
+        "tuned_hit_users": 1,
+        "gained_hit_users": 0,
+        "lost_hit_users": 0,
+        "retained_hit_users": 1,
+        "lost_target_pairs": 0,
+        "gained_target_pairs": 0
+      },
+      "2": {
+        "users": 111,
+        "eligible_users": 111,
+        "baseline_hit_users": 0,
+        "tuned_hit_users": 0,
+        "gained_hit_users": 0,
+        "lost_hit_users": 0,
+        "retained_hit_users": 0,
+        "lost_target_pairs": 0,
+        "gained_target_pairs": 0
+      },
+      "1": {
+        "users": 71,
+        "eligible_users": 71,
+        "baseline_hit_users": 2,
+        "tuned_hit_users": 2,
+        "gained_hit_users": 1,
+        "lost_hit_users": 1,
+        "retained_hit_users": 1,
+        "lost_target_pairs": 2,
+        "gained_target_pairs": 1
+      },
+      "4": {
+        "users": 193,
+        "eligible_users": 193,
+        "baseline_hit_users": 1,
+        "tuned_hit_users": 1,
+        "gained_hit_users": 0,
+        "lost_hit_users": 0,
+        "retained_hit_users": 1,
+        "lost_target_pairs": 0,
+        "gained_target_pairs": 0
+      }
+    }
+  },
+  "retrieval_query_comparison": {
+    "variants": {
+      "cf_bm25_rrf": {
+        "users": 500,
+        "eligible_users": 500,
+        "empty_ground_truth": 0,
+        "metrics": {
+          "precision@5": 0.0012000000000000001,
+          "recall@5": 0.0026,
+          "hit_rate@5": 0.006,
+          "ndcg@5": 0.001536768393962637,
+          "mrr@5": 0.0016666666666666666,
+          "map@5": 0.0007583333333333333,
+          "precision@10": 0.0008,
+          "recall@10": 0.003,
+          "hit_rate@10": 0.008,
+          "ndcg@10": 0.0016438067585028452,
+          "mrr@10": 0.0019523809523809522,
+          "map@10": 0.0007488095238095238
+        },
+        "catalog_coverage_at10": 0.0069219099458778886,
+        "outcomes": {
+          "ok": 500
+        },
+        "metadata_incomplete_requests": 0,
+        "tool_error_rate": 0.0,
+        "fallback_requests": 0,
+        "fallback_rate": 0.0,
+        "fallback_reasons": {},
+        "fallback_policy": "cf_only_on_no_title_tokens_v1; other retrieval errors remain visible",
+        "mean_candidates": 44.202,
+        "mean_eligible_candidates": 44.018,
+        "candidate_recall": 0.011800000000000001,
+        "stage_latency": {
+          "ItemCFTool": {
+            "calls": 0,
+            "mean": null,
+            "p95": null
+          },
+          "RecoModelTool": {
+            "calls": 500,
+            "mean": 0.006910328399997525,
+            "p95": 0.010463099999378753
+          },
+          "QueryTool": {
+            "calls": 500,
+            "mean": 0.00023171660003936268,
+            "p95": 0.00047580500058757013
+          },
+          "CFBM25Retriever": {
+            "calls": 500,
+            "mean": 0.3073609868000567,
+            "p95": 0.6600503699999534
+          }
+        },
+        "latency": {
+          "mean": 0.3150332284000433,
+          "p95": 0.6681566600009318
+        },
+        "content_sources": {
+          "requests": 500,
+          "top10_source_share": {
+            "cf_only": 0.4732,
+            "bm25_only": 0.4678,
+            "both": 0.059
+          },
+          "fallback_requests": 0,
+          "mean_sizes": {
+            "cf": 19.792,
+            "bm25": 25.0,
+            "bm25_unique": 24.41
+          },
+          "stage_latency": {
+            "ItemCFTool": {
+              "calls": 500,
+              "mean": 0.0005262395999488945,
+              "p95": 0.001134990000628021
+            },
+            "QueryTool": {
+              "calls": 500,
+              "mean": 7.763660003547557e-05,
+              "p95": 0.00017579999985173345
+            },
+            "SemanticSearchTool": {
+              "calls": 500,
+              "mean": 0.30666381559999356,
+              "p95": 0.6591211949998977
+            },
+            "CandidateMerge": {
+              "calls": 500,
+              "mean": 1.5641400041204178e-05,
+              "p95": 2.3704998602624977e-05
+            }
+          }
+        }
+      },
+      "cf_bm25_history": {
+        "users": 500,
+        "eligible_users": 500,
+        "empty_ground_truth": 0,
+        "metrics": {
+          "precision@5": 0.0008,
+          "recall@5": 0.0006,
+          "hit_rate@5": 0.004,
+          "ndcg@5": 0.00076422760201129,
+          "mrr@5": 0.0015,
+          "map@5": 0.000325,
+          "precision@10": 0.001,
+          "recall@10": 0.004,
+          "hit_rate@10": 0.01,
+          "ndcg@10": 0.0019893160116574607,
+          "mrr@10": 0.002452380952380952,
+          "map@10": 0.0007821428571428571
+        },
+        "catalog_coverage_at10": 0.006932230152399964,
+        "outcomes": {
+          "ok": 500
+        },
+        "metadata_incomplete_requests": 0,
+        "tool_error_rate": 0.0,
+        "fallback_requests": 0,
+        "fallback_rate": 0.0,
+        "fallback_reasons": {},
+        "fallback_policy": "cf_only_on_no_title_tokens_v1; other retrieval errors remain visible",
+        "mean_candidates": 44.406,
+        "mean_eligible_candidates": 44.222,
+        "candidate_recall": 0.009066666666666666,
+        "stage_latency": {
+          "ItemCFTool": {
+            "calls": 0,
+            "mean": null,
+            "p95": null
+          },
+          "RecoModelTool": {
+            "calls": 500,
+            "mean": 0.007009678399968834,
+            "p95": 0.010654645000158775
+          },
+          "QueryTool": {
+            "calls": 500,
+            "mean": 0.00023152699996717275,
+            "p95": 0.0004759550006383504
+          },
+          "CFBM25Retriever": {
+            "calls": 500,
+            "mean": 0.3825864396000361,
+            "p95": 0.7700614400012454
+          }
+        },
+        "latency": {
+          "mean": 0.39020005619995574,
+          "p95": 0.7775483800003712
+        },
+        "content_sources": {
+          "requests": 500,
+          "top10_source_share": {
+            "cf_only": 0.4816,
+            "bm25_only": 0.4798,
+            "both": 0.0386
+          },
+          "fallback_requests": 0,
+          "mean_sizes": {
+            "cf": 19.792,
+            "bm25": 25.0,
+            "bm25_unique": 24.614
+          },
+          "stage_latency": {
+            "ItemCFTool": {
+              "calls": 500,
+              "mean": 0.0004906889999838313,
+              "p95": 0.0009750949999215657
+            },
+            "QueryTool": {
+              "calls": 500,
+              "mean": 0.00010714520003966755,
+              "p95": 0.0002398199996605399
+            },
+            "SemanticSearchTool": {
+              "calls": 500,
+              "mean": 0.3818106437999959,
+              "p95": 0.7687267350003821
+            },
+            "CandidateMerge": {
+              "calls": 500,
+              "mean": 1.4914199975464725e-05,
+              "p95": 2.4399998528679136e-05
+            }
+          }
+        },
+        "paired_ndcg10": {
+          "mean_delta": 0.0003455092531546155,
+          "familywise95_ci": [
+            -0.002089611353355001,
+            0.0027007408078178097
+          ],
+          "improved": 3,
+          "worse": 1,
+          "unchanged": 496
+        },
+        "guardrails": {
+          "ndcg_effect": false,
+          "paired_lower_positive": false,
+          "recall": true,
+          "hit": true,
+          "coverage": true,
+          "latency": false,
+          "errors": true,
+          "missing_metadata": true
+        }
+      }
+    },
+    "history_segments": {
+      "3": {
+        "cf_bm25_rrf": {
+          "users": 125,
+          "eligible_users": 125,
+          "metrics": {
+            "precision@5": 0.0016,
+            "recall@5": 0.008,
+            "hit_rate@5": 0.008,
+            "ndcg@5": 0.0034454124645871445,
+            "mrr@5": 0.002,
+            "map@5": 0.002,
+            "precision@10": 0.0008,
+            "recall@10": 0.008,
+            "hit_rate@10": 0.008,
+            "ndcg@10": 0.0034454124645871445,
+            "mrr@10": 0.002,
+            "map@10": 0.002
+          },
+          "outcomes": {
+            "ok": 125
+          }
+        },
+        "cf_bm25_history": {
+          "users": 125,
+          "eligible_users": 125,
+          "metrics": {
+            "precision@5": 0.0,
+            "recall@5": 0.0,
+            "hit_rate@5": 0.0,
+            "ndcg@5": 0.0,
+            "mrr@5": 0.0,
+            "map@5": 0.0,
+            "precision@10": 0.0008,
+            "recall@10": 0.008,
+            "hit_rate@10": 0.008,
+            "ndcg@10": 0.0028496574968641776,
+            "mrr@10": 0.0013333333333333333,
+            "map@10": 0.0013333333333333333
+          },
+          "outcomes": {
+            "ok": 125
+          }
+        }
+      },
+      "2": {
+        "cf_bm25_rrf": {
+          "users": 111,
+          "eligible_users": 111,
+          "metrics": {
+            "precision@5": 0.0,
+            "recall@5": 0.0,
+            "hit_rate@5": 0.0,
+            "ndcg@5": 0.0,
+            "mrr@5": 0.0,
+            "map@5": 0.0,
+            "precision@10": 0.0,
+            "recall@10": 0.0,
+            "hit_rate@10": 0.0,
+            "ndcg@10": 0.0,
+            "mrr@10": 0.0,
+            "map@10": 0.0
+          },
+          "outcomes": {
+            "ok": 111
+          }
+        },
+        "cf_bm25_history": {
+          "users": 111,
+          "eligible_users": 111,
+          "metrics": {
+            "precision@5": 0.0,
+            "recall@5": 0.0,
+            "hit_rate@5": 0.0,
+            "ndcg@5": 0.0,
+            "mrr@5": 0.0,
+            "map@5": 0.0,
+            "precision@10": 0.0,
+            "recall@10": 0.0,
+            "hit_rate@10": 0.0,
+            "ndcg@10": 0.0,
+            "mrr@10": 0.0,
+            "map@10": 0.0
+          },
+          "outcomes": {
+            "ok": 111
+          }
+        }
+      },
+      "1": {
+        "cf_bm25_rrf": {
+          "users": 71,
+          "eligible_users": 71,
+          "metrics": {
+            "precision@5": 0.0028169014084507044,
+            "recall@5": 0.0035211267605633804,
+            "hit_rate@5": 0.014084507042253521,
+            "ndcg@5": 0.002367993468607288,
+            "mrr@5": 0.0035211267605633804,
+            "map@5": 0.0008802816901408451,
+            "precision@10": 0.0028169014084507044,
+            "recall@10": 0.006338028169014085,
+            "hit_rate@10": 0.028169014084507043,
+            "ndcg@10": 0.003960294901816753,
+            "mrr@10": 0.005533199195171026,
+            "map@10": 0.0012826961770623741
+          },
+          "outcomes": {
+            "ok": 71
+          }
+        },
+        "cf_bm25_history": {
+          "users": 71,
+          "eligible_users": 71,
+          "metrics": {
+            "precision@5": 0.0028169014084507044,
+            "recall@5": 0.0035211267605633804,
+            "hit_rate@5": 0.014084507042253521,
+            "ndcg@5": 0.002367993468607288,
+            "mrr@5": 0.0035211267605633804,
+            "map@5": 0.0008802816901408451,
+            "precision@10": 0.0028169014084507044,
+            "recall@10": 0.006338028169014085,
+            "hit_rate@10": 0.028169014084507043,
+            "ndcg@10": 0.003960294901816753,
+            "mrr@10": 0.005533199195171026,
+            "map@10": 0.0012826961770623741
+          },
+          "outcomes": {
+            "ok": 71
+          }
+        }
+      },
+      "4": {
+        "cf_bm25_rrf": {
+          "users": 193,
+          "eligible_users": 193,
+          "metrics": {
+            "precision@5": 0.0010362694300518134,
+            "recall@5": 0.00025906735751295336,
+            "hit_rate@5": 0.0051813471502590676,
+            "ndcg@5": 0.0008786533815378656,
+            "mrr@5": 0.0017271157167530224,
+            "map@5": 0.0003454231433506045,
+            "precision@10": 0.0005181347150259067,
+            "recall@10": 0.00025906735751295336,
+            "hit_rate@10": 0.0051813471502590676,
+            "ndcg@10": 0.0005701859230520212,
+            "mrr@10": 0.0017271157167530224,
+            "map@10": 0.00017271157167530224
+          },
+          "outcomes": {
+            "ok": 193
+          }
+        },
+        "cf_bm25_history": {
+          "users": 193,
+          "eligible_users": 193,
+          "metrics": {
+            "precision@5": 0.0010362694300518134,
+            "recall@5": 0.00025906735751295336,
+            "hit_rate@5": 0.0051813471502590676,
+            "ndcg@5": 0.0011087371229768267,
+            "mrr@5": 0.0025906735751295338,
+            "map@5": 0.0005181347150259067,
+            "precision@10": 0.0010362694300518134,
+            "recall@10": 0.0028497409326424875,
+            "hit_rate@10": 0.010362694300518135,
+            "ndcg@10": 0.0018511392781954338,
+            "mrr@10": 0.0034542314335060447,
+            "map@10": 0.000690846286701209
+          },
+          "outcomes": {
+            "ok": 193
+          }
+        }
+      }
+    },
+    "history_length_outcomes": {
+      "3": {
+        "variant_cf_bm25_rrf_ok": 125,
+        "variant_cf_bm25_history_ok": 125
+      },
+      "2": {
+        "variant_cf_bm25_rrf_ok": 111,
+        "variant_cf_bm25_history_ok": 111
+      },
+      "1": {
+        "variant_cf_bm25_rrf_ok": 71,
+        "variant_cf_bm25_history_ok": 71
+      },
+      "4": {
+        "variant_cf_bm25_rrf_ok": 193,
+        "variant_cf_bm25_history_ok": 193
+      }
+    },
+    "decision": "development comparison only; no automatic production promotion"
+  },
+  "retrieval_query_comparison_scope": "primary paired history-vs-latest query comparison; same RRF60, CF one seed, budgets and target set; inspected development users"
+}

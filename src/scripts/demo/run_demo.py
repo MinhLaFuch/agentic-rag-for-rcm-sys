@@ -85,7 +85,7 @@ def build_ui(
 
             with gr.Column(scale=3):
                 request_input = gr.Textbox(
-                    label="Request",
+                    label="Request (Planner: mô tả tự do; Type1: dùng lịch sử hoặc trường tìm kiếm bên dưới)",
                     placeholder="e.g., Recommend 5 products similar to Video_Games::B00...",
                     lines=3,
                 )
@@ -98,6 +98,14 @@ def build_ui(
                             lambda t=text: t,
                             outputs=request_input,
                         )
+
+                with gr.Accordion("Type1: tìm theo nhu cầu (không cần lịch sử)", open=False):
+                    gr.Markdown("Chọn Type1 và điền từ khóa tiếng Anh theo catalog. Giá dùng USD; sản phẩm không có giá sẽ bị loại khi lọc giá. Từ khóa được ưu tiên thay cho gợi ý từ lịch sử. Mô tả tự do dùng Planner.")
+                    intent_query_input = gr.Textbox(label="Từ khóa sản phẩm", placeholder="e.g., wireless keyboard")
+                    intent_domain_input = gr.Dropdown(choices=["", *get_domains()],value="",label="Domain (để trống: tất cả)")
+                    with gr.Row():
+                        intent_min_input = gr.Number(value=None,label="Giá tối thiểu (USD, tùy chọn)")
+                        intent_max_input = gr.Number(value=None,label="Giá tối đa (USD, tùy chọn)")
 
         # --- Toggles ---
         with gr.Row():
@@ -140,9 +148,16 @@ def build_ui(
             use_memory: bool,
             reflect_rounds: int,
             mode: str,
+            intent_query: str,
+            intent_domain: str,
+            intent_min: float | None,
+            intent_max: float | None,
         ) -> tuple[str, str, list[list[str]], str]:
             """Handle submit button click."""
-            if not request_text.strip():
+            structured=bool((intent_query or "").strip() or intent_domain or intent_min is not None or intent_max is not None)
+            if structured and mode != "type1":
+                return ("⚠️ Chọn Type1 để dùng các trường tìm kiếm này, hoặc xóa chúng và mô tả yêu cầu trong Planner.","",[],"")
+            if not request_text.strip() and not structured and not (mode=="type1" and user_id.strip()):
                 return (
                     "⚠️ Please enter a request.",
                     "",
@@ -150,12 +165,18 @@ def build_ui(
                     "",
                 )
 
+            filters={}
+            if intent_domain: filters["domain"]=intent_domain
+            if intent_min is not None: filters["price_min"]=intent_min
+            if intent_max is not None: filters["price_max"]=intent_max
             demo_request = DemoRequest(
                 user_id=user_id.strip() if user_id.strip() else None,
                 text=request_text.strip(),
                 reflect_rounds=reflect_rounds,
                 use_memory=use_memory,
                 mode=mode,
+                intent_query=(intent_query or "").strip() or None,
+                intent_filters=filters or None,
             )
 
             result = backend.respond(demo_request)
@@ -175,7 +196,8 @@ def build_ui(
 
         submit_btn.click(
             fn=on_submit,
-            inputs=[user_id_input, request_input, memory_toggle, reflect_toggle, mode_radio],
+            inputs=[user_id_input, request_input, memory_toggle, reflect_toggle, mode_radio,
+                    intent_query_input,intent_domain_input,intent_min_input,intent_max_input],
             outputs=[status_output, text_output, items_table, trace_output],
         )
 
@@ -215,7 +237,7 @@ def main() -> None:
             allow_missing_corpus_sources=args.allow_missing_corpus_sources,
         )
         try:
-            backend.initialize()
+            backend.initialize(initialize_planner=False)
         except Exception as exc:
             print("\n" + "=" * 60)
             print("ERROR: LIVEBACKEND INITIALIZATION FAILED")

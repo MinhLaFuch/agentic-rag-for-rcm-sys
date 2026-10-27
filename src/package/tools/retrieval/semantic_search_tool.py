@@ -58,11 +58,14 @@ class SemanticSearchTool(Tool):
     }
     output_schema = {
         "candidates": "list[{item_id, domain, title, store, price, ..., score}]  -- best match first",
-        "total_matches": "int", "query_tokens": "list[str]", "truncated": "bool", "applied_filters": "dict",
+        "total_matches": "int (None only when constructed with exact_count=False)", "query_tokens": "list[str]", "truncated": "bool", "applied_filters": "dict",
     }
 
-    def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None) -> None:
+    def __init__(self, corpus: ItemCorpus, logger: ToolCallLogger | None = None, *, exact_count: bool = True) -> None:
         super().__init__(logger)
+        if not isinstance(exact_count, bool):
+            raise ValueError("exact_count must be boolean")
+        self.exact_count = exact_count
         self.corpus = corpus
         # Update domain filter with actual domain names for better documentation
         self.input_schema = {
@@ -118,8 +121,11 @@ class SemanticSearchTool(Tool):
             f"SELECT COUNT(*) AS cnt FROM items_fts JOIN items ON items.rowid = items_fts.rowid "
             f"WHERE items_fts MATCH ? AND {where}"
         )
-        count_rows, _ = self.corpus.select(count_sql, [match, *params], max_rows=1)
-        total_matches = count_rows[0]["cnt"] if count_rows else 0
+        if self.exact_count:
+            count_rows, _ = self.corpus.select(count_sql, [match, *params], max_rows=1)
+            total_matches = count_rows[0]["cnt"] if count_rows else 0
+        else:
+            total_matches = None
 
         return {
             "candidates": rows,

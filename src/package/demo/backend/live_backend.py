@@ -9,6 +9,8 @@ from typing import Any
 import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools
+from package.agents.type1.recommend_from_intent import recommend_from_intent
+from package.agents.type1.recent_seed_items import recent_seed_items
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.config import get_data_paths, load_config
@@ -26,7 +28,7 @@ from package.tools.recommenders.fit_provenance import fit_provenance
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from ..adapter import adapt_from_plan_executor
 from ..adapter import adapt_from_plan_executor_error
-from ..view import DemoItem, DemoRequest, DemoResult
+from ..view import DemoItem, DemoRequest, DemoResult, DemoTrace
 
 
 class LiveBackend:
@@ -56,11 +58,16 @@ class LiveBackend:
         self._internal_id_to_item_id: dict[int, str] = {}
         self._fit_df: pd.DataFrame | None = None
         self._initialized = False
+        self._planner_tools = None
+        self._intent_search = None
+        self._intent_query = None
         self._knn_provenance = {"status": "not_initialized"}
 
-    def initialize(self) -> None:
+    def initialize(self, *, initialize_planner: bool = True) -> None:
         """Tải dữ liệu và dựng executor (chạy một lần khi khởi động)."""
         if self._initialized:
+            if initialize_planner:
+                self._ensure_planner()
             return
 
         print("Đang tải dữ liệu...")
@@ -170,15 +177,11 @@ class LiveBackend:
             knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
         )
 
-        # Build LLM provider
-        print("Đang kiểm tra LLM...")
-        llm = build_llm_provider(load_config("agent/llm"))
-        if not llm.health_check():
-            raise RuntimeError("LLM health check failed: check configs/agent/llm.yaml và LLM_API_KEY")
-
-        # Build executors
-        self._executor_planner = PlanExecutor(llm, tools.for_planner())
-        self._executor_planner_memory = PlanExecutor(llm, tools.for_planner_memory())
+        self._planner_tools = tools
+        self._intent_search = tools.search
+        self._intent_query = tools.query
+        if initialize_planner:
+            self._ensure_planner()
         self._type1_agent = Type1Agent(tools.item_cf, tools.reco, tools.query)
 
         # Store mappings
@@ -192,7 +195,18 @@ class LiveBackend:
         elapsed = time.time() - start_time
         print(f"Khởi động hoàn tất ({elapsed:.1f}s)")
 
-    def get_sample_users(self, n_per_segment: int = 3, sparse_max: int = 5) -> dict[str, list[str]]:
+    def _ensure_planner(self) -> None:
+        if self._executor_planner is not None and self._executor_planner_memory is not None:
+            return
+        if self._planner_tools is None:
+            raise RuntimeError("Planner tools not initialized")
+        llm = build_llm_provider(load_config("agent/llm"))
+        if not llm.health_check():
+            raise RuntimeError("LLM health check failed: check configs/agent/llm.yaml và LLM_API_KEY")
+        self._executor_planner = PlanExecutor(llm, self._planner_tools.for_planner())
+        self._executor_planner_memory = PlanExecutor(llm, self._planner_tools.for_planner_memory())
+
+    def get_sample_users(self, n_per_segment: int = 3, sparse_max: int | None = None) -> dict[str, list[str]]:
         """Lấy sample users theo segment (cold/sparse/warm)."""
         from ..samples import sample_users
         return sample_users(self._fit_df, self._user_id_to_internal_id, n_per_segment=n_per_segment, sparse_max=sparse_max)
@@ -200,9 +214,14 @@ class LiveBackend:
     def respond(self, request: DemoRequest) -> DemoResult:
         """Xử lý request với locking (chạy tuần tự)."""
         with self._lock:
+            if request.mode not in ("type1","planner"):
+                return DemoResult("tool_error","Chế độ xử lý không hợp lệ.",[],None,{},"Unknown agent mode")
+            if request.mode=="planner" and (request.intent_query is not None or request.intent_filters is not None):
+                question="Chọn Type1 để dùng từ khóa và bộ lọc riêng, hoặc chuyển các điều kiện vào mô tả tự do của Planner."
+                return DemoResult("ask_user",question,[],DemoTrace([],[],question,0,False,False,{}),{},None)
             if not self._initialized:
                 try:
-                    self.initialize()
+                    self.initialize(initialize_planner=request.mode != "type1")
                 except Exception as exc:
                     return DemoResult(
                         status="tool_error",
@@ -232,6 +251,7 @@ class LiveBackend:
 
     def _respond_planner(self, request: DemoRequest) -> DemoResult:
         """Xử lý request với PlanExecutor."""
+        self._ensure_planner()
         executor = (
             self._executor_planner_memory if request.use_memory else self._executor_planner
         )
@@ -265,42 +285,14 @@ class LiveBackend:
         if agent is None:
             raise RuntimeError("Type1Agent not initialized")
 
-        if request.user_id is None:
-            return DemoResult(
-                status="tool_error",
-                text="Type1Agent cần user_id.",
-                items=[],
-                trace=None,
-                usage={},
-                error="Type1Agent requires user_id",
-            )
-
         # Lấy seed item từ lịch sử user (đơn giản hóa: lấy item cuối cùng)
         user_internal_id = self._user_id_to_internal_id.get(request.user_id)
-        if user_internal_id is None:
-            return DemoResult(
-                status="tool_error",
-                text=f"Không tìm thấy user {request.user_id}.",
-                items=[],
-                trace=None,
-                usage={},
-                error=f"User not found: {request.user_id}",
-            )
-
         user_history = self._fit_df[self._fit_df["user_idx"] == user_internal_id]
-        if user_history.empty:
-            return DemoResult(
-                status="no_result",
-                text="User này chưa có lịch sử mua hàng.",
-                items=[],
-                trace=None,
-                usage={},
-                error=None,
-            )
+        if request.intent_query is not None or request.intent_filters is not None or user_history.empty:
+            return self._respond_intent(request, user_history)
 
-        last_item_internal_id = user_history.iloc[-1]["item_idx"]
-        seed_item_id = self._internal_id_to_item_id.get(last_item_internal_id)
-        if seed_item_id is None:
+        seeds = recent_seed_items(user_history,self._internal_id_to_item_id,count=1)
+        if not seeds:
             return DemoResult(
                 status="tool_error",
                 text="Không tìm thấy item seed.",
@@ -310,8 +302,10 @@ class LiveBackend:
                 error="Seed item not found",
             )
 
-        out = agent.recommend(request.user_id, [seed_item_id], top_k=10)
+        out = agent.recommend(request.user_id, seeds, top_k=10)
         if not out["ok"]:
+            if out.get("stage")=="retrieve" and out.get("error")=="no candidates returned":
+                return self._respond_intent(request,user_history)
             return DemoResult(
                 status="tool_error",
                 text=f"Lỗi Type1Agent: {out.get('stage')}",
@@ -325,7 +319,7 @@ class LiveBackend:
         items = []
         for item in out["items"]:
             item_id = item.get("item_id", "")
-            meta = self._item_id_to_metadata.get(item_id, {})
+            meta = {**self._item_id_to_metadata.get(item_id, {}), **item}
             items.append(
                 DemoItem(
                     item_id=item_id,
@@ -340,10 +334,31 @@ class LiveBackend:
             )
 
         return DemoResult(
-            status="ok",
+            status="ok" if items else "no_result",
             text=f"Dựa trên lịch sử mua hàng của bạn, đây là {len(items)} sản phẩm tương tự.",
             items=items,
             trace=None,  # Type1Agent không có trace chi tiết
             usage={},
             error=None,
+            recommendation_source="history_itemcf",
         )
+
+    def _respond_intent(self, request: DemoRequest, history: pd.DataFrame) -> DemoResult:
+        if not request.intent_query or not request.intent_query.strip():
+            question="Bạn muốn tìm sản phẩm gì? Hãy điền từ khóa sản phẩm và bộ lọc giá; nếu muốn mô tả tự do, chọn Planner."
+            return DemoResult("ask_user",question,[],DemoTrace([],[],question,0,False,False,{}),{},None)
+        if self._intent_search is None or self._intent_query is None:
+            raise RuntimeError("Intent tools not initialized")
+        seen=[self._internal_id_to_item_id[int(i)] for i in history.item_idx.unique()
+              if int(i) in self._internal_id_to_item_id]
+        out=recommend_from_intent(self._intent_search,self._intent_query,request.intent_query,
+                                  filters=request.intent_filters,seen_items=seen,top_k=10)
+        items=[DemoItem(item_id=r["item_id"],domain=r.get("domain", ""),title=r.get("title") or "",
+                        store=r.get("store"),price=r.get("price"),average_rating=r.get("average_rating"),
+                        rating_number=r.get("rating_number"),main_category=r.get("main_category")) for r in out["items"]]
+        text={"ok":f"Tìm thấy {len(items)} sản phẩm theo từ khóa và bộ lọc bạn cung cấp.",
+              "no_result":"Không tìm thấy sản phẩm phù hợp; bạn có thể đổi từ khóa hoặc bộ lọc.",
+              "tool_error":"Không thể hoàn tất tìm kiếm. Hãy kiểm tra từ khóa tiếng Anh và bộ lọc hoặc thử lại.",
+              "ask_user":out["question"]}[out["status"]]
+        trace=DemoTrace(out["plan"],out["steps"],out["question"],0,out["status"]=="ok",False,{})
+        return DemoResult(out["status"],text,items,trace,{},out["error"],recommendation_source=out["source"])

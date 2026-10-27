@@ -1,0 +1,65 @@
+run:
+  timestamp: '2026-10-26T14:35:53.692159+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: 2a565672534167255322a03bab60e3d21e14d3a7ec15809abe05aeb24163b2fe
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 13.48
+  dataset:
+    tag: multi_domain
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    mapping_hash: 12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8
+    user_mapping_hash: 91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2132738419
+        mtime_ns: 1790441165783867400
+        sha256: 0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298978513
+        mtime_ns: 1790441169496644100
+        sha256: af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296357912
+        mtime_ns: 1790441173153835700
+        sha256: c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e
+config:
+  source: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\sparse_seed_eval\exp_002
+  source_hashes:
+    config.yaml: fb33407cbebd8186b36137b81f7e34d475708fe2d35c6c5d0635172137d81b43
+    metrics.json: d14432d2705955e5e07f5651b6ee670c98a4807e21c24440a00e7674a35b809e
+    records.jsonl: 6f235d8938652bce1e40f44d20cfb2029a01885eb03633cf2979eaae8fc7ab92
+    requests.jsonl: 154187a1e4bb07917fd0cb9c543608eccbcae4d889f568ceeade6d18bfdc09ef
+  policies:
+  - baseline
+  - latest_top3_guard
+  - latest_cf_first
+  primary_pool: seed_2
+  secondary_pool: seed_4 exploratory correlated diagnostic
+  interpretation: recorded prefix priorities only, NOT unobserved weighted model scores
+  candidate_pool: each source variant's unchanged eligible pool; never union with
+    missing donor items
+  primary_comparisons: 2
+  individual_confidence: 0.975
+  bootstrap_samples: 10000
+  metadata: source fields only; no fetch or serving-latency benchmark
+  production_changed: false
