@@ -21,14 +21,15 @@ class DemoItem:
 
 @dataclass
 class DemoTrace:
-    """Vết thực thi: plan JSON, từng step, reflections, usage."""
+    """Vết thực thi: plan JSON, từng step, reflections, usage, và thông tin inference."""
     plan: list[dict[str, Any]]
-    steps: list[dict[str, Any]]
+    steps: list[dict[str, Any]]  # mỗi step có: tool, ok, error, latency_seconds, args, output_summary
     ask_user: str | None
     reflections: int
     first_attempt_ok: bool
     truncated: bool
     usage: dict[str, Any]
+    inference: dict[str, Any] | None = None  # Thông tin từ Inference: composer, grounded, fallback_reason, reason, usage
 
 
 @dataclass

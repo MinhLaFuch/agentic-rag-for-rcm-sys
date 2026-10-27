@@ -4,3 +4,4 @@
 *.bat text eol=crlf
 # Recorded experiment outputs are artifacts, not source: keep them byte-for-byte.
 experiments/** -text
+

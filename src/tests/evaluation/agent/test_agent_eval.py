@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from package.agents import extract_recommendations
-from package.evaluation.agent import (
+from package.evaluation import (
     AgentRequest,
     build_requests,
     items_satisfying,
@@ -16,7 +16,7 @@ from package.evaluation.agent import (
     summarize,
     filter_requests_by_scope,
 )
-from package.evaluation.agent._helper import _deepest_category
+from package.evaluation.requests._helper import _deepest_category
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from package.tools import get_tool_limits

@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-10-27T08:49:08.148495+00:00",
+  "components": {
+    "memory": {
+      "status": "success",
+      "metrics": {
+        "known_correct": 0.1875,
+        "n_interactions_correct": 0.1875,
+        "top_categories_match": 0.25,
+        "price_range_correct": 0.3125,
+        "recent_items_match": 0.25
+      },
+      "latency": {
+        "mean": 3.956250012038254e-06,
+        "p95": 1.0900000006586197e-05
+      },
+      "cases_run": 16,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "planner": {
+      "status": "success",
+      "metrics": {
+        "tool_selection_accuracy": 0.5,
+        "argument_correctness": 0.375,
+        "plan_validity": 1.0,
+        "reference_correctness": 0.75,
+        "constraint_handling": 0.5,
+        "clarification_precision": 0.5,
+        "clarification_recall": 0.75,
+        "refusal_to_guess": 0.75
+      },
+      "latency": {
+        "mean": 5.290781299999992,
+        "p95": 8.428769699999975
+      },
+      "cases_run": 4,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "executor": {
+      "status": "success",
+      "metrics": {
+        "all_steps_ok": 0.6,
+        "reflection_rescued": 0.0,
+        "reflection_worsened": 0.0,
+        "reflection_no_change": 1.0,
+        "reflection_triggered": 0.4
+      },
+      "latency": {
+        "mean": 8.198000004995265e-05,
+        "p95": 0.0001257999999779713
+      },
+      "cases_run": 5,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "grounding": {
+      "status": "success",
+      "metrics": {
+        "claims_supported": 0.8,
+        "total_claims": 1.0,
+        "grounding_rate": 0.8,
+        "hallucination_rate": 0.2,
+        "prompt_injection_detected": 0.2
+      },
+      "latency": {
+        "mean": 2.1800000467919744e-06,
+        "p95": 3.099999958067201e-06
+      },
+      "cases_run": 5,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "integration": {
+      "status": "success",
+      "metrics": {
+        "contract_valid": 0.5714285714285714,
+        "no_mismatch": 0.5714285714285714
+      },
+      "latency": {
+        "mean": 6.50000002419152e-06,
+        "p95": 9.59999988481286e-06
+      },
+      "cases_run": 7,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    }
+  },
+  "summary": {
+    "total_components": 5,
+    "successful_components": 5,
+    "failed_components": 0
+  }
+}

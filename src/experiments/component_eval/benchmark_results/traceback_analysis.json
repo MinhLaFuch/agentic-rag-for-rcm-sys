@@ -1,0 +1,20 @@
+{
+  "total_failures": 2,
+  "attributions": [
+    {
+      "request_id": "req_001",
+      "error_type": "planner_error",
+      "likely_component": "planner",
+      "reason": "Insufficient data for attribution",
+      "confidence": 0.5
+    },
+    {
+      "request_id": "req_002",
+      "error_type": "executor_timeout",
+      "likely_component": "executor",
+      "reason": "Insufficient data for attribution",
+      "confidence": 0.5
+    }
+  ],
+  "confidence": "low"
+}

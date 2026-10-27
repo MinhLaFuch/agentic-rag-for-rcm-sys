@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-10-27T11:44:17.148435+00:00",
+  "components": {
+    "memory": {
+      "status": "success",
+      "metrics": {
+        "known_correct": 0.1875,
+        "n_interactions_correct": 0.1875,
+        "recent_items_match": 0.25,
+        "top_categories_match": 0.25,
+        "price_range_correct": 0.3125
+      },
+      "latency": {
+        "mean": 2.608333412960443e-06,
+        "p95": 5.833332882806038e-06
+      },
+      "cases_run": 16,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "planner": {
+      "status": "failed",
+      "error": "Benchmark did not run"
+    },
+    "executor": {
+      "status": "failed",
+      "error": "Benchmark did not run"
+    },
+    "grounding": {
+      "status": "failed",
+      "error": "Benchmark did not run"
+    },
+    "integration": {
+      "status": "success",
+      "metrics": {
+        "no_mismatch": 0.5714285714285714,
+        "contract_valid": 0.5714285714285714
+      },
+      "latency": {
+        "mean": 2.2285715073979062e-06,
+        "p95": 3.7666668504243717e-06
+      },
+      "cases_run": 7,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    }
+  },
+  "summary": {
+    "total_components": 5,
+    "successful_components": 2,
+    "failed_components": 3
+  }
+}

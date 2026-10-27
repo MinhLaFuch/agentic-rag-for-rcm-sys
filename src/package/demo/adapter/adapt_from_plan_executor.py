@@ -86,6 +86,7 @@ def adapt_from_plan_executor(
         first_attempt_ok=executor_last_first_attempt_ok,
         truncated=executor_last_truncated,
         usage=dict(executor_last_usage),
+        inference=None,
     )
 
     return DemoResult(

@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-10-27T08:42:10.195702+00:00",
+  "components": {
+    "memory": {
+      "status": "success",
+      "metrics": {
+        "known_correct": 0.1875,
+        "n_interactions_correct": 0.1875,
+        "top_categories_match": 0.25,
+        "price_range_correct": 0.3125,
+        "recent_items_match": 0.25
+      },
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 16,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "planner": {
+      "status": "success",
+      "metrics": {
+        "tool_selection_accuracy": 0.75,
+        "argument_correctness": 0.425,
+        "plan_validity": 1.0,
+        "reference_correctness": 0.75,
+        "constraint_handling": 0.75,
+        "clarification_precision": 0.5,
+        "clarification_recall": 0.75,
+        "refusal_to_guess": 0.75
+      },
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 4,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "executor": {
+      "status": "success",
+      "metrics": {
+        "all_steps_ok": 0.6,
+        "reflection_rescued": 0.0,
+        "reflection_worsened": 0.0,
+        "reflection_no_change": 1.0,
+        "reflection_triggered": 0.4
+      },
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 5,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "grounding": {
+      "status": "success",
+      "metrics": {
+        "claims_supported": 0.8,
+        "total_claims": 1.0,
+        "grounding_rate": 0.8,
+        "hallucination_rate": 0.2,
+        "prompt_injection_detected": 0.2
+      },
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 5,
+      "success_rate": 1.0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    }
+  },
+  "summary": {
+    "total_components": 4,
+    "successful_components": 4,
+    "failed_components": 0
+  }
+}

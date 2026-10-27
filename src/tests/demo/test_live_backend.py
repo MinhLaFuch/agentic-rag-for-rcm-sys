@@ -12,7 +12,7 @@ from package.config import get_data_paths
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
-from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error
+from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error, format_trace
 from package.tools import QueryTool, SQLTool
 from tests.tools_helpers import VG_A
 
@@ -256,6 +256,35 @@ def test_live_backend_get_sample_users(corpus):
     assert backend_with_params._eval_on == "test"
     assert backend_with_params._use_prebuilt is False
     assert backend_with_params._allow_missing_corpus_sources is True
+
+
+def test_live_backend_get_profiles(corpus):
+    """LiveBackend.get_profiles phải trả list DemoProfile."""
+    from package.demo import LiveBackend, DemoProfile
+    from package.data.mapping import load_mappings
+    from package.data.split import load_splits
+    from package.config import get_data_paths
+
+    data_paths = get_data_paths()
+    train, _, _ = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    user2id, _ = load_mappings(data_paths.mapped_dir)
+
+    backend = LiveBackend()
+    backend._fit_df = train
+    backend._user_id_to_internal_id = user2id
+    backend._initialized = True  # Bypass initialization check for test
+
+    profiles = backend.get_profiles()
+
+    assert isinstance(profiles, list)
+    assert len(profiles) >= 1
+    assert all(isinstance(p, DemoProfile) for p in profiles)
+
+    # Check blank profile exists
+    blank = next((p for p in profiles if p.profile_id == "blank"), None)
+    assert blank is not None
+    assert blank.user_id is None
+    assert blank.segment == "blank"
 
 
 def test_live_backend_meta_files_uses_all_domains_when_none():

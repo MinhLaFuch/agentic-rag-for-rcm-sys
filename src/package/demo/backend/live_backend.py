@@ -18,6 +18,7 @@ from package.data import ITEM_ID_SEPARATOR
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
+from package.inference import compose_answer, get_inference_limits, MODES, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
@@ -51,6 +52,7 @@ class LiveBackend:
         self._executor_planner: PlanExecutor | None = None
         self._executor_planner_memory: PlanExecutor | None = None
         self._type1_agent: Type1Agent | None = None
+        self._llm: Any = None
         self._item_id_to_metadata: dict[str, dict[str, Any]] = {}
         self._user_id_to_internal_id: dict[str, int] = {}
         self._internal_id_to_user_id: dict[int, str] = {}
@@ -62,6 +64,7 @@ class LiveBackend:
         self._intent_search = None
         self._intent_query = None
         self._knn_provenance = {"status": "not_initialized"}
+        self._memory_tool: Any = None  # Store MemoryTool for snapshots
 
     def initialize(self, *, initialize_planner: bool = True) -> None:
         """Tải dữ liệu và dựng executor (chạy một lần khi khởi động)."""
@@ -211,6 +214,12 @@ class LiveBackend:
         from ..samples import sample_users
         return sample_users(self._fit_df, self._user_id_to_internal_id, n_per_segment=n_per_segment, sparse_max=sparse_max)
 
+    def get_profiles(self) -> list[DemoProfile]:
+        """Lấy danh sách profiles (blank, pinned, auto)."""
+        if not self._initialized:
+            raise RuntimeError("Backend not initialized. Call initialize() first.")
+        return build_profiles(self._fit_df, self._user_id_to_internal_id)
+
     def respond(self, request: DemoRequest) -> DemoResult:
         """Xử lý request với locking (chạy tuần tự)."""
         with self._lock:
@@ -258,29 +267,134 @@ class LiveBackend:
         if executor is None:
             raise RuntimeError("Executor not initialized")
 
+        # Validate inference_mode
+        inference_mode = getattr(request, "inference_mode", get_inference_limits().mode)
+        if inference_mode not in MODES:
+            raise ValueError(f"inference_mode must be one of {list(MODES)}, got {inference_mode!r}")
+
+        # Identity injection
+        user_id = getattr(request, "user_id", None)
+        effective_text = request.text
+        if user_id and user_id not in request.text:
+            # Inject identity sentence (vi by default)
+            injection = IDENTITY_INJECTION_VI.format(user_id=user_id)
+            effective_text = f"{injection} {request.text}"
+
         # Cập nhật reflect_rounds từ request
         original_reflect = executor.reflect_rounds
         executor.reflect_rounds = request.reflect_rounds
 
+        # Memory snapshots (before and after)
+        memory_before = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
+
         try:
-            results = executor.run(request.text)
-            result = adapt_from_plan_executor(
-                results=results,
-                executor_last_plan=executor.last_plan,
-                executor_last_question=executor.last_question,
-                executor_last_reflections=executor.last_reflections,
-                executor_last_first_attempt_ok=executor.last_first_attempt_ok,
-                executor_last_truncated=executor.last_truncated,
-                executor_last_usage=executor.last_usage,
-                request=request,
-                item_id_to_metadata=self._item_id_to_metadata,
-            )
-            return result
+            results = executor.run(effective_text)
+            plan_error = None
+        except (ValueError, LLMProviderError) as exc:
+            # Lỗi từ executor.run -> chuyển thành plan_error cho Inference
+            plan_error = f"{type(exc).__name__}: {exc}"
+            results = []
         finally:
             executor.reflect_rounds = original_reflect
 
+        memory_after = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
+
+        # Dựng trace từ executor (tái sử dụng logic từ adapt_from_plan_executor)
+        trace = DemoTrace(
+            plan=executor.last_plan,
+            steps=[
+                {
+                    "tool": r.get("tool"),
+                    "ok": r.get("ok"),
+                    "error": None if r.get("error") is None else str(r["error"])[:get_demo_limits().max_error_length],
+                    "latency_seconds": r.get("latency_seconds"),
+                    "args": r.get("args"),
+                    "output_summary": r.get("output_summary"),
+                }
+                for r in results
+            ],
+            ask_user=executor.last_question,
+            reflections=executor.last_reflections,
+            first_attempt_ok=executor.last_first_attempt_ok,
+            truncated=executor.last_truncated,
+            usage=dict(executor.last_usage),
+        )
+
+        # Build MemoryView
+        memory_view = self._build_memory_view(
+            request.use_memory, results, memory_before, memory_after
+        )
+
+        # Dựng AgentOutcome và gọi Inference
+        outcome = outcome_from_plan_results(effective_text, results, question=executor.last_question, plan_error=plan_error)
+
+        try:
+            answer = compose_answer(outcome, self._llm, mode=inference_mode)
+        except Exception as exc:
+            # Lỗi bất ngờ từ compose_answer (không nên xảy ra vì đã có fallback)
+            return DemoResult(
+                status="tool_error",
+                text="Có lỗi không mong muốn xảy ra khi tạo câu trả lời.",
+                items=[],
+                trace=trace,
+                usage={},
+                error=f"{type(exc).__name__}: {str(exc)[:200]}",
+                memory=memory_view,
+            )
+
+        result = adapt_from_inference(answer, request=request, item_id_to_metadata=self._item_id_to_metadata, trace=trace)
+        result.memory = memory_view
+        return result
+
+    def _build_memory_view(
+        self,
+        use_memory: bool,
+        results: list[dict[str, Any]],
+        memory_before: dict[str, Any] | None,
+        memory_after: dict[str, Any] | None,
+    ) -> MemoryView | None:
+        """Build MemoryView từ executor results và memory snapshots."""
+        if not use_memory:
+            # Memory off: show profile data but label as not visible to agent
+            return MemoryView(
+                enabled=False,
+                called=False,
+                n_calls=0,
+                before=memory_before,
+                after=memory_after,
+                agent_calls=[],
+                consumed_by=[],
+            )
+
+        # Memory on: analyze executor results
+        memory_step_indices = [
+            i for i, r in enumerate(results) if r.get("tool") == "MemoryTool"
+        ]
+        agent_calls = [
+            {
+                "tool": r.get("tool"),
+                "ok": r.get("ok"),
+                "error": r.get("error"),
+                "args": r.get("args"),
+                "data": r.get("data"),
+            }
+            for r in results
+            if r.get("tool") == "MemoryTool"
+        ]
+        consumed_by = detect_consumed_by(results, memory_step_indices)
+
+        return MemoryView(
+            enabled=True,
+            called=len(memory_step_indices) > 0,
+            n_calls=len(memory_step_indices),
+            before=memory_before,
+            after=memory_after,
+            agent_calls=agent_calls,
+            consumed_by=consumed_by,
+        )
+
     def _respond_type1(self, request: DemoRequest) -> DemoResult:
-        """Xử lý request với Type1Agent."""
+        """Xử lý request với Type1Agent và Inference."""
         agent = self._type1_agent
         if agent is None:
             raise RuntimeError("Type1Agent not initialized")

@@ -91,14 +91,15 @@ def check_compatibility(
 ) -> tuple[bool, str]:
     """
     Kiểm tra tính tương thích giữa hai config.
-    
+
     Điều kiện để so:
     - seed khớp
     - per_segment khớp
     - eval_on khớp
     - language khớp
     - k khớp
-    
+    - eval_schema_version khớp (exp cũ không có trường này = phiên bản 1)
+
     Trả về (compatible, reason)
     """
     cfg_a = config_a.get("config", {})
@@ -108,40 +109,29 @@ def check_compatibility(
     # Experiment config.yaml files persist execution metadata under `run`,
     # while older callers/tests may still pass the legacy top-level layout.
     seed_a, seed_b = run_a.get("seed", cfg_a.get("seed")), run_b.get("seed", cfg_b.get("seed"))
-    
+
     if seed_a != seed_b:
         return False, f"seed mismatch: {seed_a} vs {seed_b}"
-    
+
     if cfg_a.get("per_segment") != cfg_b.get("per_segment"):
         return False, f"per_segment mismatch: {cfg_a.get('per_segment')} vs {cfg_b.get('per_segment')}"
-    
+
     dataset_a = run_a.get("dataset", config_a.get("dataset", {}))
     dataset_b = run_b.get("dataset", config_b.get("dataset", {}))
 
-    protocol_a, protocol_b = cfg_a.get("protocol"), cfg_b.get("protocol")
-    if (protocol_a is None) != (protocol_b is None):
-        return False, "protocol mismatch: legacy and versioned evaluation must not be pooled"
-    if protocol_a is not None:
-        if protocol_a.get("query_normalization", "raw") != protocol_b.get("query_normalization", "raw"):
-            return False, "protocol query_normalization mismatch"
-        for key in ("version", "evaluation_kind", "metadata_policy", "item_knn",
-                    "label_policy", "cohort_policy", "history_size",
-                    "fit_timestamp_max", "target_timestamp_min", "request_scope",
-                    "request_content_sha256", "candidate_target_denominator",
-                    "ranking_target_denominator"):
-            if protocol_a.get(key) != protocol_b.get(key):
-                return False, f"protocol {key} mismatch"
-    for key in ("tag", "mapping_hash", "user_mapping_hash"):
-        if dataset_a.get(key) != dataset_b.get(key):
-            return False, f"dataset {key} mismatch"
-    
     if dataset_a.get("eval_on") != dataset_b.get("eval_on"):
         return False, f"eval_on mismatch: {dataset_a.get('eval_on')} vs {dataset_b.get('eval_on')}"
-    
+
     if cfg_a.get("language") != cfg_b.get("language"):
         return False, f"language mismatch: {cfg_a.get('language')} vs {cfg_b.get('language')}"
-    
+
     if cfg_a.get("k") != cfg_b.get("k"):
         return False, f"k mismatch: {cfg_a.get('k')} vs {cfg_b.get('k')}"
-    
+
+    # Check eval_schema_version: missing field = version 1
+    version_a = cfg_a.get("eval_schema_version", 1)
+    version_b = cfg_b.get("eval_schema_version", 1)
+    if version_a != version_b:
+        return False, f"eval_schema_version mismatch: {version_a} vs {version_b} (cannot compare experiments with different schema versions)"
+
     return True, ""

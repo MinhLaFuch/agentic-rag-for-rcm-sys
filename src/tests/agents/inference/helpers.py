@@ -8,7 +8,7 @@ from typing import Any
 from package.api import LLMProviderError
 from package.api.llm_provider import LLMProvider
 from package.inference import AgentOutcome
-from tests.agents.test_plan_executor import ScriptedLLM
+from tests.agents.fakes.scripted_llm import ScriptedLLM
 
 __all__ = ["FailingLLM", "ScriptedLLM", "NoneOrEmptyLLM", "good_reply", "item", "outcome", "reply"]
 
@@ -27,12 +27,12 @@ class FailingLLM(LLMProvider):
     provider_name = "failing"
 
     def __init__(self, fail_once: bool = False, success_items: list | None = None) -> None:
-        self.calls: list[list] = []
+        self.calls: list[dict] = []
         self.fail_once = fail_once
         self.success_items = success_items
 
     def complete(self, messages, *, temperature=0.0, max_tokens=512, response_format_json=False):
-        self.calls.append(list(messages))
+        self.calls.append({"messages": list(messages), "temperature": temperature, "max_tokens": max_tokens, "response_format_json": response_format_json})
         if self.fail_once and len(self.calls) == 1:
             raise LLMProviderError("endpoint down: " + "x" * 1000)
         if self.fail_once:
@@ -46,11 +46,11 @@ class NoneOrEmptyLLM(LLMProvider):
     provider_name = "none_or_empty"
 
     def __init__(self, responses: list) -> None:
-        self.calls: list[list] = []
+        self.calls: list[dict] = []
         self.responses = responses
 
     def complete(self, messages, *, temperature=0.0, max_tokens=512, response_format_json=False):
-        self.calls.append(list(messages))
+        self.calls.append({"messages": list(messages), "temperature": temperature, "max_tokens": max_tokens, "response_format_json": response_format_json})
         resp = self.responses[len(self.calls) - 1] if len(self.calls) <= len(self.responses) else self.responses[-1]
         from package.api.llm_provider import LLMResponse
 
