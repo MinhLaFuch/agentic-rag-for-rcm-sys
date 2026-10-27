@@ -10,7 +10,4 @@ def ensure_utf8_stdout() -> None:
             try:
                 stream.reconfigure(encoding="utf-8", errors="replace")
             except (AttributeError, ValueError):
-                # Một số stream (ví dụ khi bị redirect) không hỗ trợ
-                # reconfigure — bỏ qua, chấp nhận rủi ro thay vì crash
-                # script vì lý do phụ.
                 pass

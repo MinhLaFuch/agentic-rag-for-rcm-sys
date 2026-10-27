@@ -1,0 +1,700 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "executor",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "executor_001",
+      "actual_output": {
+        "results": [
+          {
+            "tool": "SQLTool",
+            "ok": true,
+            "data": {
+              "ok": true,
+              "data": {
+                "candidates": [
+                  {
+                    "item_id": "item_0",
+                    "domain": "Video_Games"
+                  },
+                  {
+                    "item_id": "item_1",
+                    "domain": "Video_Games"
+                  },
+                  {
+                    "item_id": "item_2",
+                    "domain": "Video_Games"
+                  },
+                  {
+                    "item_id": "item_3",
+                    "domain": "Video_Games"
+                  },
+                  {
+                    "item_id": "item_4",
+                    "domain": "Video_Games"
+                  }
+                ],
+                "total_matches": 5
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "ok": true,
+              "data": {
+                "total_matches": 5
+              }
+            },
+            "latency_seconds": 0.000108
+          }
+        ],
+        "first_attempt_ok": true,
+        "reflections_used": 0,
+        "attempts": 0,
+        "latency_seconds": 0.00011109999999803222
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "no_invented_ids": 1.0,
+        "references_resolved": 1.0,
+        "tool_error_handled": 1.0,
+        "empty_output_handled": 1.0,
+        "reference_error": 0.0,
+        "reflection_triggered": 0.0,
+        "reflections_within_limit": 1.0
+      },
+      "latency_seconds": 0.00013210000000185573,
+      "token_usage": null
+    },
+    {
+      "case_id": "executor_002",
+      "actual_output": {
+        "results": [
+          {
+            "tool": "ItemCFTool",
+            "ok": true,
+            "data": {
+              "ok": true,
+              "data": {
+                "candidates": [
+                  {
+                    "item_id": "similar_0",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_1",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_2",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_3",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_4",
+                    "similarity": 0.8
+                  }
+                ],
+                "unknown_items": []
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "items": [
+                "item_123"
+              ],
+              "top_k": 10
+            },
+            "output_summary": {
+              "ok": true,
+              "data": {}
+            },
+            "latency_seconds": 4.8e-05
+          },
+          {
+            "tool": "SQLTool",
+            "ok": false,
+            "data": {},
+            "error": "unknown arg(s) ['candidates'] for SQLTool; allowed: ['filters', 'limit']",
+            "invented_ids": [],
+            "error_kind": "unknown_args",
+            "args": {
+              "filters": {
+                "price_max": 100
+              },
+              "candidates": "$1.candidates",
+              "limit": 10
+            },
+            "latency_seconds": 1e-05
+          }
+        ],
+        "first_attempt_ok": true,
+        "reflections_used": 0,
+        "attempts": 0,
+        "latency_seconds": 6.099999998809835e-05
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 0.0,
+        "no_invented_ids": 1.0,
+        "references_resolved": 1.0,
+        "tool_error_handled": 1.0,
+        "empty_output_handled": 1.0,
+        "reference_error": 0.0,
+        "reflection_triggered": 0.0,
+        "reflections_within_limit": 1.0
+      },
+      "latency_seconds": 7.519999999772153e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "executor_003",
+      "actual_output": {
+        "results": [
+          {
+            "tool": "SQLTool",
+            "ok": true,
+            "data": {
+              "ok": false,
+              "data": {},
+              "error": "Simulated tool failure"
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "ok": false,
+              "data": {},
+              "error": "Simulated tool failure"
+            },
+            "latency_seconds": 3e-05
+          }
+        ],
+        "first_attempt_ok": true,
+        "reflections_used": 0,
+        "attempts": 0,
+        "latency_seconds": 3.209999999853608e-05
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "no_invented_ids": 1.0,
+        "references_resolved": 1.0,
+        "tool_error_handled": 1.0,
+        "empty_output_handled": 1.0,
+        "reference_error": 0.0,
+        "reflection_triggered": 0.0,
+        "reflections_within_limit": 1.0
+      },
+      "latency_seconds": 4.239999998389976e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "executor_004",
+      "actual_output": {
+        "results": [
+          {
+            "tool": "SQLTool",
+            "ok": true,
+            "data": {
+              "ok": true,
+              "data": {
+                "candidates": [],
+                "total_matches": 0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "ok": true,
+              "data": {
+                "total_matches": 0
+              }
+            },
+            "latency_seconds": 2.6e-05
+          }
+        ],
+        "first_attempt_ok": true,
+        "reflections_used": 0,
+        "attempts": 0,
+        "latency_seconds": 2.729999999928623e-05
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "no_invented_ids": 1.0,
+        "references_resolved": 1.0,
+        "tool_error_handled": 1.0,
+        "empty_output_handled": 1.0,
+        "reference_error": 0.0,
+        "reflection_triggered": 0.0,
+        "reflections_within_limit": 1.0
+      },
+      "latency_seconds": 3.429999998161293e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "executor_005",
+      "actual_output": {
+        "results": [
+          {
+            "tool": "ItemCFTool",
+            "ok": true,
+            "data": {
+              "ok": true,
+              "data": {
+                "candidates": [
+                  {
+                    "item_id": "similar_0",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_1",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_2",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_3",
+                    "similarity": 0.8
+                  },
+                  {
+                    "item_id": "similar_4",
+                    "similarity": 0.8
+                  }
+                ],
+                "unknown_items": []
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "items": [
+                "item_123"
+              ],
+              "top_k": 10
+            },
+            "output_summary": {
+              "ok": true,
+              "data": {}
+            },
+            "latency_seconds": 3.3e-05
+          },
+          {
+            "tool": "SQLTool",
+            "ok": false,
+            "data": {},
+            "error": "unknown arg(s) ['candidates'] for SQLTool; allowed: ['filters', 'limit']",
+            "invented_ids": [],
+            "error_kind": "unknown_args",
+            "args": {
+              "filters": {
+                "price_max": 100
+              },
+              "candidates": "$2.candidates",
+              "limit": 10
+            },
+            "latency_seconds": 8e-06
+          }
+        ],
+        "first_attempt_ok": true,
+        "reflections_used": 0,
+        "attempts": 0,
+        "latency_seconds": 4.3000000005122274e-05
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 0.0,
+        "no_invented_ids": 1.0,
+        "references_resolved": 1.0,
+        "tool_error_handled": 1.0,
+        "empty_output_handled": 1.0,
+        "reference_error": 0.0,
+        "reflection_triggered": 0.0,
+        "reflections_within_limit": 1.0
+      },
+      "latency_seconds": 5.1400000018020364e-05,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "all_steps_ok_mean": 0.6,
+    "all_steps_ok_std": 0.48989794855663565,
+    "all_steps_ok_min": 0.0,
+    "all_steps_ok_max": 1.0,
+    "empty_output_handled_mean": 1.0,
+    "empty_output_handled_std": 0.0,
+    "empty_output_handled_min": 1.0,
+    "empty_output_handled_max": 1.0,
+    "no_invented_ids_mean": 1.0,
+    "no_invented_ids_std": 0.0,
+    "no_invented_ids_min": 1.0,
+    "no_invented_ids_max": 1.0,
+    "reference_error_mean": 0.0,
+    "reference_error_std": 0.0,
+    "reference_error_min": 0.0,
+    "reference_error_max": 0.0,
+    "references_resolved_mean": 1.0,
+    "references_resolved_std": 0.0,
+    "references_resolved_min": 1.0,
+    "references_resolved_max": 1.0,
+    "reflection_triggered_mean": 0.0,
+    "reflection_triggered_std": 0.0,
+    "reflection_triggered_min": 0.0,
+    "reflection_triggered_max": 0.0,
+    "reflections_within_limit_mean": 1.0,
+    "reflections_within_limit_std": 0.0,
+    "reflections_within_limit_min": 1.0,
+    "reflections_within_limit_max": 1.0,
+    "tool_error_handled_mean": 1.0,
+    "tool_error_handled_std": 0.0,
+    "tool_error_handled_min": 1.0,
+    "tool_error_handled_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 6.707999999662206e-05,
+    "std": 3.527896824352822e-05,
+    "min": 3.429999998161293e-05,
+    "max": 0.00013210000000185573,
+    "p50": 5.1400000018020364e-05,
+    "p95": 0.00012072000000102888,
+    "p99": 0.00012982400000169036
+  },
+  "token_cost": null,
+  "timestamp": "2026-10-27T08:28:10.170942+00:00",
+  "git_sha": "782814126d539bd22518e109ca90374ab844adaf",
+  "tags_summary": {
+    "executor": {
+      "all_steps_ok_mean": 0.6,
+      "all_steps_ok_std": 0.48989794855663565,
+      "all_steps_ok_min": 0.0,
+      "all_steps_ok_max": 1.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 6.707999999662206e-05,
+      "std": 3.527896824352822e-05,
+      "min": 3.429999998161293e-05,
+      "max": 0.00013210000000185573,
+      "p50": 5.1400000018020364e-05,
+      "p95": 0.00012072000000102888,
+      "p99": 0.00012982400000169036
+    },
+    "normal": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00013210000000185573,
+      "std": 0.0,
+      "min": 0.00013210000000185573,
+      "max": 0.00013210000000185573,
+      "p50": 0.00013210000000185573,
+      "p95": 0.00013210000000185573,
+      "p99": 0.00013210000000185573
+    },
+    "reference": {
+      "all_steps_ok_mean": 0.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 0.0,
+      "all_steps_ok_max": 0.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 7.519999999772153e-05,
+      "std": 0.0,
+      "min": 7.519999999772153e-05,
+      "max": 7.519999999772153e-05,
+      "p50": 7.519999999772153e-05,
+      "p95": 7.519999999772153e-05,
+      "p99": 7.519999999772153e-05
+    },
+    "error": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 4.239999998389976e-05,
+      "std": 0.0,
+      "min": 4.239999998389976e-05,
+      "max": 4.239999998389976e-05,
+      "p50": 4.239999998389976e-05,
+      "p95": 4.239999998389976e-05,
+      "p99": 4.239999998389976e-05
+    },
+    "reflection": {
+      "all_steps_ok_mean": 0.6666666666666666,
+      "all_steps_ok_std": 0.4714045207910317,
+      "all_steps_ok_min": 0.0,
+      "all_steps_ok_max": 1.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 4.269999999451102e-05,
+      "std": 6.984268051178002e-06,
+      "min": 3.429999998161293e-05,
+      "max": 5.1400000018020364e-05,
+      "p50": 4.239999998389976e-05,
+      "p95": 5.0500000014608304e-05,
+      "p99": 5.122000001733795e-05
+    },
+    "empty": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 3.429999998161293e-05,
+      "std": 0.0,
+      "min": 3.429999998161293e-05,
+      "max": 3.429999998161293e-05,
+      "p50": 3.429999998161293e-05,
+      "p95": 3.429999998161293e-05,
+      "p99": 3.429999998161293e-05
+    },
+    "reference_error": {
+      "all_steps_ok_mean": 0.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 0.0,
+      "all_steps_ok_max": 0.0,
+      "empty_output_handled_mean": 1.0,
+      "empty_output_handled_std": 0.0,
+      "empty_output_handled_min": 1.0,
+      "empty_output_handled_max": 1.0,
+      "no_invented_ids_mean": 1.0,
+      "no_invented_ids_std": 0.0,
+      "no_invented_ids_min": 1.0,
+      "no_invented_ids_max": 1.0,
+      "reference_error_mean": 0.0,
+      "reference_error_std": 0.0,
+      "reference_error_min": 0.0,
+      "reference_error_max": 0.0,
+      "references_resolved_mean": 1.0,
+      "references_resolved_std": 0.0,
+      "references_resolved_min": 1.0,
+      "references_resolved_max": 1.0,
+      "reflection_triggered_mean": 0.0,
+      "reflection_triggered_std": 0.0,
+      "reflection_triggered_min": 0.0,
+      "reflection_triggered_max": 0.0,
+      "reflections_within_limit_mean": 1.0,
+      "reflections_within_limit_std": 0.0,
+      "reflections_within_limit_min": 1.0,
+      "reflections_within_limit_max": 1.0,
+      "tool_error_handled_mean": 1.0,
+      "tool_error_handled_std": 0.0,
+      "tool_error_handled_min": 1.0,
+      "tool_error_handled_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 5.1400000018020364e-05,
+      "std": 0.0,
+      "min": 5.1400000018020364e-05,
+      "max": 5.1400000018020364e-05,
+      "p50": 5.1400000018020364e-05,
+      "p95": 5.1400000018020364e-05,
+      "p99": 5.1400000018020364e-05
+    }
+  }
+}

@@ -108,13 +108,16 @@ class SplitDiagnosis:
     test_users_with_train_history_pct: float  # % test users seen in train
     val_history_len_stats: dict[str, float]  # {min, median, p90} of train history length for val users
     test_history_len_stats: dict[str, float]  # {min, median, p90} of train history length for test users
-    # Repeat pairs (leakage due to exclude)
+    # Repeated user-item pairs; repeat events are not inherently leakage
     val_repeat_pairs_pct: float  # % val (user, item) pairs already in train
     test_repeat_pairs_pct: float  # % test (user, item) pairs already in train+val
-    # Theoretical recall ceiling
-    val_reachable_pct: float  # % val rows where item in train AND pair not in train history
-    test_reachable_pct: float  # % test rows where item in train AND pair not in train+val history
+    # Micro unique-pair catalog eligibility, NOT a macro Recall@K ceiling
+    val_reachable_pct: float  # % unique val pairs: item in train and pair absent from train
+    test_reachable_pct: float  # % unique test pairs: item in train+validation and pair absent from fit
     # Multi-domain users
     train_multi_domain_users_pct: float
     val_multi_domain_users_pct: float
     test_multi_domain_users_pct: float
+    protocol: dict = field(default_factory=dict)
+    fit_diagnostics: dict = field(default_factory=dict)
+    domain_diagnostics: dict = field(default_factory=dict)

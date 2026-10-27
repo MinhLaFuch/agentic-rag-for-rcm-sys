@@ -12,3 +12,9 @@ demo:
 
   # Ngôn ngữ mặc định cho template câu hỏi mẫu
   default_language: "vi"
+
+  # Số lượng item gần đây tối đa hiển thị trong memory panel
+  max_recent_items_display: 5
+
+  # Số lượng hàng tối đa trong turn history
+  max_turn_history_rows: 50

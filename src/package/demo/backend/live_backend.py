@@ -16,15 +16,22 @@ from package.data import ITEM_ID_SEPARATOR
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
+from package.inference import compose_answer, get_inference_limits, MODES, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import select_fit_target
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.load_item_knn import load_item_knn
-from ..adapter import adapt_from_plan_executor
-from ..adapter import adapt_from_plan_executor_error
-from ..view import DemoItem, DemoRequest, DemoResult
+from package.tools.recommenders.fit_provenance import fit_provenance
+from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from .._consumed_by import detect_consumed_by
+from .._memory_snapshot import take_memory_snapshot
+from .._profile_builder import build_profiles
+from ..adapter import adapt_from_inference, adapt_from_plan_executor, adapt_from_plan_executor_error
+from ..samples import IDENTITY_INJECTION_EN, IDENTITY_INJECTION_VI
+from ..view import DemoItem, DemoProfile, MemoryView, DemoRequest, DemoResult, DemoTrace
+from .._limits import get_demo_limits
 
 
 class LiveBackend:
@@ -47,6 +54,7 @@ class LiveBackend:
         self._executor_planner: PlanExecutor | None = None
         self._executor_planner_memory: PlanExecutor | None = None
         self._type1_agent: Type1Agent | None = None
+        self._llm: Any = None
         self._item_id_to_metadata: dict[str, dict[str, Any]] = {}
         self._user_id_to_internal_id: dict[str, int] = {}
         self._internal_id_to_user_id: dict[int, str] = {}
@@ -54,6 +62,8 @@ class LiveBackend:
         self._internal_id_to_item_id: dict[int, str] = {}
         self._fit_df: pd.DataFrame | None = None
         self._initialized = False
+        self._knn_provenance = {"status": "not_initialized"}
+        self._memory_tool: Any = None  # Store MemoryTool for snapshots
 
     def initialize(self) -> None:
         """Tải dữ liệu và dựng executor (chạy một lần khi khởi động)."""
@@ -134,23 +144,32 @@ class LiveBackend:
                 )
             print(f"Load ItemKNN from {item_knn_path}")
             try:
-                knn = load_item_knn(item_knn_path, knn_k, fit_pairs)
+                knn = load_item_knn(item_knn_path, knn_k, fit_pairs, user2id=user2id,
+                                     item2id=item2id, eval_on=self._eval_on, tag=data_paths.tag)
+                self._knn_provenance = {"status": "validated_cache", **knn._provenance}
                 fit_time = getattr(knn, "_fit_time", None)
                 print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
             except ValueError as exc:
-                if "Data hash mismatch" not in str(exc):
-                    raise
-                print("  cached ItemKNN data hash differs from current fit split; fitting a fresh model")
+                print(f"  ItemKNN cache rejected ({exc}); fitting from current fit split and mappings")
+                self._knn_provenance = {"status": "refit_cache_rejected", "reason": str(exc)}
                 t0 = time.perf_counter()
                 knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
                 knn._fit_time = time.perf_counter() - t0
                 print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
         else:
+            self._knn_provenance = {"status": "refit_requested"}
             print("Fit ItemKNN on fit data (--no-prebuilt)")
             t0 = time.perf_counter()
             knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
             knn._fit_time = time.perf_counter() - t0
             print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
+
+        if not hasattr(knn, "_fit_data_hash"):
+            knn._fit_data_hash = item_knn_data_hash(fit_pairs)
+        self._knn_provenance.update(
+            fit_provenance(fit_pairs, user2id=user2id, item2id=item2id,
+                           eval_on=self._eval_on, tag=data_paths.tag))
+        self._knn_provenance.update(data_hash=knn._fit_data_hash, neighbors=knn_k)
 
         # Build tools
         logger = ToolCallLogger()
@@ -158,11 +177,18 @@ class LiveBackend:
             knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
         )
 
+        # Store MemoryTool for snapshots
+        tools_memory = build_tools(
+            knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
+        )
+        self._memory_tool = tools_memory.memory if hasattr(tools_memory, "memory") else None
+
         # Build LLM provider
         print("Đang kiểm tra LLM...")
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
             raise RuntimeError("LLM health check failed: check configs/agent/llm.yaml và LLM_API_KEY")
+        self._llm = llm
 
         # Build executors
         self._executor_planner = PlanExecutor(llm, tools.for_planner())
@@ -184,6 +210,12 @@ class LiveBackend:
         """Lấy sample users theo segment (cold/sparse/warm)."""
         from ..samples import sample_users
         return sample_users(self._fit_df, self._user_id_to_internal_id, n_per_segment=n_per_segment, sparse_max=sparse_max)
+
+    def get_profiles(self) -> list[DemoProfile]:
+        """Lấy danh sách profiles (blank, pinned, auto)."""
+        if not self._initialized:
+            raise RuntimeError("Backend not initialized. Call initialize() first.")
+        return build_profiles(self._fit_df, self._user_id_to_internal_id)
 
     def respond(self, request: DemoRequest) -> DemoResult:
         """Xử lý request với locking (chạy tuần tự)."""
@@ -219,36 +251,141 @@ class LiveBackend:
                 )
 
     def _respond_planner(self, request: DemoRequest) -> DemoResult:
-        """Xử lý request với PlanExecutor."""
+        """Xử lý request với PlanExecutor và Inference."""
         executor = (
             self._executor_planner_memory if request.use_memory else self._executor_planner
         )
         if executor is None:
             raise RuntimeError("Executor not initialized")
 
+        # Validate inference_mode
+        inference_mode = getattr(request, "inference_mode", get_inference_limits().mode)
+        if inference_mode not in MODES:
+            raise ValueError(f"inference_mode must be one of {list(MODES)}, got {inference_mode!r}")
+
+        # Identity injection
+        user_id = getattr(request, "user_id", None)
+        effective_text = request.text
+        if user_id and user_id not in request.text:
+            # Inject identity sentence (vi by default)
+            injection = IDENTITY_INJECTION_VI.format(user_id=user_id)
+            effective_text = f"{injection} {request.text}"
+
         # Cập nhật reflect_rounds từ request
         original_reflect = executor.reflect_rounds
         executor.reflect_rounds = request.reflect_rounds
 
+        # Memory snapshots (before and after)
+        memory_before = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
+
         try:
-            results = executor.run(request.text)
-            result = adapt_from_plan_executor(
-                results=results,
-                executor_last_plan=executor.last_plan,
-                executor_last_question=executor.last_question,
-                executor_last_reflections=executor.last_reflections,
-                executor_last_first_attempt_ok=executor.last_first_attempt_ok,
-                executor_last_truncated=executor.last_truncated,
-                executor_last_usage=executor.last_usage,
-                request=request,
-                item_id_to_metadata=self._item_id_to_metadata,
-            )
-            return result
+            results = executor.run(effective_text)
+            plan_error = None
+        except (ValueError, LLMProviderError) as exc:
+            # Lỗi từ executor.run -> chuyển thành plan_error cho Inference
+            plan_error = f"{type(exc).__name__}: {exc}"
+            results = []
         finally:
             executor.reflect_rounds = original_reflect
 
+        memory_after = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
+
+        # Dựng trace từ executor (tái sử dụng logic từ adapt_from_plan_executor)
+        trace = DemoTrace(
+            plan=executor.last_plan,
+            steps=[
+                {
+                    "tool": r.get("tool"),
+                    "ok": r.get("ok"),
+                    "error": None if r.get("error") is None else str(r["error"])[:get_demo_limits().max_error_length],
+                    "latency_seconds": r.get("latency_seconds"),
+                    "args": r.get("args"),
+                    "output_summary": r.get("output_summary"),
+                }
+                for r in results
+            ],
+            ask_user=executor.last_question,
+            reflections=executor.last_reflections,
+            first_attempt_ok=executor.last_first_attempt_ok,
+            truncated=executor.last_truncated,
+            usage=dict(executor.last_usage),
+        )
+
+        # Build MemoryView
+        memory_view = self._build_memory_view(
+            request.use_memory, results, memory_before, memory_after
+        )
+
+        # Dựng AgentOutcome và gọi Inference
+        outcome = outcome_from_plan_results(effective_text, results, question=executor.last_question, plan_error=plan_error)
+
+        try:
+            answer = compose_answer(outcome, self._llm, mode=inference_mode)
+        except Exception as exc:
+            # Lỗi bất ngờ từ compose_answer (không nên xảy ra vì đã có fallback)
+            return DemoResult(
+                status="tool_error",
+                text="Có lỗi không mong muốn xảy ra khi tạo câu trả lời.",
+                items=[],
+                trace=trace,
+                usage={},
+                error=f"{type(exc).__name__}: {str(exc)[:200]}",
+                memory=memory_view,
+            )
+
+        result = adapt_from_inference(answer, request=request, item_id_to_metadata=self._item_id_to_metadata, trace=trace)
+        result.memory = memory_view
+        return result
+
+    def _build_memory_view(
+        self,
+        use_memory: bool,
+        results: list[dict[str, Any]],
+        memory_before: dict[str, Any] | None,
+        memory_after: dict[str, Any] | None,
+    ) -> MemoryView | None:
+        """Build MemoryView từ executor results và memory snapshots."""
+        if not use_memory:
+            # Memory off: show profile data but label as not visible to agent
+            return MemoryView(
+                enabled=False,
+                called=False,
+                n_calls=0,
+                before=memory_before,
+                after=memory_after,
+                agent_calls=[],
+                consumed_by=[],
+            )
+
+        # Memory on: analyze executor results
+        memory_step_indices = [
+            i for i, r in enumerate(results) if r.get("tool") == "MemoryTool"
+        ]
+        agent_calls = [
+            {
+                "tool": r.get("tool"),
+                "ok": r.get("ok"),
+                "error": r.get("error"),
+                "args": r.get("args"),
+                "data": r.get("data"),
+            }
+            for r in results
+            if r.get("tool") == "MemoryTool"
+        ]
+        consumed_by = detect_consumed_by(results, memory_step_indices)
+
+        return MemoryView(
+            enabled=True,
+            called=len(memory_step_indices) > 0,
+            n_calls=len(memory_step_indices),
+            before=memory_before,
+            after=memory_after,
+            agent_calls=agent_calls,
+            consumed_by=consumed_by,
+        )
+
     def _respond_type1(self, request: DemoRequest) -> DemoResult:
-        """Xử lý request với Type1Agent."""
+        """Xử lý request với Type1Agent và Inference."""
         agent = self._type1_agent
         if agent is None:
             raise RuntimeError("Type1Agent not initialized")
@@ -262,6 +399,11 @@ class LiveBackend:
                 usage={},
                 error="Type1Agent requires user_id",
             )
+
+        # Validate inference_mode
+        inference_mode = getattr(request, "inference_mode", get_inference_limits().mode)
+        if inference_mode not in MODES:
+            raise ValueError(f"inference_mode must be one of {list(MODES)}, got {inference_mode!r}")
 
         # Lấy seed item từ lịch sử user (đơn giản hóa: lấy item cuối cùng)
         user_internal_id = self._user_id_to_internal_id.get(request.user_id)
@@ -309,29 +451,20 @@ class LiveBackend:
                 error=f"{out.get('stage')}: {out.get('error')}",
             )
 
-        # Convert sang DemoItem
-        items = []
-        for item in out["items"]:
-            item_id = item.get("item_id", "")
-            meta = self._item_id_to_metadata.get(item_id, {})
-            items.append(
-                DemoItem(
-                    item_id=item_id,
-                    domain=meta.get("domain", ""),
-                    title=meta.get("title", ""),
-                    store=meta.get("store"),
-                    price=meta.get("price"),
-                    average_rating=meta.get("average_rating"),
-                    rating_number=meta.get("rating_number"),
-                    main_category=meta.get("main_category"),
-                )
+        # Dựng AgentOutcome và gọi Inference
+        outcome = outcome_from_type1(request.text, out)
+
+        try:
+            answer = compose_answer(outcome, self._llm, mode=inference_mode)
+        except Exception as exc:
+            # Lỗi bất ngờ từ compose_answer (không nên xảy ra vì đã có fallback)
+            return DemoResult(
+                status="tool_error",
+                text="Có lỗi không mong muốn xảy ra khi tạo câu trả lời.",
+                items=[],
+                trace=None,
+                usage={},
+                error=f"{type(exc).__name__}: {str(exc)[:200]}",
             )
 
-        return DemoResult(
-            status="ok",
-            text=f"Dựa trên lịch sử mua hàng của bạn, đây là {len(items)} sản phẩm tương tự.",
-            items=items,
-            trace=None,  # Type1Agent không có trace chi tiết
-            usage={},
-            error=None,
-        )
+        return adapt_from_inference(answer, request=request, item_id_to_metadata=self._item_id_to_metadata, trace=None)

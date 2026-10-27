@@ -1,0 +1,1510 @@
+{
+  "baseline_summary": {
+    "benchmark_version": "1.0.0",
+    "component": "memory",
+    "config": {},
+    "prompt_schema_hash": null,
+    "run_count": 1,
+    "per_case_results": [
+      {
+        "case_id": "memory_001",
+        "actual_output": {
+          "user_id": "u1",
+          "known": true,
+          "n_interactions": 3,
+          "top_categories": [
+            "Action",
+            "Puzzle"
+          ],
+          "price_range": {
+            "min": 1.0,
+            "max": 300.0
+          },
+          "recent_items": [
+            "Video_Games::vg_c",
+            "Video_Games::vg_b",
+            "Video_Games::vg_a"
+          ]
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.0011733999999705702,
+        "token_usage": null
+      },
+      {
+        "case_id": "memory_002",
+        "actual_output": {
+          "user_id": "unknown_user",
+          "known": false,
+          "n_interactions": 0,
+          "top_categories": [],
+          "price_range": null,
+          "recent_items": []
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.00025319999986095354,
+        "token_usage": null
+      },
+      {
+        "case_id": "memory_003",
+        "actual_output": {
+          "user_id": "u0",
+          "known": false,
+          "n_interactions": 0,
+          "top_categories": [],
+          "price_range": null,
+          "recent_items": []
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.00020569999833242036,
+        "token_usage": null
+      }
+    ],
+    "metrics": {
+      "known_correct_mean": 1.0,
+      "known_correct_std": 0.0,
+      "known_correct_min": 1.0,
+      "known_correct_max": 1.0,
+      "n_interactions_correct_mean": 1.0,
+      "n_interactions_correct_std": 0.0,
+      "n_interactions_correct_min": 1.0,
+      "n_interactions_correct_max": 1.0,
+      "price_range_correct_mean": 1.0,
+      "price_range_correct_std": 0.0,
+      "price_range_correct_min": 1.0,
+      "price_range_correct_max": 1.0,
+      "recent_items_match_mean": 1.0,
+      "recent_items_match_std": 0.0,
+      "recent_items_match_min": 1.0,
+      "recent_items_match_max": 1.0,
+      "top_categories_match_mean": 1.0,
+      "top_categories_match_std": 0.0,
+      "top_categories_match_min": 1.0,
+      "top_categories_match_max": 1.0,
+      "success_rate": 1.0
+    },
+    "latency": {
+      "mean": 0.0005440999993879814,
+      "std": 0.0004454046329546782,
+      "min": 0.00020569999833242036,
+      "max": 0.0011733999999705702,
+      "p50": 0.00025319999986095354,
+      "p95": 0.0010813799999596085,
+      "p99": 0.0011549959999683779
+    },
+    "token_cost": null,
+    "timestamp": "2026-10-26T17:35:32.990485",
+    "git_sha": "eec93f54b2870c6496b2fd7c40502a6dea97f599",
+    "tags_summary": {
+      "normal": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.0011733999999705702,
+        "std": 0.0,
+        "min": 0.0011733999999705702,
+        "max": 0.0011733999999705702,
+        "p50": 0.0011733999999705702,
+        "p95": 0.0011733999999705702,
+        "p99": 0.0011733999999705702
+      },
+      "negative": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00022944999909668695,
+        "std": 2.3750000764266588e-05,
+        "min": 0.00020569999833242036,
+        "max": 0.00025319999986095354,
+        "p50": 0.00022944999909668695,
+        "p95": 0.0002508249997845269,
+        "p99": 0.0002527249998456682
+      },
+      "cold_start": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00025319999986095354,
+        "std": 0.0,
+        "min": 0.00025319999986095354,
+        "max": 0.00025319999986095354,
+        "p50": 0.00025319999986095354,
+        "p95": 0.00025319999986095354,
+        "p99": 0.00025319999986095354
+      },
+      "zero_interactions": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00020569999833242036,
+        "std": 0.0,
+        "min": 0.00020569999833242036,
+        "max": 0.00020569999833242036,
+        "p50": 0.00020569999833242036,
+        "p95": 0.00020569999833242036,
+        "p99": 0.00020569999833242036
+      }
+    }
+  },
+  "current_summary": {
+    "benchmark_version": "1.0.0",
+    "component": "memory",
+    "config": {},
+    "prompt_schema_hash": null,
+    "run_count": 1,
+    "per_case_results": [
+      {
+        "case_id": "memory_001",
+        "actual_output": {
+          "user_id": "u1",
+          "known": true,
+          "n_interactions": 3,
+          "top_categories": [
+            "Action",
+            "Puzzle"
+          ],
+          "price_range": {
+            "min": 1.0,
+            "max": 300.0
+          },
+          "recent_items": [
+            "Video_Games::vg_c",
+            "Video_Games::vg_b",
+            "Video_Games::vg_a"
+          ]
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.0011983999975200277,
+        "token_usage": null
+      },
+      {
+        "case_id": "memory_002",
+        "actual_output": {
+          "user_id": "unknown_user",
+          "known": false,
+          "n_interactions": 0,
+          "top_categories": [],
+          "price_range": null,
+          "recent_items": []
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.00024670000129844993,
+        "token_usage": null
+      },
+      {
+        "case_id": "memory_003",
+        "actual_output": {
+          "user_id": "u0",
+          "known": false,
+          "n_interactions": 0,
+          "top_categories": [],
+          "price_range": null,
+          "recent_items": []
+        },
+        "success": true,
+        "error": null,
+        "metrics": {
+          "known_correct": 1.0,
+          "n_interactions_correct": 1.0,
+          "top_categories_match": 1.0,
+          "price_range_correct": 1.0,
+          "recent_items_match": 1.0
+        },
+        "latency_seconds": 0.00020279999807826243,
+        "token_usage": null
+      }
+    ],
+    "metrics": {
+      "known_correct_mean": 1.0,
+      "known_correct_std": 0.0,
+      "known_correct_min": 1.0,
+      "known_correct_max": 1.0,
+      "n_interactions_correct_mean": 1.0,
+      "n_interactions_correct_std": 0.0,
+      "n_interactions_correct_min": 1.0,
+      "n_interactions_correct_max": 1.0,
+      "price_range_correct_mean": 1.0,
+      "price_range_correct_std": 0.0,
+      "price_range_correct_min": 1.0,
+      "price_range_correct_max": 1.0,
+      "recent_items_match_mean": 1.0,
+      "recent_items_match_std": 0.0,
+      "recent_items_match_min": 1.0,
+      "recent_items_match_max": 1.0,
+      "top_categories_match_mean": 1.0,
+      "top_categories_match_std": 0.0,
+      "top_categories_match_min": 1.0,
+      "top_categories_match_max": 1.0,
+      "success_rate": 1.0
+    },
+    "latency": {
+      "mean": 0.00054929999896558,
+      "std": 0.00045933278325793454,
+      "min": 0.00020279999807826243,
+      "max": 0.0011983999975200277,
+      "p50": 0.00024670000129844993,
+      "p95": 0.0011032299978978699,
+      "p99": 0.0011793659975955961
+    },
+    "token_cost": null,
+    "timestamp": "2026-10-26T17:35:41.963003",
+    "git_sha": "eec93f54b2870c6496b2fd7c40502a6dea97f599",
+    "tags_summary": {
+      "normal": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.0011983999975200277,
+        "std": 0.0,
+        "min": 0.0011983999975200277,
+        "max": 0.0011983999975200277,
+        "p50": 0.0011983999975200277,
+        "p95": 0.0011983999975200277,
+        "p99": 0.0011983999975200277
+      },
+      "negative": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00022474999968835618,
+        "std": 2.195000161009375e-05,
+        "min": 0.00020279999807826243,
+        "max": 0.00024670000129844993,
+        "p50": 0.00022474999968835618,
+        "p95": 0.00024450500113744057,
+        "p99": 0.00024626100126624807
+      },
+      "cold_start": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00024670000129844993,
+        "std": 0.0,
+        "min": 0.00024670000129844993,
+        "max": 0.00024670000129844993,
+        "p50": 0.00024670000129844993,
+        "p95": 0.00024670000129844993,
+        "p99": 0.00024670000129844993
+      },
+      "zero_interactions": {
+        "known_correct_mean": 1.0,
+        "known_correct_std": 0.0,
+        "known_correct_min": 1.0,
+        "known_correct_max": 1.0,
+        "n_interactions_correct_mean": 1.0,
+        "n_interactions_correct_std": 0.0,
+        "n_interactions_correct_min": 1.0,
+        "n_interactions_correct_max": 1.0,
+        "price_range_correct_mean": 1.0,
+        "price_range_correct_std": 0.0,
+        "price_range_correct_min": 1.0,
+        "price_range_correct_max": 1.0,
+        "recent_items_match_mean": 1.0,
+        "recent_items_match_std": 0.0,
+        "recent_items_match_min": 1.0,
+        "recent_items_match_max": 1.0,
+        "top_categories_match_mean": 1.0,
+        "top_categories_match_std": 0.0,
+        "top_categories_match_min": 1.0,
+        "top_categories_match_max": 1.0,
+        "success_rate": 1.0,
+        "mean": 0.00020279999807826243,
+        "std": 0.0,
+        "min": 0.00020279999807826243,
+        "max": 0.00020279999807826243,
+        "p50": 0.00020279999807826243,
+        "p95": 0.00020279999807826243,
+        "p99": 0.00020279999807826243
+      }
+    }
+  },
+  "metric_changes": {
+    "known_correct": {
+      "baseline": 1.0,
+      "current": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "significant": false
+    },
+    "n_interactions_correct": {
+      "baseline": 1.0,
+      "current": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "significant": false
+    },
+    "price_range_correct": {
+      "baseline": 1.0,
+      "current": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "significant": false
+    },
+    "recent_items_match": {
+      "baseline": 1.0,
+      "current": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "significant": false
+    },
+    "top_categories_match": {
+      "baseline": 1.0,
+      "current": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "significant": false
+    }
+  },
+  "latency_changes": {
+    "mean": {
+      "baseline": 0.0005440999993879814,
+      "current": 0.00054929999896558,
+      "delta": 5.199999577598646e-06,
+      "percent_change": 0.9557065950096947,
+      "significant": true
+    },
+    "std": {
+      "baseline": 0.0004454046329546782,
+      "current": 0.00045933278325793454,
+      "delta": 1.3928150303256352e-05,
+      "percent_change": 3.12707800340137,
+      "significant": true
+    },
+    "min": {
+      "baseline": 0.00020569999833242036,
+      "current": 0.00020279999807826243,
+      "delta": -2.9000002541579306e-06,
+      "percent_change": -1.4098202613844464,
+      "significant": true
+    },
+    "max": {
+      "baseline": 0.0011733999999705702,
+      "current": 0.0011983999975200277,
+      "delta": 2.4999997549457476e-05,
+      "percent_change": 2.1305605548052235,
+      "significant": true
+    },
+    "p50": {
+      "baseline": 0.00025319999986095354,
+      "current": 0.00024670000129844993,
+      "delta": -6.499998562503606e-06,
+      "percent_change": -2.5671400339941246,
+      "significant": true
+    },
+    "p95": {
+      "baseline": 0.0010813799999596085,
+      "current": 0.0011032299978978699,
+      "delta": 2.1849997938261324e-05,
+      "percent_change": 2.0205661228317022,
+      "significant": true
+    },
+    "p99": {
+      "baseline": 0.0011549959999683779,
+      "current": 0.0011793659975955961,
+      "delta": 2.4369997627218245e-05,
+      "percent_change": 2.109963811812808,
+      "significant": true
+    }
+  },
+  "tag_changes": {
+    "negative": {
+      "known_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "known_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "n_interactions_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "price_range_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "recent_items_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "top_categories_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "success_rate": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "mean": {
+        "baseline": 0.00022944999909668695,
+        "current": 0.00022474999968835618,
+        "delta": -4.699999408330768e-06,
+        "percent_change": -2.048376302825896,
+        "significant": true
+      },
+      "std": {
+        "baseline": 2.3750000764266588e-05,
+        "current": 2.195000161009375e-05,
+        "delta": -1.7999991541728377e-06,
+        "percent_change": -7.578943563155807,
+        "significant": true
+      },
+      "min": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "max": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "p50": {
+        "baseline": 0.00022944999909668695,
+        "current": 0.00022474999968835618,
+        "delta": -4.699999408330768e-06,
+        "percent_change": -2.048376302825896,
+        "significant": true
+      },
+      "p95": {
+        "baseline": 0.0002508249997845269,
+        "current": 0.00024450500113744057,
+        "delta": -6.319998647086322e-06,
+        "percent_change": -2.519684502149134,
+        "significant": true
+      },
+      "p99": {
+        "baseline": 0.0002527249998456682,
+        "current": 0.00024626100126624807,
+        "delta": -6.463998579420117e-06,
+        "percent_change": -2.5577202822702514,
+        "significant": true
+      }
+    },
+    "normal": {
+      "known_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "known_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "n_interactions_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "price_range_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "recent_items_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "top_categories_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "success_rate": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "mean": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      },
+      "std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "min": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      },
+      "max": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      },
+      "p50": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      },
+      "p95": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      },
+      "p99": {
+        "baseline": 0.0011733999999705702,
+        "current": 0.0011983999975200277,
+        "delta": 2.4999997549457476e-05,
+        "percent_change": 2.1305605548052235,
+        "significant": true
+      }
+    },
+    "zero_interactions": {
+      "known_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "known_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "n_interactions_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "price_range_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "recent_items_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "top_categories_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "success_rate": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "mean": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "min": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "max": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "p50": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "p95": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      },
+      "p99": {
+        "baseline": 0.00020569999833242036,
+        "current": 0.00020279999807826243,
+        "delta": -2.9000002541579306e-06,
+        "percent_change": -1.4098202613844464,
+        "significant": true
+      }
+    },
+    "cold_start": {
+      "known_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "known_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "known_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "n_interactions_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "n_interactions_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "price_range_correct_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "price_range_correct_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "recent_items_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "recent_items_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_mean": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "top_categories_match_min": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "top_categories_match_max": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "success_rate": {
+        "baseline": 1.0,
+        "current": 1.0,
+        "delta": 0.0,
+        "percent_change": 0.0,
+        "significant": false
+      },
+      "mean": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "std": {
+        "baseline": 0.0,
+        "current": 0.0,
+        "delta": 0.0,
+        "percent_change": Infinity,
+        "significant": false
+      },
+      "min": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "max": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "p50": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "p95": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      },
+      "p99": {
+        "baseline": 0.00025319999986095354,
+        "current": 0.00024670000129844993,
+        "delta": -6.499998562503606e-06,
+        "percent_change": -2.5671400339941246,
+        "significant": true
+      }
+    }
+  },
+  "summary": "regressed",
+  "timestamp": "2026-10-26T17:35:44.939320"
+}

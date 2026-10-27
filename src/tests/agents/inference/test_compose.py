@@ -17,6 +17,7 @@ from package.inference.grounding import check_grounding
 from package.tools import QueryTool
 from tests.agents.test_plan_executor import plan
 from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, NoneOrEmptyLLM, good_reply, item, outcome, reply
+from tests.agents.fakes.scripted_llm import ScriptedLLM as FakeScriptedLLM
 from tests.tools_helpers import VG_A, VG_B
 
 A, B, C = "Video_Games::a", "Video_Games::b", "Electronics::c"
@@ -55,7 +56,7 @@ def test_planner_items_get_a_grounded_llm_answer_and_nothing_else_changes(corpus
 def test_llm_request_carries_the_data_and_json_mode():
     llm = ScriptedLLM(good_reply(three()))
     compose_answer(outcome(three(), request_text="giá dưới 30 đô"), llm, **KW)
-    system, user = llm.calls[0][0].content, llm.calls[0][-1].content
+    system, user = llm.calls[0]["messages"][0].content, llm.calls[0]["messages"][-1].content
     assert "mentioned_item_ids" in system and "never" in system.lower()
     payload = json.loads(user[user.index("{"):])
     assert payload["request"] == "giá dưới 30 đô" and [i["item_id"] for i in payload["items"]] == [A, B, C]
@@ -70,7 +71,7 @@ def test_foreign_id_is_retried_and_the_retry_carries_the_reason():
     answer = compose_answer(outcome(items), llm, **KW)
     assert answer.composer == "llm" and answer.grounded and FAKE not in answer.text
     assert answer.usage["attempts"] == 2 and answer.usage["prompt_tokens"] == 20 and answer.usage["completion_tokens"] == 10
-    retry = llm.calls[1]
+    retry = llm.calls[1]["messages"]
     assert retry[-2].role == "assistant" and retry[-2].content == bad
     assert "rejected" in retry[-1].content and FAKE in retry[-1].content
 

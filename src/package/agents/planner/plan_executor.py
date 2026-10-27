@@ -150,16 +150,19 @@ class PlanExecutor:
             name = step.get("tool")
             tool = self.tools.get(name) if name else None
             raw_args = step.get("args") or {}
-            entry: dict[str, Any] = {"tool": name, "ok": False, "data": {}, "error": None, "invented_ids": []}
+            entry: dict[str, Any] = {"tool": name, "ok": False, "data": {}, "error": None, "invented_ids": [], "error_kind": None}
             # Log args before validation (for debugging failed steps)
             entry["args"] = _simplify_args_for_log(raw_args)
             if tool is None:
                 entry["error"] = "unknown tool"
+                entry["error_kind"] = "unknown_tool"
             elif invented := _invented_ids(raw_args, user_request):
                 entry["error"] = f"id(s) not found in the request (invented?): {invented}"
                 entry["invented_ids"] = invented  # the tool is NOT executed with an id the user never gave
+                entry["error_kind"] = "invented_id"
             elif unknown := _unknown_args(tool, raw_args):
                 entry["error"] = unknown  # actionable, and the tool is not called with args it does not declare
+                entry["error_kind"] = "unknown_args"
             else:
                 try:
                     resolved_args = _resolve_refs(raw_args, results)
@@ -170,8 +173,21 @@ class PlanExecutor:
                     entry["output_summary"] = _summarize_output(res.data, name)
                     if "note" in res.data:
                         entry["note"] = res.data["note"]
-                except Exception as exc:  # ref hỏng hoặc args sai tên/kiểu (TypeError...) không được làm hỏng các step còn lại
+                    # Tool error (ok=False) but no exception
+                    if not res.ok:
+                        entry["error_kind"] = "tool_error"
+                except ValueError as exc:
+                    # Distinguish reference errors from other ValueErrors
+                    error_msg = str(exc)
+                    if "step" in error_msg and ("has not run yet" in error_msg or "failed" in error_msg or "not found" in error_msg):
+                        entry["error"] = error_msg
+                        entry["error_kind"] = "bad_reference"
+                    else:
+                        entry["error"] = f"{type(exc).__name__}: {exc}"
+                        entry["error_kind"] = "exception"
+                except Exception as exc:  # args sai tên/kiểu (TypeError...) không được làm hỏng các step còn lại
                     entry["error"] = f"{type(exc).__name__}: {exc}"
+                    entry["error_kind"] = "exception"
             entry["latency_seconds"] = round(time.perf_counter() - started, 6)
             results.append(entry)
         return results

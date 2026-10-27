@@ -1,0 +1,338 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "integration",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 3,
+  "per_case_results": [
+    {
+      "case_id": "integration_001",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": true,
+        "plan": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool",
+          "ItemCFTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 1.0,
+        "contract_valid": 1.0
+      },
+      "latency_seconds": 3.7666668504243717e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_002",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": false,
+        "plan": [
+          {
+            "tool": "UnknownTool",
+            "args": {
+              "filters": {
+                "price_max": 50
+              }
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool",
+          "ItemCFTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 0.0,
+        "contract_valid": 0.0
+      },
+      "latency_seconds": 1.300000197564562e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_003",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": true,
+        "plan": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "candidates": "$1.candidates"
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 1.0,
+        "contract_valid": 1.0
+      },
+      "latency_seconds": 2.8666660606783503e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_004",
+      "actual_output": {
+        "boundary": "executor_inference",
+        "output_valid": true,
+        "executor_output": {
+          "candidates": [
+            {
+              "item_id": "vg_001"
+            }
+          ],
+          "total_matches": 5
+        },
+        "expected_fields": [
+          "candidates",
+          "total_matches"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 1.0,
+        "contract_valid": 1.0
+      },
+      "latency_seconds": 2.4333336720398315e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_005",
+      "actual_output": {
+        "boundary": "executor_inference",
+        "output_valid": false,
+        "executor_output": {
+          "candidates": [
+            {
+              "item_id": "vg_001"
+            }
+          ]
+        },
+        "expected_fields": [
+          "candidates",
+          "total_matches"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 0.0,
+        "contract_valid": 0.0
+      },
+      "latency_seconds": 2.0333336578914896e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_006",
+      "actual_output": {
+        "boundary": "memory_planner",
+        "uses_memory": false,
+        "memory_profile": {
+          "top_categories": [
+            "Action",
+            "RPG"
+          ],
+          "price_range": [
+            10,
+            50
+          ]
+        },
+        "planner_args": {
+          "filters": {
+            "categories_any": [
+              "Action"
+            ]
+          }
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 0.0,
+        "contract_valid": 0.0
+      },
+      "latency_seconds": 2.0666666387114674e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_007",
+      "actual_output": {
+        "boundary": "memory_planner",
+        "uses_memory": false,
+        "memory_profile": {
+          "top_categories": [
+            "Action",
+            "RPG"
+          ]
+        },
+        "planner_args": {
+          "filters": {
+            "price_max": 100
+          }
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "no_mismatch": 1.0,
+        "contract_valid": 1.0
+      },
+      "latency_seconds": 1.1333334744752694e-06,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "contract_valid_mean": 0.5714285714285714,
+    "contract_valid_std": 0.4948716593053935,
+    "contract_valid_min": 0.0,
+    "contract_valid_max": 1.0,
+    "no_mismatch_mean": 0.5714285714285714,
+    "no_mismatch_std": 0.4948716593053935,
+    "no_mismatch_min": 0.0,
+    "no_mismatch_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 2.2285715073979062e-06,
+    "std": 8.401489253888978e-07,
+    "min": 1.1333334744752694e-06,
+    "max": 3.7666668504243717e-06,
+    "p50": 2.0666666387114674e-06,
+    "p95": 3.4966666135005645e-06,
+    "p99": 3.71266680303961e-06
+  },
+  "token_cost": null,
+  "timestamp": "2026-10-27T11:44:17.069884+00:00",
+  "git_sha": "782814126d539bd22518e109ca90374ab844adaf",
+  "tags_summary": {
+    "integration": {
+      "contract_valid_mean": 0.5714285714285714,
+      "contract_valid_std": 0.4948716593053935,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5714285714285714,
+      "no_mismatch_std": 0.4948716593053935,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 2.2285715073979062e-06,
+      "std": 8.401489253888978e-07,
+      "min": 1.1333334744752694e-06,
+      "max": 3.7666668504243717e-06,
+      "p50": 2.0666666387114674e-06,
+      "p95": 3.4966666135005645e-06,
+      "p99": 3.71266680303961e-06
+    },
+    "planner_executor": {
+      "contract_valid_mean": 0.6666666666666666,
+      "contract_valid_std": 0.4714045207910317,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.6666666666666666,
+      "no_mismatch_std": 0.4714045207910317,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 2.6444443695557616e-06,
+      "std": 1.019198362795222e-06,
+      "min": 1.300000197564562e-06,
+      "max": 3.7666668504243717e-06,
+      "p50": 2.8666660606783503e-06,
+      "p95": 3.6766667714497696e-06,
+      "p99": 3.7486668346294513e-06
+    },
+    "success": {
+      "contract_valid_mean": 0.6666666666666666,
+      "contract_valid_std": 0.4714045207910317,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.6666666666666666,
+      "no_mismatch_std": 0.4714045207910317,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 2.75555572039189e-06,
+      "std": 7.304658177214167e-07,
+      "min": 2.0666666387114674e-06,
+      "max": 3.7666668504243717e-06,
+      "p50": 2.4333336720398315e-06,
+      "p95": 3.6333335325859174e-06,
+      "p99": 3.740000186856681e-06
+    },
+    "error": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 1.8333333476524178e-06,
+      "std": 6.859702419449254e-07,
+      "min": 1.1333334744752694e-06,
+      "max": 2.8666660606783503e-06,
+      "p50": 1.6666669277280257e-06,
+      "p95": 2.741666200260321e-06,
+      "p99": 2.8416660885947442e-06
+    },
+    "executor_inference": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 2.2333336649656603e-06,
+      "std": 2.0000000707417099e-07,
+      "min": 2.0333336578914896e-06,
+      "max": 2.4333336720398315e-06,
+      "p50": 2.2333336649656603e-06,
+      "p95": 2.4133336713324144e-06,
+      "p99": 2.429333671898348e-06
+    },
+    "memory_planner": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 1.6000000565933683e-06,
+      "std": 4.6666658211809897e-07,
+      "min": 1.1333334744752694e-06,
+      "max": 2.0666666387114674e-06,
+      "p50": 1.6000000565933683e-06,
+      "p95": 2.0199999804996576e-06,
+      "p99": 2.0573333070691056e-06
+    }
+  }
+}

@@ -15,7 +15,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "recall@10": {
         "mean_a": 0.0,
@@ -23,7 +23,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "ndcg@10": {
         "mean_a": 0.0,
@@ -31,7 +31,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "constraint_satisfaction": {
         "n": 0
@@ -42,7 +42,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "reflections": {
         "mean_a": 0.0,
@@ -50,47 +50,47 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "llm_latency_seconds": {
-        "mean_a": 6.3069499999997785,
-        "mean_b": 10.277350000000661,
-        "diff": 3.9704000000008826,
-        "ci_lower": 2.696300000000156,
-        "ci_upper": 5.043200000000797,
-        "n": 20
+        "mean_a": 4.415666666666524,
+        "mean_b": 4.022933333333397,
+        "diff": -0.3927333333331262,
+        "ci_lower": -1.0093333333329915,
+        "ci_upper": 0.13646666666681995,
+        "n": 15
       },
       "completion_tokens": {
-        "mean_a": 112.6,
-        "mean_b": 685.95,
-        "diff": 573.35,
-        "ci_lower": 473.0,
-        "ci_upper": 658.3,
-        "n": 20
+        "mean_a": 144.73333333333332,
+        "mean_b": 159.4,
+        "diff": 14.666666666666686,
+        "ci_lower": 0.6,
+        "ci_upper": 29.2,
+        "n": 15
       },
       "answer_fallback": {
-        "mean_a": 0.05,
+        "mean_a": 0.0,
         "mean_b": 0.0,
-        "diff": -0.05,
-        "ci_lower": -0.15,
+        "diff": 0.0,
+        "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "inference_latency_seconds": {
-        "mean_a": 19.521900000000095,
-        "mean_b": 23.225099999999657,
-        "diff": 3.703199999999562,
-        "ci_lower": -2.7367999999994934,
-        "ci_upper": 10.918049999997857,
-        "n": 20
+        "mean_a": 14.092666666666627,
+        "mean_b": 9.916666666666606,
+        "diff": -4.1760000000000215,
+        "ci_lower": -9.373866666666679,
+        "ci_upper": 0.03866666666654055,
+        "n": 15
       },
       "inference_completion_tokens": {
-        "mean_a": 809.7,
-        "mean_b": 1022.4,
-        "diff": 212.69999999999993,
-        "ci_lower": 27.95,
-        "ci_upper": 413.15,
-        "n": 20
+        "mean_a": 1170.7333333333333,
+        "mean_b": 1006.0,
+        "diff": -164.73333333333335,
+        "ci_lower": -435.6,
+        "ci_upper": 122.53333333333333,
+        "n": 15
       }
     },
     "similar/warm": {
@@ -100,7 +100,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "recall@10": {
         "mean_a": 0.0,
@@ -108,7 +108,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "ndcg@10": {
         "mean_a": 0.0,
@@ -116,7 +116,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "constraint_satisfaction": {
         "n": 0
@@ -127,7 +127,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "reflections": {
         "mean_a": 0.0,
@@ -135,47 +135,47 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "llm_latency_seconds": {
-        "mean_a": 6.048549999999887,
-        "mean_b": 14.2796000000013,
-        "diff": 8.231050000001414,
-        "ci_lower": 2.4567500000008295,
-        "ci_upper": 17.914700000000813,
-        "n": 20
+        "mean_a": 4.434666666666514,
+        "mean_b": 4.35726666666651,
+        "diff": -0.07740000000000435,
+        "ci_lower": -1.1606666666668994,
+        "ci_upper": 0.9018666666668651,
+        "n": 15
       },
       "completion_tokens": {
-        "mean_a": 107.65,
-        "mean_b": 458.25,
-        "diff": 350.6,
-        "ci_lower": 207.35,
-        "ci_upper": 497.75,
-        "n": 20
+        "mean_a": 164.33333333333334,
+        "mean_b": 158.6,
+        "diff": -5.7333333333333485,
+        "ci_lower": -21.933333333333334,
+        "ci_upper": 9.333333333333334,
+        "n": 15
       },
       "answer_fallback": {
-        "mean_a": 0.0,
+        "mean_a": 0.06666666666666667,
         "mean_b": 0.0,
-        "diff": 0.0,
-        "ci_lower": 0.0,
+        "diff": -0.06666666666666667,
+        "ci_lower": -0.2,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "inference_latency_seconds": {
-        "mean_a": 19.56710000000039,
-        "mean_b": 20.60940000000046,
-        "diff": 1.0423000000000684,
-        "ci_lower": -3.3966499999994992,
-        "ci_upper": 6.010349999998835,
-        "n": 20
+        "mean_a": 13.09273333333343,
+        "mean_b": 10.4374666666666,
+        "diff": -2.6552666666668294,
+        "ci_lower": -5.023866666666678,
+        "ci_upper": -0.07006666666693491,
+        "n": 15
       },
       "inference_completion_tokens": {
-        "mean_a": 804.05,
-        "mean_b": 920.35,
-        "diff": 116.30000000000007,
-        "ci_lower": 12.25,
-        "ci_upper": 256.25,
-        "n": 20
+        "mean_a": 1150.8666666666666,
+        "mean_b": 973.9333333333333,
+        "diff": -176.93333333333328,
+        "ci_lower": -404.53333333333336,
+        "ci_upper": 26.733333333333334,
+        "n": 15
       }
     },
     "personalized/sparse": {
@@ -188,7 +188,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "ndcg@10": {
         "mean_a": 0.0,
@@ -196,66 +196,71 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "constraint_satisfaction": {
         "n": 0
       },
       "first_attempt_ok": {
-        "mean_a": 1.0,
-        "mean_b": 0.1,
-        "diff": -0.9,
-        "ci_lower": -1.0,
-        "ci_upper": -0.75,
-        "n": 20,
+        "mean_a": 0.4666666666666667,
+        "mean_b": 0.4,
+        "diff": -0.06666666666666665,
+        "ci_lower": -0.4666666666666667,
+        "ci_upper": 0.3333333333333333,
+        "n": 15,
         "mcnemar": {
-          "b": 18.0,
-          "c": 0.0,
-          "p": 0.001
+          "b": 6.0,
+          "c": 5.0,
+          "p": 1.0
         }
       },
       "reflections": {
         "mean_a": 0.0,
-        "mean_b": 0.9,
-        "diff": 0.9,
-        "ci_lower": 0.75,
-        "ci_upper": 1.0,
-        "n": 20
+        "mean_b": 0.6,
+        "diff": 0.6,
+        "ci_lower": 0.3333333333333333,
+        "ci_upper": 0.8666666666666667,
+        "n": 15
       },
       "llm_latency_seconds": {
-        "mean_a": 7.6155999999995405,
-        "mean_b": 80.87749999999978,
-        "diff": 73.26190000000024,
-        "ci_lower": 51.74310000000096,
-        "ci_upper": 96.44720000000034,
-        "n": 20
+        "mean_a": 6.39993333333338,
+        "mean_b": 8.575066666666437,
+        "diff": 2.175133333333057,
+        "ci_lower": 0.276133333333443,
+        "ci_upper": 4.019199999999606,
+        "n": 15
       },
       "completion_tokens": {
-        "mean_a": 89.4,
-        "mean_b": 541.95,
-        "diff": 452.55000000000007,
-        "ci_lower": 230.95,
-        "ci_upper": 720.5,
-        "n": 20
+        "mean_a": 346.8,
+        "mean_b": 557.3333333333334,
+        "diff": 210.53333333333336,
+        "ci_lower": 78.4,
+        "ci_upper": 341.2,
+        "n": 15
       },
       "answer_fallback": {
-        "n": 0
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
       },
       "inference_latency_seconds": {
-        "mean_a": 0.0,
-        "mean_b": 13.616449999999896,
-        "diff": 13.616449999999896,
-        "ci_lower": 5.86410000000069,
-        "ci_upper": 23.623499999999694,
-        "n": 20
+        "mean_a": 4.045933333333293,
+        "mean_b": 6.927933333333688,
+        "diff": 2.882000000000395,
+        "ci_lower": -0.48873333333291763,
+        "ci_upper": 5.670600000000195,
+        "n": 15
       },
       "inference_completion_tokens": {
-        "mean_a": 0.0,
-        "mean_b": 553.75,
-        "diff": 553.75,
-        "ci_lower": 287.0,
-        "ci_upper": 849.45,
-        "n": 20
+        "mean_a": 361.73333333333335,
+        "mean_b": 683.9333333333333,
+        "diff": 322.19999999999993,
+        "ci_lower": 5.866666666666666,
+        "ci_upper": 574.3333333333334,
+        "n": 15
       }
     },
     "personalized/warm": {
@@ -268,7 +273,7 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "ndcg@10": {
         "mean_a": 0.0,
@@ -276,331 +281,71 @@
         "diff": 0.0,
         "ci_lower": 0.0,
         "ci_upper": 0.0,
-        "n": 20
+        "n": 15
       },
       "constraint_satisfaction": {
         "n": 0
       },
       "first_attempt_ok": {
-        "mean_a": 1.0,
-        "mean_b": 0.95,
-        "diff": -0.050000000000000044,
-        "ci_lower": -0.15,
-        "ci_upper": 0.0,
-        "n": 20
+        "mean_a": 0.3333333333333333,
+        "mean_b": 0.7333333333333333,
+        "diff": 0.39999999999999997,
+        "ci_lower": 0.0,
+        "ci_upper": 0.7333333333333333,
+        "n": 15,
+        "mcnemar": {
+          "b": 2.0,
+          "c": 8.0,
+          "p": 1.0
+        }
       },
       "reflections": {
         "mean_a": 0.0,
-        "mean_b": 0.05,
-        "diff": 0.05,
-        "ci_lower": 0.0,
-        "ci_upper": 0.15,
-        "n": 20
+        "mean_b": 0.26666666666666666,
+        "diff": 0.26666666666666666,
+        "ci_lower": 0.06666666666666667,
+        "ci_upper": 0.5333333333333333,
+        "n": 15
       },
       "llm_latency_seconds": {
-        "mean_a": 6.683749999999963,
-        "mean_b": 17.389899999999034,
-        "diff": 10.70614999999907,
-        "ci_lower": 3.5857999999983803,
-        "ci_upper": 19.35239999999976,
-        "n": 20
+        "mean_a": 5.566733333333347,
+        "mean_b": 6.250999999999961,
+        "diff": 0.6842666666666144,
+        "ci_lower": -0.6730666666664546,
+        "ci_upper": 2.2228000000000367,
+        "n": 15
       },
       "completion_tokens": {
-        "mean_a": 89.55,
-        "mean_b": 227.65,
-        "diff": 138.10000000000002,
-        "ci_lower": 98.45,
-        "ci_upper": 195.6,
-        "n": 20
+        "mean_a": 345.2,
+        "mean_b": 358.46666666666664,
+        "diff": 13.266666666666652,
+        "ci_lower": -94.0,
+        "ci_upper": 137.46666666666667,
+        "n": 15
       },
       "answer_fallback": {
-        "n": 0
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 4
       },
       "inference_latency_seconds": {
-        "mean_a": 0.0,
-        "mean_b": 12.589900000000489,
-        "diff": 12.589900000000489,
-        "ci_lower": 7.979000000000087,
-        "ci_upper": 17.837550000000554,
-        "n": 20
+        "mean_a": 2.528066666666685,
+        "mean_b": 4.715466666667028,
+        "diff": 2.1874000000003435,
+        "ci_lower": -0.09179999999984527,
+        "ci_upper": 4.181133333333613,
+        "n": 15
       },
       "inference_completion_tokens": {
-        "mean_a": 0.0,
-        "mean_b": 590.15,
-        "diff": 590.15,
-        "ci_lower": 434.5,
-        "ci_upper": 743.4,
-        "n": 20
-      }
-    },
-    "constrained/sparse": {
-      "task_success": {
-        "mean_a": 1.0,
-        "mean_b": 0.85,
-        "diff": -0.15000000000000002,
-        "ci_lower": -0.3,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "recall@10": {
-        "mean_a": 0.3,
-        "mean_b": 0.25,
-        "diff": -0.04999999999999999,
-        "ci_lower": -0.2,
-        "ci_upper": 0.1,
-        "n": 20
-      },
-      "ndcg@10": {
-        "mean_a": 0.19034236935619436,
-        "mean_b": 0.15879588167762146,
-        "diff": -0.031546487678572904,
-        "ci_lower": -0.10909270435161303,
-        "ci_upper": 0.02890648263178879,
-        "n": 20
-      },
-      "constraint_satisfaction": {
-        "mean_a": 1.0,
-        "mean_b": 0.9550000000000001,
-        "diff": -0.04499999999999993,
-        "ci_lower": -0.10500000000000001,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "first_attempt_ok": {
-        "mean_a": 1.0,
-        "mean_b": 1.0,
-        "diff": 0.0,
-        "ci_lower": 0.0,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "reflections": {
-        "mean_a": 0.0,
-        "mean_b": 0.0,
-        "diff": 0.0,
-        "ci_lower": 0.0,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "llm_latency_seconds": {
-        "mean_a": 9.750750000000517,
-        "mean_b": 6.97515000000094,
-        "diff": -2.775599999999577,
-        "ci_lower": -4.478050000000621,
-        "ci_upper": -1.4841999999991458,
-        "n": 20
-      },
-      "completion_tokens": {
-        "mean_a": 190.25,
-        "mean_b": 184.4,
-        "diff": -5.849999999999994,
-        "ci_lower": -26.75,
-        "ci_upper": 11.95,
-        "n": 20
-      },
-      "answer_fallback": {
-        "mean_a": 0.05,
-        "mean_b": 0.0,
-        "diff": -0.05,
-        "ci_lower": -0.15,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "inference_latency_seconds": {
-        "mean_a": 18.529549999999837,
-        "mean_b": 11.042149999999674,
-        "diff": -7.487400000000163,
-        "ci_lower": -10.333350000000973,
-        "ci_upper": -4.875300000000971,
-        "n": 20
-      },
-      "inference_completion_tokens": {
-        "mean_a": 780.15,
-        "mean_b": 712.4,
-        "diff": -67.75,
-        "ci_lower": -176.6,
-        "ci_upper": 27.7,
-        "n": 20
-      }
-    },
-    "constrained/warm": {
-      "task_success": {
-        "mean_a": 1.0,
-        "mean_b": 0.9,
-        "diff": -0.09999999999999998,
-        "ci_lower": -0.25,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "recall@10": {
-        "mean_a": 0.1,
-        "mean_b": 0.1,
-        "diff": 0.0,
-        "ci_lower": 0.0,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "ndcg@10": {
-        "mean_a": 0.040051499783199065,
-        "mean_b": 0.04077324383928644,
-        "diff": 0.0007217440560873742,
-        "ci_lower": 0.0,
-        "ci_upper": 0.002165232168262135,
-        "n": 20
-      },
-      "constraint_satisfaction": {
-        "mean_a": 1.0,
-        "mean_b": 0.9349999999999999,
-        "diff": -0.06500000000000006,
-        "ci_lower": -0.18,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "first_attempt_ok": {
-        "mean_a": 1.0,
-        "mean_b": 1.0,
-        "diff": 0.0,
-        "ci_lower": 0.0,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "reflections": {
-        "mean_a": 0.0,
-        "mean_b": 0.0,
-        "diff": 0.0,
-        "ci_lower": 0.0,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "llm_latency_seconds": {
-        "mean_a": 9.993749999999455,
-        "mean_b": 6.65625,
-        "diff": -3.337499999999455,
-        "ci_lower": -4.390750000000298,
-        "ci_upper": -2.3403499999996713,
-        "n": 20
-      },
-      "completion_tokens": {
-        "mean_a": 187.75,
-        "mean_b": 176.6,
-        "diff": -11.150000000000006,
-        "ci_lower": -35.3,
-        "ci_upper": 6.75,
-        "n": 20
-      },
-      "answer_fallback": {
-        "mean_a": 0.05263157894736842,
-        "mean_b": 0.0,
-        "diff": -0.05263157894736842,
-        "ci_lower": -0.15789473684210525,
-        "ci_upper": 0.0,
-        "n": 19
-      },
-      "inference_latency_seconds": {
-        "mean_a": 20.570150000000286,
-        "mean_b": 10.994550000001254,
-        "diff": -9.575599999999032,
-        "ci_lower": -12.530299999999443,
-        "ci_upper": -6.749799999998322,
-        "n": 20
-      },
-      "inference_completion_tokens": {
-        "mean_a": 763.6,
-        "mean_b": 668.2,
-        "diff": -95.39999999999998,
-        "ci_lower": -222.05,
-        "ci_upper": 27.55,
-        "n": 20
-      }
-    },
-    "cold_text/cold": {
-      "task_success": {
-        "mean_a": 1.0,
-        "mean_b": 0.85,
-        "diff": -0.15000000000000002,
-        "ci_lower": -0.3,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "recall@10": {
-        "mean_a": 0.06666666666666667,
-        "mean_b": 0.041666666666666664,
-        "diff": -0.025,
-        "ci_lower": -0.15,
-        "ci_upper": 0.075,
-        "n": 20
-      },
-      "ndcg@10": {
-        "mean_a": 0.07346393630113782,
-        "mean_b": 0.03837664728122873,
-        "diff": -0.03508728901990909,
-        "ci_lower": -0.15,
-        "ci_upper": 0.0447381329402727,
-        "n": 20
-      },
-      "constraint_satisfaction": {
-        "mean_a": 1.0,
-        "mean_b": 0.85,
-        "diff": -0.15000000000000002,
-        "ci_lower": -0.3,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "first_attempt_ok": {
-        "mean_a": 1.0,
-        "mean_b": 0.85,
-        "diff": -0.15000000000000002,
-        "ci_lower": -0.3,
-        "ci_upper": 0.0,
-        "n": 20
-      },
-      "reflections": {
-        "mean_a": 0.0,
-        "mean_b": 0.05,
-        "diff": 0.05,
-        "ci_lower": 0.0,
-        "ci_upper": 0.15,
-        "n": 20
-      },
-      "llm_latency_seconds": {
-        "mean_a": 8.070249999999579,
-        "mean_b": 6.753199999999924,
-        "diff": -1.3170499999996546,
-        "ci_lower": -2.66614999999947,
-        "ci_upper": -0.18109999999960563,
-        "n": 20
-      },
-      "completion_tokens": {
-        "mean_a": 155.65,
-        "mean_b": 161.85,
-        "diff": 6.199999999999989,
-        "ci_lower": -27.75,
-        "ci_upper": 35.15,
-        "n": 20
-      },
-      "answer_fallback": {
-        "mean_a": 0.058823529411764705,
-        "mean_b": 0.0,
-        "diff": -0.058823529411764705,
-        "ci_lower": -0.17647058823529413,
-        "ci_upper": 0.0,
-        "n": 17
-      },
-      "inference_latency_seconds": {
-        "mean_a": 17.79989999999998,
-        "mean_b": 11.132750000000305,
-        "diff": -6.667149999999674,
-        "ci_lower": -10.181149999999253,
-        "ci_upper": -3.194199999999364,
-        "n": 20
-      },
-      "inference_completion_tokens": {
-        "mean_a": 716.45,
-        "mean_b": 735.35,
-        "diff": 18.899999999999977,
-        "ci_lower": -165.15,
-        "ci_upper": 194.6,
-        "n": 20
+        "mean_a": 247.73333333333332,
+        "mean_b": 475.73333333333335,
+        "diff": 228.00000000000003,
+        "ci_lower": 7.533333333333333,
+        "ci_upper": 432.53333333333336,
+        "n": 15
       }
     },
     "ambiguous/none": {
@@ -638,19 +383,19 @@
         "n": 6
       },
       "llm_latency_seconds": {
-        "mean_a": 5.541833333333368,
-        "mean_b": 5.898666666666638,
-        "diff": 0.3568333333332703,
-        "ci_lower": -1.041666666665454,
-        "ci_upper": 1.80983333333279,
+        "mean_a": 3.2474999999999454,
+        "mean_b": 3.846499999999954,
+        "diff": 0.5990000000000086,
+        "ci_lower": -0.20833333333348492,
+        "ci_upper": 1.8413333333337505,
         "n": 6
       },
       "completion_tokens": {
-        "mean_a": 31.333333333333332,
-        "mean_b": 56.833333333333336,
-        "diff": 25.500000000000004,
-        "ci_lower": 12.666666666666666,
-        "ci_upper": 39.333333333333336,
+        "mean_a": 95.66666666666667,
+        "mean_b": 92.0,
+        "diff": -3.6666666666666714,
+        "ci_lower": -26.666666666666668,
+        "ci_upper": 19.666666666666668,
         "n": 6
       },
       "answer_fallback": {
@@ -681,7 +426,7 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "recall@10": {
           "mean_a": 0.0,
@@ -689,7 +434,7 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "ndcg@10": {
           "mean_a": 0.0,
@@ -697,7 +442,7 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "constraint_satisfaction": {
           "n": 0
@@ -708,7 +453,7 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "reflections": {
           "mean_a": 0.0,
@@ -716,47 +461,47 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "llm_latency_seconds": {
-          "mean_a": 6.177749999999833,
-          "mean_b": 12.27847500000098,
-          "diff": 6.100725000001148,
-          "ci_lower": 3.0516250000010587,
-          "ci_upper": 11.01247500000054,
-          "n": 40
+          "mean_a": 4.425166666666518,
+          "mean_b": 4.190099999999954,
+          "diff": -0.2350666666665644,
+          "ci_lower": -0.8314666666665895,
+          "ci_upper": 0.3503333333333406,
+          "n": 30
         },
         "completion_tokens": {
-          "mean_a": 110.125,
-          "mean_b": 572.1,
-          "diff": 461.975,
-          "ci_lower": 368.85,
-          "ci_upper": 552.5,
-          "n": 40
+          "mean_a": 154.53333333333333,
+          "mean_b": 159.0,
+          "diff": 4.466666666666669,
+          "ci_lower": -6.8,
+          "ci_upper": 15.9,
+          "n": 30
         },
         "answer_fallback": {
-          "mean_a": 0.025,
+          "mean_a": 0.03333333333333333,
           "mean_b": 0.0,
-          "diff": -0.025,
-          "ci_lower": -0.075,
+          "diff": -0.03333333333333333,
+          "ci_lower": -0.1,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "inference_latency_seconds": {
-          "mean_a": 19.544500000000244,
-          "mean_b": 21.91725000000006,
-          "diff": 2.372749999999815,
-          "ci_lower": -1.5398750000000292,
-          "ci_upper": 6.639574999999877,
-          "n": 40
+          "mean_a": 13.592700000000029,
+          "mean_b": 10.177066666666603,
+          "diff": -3.4156333333334263,
+          "ci_lower": -6.211433333333359,
+          "ci_upper": -0.9817333333334924,
+          "n": 30
         },
         "inference_completion_tokens": {
-          "mean_a": 806.875,
-          "mean_b": 971.375,
-          "diff": 164.5,
-          "ci_lower": 54.025,
-          "ci_upper": 285.175,
-          "n": 40
+          "mean_a": 1160.8,
+          "mean_b": 989.9666666666667,
+          "diff": -170.83333333333326,
+          "ci_lower": -343.3666666666667,
+          "ci_upper": 8.466666666666667,
+          "n": 30
         }
       },
       "personalized": {
@@ -769,7 +514,7 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "ndcg@10": {
           "mean_a": 0.0,
@@ -777,246 +522,71 @@
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
+          "n": 30
         },
         "constraint_satisfaction": {
           "n": 0
         },
         "first_attempt_ok": {
-          "mean_a": 1.0,
-          "mean_b": 0.525,
-          "diff": -0.475,
-          "ci_lower": -0.625,
-          "ci_upper": -0.325,
-          "n": 40,
+          "mean_a": 0.4,
+          "mean_b": 0.5666666666666667,
+          "diff": 0.16666666666666663,
+          "ci_lower": -0.13333333333333333,
+          "ci_upper": 0.4666666666666667,
+          "n": 30,
           "mcnemar": {
-            "b": 19.0,
-            "c": 0.0,
-            "p": 0.001
+            "b": 8.0,
+            "c": 13.0,
+            "p": 1.0
           }
         },
         "reflections": {
           "mean_a": 0.0,
-          "mean_b": 0.475,
-          "diff": 0.475,
-          "ci_lower": 0.325,
-          "ci_upper": 0.625,
-          "n": 40
+          "mean_b": 0.43333333333333335,
+          "diff": 0.43333333333333335,
+          "ci_lower": 0.26666666666666666,
+          "ci_upper": 0.6,
+          "n": 30
         },
         "llm_latency_seconds": {
-          "mean_a": 7.1496749999997515,
-          "mean_b": 49.13369999999941,
-          "diff": 41.984024999999654,
-          "ci_lower": 27.368525000000773,
-          "ci_upper": 58.00857499999965,
-          "n": 40
+          "mean_a": 5.983333333333364,
+          "mean_b": 7.4130333333332,
+          "diff": 1.429699999999836,
+          "ci_lower": 0.22556666666684275,
+          "ci_upper": 2.6434333333329656,
+          "n": 30
         },
         "completion_tokens": {
-          "mean_a": 89.475,
-          "mean_b": 384.8,
-          "diff": 295.32500000000005,
-          "ci_lower": 179.8,
-          "ci_upper": 446.1,
-          "n": 40
+          "mean_a": 346.0,
+          "mean_b": 457.9,
+          "diff": 111.89999999999998,
+          "ci_lower": 17.566666666666666,
+          "ci_upper": 208.03333333333333,
+          "n": 30
         },
         "answer_fallback": {
-          "n": 0
-        },
-        "inference_latency_seconds": {
-          "mean_a": 0.0,
-          "mean_b": 13.103175000000192,
-          "diff": 13.103175000000192,
-          "ci_lower": 8.348950000000695,
-          "ci_upper": 18.592375000000356,
-          "n": 40
-        },
-        "inference_completion_tokens": {
-          "mean_a": 0.0,
-          "mean_b": 571.95,
-          "diff": 571.95,
-          "ci_lower": 417.675,
-          "ci_upper": 737.05,
-          "n": 40
-        }
-      },
-      "constrained": {
-        "task_success": {
-          "mean_a": 1.0,
-          "mean_b": 0.875,
-          "diff": -0.125,
-          "ci_lower": -0.225,
-          "ci_upper": -0.025,
-          "n": 40
-        },
-        "recall@10": {
-          "mean_a": 0.2,
-          "mean_b": 0.175,
-          "diff": -0.025000000000000022,
-          "ci_lower": -0.1,
-          "ci_upper": 0.05,
-          "n": 40
-        },
-        "ndcg@10": {
-          "mean_a": 0.11519693456969671,
-          "mean_b": 0.09978456275845396,
-          "diff": -0.015412371811242748,
-          "ci_lower": -0.054546352175806515,
-          "ci_upper": 0.014814113343938085,
-          "n": 40
-        },
-        "constraint_satisfaction": {
-          "mean_a": 1.0,
-          "mean_b": 0.945,
-          "diff": -0.05500000000000005,
-          "ci_lower": -0.12,
-          "ci_upper": -0.01,
-          "n": 40
-        },
-        "first_attempt_ok": {
-          "mean_a": 1.0,
-          "mean_b": 1.0,
-          "diff": 0.0,
-          "ci_lower": 0.0,
-          "ci_upper": 0.0,
-          "n": 40
-        },
-        "reflections": {
           "mean_a": 0.0,
           "mean_b": 0.0,
           "diff": 0.0,
           "ci_lower": 0.0,
           "ci_upper": 0.0,
-          "n": 40
-        },
-        "llm_latency_seconds": {
-          "mean_a": 9.872249999999985,
-          "mean_b": 6.81570000000047,
-          "diff": -3.0565499999995147,
-          "ci_lower": -4.040599999999176,
-          "ci_upper": -2.2030249999990703,
-          "n": 40
-        },
-        "completion_tokens": {
-          "mean_a": 189.0,
-          "mean_b": 180.5,
-          "diff": -8.5,
-          "ci_lower": -24.125,
-          "ci_upper": 4.575,
-          "n": 40
-        },
-        "answer_fallback": {
-          "mean_a": 0.05128205128205128,
-          "mean_b": 0.0,
-          "diff": -0.05128205128205128,
-          "ci_lower": -0.1282051282051282,
-          "ci_upper": 0.0,
-          "n": 39
+          "n": 10
         },
         "inference_latency_seconds": {
-          "mean_a": 19.54985000000006,
-          "mean_b": 11.018350000000463,
-          "diff": -8.531499999999596,
-          "ci_lower": -10.616275000000314,
-          "ci_upper": -6.564999999999418,
-          "n": 40
+          "mean_a": 3.2869999999999893,
+          "mean_b": 5.821700000000359,
+          "diff": 2.5347000000003694,
+          "ci_lower": 0.5778666666668869,
+          "ci_upper": 4.329000000000511,
+          "n": 30
         },
         "inference_completion_tokens": {
-          "mean_a": 771.875,
-          "mean_b": 690.3,
-          "diff": -81.57500000000005,
-          "ci_lower": -165.8,
-          "ci_upper": -2.325,
-          "n": 40
-        }
-      },
-      "cold_text": {
-        "task_success": {
-          "mean_a": 1.0,
-          "mean_b": 0.85,
-          "diff": -0.15000000000000002,
-          "ci_lower": -0.3,
-          "ci_upper": 0.0,
-          "n": 20
-        },
-        "recall@10": {
-          "mean_a": 0.06666666666666667,
-          "mean_b": 0.041666666666666664,
-          "diff": -0.025,
-          "ci_lower": -0.15,
-          "ci_upper": 0.075,
-          "n": 20
-        },
-        "ndcg@10": {
-          "mean_a": 0.07346393630113782,
-          "mean_b": 0.03837664728122873,
-          "diff": -0.03508728901990909,
-          "ci_lower": -0.15,
-          "ci_upper": 0.0447381329402727,
-          "n": 20
-        },
-        "constraint_satisfaction": {
-          "mean_a": 1.0,
-          "mean_b": 0.85,
-          "diff": -0.15000000000000002,
-          "ci_lower": -0.3,
-          "ci_upper": 0.0,
-          "n": 20
-        },
-        "first_attempt_ok": {
-          "mean_a": 1.0,
-          "mean_b": 0.85,
-          "diff": -0.15000000000000002,
-          "ci_lower": -0.3,
-          "ci_upper": 0.0,
-          "n": 20
-        },
-        "reflections": {
-          "mean_a": 0.0,
-          "mean_b": 0.05,
-          "diff": 0.05,
-          "ci_lower": 0.0,
-          "ci_upper": 0.15,
-          "n": 20
-        },
-        "llm_latency_seconds": {
-          "mean_a": 8.070249999999579,
-          "mean_b": 6.753199999999924,
-          "diff": -1.3170499999996546,
-          "ci_lower": -2.66614999999947,
-          "ci_upper": -0.18109999999960563,
-          "n": 20
-        },
-        "completion_tokens": {
-          "mean_a": 155.65,
-          "mean_b": 161.85,
-          "diff": 6.199999999999989,
-          "ci_lower": -27.75,
-          "ci_upper": 35.15,
-          "n": 20
-        },
-        "answer_fallback": {
-          "mean_a": 0.058823529411764705,
-          "mean_b": 0.0,
-          "diff": -0.058823529411764705,
-          "ci_lower": -0.17647058823529413,
-          "ci_upper": 0.0,
-          "n": 17
-        },
-        "inference_latency_seconds": {
-          "mean_a": 17.79989999999998,
-          "mean_b": 11.132750000000305,
-          "diff": -6.667149999999674,
-          "ci_lower": -10.181149999999253,
-          "ci_upper": -3.194199999999364,
-          "n": 20
-        },
-        "inference_completion_tokens": {
-          "mean_a": 716.45,
-          "mean_b": 735.35,
-          "diff": 18.899999999999977,
-          "ci_lower": -165.15,
-          "ci_upper": 194.6,
-          "n": 20
+          "mean_a": 304.73333333333335,
+          "mean_b": 579.8333333333334,
+          "diff": 275.1,
+          "ci_lower": 88.6,
+          "ci_upper": 441.3,
+          "n": 30
         }
       },
       "ambiguous": {
@@ -1054,19 +624,19 @@
           "n": 6
         },
         "llm_latency_seconds": {
-          "mean_a": 5.541833333333368,
-          "mean_b": 5.898666666666638,
-          "diff": 0.3568333333332703,
-          "ci_lower": -1.041666666665454,
-          "ci_upper": 1.80983333333279,
+          "mean_a": 3.2474999999999454,
+          "mean_b": 3.846499999999954,
+          "diff": 0.5990000000000086,
+          "ci_lower": -0.20833333333348492,
+          "ci_upper": 1.8413333333337505,
           "n": 6
         },
         "completion_tokens": {
-          "mean_a": 31.333333333333332,
-          "mean_b": 56.833333333333336,
-          "diff": 25.500000000000004,
-          "ci_lower": 12.666666666666666,
-          "ci_upper": 39.333333333333336,
+          "mean_a": 95.66666666666667,
+          "mean_b": 92.0,
+          "diff": -3.6666666666666714,
+          "ci_lower": -26.666666666666668,
+          "ci_upper": 19.666666666666668,
           "n": 6
         },
         "answer_fallback": {
@@ -1093,6 +663,6 @@
     "variance": {
       "note": "Only 1 run per group, cannot compute variance"
     },
-    "n_pairs": 146
+    "n_pairs": 66
   }
 }

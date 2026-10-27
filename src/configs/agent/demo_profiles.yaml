@@ -1,0 +1,12 @@
+# Config cho pinned profiles trong demo UI.
+# Pinned profiles là profiles được chọn trước để demo nhanh, được merge vào danh sách profile sau blank và trước auto.
+# Mỗi pinned profile cần có user_id hợp lệ trong mapping, nếu không sẽ bị skip với warning.
+
+demo_profiles:
+  pinned: []  # Danh sách rỗng mặc định
+  # Ví dụ:
+  # pinned:
+  #   - id: "vip_user_1"
+  #     label: "VIP User (warm)"
+  #     description: "User VIP với nhiều interactions"
+  #     user_id: "user12345"

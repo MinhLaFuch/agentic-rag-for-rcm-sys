@@ -22,10 +22,12 @@ except ImportError:
 
 from package.config import get_data_paths, get_domains, load_config
 from package.demo import (
+    DemoProfile,
     DemoRequest,
     MockBackend,
     LiveBackend,
     format_items,
+    format_memory,
     format_trace,
     status_badge,
     sample_requests,
@@ -47,15 +49,23 @@ def parse_args() -> argparse.Namespace:
     )
     ap.add_argument("--host", default="127.0.0.1", help="Host to run server (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=7860, help="Port to run server (default: 7860)")
+    ap.add_argument("--inference-mode", choices=["llm", "template"], default="llm", help="Inference mode: llm (LLM writes answer) or template (deterministic, no LLM)")
     return ap.parse_args()
 
 
 def build_ui(
     backend: MockBackend | LiveBackend,
     mock_mode: bool,
-    sample_user_dict: dict[str, list[str]] | None = None,
+    profiles: list[DemoProfile] | None = None,
+    default_inference_mode: str = "llm",
 ) -> gr.Blocks:
     """Build Gradio UI."""
+
+    # Prepare profile choices
+    if profiles is None:
+        profiles = []
+    profile_choices = [(p.label, p.profile_id) for p in profiles]
+    default_profile_id = profiles[0].profile_id if profiles else "blank"
 
     # --- Main container ---
     with gr.Blocks(title="Demo LLM Agent Recommender System") as demo:
@@ -69,19 +79,13 @@ def build_ui(
         # --- Input ---
         with gr.Row():
             with gr.Column(scale=1):
-                user_id_input = gr.Textbox(label="User ID (optional)", placeholder="e.g., user123")
-                if sample_user_dict:
-                    with gr.Accordion("Select sample user", open=False):
-                        for segment, users in sample_user_dict.items():
-                            if users:
-                                for user_id in users:
-                                    gr.Button(
-                                        f"{segment}: {user_id}",
-                                        size="sm",
-                                    ).click(
-                                        lambda uid=user_id: uid,
-                                        outputs=user_id_input,
-                                    )
+                profile_dropdown = gr.Dropdown(
+                    label="Profile",
+                    choices=profile_choices,
+                    value=default_profile_id,
+                    interactive=True,
+                )
+                profile_card = gr.Markdown(label="Profile Card")
 
             with gr.Column(scale=3):
                 request_input = gr.Textbox(
@@ -101,7 +105,7 @@ def build_ui(
 
         # --- Toggles ---
         with gr.Row():
-            memory_toggle = gr.Checkbox(label="Memory (use user history)", value=False)
+            memory_toggle = gr.Checkbox(label="Memory (agent can read profile memory)", value=False)
             reflect_toggle = gr.Radio(
                 choices=[("Off (0)", 0), ("On (1)", 1)],
                 value=0,
@@ -112,35 +116,75 @@ def build_ui(
                 value="planner",
                 label="Agent mode",
             )
+            inference_radio = gr.Radio(
+                choices=[("LLM", "llm"), ("Template", "template")],
+                value=default_inference_mode,
+                label="Inference",
+                interactive=not mock_mode,
+            )
 
         # --- Submit button ---
         submit_btn = gr.Button("Submit", variant="primary", size="lg")
 
-        # --- Results ---
+        # --- Results (tabs) ---
+        with gr.Tabs():
+            with gr.TabItem("Response"):
+                with gr.Row():
+                    status_output = gr.Markdown(label="Status")
+                with gr.Row():
+                    text_output = gr.Markdown(label="Response")
+                with gr.Row():
+                    items_table = gr.Dataframe(
+                        label="Recommended items",
+                        headers=["Name", "Domain", "Price", "Rating", "Store"],
+                        datatype=["str", "str", "str", "str", "str"],
+                    )
+
+            with gr.TabItem("Memory"):
+                memory_output = gr.Markdown(label="Memory")
+
+            with gr.TabItem("Trace"):
+                with gr.Accordion("Execution trace (plan JSON, step logs, usage)", open=True):
+                    trace_output = gr.Markdown(label="Trace")
+
+        # --- Turn history ---
         with gr.Row():
-            status_output = gr.Markdown(label="Status")
+            clear_history_btn = gr.Button("Clear history", size="sm")
+        turn_history = gr.Dataframe(
+            label="Turn history",
+            headers=["Turn", "Profile", "Memory", "MemoryTool called?", "Tool sequence", "Status", "#Items"],
+            datatype=["number", "str", "str", "str", "str", "str", "number"],
+            row_count=5,
+            column_count=7,
+        )
+        turn_history_state = gr.State(value=[])  # Store history as list of dicts
 
-        with gr.Row():
-            text_output = gr.Markdown(label="Response")
+        # --- Event handlers ---
+        def on_profile_change(profile_id: str) -> str:
+            """Handle profile dropdown change."""
+            profile = next((p for p in profiles if p.profile_id == profile_id), None)
+            if profile:
+                lines = [f"**{profile.label}**", profile.description]
+                if profile.user_id:
+                    lines.append(f"User ID: {profile.user_id}")
+                else:
+                    lines.append("User ID: (none - new user)")
+                return "\n".join(lines)
+            return "Profile not found"
 
-        with gr.Row():
-            items_table = gr.Dataframe(
-                label="Recommended items",
-                headers=["Name", "Domain", "Price", "Rating", "Store"],
-                datatype=["str", "str", "str", "str", "str"],
-            )
+        def on_clear_history() -> list:
+            """Clear turn history."""
+            return []
 
-        with gr.Accordion("Execution trace (plan JSON, step logs, usage)", open=False):
-            trace_output = gr.Markdown(label="Trace")
-
-        # --- Event handler ---
         def on_submit(
-            user_id: str,
+            profile_id: str,
             request_text: str,
             use_memory: bool,
             reflect_rounds: int,
             mode: str,
-        ) -> tuple[str, str, list[list[str]], str]:
+            inference_mode: str,
+            history: list,
+        ) -> tuple[str, str, list[list[str]], str, str, list]:
             """Handle submit button click."""
             if not request_text.strip():
                 return (
@@ -148,14 +192,22 @@ def build_ui(
                     "",
                     [],
                     "",
+                    "No memory data",
+                    history,
                 )
 
+            # Get user_id from profile
+            profile = next((p for p in profiles if p.profile_id == profile_id), None)
+            user_id = profile.user_id if profile else None
+
             demo_request = DemoRequest(
-                user_id=user_id.strip() if user_id.strip() else None,
+                user_id=user_id,
                 text=request_text.strip(),
                 reflect_rounds=reflect_rounds,
                 use_memory=use_memory,
                 mode=mode,
+                inference_mode=inference_mode,
+                profile_id=profile_id,
             )
 
             result = backend.respond(demo_request)
@@ -165,18 +217,70 @@ def build_ui(
             if result.error:
                 status_md += f"\n\n*{result.error}*"
 
+            # Thêm badge cho inference composer và fallback
+            if result.trace and result.trace.inference:
+                composer = result.trace.inference.get("composer", "unknown")
+                fallback = result.trace.inference.get("fallback_reason")
+                status_md += f"\n\n**Inference:** {composer}"
+                if fallback:
+                    status_md += f" (fallback: {fallback})"
+
             # Format items
             items_rows = format_items(result.items)
 
             # Format trace
             trace_md = format_trace(result.trace) if result.trace else "No execution trace"
 
-            return status_md, result.text, items_rows, trace_md
+            # Format memory
+            memory_md = format_memory(result.memory) if result.memory else "No memory data"
+            if mode == "type1":
+                memory_md = "Memory not used in Type1 mode"
+
+            # Update turn history
+            tool_sequence = " → ".join([s.get("tool", "?") for s in result.trace.steps]) if result.trace else ""
+            memory_called = "✓" if (result.memory and result.memory.called) else "✗"
+            new_row = [
+                len(history) + 1,
+                profile.label if profile else profile_id,
+                "ON" if use_memory else "OFF",
+                memory_called,
+                tool_sequence,
+                result.status,
+                len(result.items),
+            ]
+            updated_history = history + [new_row]
+
+            return status_md, result.text, items_rows, trace_md, memory_md, updated_history
+
+        profile_dropdown.change(
+            fn=on_profile_change,
+            inputs=[profile_dropdown],
+            outputs=[profile_card],
+        )
+
+        profile_dropdown.change(
+            fn=on_clear_history,
+            inputs=[],
+            outputs=[turn_history_state],
+        )
+
+        clear_history_btn.click(
+            fn=on_clear_history,
+            inputs=[],
+            outputs=[turn_history_state],
+        )
 
         submit_btn.click(
             fn=on_submit,
-            inputs=[user_id_input, request_input, memory_toggle, reflect_toggle, mode_radio],
-            outputs=[status_output, text_output, items_table, trace_output],
+            inputs=[profile_dropdown, request_input, memory_toggle, reflect_toggle, mode_radio, inference_radio, turn_history_state],
+            outputs=[status_output, text_output, items_table, trace_output, memory_output, turn_history_state],
+        )
+
+        # Sync turn_history_state to turn_history display
+        turn_history_state.change(
+            fn=lambda x: x,
+            inputs=[turn_history_state],
+            outputs=[turn_history],
         )
 
     return demo
@@ -195,16 +299,13 @@ def main() -> None:
     if args.mock:
         print("Mode: MOCK (MockBackend)")
         backend = MockBackend()
-        sample_user_dict = None
+        profiles = backend.get_profiles()
         print("MockBackend initialized (no data loading needed)")
     else:
         print("Mode: LIVE (LiveBackend)")
         print(f"Tag: {args.tag or '(default)'}")
         print(f"Domain: {args.domain or '(all)'}")
         print(f"Eval-on: {args.eval_on}")
-
-        # Load config cho sample users
-        sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
         print("Initializing LiveBackend...")
         backend = LiveBackend(
@@ -229,14 +330,14 @@ def main() -> None:
             print("    PYTHONPATH=. python scripts/demo/run_demo.py --mock")
             sys.exit(1)
 
-        print("Getting sample users...")
-        sample_user_dict = backend.get_sample_users(n_per_segment=3, sparse_max=sparse_max)
+        print("Getting profiles...")
+        profiles = backend.get_profiles()
 
     init_elapsed = time.time() - start_time
     print(f"\nStartup time: {init_elapsed:.1f}s")
 
     print("\nBuilding Gradio UI...")
-    demo = build_ui(backend, args.mock, sample_user_dict)
+    demo = build_ui(backend, args.mock, profiles, default_inference_mode=args.inference_mode)
 
     print(f"\nStarting server at http://{args.host}:{args.port}")
     print("Press Ctrl+C to stop.")

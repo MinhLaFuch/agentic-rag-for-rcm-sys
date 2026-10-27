@@ -63,6 +63,10 @@ from package.tools.recommenders import build_interaction_matrix
 from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
+from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.tools.evaluation.normalize_query_text import normalize_query_text
+from package.tools.recommenders.mapping_hash import mapping_hash
 
 MAX_CANDIDATES = get_tool_limits().max_candidates
 
@@ -161,16 +165,20 @@ def main() -> None:
         help="Build corpus from configured metadata in memory, bypassing a cached corpus.",
     )
     ap.add_argument("--experiments-dir", help="mặc định: <experiments_dir>/<candidate_recall.experiments_subdir>")
+    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
+                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
+    ap.add_argument("--query-normalization", choices=("raw", "ascii_fold"), default="raw",
+                    help="Metadata query preprocessing; ascii_fold is explicit and must get its own baseline.")
     args = ap.parse_args()
 
     # CLI > configs/eval/candidate_recall.yaml / eval/baselines.yaml / eval/segment_thresholds.yaml
     cfg = load_config("eval/candidate_recall")["candidate_recall"]
     baselines = load_config("eval/baselines")["baselines"]
     args.n = args.n or ",".join(str(b) for b in cfg["budgets"])
-    args.per_segment = args.per_segment or cfg["per_segment"]
-    args.seed_items = args.seed_items or cfg["seed_items"]
-    args.query_items = args.query_items or cfg["query_items"]
-    args.neighbors = args.neighbors or baselines["item_knn"]["k"]
+    args.per_segment = cfg["per_segment"] if args.per_segment is None else args.per_segment
+    args.seed_items = cfg["seed_items"] if args.seed_items is None else args.seed_items
+    args.query_items = cfg["query_items"] if args.query_items is None else args.query_items
+    args.neighbors = baselines["item_knn"]["k"] if args.neighbors is None else args.neighbors
     args.seed = baselines["seed"] if args.seed is None else args.seed
     budgets = sorted(int(x) for x in args.n.split(","))
     if not budgets or any(n <= 0 for n in budgets) or len(set(budgets)) != len(budgets):
@@ -236,6 +244,13 @@ def main() -> None:
     item_text = item_text_tables(corpus, namespaced)
     print(f"  metadata covers {coverage:.1%} of mapped items")
 
+    metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
+    protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
+        target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
+        sampled=sampled, metadata_policy=metadata_policy, evaluation_kind="candidate")
+
+    protocol_manifest["query_normalization"] = args.query_normalization
+
     cached_knn_path = data_paths.item_knn_path(args.eval_on)
     knn_started = time.perf_counter()
     knn_status = "fit_fresh_cache_ignored"
@@ -276,6 +291,7 @@ def main() -> None:
         text_by_id = item_text(query_ids)
         column = 0 if mode == "history" else 1
         query = " ".join(text_by_id[item_id][column] for item_id in query_ids if item_id in text_by_id)
+        query = normalize_query_text(query, args.query_normalization)
         if not query.strip():
             return None
         res = search(query=query, limit=ask_limit(u))
@@ -354,7 +370,9 @@ def main() -> None:
             metrics[mode][seg] = {
                 "users": len(users),
                 "users_without_any_query_or_history": no_query,
-                "target_items_seen_in_fit": float(reach),
+                "target_items_seen_in_fit": float(reach),  # compatibility alias: catalog warm, NOT same-user repeat
+                "target_catalog_warm_fraction_macro_user": float(reach),
+                "target_same_user_repeat_fraction_macro_user": float(np.mean([len(target_by_user[u] & seen_of[u]) / len(target_by_user[u]) for u in users])) if users else None,
                 "mean_union_all_size": float(np.mean(size_union)) if size_union else 0.0,
                 "candidate_metrics": source_metrics,
                 "item_familiarity_metrics": item_metrics,
@@ -392,13 +410,13 @@ def main() -> None:
     }
     exp_dir = save_experiment(
         next_experiment_dir(args.experiments_dir),
-        config={"budgets": budgets, "per_segment": args.per_segment, "seed_items": args.seed_items,
+        config={"protocol": protocol_manifest, "budgets": budgets, "per_segment": args.per_segment, "seed_items": args.seed_items,
                 "query_items": args.query_items, "neighbors": args.neighbors, "query_modes": query_modes,
                 "evaluation_protocol": {mode: ("oracle_upper_bound" if mode == "category_oracle" else "realistic_offline_proxy") for mode in query_modes},
                 "sampled_user_ids": sampled, "sparse_max": sparse_max,
                 "knn_artifact_status": knn_status, "knn_fit_seconds": round(knn_seconds, 6),
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_has_mapping_hash": False,
+                "knn_cache_used": False,
                 "corpus_load_seconds": round(corpus_load_seconds, 6),
                 "corpus_source_validation": {
                     "mode": "built_from_metadata_in_memory" if args.no_prebuilt_corpus else "loaded_prebuilt",
@@ -411,17 +429,18 @@ def main() -> None:
                     "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
                     "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
                     "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt_corpus else None,
-                    "source_hash_semantics": "path_size_mtime_fingerprint; source content hashes are not present in format_version 1",
+                    "source_hash_semantics": getattr(corpus, "_source_provenance", {"source_hash_protocol": "built_from_current_sources"}),
                 }},
         metrics=metrics,
         seed=args.seed,
         dataset_info={"tag": data_paths.tag, "splits_dir": args.splits_dir, "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": num_items, "id_format": "namespaced" if namespaced else "plain",
                       "metadata_coverage": round(coverage, 4),
-                      "mapping_hash": hashlib.sha256("".join(sorted(item2id)).encode()).hexdigest(),
+                      "mapping_hash": mapping_hash(item2id), "user_mapping_hash": mapping_hash(user2id),
+                      "mapping_hash_protocol": "sorted_key_index_json_v1",
                       "split_files": {name: {"path": str(data_paths.split_path(name)),
                                              "size_bytes": data_paths.split_path(name).stat().st_size,
-                                             "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns}
+                                             "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns, "sha256": sha256_file(data_paths.split_path(name))}
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
         notes="history is a realistic offline proxy (titles from fit history), not a real query log. category_oracle is an upper bound using held-out metadata and must not be reported as realistic performance. Candidate coverage is micro Recall over held-out user-item pairs; catalog coverage is unique returned catalog items divided by catalog size.",

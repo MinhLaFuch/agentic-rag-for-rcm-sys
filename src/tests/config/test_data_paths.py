@@ -13,7 +13,7 @@ def test_data_paths_layout_is_under_resource():
     paths = get_data_paths()
     assert paths.tag == "multi_domain"
     assert paths.raw_dir == PROJECT_ROOT / "resource" / "raw"
-    assert paths.review_path("Video_Games") == paths.raw_dir / "Video_Games.jsonl.gz"
+    assert paths.review_path("Video_Games").is_relative_to(paths.raw_dir)
     assert paths.meta_path("Video_Games") == PROJECT_ROOT / "resource" / "metadata" / "meta_Video_Games.jsonl"
     assert paths.cleaned_path("Electronics") == PROJECT_ROOT / "resource/cleaned/Electronics/interactions.parquet"
     assert paths.filtered_path == PROJECT_ROOT / "resource/filtered/multi_domain/interactions.parquet"
@@ -64,7 +64,7 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
     assert run("--tag", "vg_toys", "path:splits_dir") == (0, ["resource/splits/vg_toys"])
     assert run("--tag", "vg_toys", "path:log_dir") == (0, ["experiments/logs/vg_toys"])
     assert run("path:experiments_dir") == (0, ["experiments"])
-    assert run("path:review_path:Video_Games") == (0, ["resource/raw/Video_Games.jsonl.gz"])
+    assert run("path:review_path:Video_Games") == (0, [get_data_paths().review_path("Video_Games").relative_to(PROJECT_ROOT).as_posix()])
     assert run("path:meta_path:Video_Games") == (0, ["resource/metadata/meta_Video_Games.jsonl"])
     assert run("path:cleaned_path:Electronics") == (0, ["resource/cleaned/Electronics/interactions.parquet"])
     assert run("--tag", "t", "path:split_path:train") == (0, ["resource/splits/t/train.parquet"])
@@ -74,3 +74,19 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
     assert run("path:cleaned_path")[0] != 0  # needs an argument
     assert run("path:raw_dir:oops")[0] != 0  # takes none
     assert run("path:split_path:validation_typo")[0] != 0
+
+
+def test_review_resolver_supports_actual_layout_and_legacy_fallback(tmp_path):
+    from dataclasses import replace
+    paths = replace(get_data_paths(), raw_dir=tmp_path)
+    assert paths.review_path("D") == tmp_path / "D.jsonl.gz"
+    legacy = tmp_path / "D.jsonl.gz"
+    legacy.write_bytes(b"test")
+    assert paths.review_path("D") == legacy
+    plain = tmp_path / "D.jsonl"
+    plain.write_text("test")
+    assert paths.review_path("D") == plain
+    nested = tmp_path / "D" / "D.jsonl"
+    nested.parent.mkdir()
+    nested.write_text("test")
+    assert paths.review_path("D") == nested

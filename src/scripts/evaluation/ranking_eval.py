@@ -15,6 +15,9 @@ import hashlib
 import json
 import time
 from collections import defaultdict
+from datetime import datetime, timezone
+import uuid
+import yaml
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +37,11 @@ from package.tools.recommenders import ItemKNNRecommender, build_interaction_mat
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.tools.score import BaselineScorer
 from package.utils import ensure_utf8_stdout
+from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.tools.evaluation.normalize_query_text import normalize_query_text
+from package.tools.recommenders.mapping_hash import mapping_hash
+from package.tools.recommenders.file_hash import file_hash
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
@@ -92,6 +100,14 @@ def _tie_stats(scores: np.ndarray, k: int) -> dict[str, float]:
     return {"tie_pair_rate": tie_pairs / pair_count, "top_k_boundary_tie": boundary}
 
 
+from package.tools.evaluation.ranking_run_store import RankingRunStore
+from package.tools.evaluation.stage_progress import StageProgress
+from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
+from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
+from package.tools.recommenders.save_item_knn import save_item_knn
+from package.tools.recommenders.load_item_knn import load_item_knn
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
@@ -108,6 +124,15 @@ def main() -> None:
     ap.add_argument("--allow-missing-corpus-sources", action="store_true")
     ap.add_argument("--no-prebuilt-corpus", action="store_true")
     ap.add_argument("--experiments-dir", type=Path)
+    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
+                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
+    ap.add_argument("--query-normalization", choices=("raw", "ascii_fold"), default="raw",
+                    help="Metadata query preprocessing; ascii_fold is explicit and must get its own baseline.")
+    ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
+    ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--batch-size", type=int, default=50)
+    ap.add_argument("--progress-every", type=int, default=100)
+    ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
     args = ap.parse_args()
 
     if args.per_segment < 1 or args.candidate_budget < 1:
@@ -121,11 +146,66 @@ def main() -> None:
     if len(set(weights)) != len(weights):
         ap.error("--popularity-weights must be unique")
 
+    if args.batch_size < 1 or args.progress_every < 1 or args.seed_items < 1 or args.query_items < 1:
+        ap.error("batch-size, progress-every, seed-items and query-items must be positive")
+    if args.neighbors is not None and args.neighbors < 1:
+        ap.error("neighbors must be positive")
+    if args.resume and args.work_dir is None:
+        ap.error("--resume requires --work-dir")
+    if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
+        ap.error("candidate-budget exceeds tools.max_candidates")
     paths = get_data_paths(args.tag)
-    domains = get_domains()
-    meta_files = [(d, str(paths.meta_path(d))) for d in domains]
-    t_start = time.perf_counter()
+    meta_files = [(d, str(paths.meta_path(d))) for d in get_domains()]
+    exp_root = args.experiments_dir or (paths.experiments_dir / "ranking_eval")
+    work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
+    print(f"[checkpoint] {work.resolve()} (resume with --work-dir and --resume)", flush=True)
+    provenance_started = time.perf_counter()
+    print("[provenance] hashing input files; ETA unknown until completed", flush=True)
+    identity = {
+        "format": 1, "source_fingerprint": _source_fingerprint(), "environment": _environment_versions(),
+        "parameters": {k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()
+                       if k not in {"resume", "work_dir", "batch_size", "progress_every", "experiments_dir"}},
+        "effective_neighbors": args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"]),
+        "split_files": {name:{"path":str(paths.split_path(name)), "sha256":file_hash(paths.split_path(name))} for name in ("train","validation","test")},
+        "mapping_files": {str(f.resolve()):file_hash(f) for f in sorted(paths.mapped_dir.glob("*.json"))},
+        "metadata_files": {d:{"path":str(Path(f).resolve()), "sha256":file_hash(f) if Path(f).exists() else None} for d,f in meta_files},
+    }
+    if not identity["mapping_files"]:
+        raise ValueError("no mapping JSON files found")
+    if args.candidates_from:
+        identity["frozen_artifacts"] = {name:file_hash(args.candidates_from/name) for name in ("config.yaml","metrics.json","candidate_lists.jsonl","scored.jsonl")}
+    variants = {("baseline" if np.isclose(w,1e-6,rtol=0,atol=1e-15) else f"popularity_weight_{w:g}"):w for w in weights}
+    if len(variants) != len(weights):
+        raise ValueError("scorer variant names collide")
+    if args.candidates_from:
+        if "baseline" not in variants:
+            raise ValueError("frozen-candidate confirmation requires including baseline weight 1e-6")
+        variants = {"baseline":variants["baseline"], **{k:v for k,v in variants.items() if k != "baseline"}}
+    provenance_seconds = time.perf_counter() - provenance_started
+    with RankingRunStore(work, identity, resume=args.resume) as store:
+        store.put("startup_verification_seconds",store.get("startup_verification_seconds",0.) + provenance_seconds)
+        publication = store.get("publication_destination")
+        if publication and Path(publication).exists():
+            published = Path(publication)
+            manifest = published / "artifact_hashes.json"
+            if manifest.exists():
+                hashes = json.loads(manifest.read_text(encoding="utf-8"))
+                document = yaml.safe_load((published/"config.yaml").read_text(encoding="utf-8"))
+                if document["config"].get("checkpoint_identity") == identity:
+                    if not all(file_hash(published/n) == h for n,h in hashes.items()):
+                        raise ValueError("published artifact checksum mismatch")
+                    store.put("final_experiment",str(published.resolve()))
+        if store.get("final_experiment"):
+            print(f"Already completed: {store.get('final_experiment')}", flush=True)
+            return
+        store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
+        if not store.get("scoring_complete"):
+            _run_stages(args, paths, meta_files, store, ks, variants)
+        _finalize(args, paths, store, ks, variants, exp_root)
 
+
+def _run_stages(args, paths, meta_files, store, ks, variants):
+    print("[splits] loading and sampling; ETA unknown", flush=True)
     train, validation, test = load_splits(paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
     user2id, item2id = load_mappings(paths.mapped_dir)
@@ -146,6 +226,7 @@ def main() -> None:
     recent = sampled_fit.groupby("user_idx")["item_idx"].apply(lambda s: list(s)[::-1]).to_dict()
     seen_of = {u: set(recent.get(u, [])) for u in users}
 
+    print("[corpus] start; ETA unknown", flush=True)
     if paths.corpus_path.exists() and not args.no_prebuilt_corpus:
         corpus, coverage = load_corpus(
             paths.corpus_path, meta_files, item2id,
@@ -158,11 +239,29 @@ def main() -> None:
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
         )
 
-    neighbors = args.neighbors or int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
+    metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
+    protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=paths.tag, fit_df=fit_df,
+        target_df=target_df, user2id=user2id, item2id=item2id, segments=segments_by_user,
+        sampled=sampled, metadata_policy=metadata_policy)
+
+    protocol_manifest["query_normalization"] = args.query_normalization
+
+    neighbors = args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
     knn_started = time.perf_counter()
-    knn = ItemKNNRecommender(neighbors=neighbors).fit(fit_df[["user_idx", "item_idx"]])
+    local_knn = store.path / "fit_item_knn.npz"
+    context = dict(user2id=user2id, item2id=item2id, eval_on=args.eval_on, tag=paths.tag)
+    if local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
+        print("[ItemKNN] validating local checkpoint model", flush=True)
+        knn = load_item_knn(local_knn, neighbors, fit_df[["user_idx", "item_idx"]], **context)
+        knn_hash = knn._fit_data_hash
+    else:
+        print("[ItemKNN] fitting; ETA unknown", flush=True)
+        knn = ItemKNNRecommender(neighbors=neighbors).fit(fit_df[["user_idx", "item_idx"]])
+        knn._fit_time = time.perf_counter() - knn_started
+        save_item_knn(knn, local_knn, neighbors, fit_df[["user_idx", "item_idx"]], **context)
+        knn_hash = item_knn_data_hash(fit_df[["user_idx", "item_idx"]])
     knn_seconds = time.perf_counter() - knn_started
-    knn_hash = item_knn_data_hash(fit_df[["user_idx", "item_idx"]])
+    print(f"[ItemKNN] ready in {knn_seconds:.1f}s", flush=True)
     item_cf = ItemCFTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
     semantic = SemanticSearchTool(corpus, logger=ToolCallLogger())
     query_tool = QueryTool(corpus, logger=ToolCallLogger())
@@ -170,34 +269,88 @@ def main() -> None:
     popular_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable")
     max_candidates = int(load_config("agent/tools")["tools"]["max_candidates"])
 
-    candidate_records: list[dict[str, Any]] = []
-    retrieval_times: dict[str, dict[str, list[float]]] = {
-        segment: defaultdict(list) for segment in SEGMENTS
+    max_sampled_user = max(users) if users else 0
+    metadata = {
+        "tag": paths.tag, "splits_dir": str(paths.splits_dir), "eval_on": args.eval_on,
+        "num_users": num_users, "num_items": num_items,
+        "mapping_hash": mapping_hash(item2id), "user_mapping_hash": mapping_hash(user2id),
+        "mapping_hash_protocol": "sorted_key_index_json_v1",
+        "split_files": {
+            name: {"path": str(paths.split_path(name)), "size_bytes": paths.split_path(name).stat().st_size,
+                   "mtime_ns": paths.split_path(name).stat().st_mtime_ns, "sha256": file_hash(paths.split_path(name))}
+            for name in ("train", "validation", "test")
+        },
     }
-    retrieval_lists: dict[tuple[int, str], list[int]] = {}
-    target_sets: dict[int, set[int]] = {}
-    novel_targets: dict[int, set[int]] = {}
-    for segment in SEGMENTS:
-        for user in sampled[segment]:
+    config = {
+        "protocol": protocol_manifest,
+        "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
+        "candidate_budget_per_source": args.candidate_budget, "candidate_merges": list(MERGES),
+        "retrieval": {"sources": ["popularity", "item_cf", "semantic"], "seed_items": args.seed_items,
+                      "query_items": args.query_items, "semantic_query_mode": "titles_from_fit_history",
+                      "item_knn_neighbors": neighbors, "item_knn_fit_data_hash": knn_hash,
+                      "item_knn_fit_seconds": getattr(knn,"_fit_time",None),
+                      "item_knn_setup_seconds_this_session": knn_seconds},
+        "scorers": {"type": "BaselineScorer", "popularity_weights": list(variants.values()),
+                    "baseline_weight": 1e-6, "same_saved_candidate_lists": True},
+        "ks": ks,
+        "target_protocol": f"{args.eval_on} interactions; ranking uses novel targets; candidate recall retains all targets",
+        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
+                   "metadata_coverage": coverage,
+                   "missing_sources": [p for _, p in meta_files if not Path(p).exists()],
+                   "allow_missing_sources": args.allow_missing_corpus_sources,
+                   "mode": "in_memory_build" if args.no_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
+        "max_sampled_user_idx": max_sampled_user,
+    }
+    config["persistence"] = {"work_dir":str(store.path.resolve()), "batch_size":args.batch_size,
+        "checkpoint_format": "sqlite_transactional_v1", "quality_independent_of_batch_size":True}
+    store.put("config", config)
+    store.put("dataset", metadata)
+    total = sum(len(group) for group in sampled.values())
+    store.put("total_users", total)
+    if args.candidates_from:
+        _import_candidates(args, store, config, metadata, targets=target_by_user, seen_of=seen_of, item2id=item2id)
+    else:
+        done = store.count("candidates")
+        print(f"[retrieval] committed total={done}/{total}",flush=True)
+        progress, active_segment = None, None
+        offsets, offset = {}, 0
+        for segment in SEGMENTS:
+            offsets[segment] = offset
+            offset += len(sampled[segment])
+        batch = []
+        sequence = ((u,seg) for seg in SEGMENTS for u in sampled[seg])
+        for position,(user,segment) in enumerate(sequence):
+            if position < done:
+                continue
+            if segment != active_segment:
+                if batch:
+                    store.append("candidates",batch)
+                    batch.clear()
+                if progress is not None:
+                    progress.update(store.count("candidates")-offsets[active_segment],force=True)
+                active_segment = segment
+                progress = StageProgress("retrieval:"+segment,len(sampled[segment]),
+                    completed=max(0,done-offsets[segment]),every=args.progress_every)
             seen = seen_of[user]
             ask = min(args.candidate_budget + len(seen), max_candidates)
-            target_sets[user] = set(target_by_user[user])
-            novel_targets[user] = target_sets[user] - seen
+            targets = set(target_by_user[user])
+            novel = targets - seen
             popularity = [int(i) for i in popular_order[:ask]]
 
             recent_ids = recent.get(user, [])
             seed_names = _ids_to_namespaced(recent_ids[: args.seed_items], id2item)
             start = time.perf_counter()
             cf_result = item_cf(items=seed_names, top_k=ask) if seed_names else None
-            retrieval_times[segment]["item_cf"].append(time.perf_counter() - start)
+            cf_seconds = time.perf_counter() - start
             cf_ids = [item2id[c["item_id"]] for c in cf_result.data["candidates"] if c["item_id"] in item2id] if cf_result and cf_result.ok else []
 
             query_names = _ids_to_namespaced(recent_ids[: args.query_items], id2item)
             text_info = get_text(query_names)
-            query = " ".join(text_info[item][0] for item in query_names if item in text_info)
+            raw_query = " ".join(text_info[item][0] for item in query_names if item in text_info)
+            query = normalize_query_text(raw_query, args.query_normalization)
             start = time.perf_counter()
             sem_result = semantic(query=query, limit=ask) if query.strip() else None
-            retrieval_times[segment]["semantic"].append(time.perf_counter() - start)
+            sem_seconds = time.perf_counter() - start
             sem_ids = []
             if sem_result and sem_result.ok:
                 for row in sem_result.data["candidates"]:
@@ -212,13 +365,14 @@ def main() -> None:
             raw_union = list(dict.fromkeys(i for name in raw_sources for i in raw_sources[name]))
             raw_union_after_seen = [i for i in raw_union if i not in seen]
             seen_filtered_union = list(dict.fromkeys(i for name in filtered_sources for i in filtered_sources[name]))
-            retrieval_lists[(user, "union_rr")] = union_rr
-            retrieval_lists[(user, "union_all")] = union_all
-            candidate_records.append({
+            record = {
                 "user_idx": int(user), "user_id": id2user[user], "segment": segment,
-                "targets": sorted(target_sets[user]), "targets_seen_in_fit": sorted(target_sets[user] & seen),
-                "targets_unseen_in_fit": sorted(novel_targets[user]),
+                "targets": sorted(targets), "targets_seen_in_fit": sorted(targets & seen),
+                "targets_unseen_in_fit": sorted(novel),
                 "seen_count": len(seen),
+                "source_latency_seconds": {"item_cf":cf_seconds, "semantic":sem_seconds},
+                "semantic_query": {"raw": raw_query, "sent": query, "normalization": args.query_normalization,
+                                   "changed": raw_query != query, "empty_after_normalization": bool(raw_query.strip()) and not query.strip()},
                 "sources_raw": {name: _ids_to_namespaced(ids, id2item) for name, ids in raw_sources.items()},
                 "sources_after_seen_filter": {name: _ids_to_namespaced(ids, id2item) for name, ids in filtered_sources.items()},
                 "raw_union": _ids_to_namespaced(raw_union, id2item),
@@ -229,32 +383,30 @@ def main() -> None:
                     "item_cf": cf_result.error if cf_result and not cf_result.ok else None,
                     "semantic": sem_result.error if sem_result and not sem_result.ok else None,
                 },
-            })
+            }
+            batch.append((position, record))
+            if len(batch) >= args.batch_size:
+                store.append("candidates", batch)
+                batch.clear()
+                progress.update(store.count("candidates")-offsets[segment])
             item_cf.logger.records.clear()
             semantic.logger.records.clear()
-
-    # The lists and targets are frozen before any ranking variant is evaluated.
-    candidate_records_by_user = {row["user_idx"]: row for row in candidate_records}
-    ranking_results: dict[str, Any] = {}
-    all_scored: list[dict[str, Any]] = []
+        store.append("candidates", batch)
+        if progress is not None:
+            progress.update(store.count("candidates")-offsets[active_segment], force=True)
+    if store.count("candidates") != total:
+        raise ValueError("candidate checkpoint does not contain the complete sample")
     for merge in MERGES:
-        ranking_results[merge] = {}
-        for weight in weights:
-            variant = "baseline" if np.isclose(weight, 1e-6, rtol=0, atol=1e-15) else f"popularity_weight_{weight:g}"
+        for variant,weight in variants.items():
+            stream = f"scored:{merge}:{variant}"
+            done = store.count(stream)
+            progress = StageProgress(stream, total, completed=done, every=args.progress_every)
             scorer = BaselineScorer(knn, popularity_weight=weight)
             reco = RecoModelTool(scorer, user2id, item2id, corpus=corpus)
-            ranked_by_segment: dict[str, list[list[int]]] = {s: [] for s in SEGMENTS}
-            relevant_by_segment: dict[str, list[set[int]]] = {s: [] for s in SEGMENTS}
-            ranking_latency: dict[str, list[float]] = defaultdict(list)
-            fetch_latency: dict[str, list[float]] = defaultdict(list)
-            ties: dict[str, dict[str, list[float]]] = {s: defaultdict(list) for s in SEGMENTS}
-            loss: dict[str, dict[str, list[int]]] = {s: defaultdict(list) for s in SEGMENTS}
-            fetch_success: dict[str, list[float]] = defaultdict(list)
-            rows_for_variant = []
-
-            for record in candidate_records:
-                user, segment = record["user_idx"], record["segment"]
-                candidates = retrieval_lists[(user, merge)]
+            batch = []
+            for position,record in store.rows("candidates", start=done, batch_size=args.batch_size):
+                user,segment = record["user_idx"],record["segment"]
+                candidates = [item2id[i] for i in record["candidate_sets"][merge]]
                 user_id = record["user_id"]
                 start = time.perf_counter()
                 # Rank the complete fixed candidate list so tie rate and the max-K boundary tie
@@ -262,170 +414,237 @@ def main() -> None:
                 output = reco.execute(
                     user_id=user_id, candidates=_ids_to_namespaced(candidates, id2item),
                     top_k=len(candidates), exclude_seen=True,
-                )
+                ) if candidates else {"ranked":[], "excluded_seen":[], "unscored_item_ids":[]}
                 elapsed = time.perf_counter() - start
-                ranking_latency[segment].append(elapsed)
                 ranked_ids = [item2id[r["item_id"]] for r in output["ranked"] if r["item_id"] in item2id]
-                seen_removed = len(output["excluded_seen"])
-                unscored_removed = len(output["unscored_item_ids"])
-                loss[segment]["candidate_input"].append(len(candidates))
-                loss[segment]["seen_removed"].append(seen_removed)
-                loss[segment]["unscored_removed"].append(unscored_removed)
-                loss[segment]["ranked_returned"].append(len(ranked_ids))
-                # Per-user retrieval filtering loss is measured on unique raw candidates before per-source budget cuts.
-                retrieval_record = candidate_records_by_user[user]
-                loss[segment]["retrieval_raw_union"].append(len(retrieval_record["raw_union"]))
-                loss[segment]["retrieval_seen_dropped"].append(
-                    len(retrieval_record["raw_union"]) - len(retrieval_record["raw_union_after_seen"])
-                )
-
-                if novel_targets[user]:
-                    ranked_by_segment[segment].append(ranked_ids)
-                    relevant_by_segment[segment].append(novel_targets[user])
-
                 rank_scores = np.asarray([r["score"] for r in output["ranked"]], dtype=np.float64)
                 tie = _tie_stats(rank_scores, max(ks))
-                ties[segment]["tie_pair_rate"].append(tie["tie_pair_rate"])
-                ties[segment]["top_k_boundary_tie"].append(tie["top_k_boundary_tie"])
 
                 top_ranked = output["ranked"][: max(ks)]
                 start = time.perf_counter()
                 fetched = query_tool.execute(item_ids=[r["item_id"] for r in top_ranked]) if top_ranked else {"items": []}
-                fetch_latency[segment].append(time.perf_counter() - start)
-                fetch_success[segment].append(float(len(fetched.get("items", [])) == len(top_ranked)))
+                fetch_seconds = time.perf_counter() - start
+                fetch_ok = len(fetched.get("items", [])) == len(top_ranked)
 
                 row = {
                     "request_id": f"{merge}:{user}", "user_idx": user, "segment": segment,
                     "merge": merge, "scorer": variant, "popularity_weight": weight,
-                    "targets": sorted(target_sets[user]), "targets_unseen_in_fit": sorted(novel_targets[user]),
+                    "targets": record["targets"], "targets_unseen_in_fit": record["targets_unseen_in_fit"],
                     "candidate_ids": _ids_to_namespaced(candidates, id2item),
                     "ranked_ids": [r["item_id"] for r in output["ranked"]],
                     "scores": [r["score"] for r in output["ranked"]],
                     "excluded_seen": output["excluded_seen"], "unscored_item_ids": output["unscored_item_ids"],
                     "ranking_latency_seconds": elapsed,
-                    "fetch_latency_seconds": fetch_latency[segment][-1],
-                    "fetch_success": bool(fetch_success[segment][-1]),
+                    "fetch_latency_seconds": fetch_seconds,
+                    "fetch_success": fetch_ok,
                     "recommendations_at_max_k": [r["item_id"] for r in top_ranked],
+                    "retrieval_raw_union_count": len(record["raw_union"]),
+                    "retrieval_seen_dropped_count": len(record["raw_union"]) - len(record["raw_union_after_seen"]),
                     **tie,
                 }
-                rows_for_variant.append(row)
-                all_scored.append(row)
+                batch.append((position,row))
+                if len(batch) >= args.batch_size:
+                    store.append(stream,batch)
+                    batch.clear()
+                    progress.update(store.count(stream))
+            store.append(stream,batch)
+            progress.update(store.count(stream), force=True)
+            if store.count(stream) != total:
+                raise ValueError("incomplete scoring checkpoint")
+            if args.candidates_from and variant == "baseline":
+                _confirm_frozen_baseline(store,item2id,ks,merge,variants)
+    store.put("scoring_complete", True)
 
-            per_segment = {}
-            for segment in SEGMENTS:
-                metric = _ranking_metrics(ranked_by_segment[segment], relevant_by_segment[segment], ks, num_items)
-                l = loss[segment]
-                c_in = int(sum(l["candidate_input"]))
-                c_seen = int(sum(l["seen_removed"]))
-                c_unscored = int(sum(l["unscored_removed"]))
-                metric.update({
-                    "sampled_users": len(sampled[segment]),
-                    "users_with_unseen_targets": len(relevant_by_segment[segment]),
-                    "users_without_unseen_targets": len(sampled[segment]) - len(relevant_by_segment[segment]),
-                    "target_items_seen_in_fit": int(sum(len(target_sets[u] - novel_targets[u]) for u in sampled[segment])),
-                    "target_items_unseen_in_fit": int(sum(len(novel_targets[u]) for u in sampled[segment])),
-                    "filtering": {
-                        "retrieval_raw_union_candidates": int(sum(l["retrieval_raw_union"])),
-                        "retrieval_seen_dropped": int(sum(l["retrieval_seen_dropped"])),
-                        "input_candidates": c_in,
-                        "removed_seen": c_seen,
-                        "removed_unscored": c_unscored,
-                        "returned_ranked": int(sum(l["ranked_returned"])),
-                        "retrieval_seen_loss_rate": sum(l["retrieval_seen_dropped"]) / sum(l["retrieval_raw_union"]) if sum(l["retrieval_raw_union"]) else 0.0,
-                        "unscored_loss_rate": c_unscored / c_in if c_in else 0.0,
-                        "total_loss_rate_after_merge": (c_seen + c_unscored) / c_in if c_in else 0.0,
-                    },
-                    "ranking_latency_seconds": _summarize(ranking_latency[segment]),
-                    "metadata_fetch_latency_seconds": _summarize(fetch_latency[segment]),
-                    "metadata_fetch_success_rate": float(np.mean(fetch_success[segment])) if fetch_success[segment] else None,
-                    "ties": {key: float(np.mean(vals)) if vals else None for key, vals in ties[segment].items()},
-                })
-                per_segment[segment] = metric
-            ranking_results[merge][variant] = {
-                "popularity_weight": weight,
-                "per_segment": per_segment,
-                "rows": rows_for_variant,
-            }
 
-    # Retrieval metrics use the same held-out sample and the same seen-item filtering as candidate_recall.py.
-    retrieval_summary = {}
+def _import_candidates(args, store, config, metadata, *, targets, seen_of, item2id):
+    source = args.candidates_from
+    document = yaml.safe_load((source / "config.yaml").read_text(encoding="utf-8"))
+    old, dataset = document["config"], document["run"]["dataset"]
+    for key in ("tag", "eval_on", "mapping_hash", "user_mapping_hash"):
+        if dataset[key] != metadata[key]:
+            raise ValueError(f"frozen candidate dataset {key} mismatch")
+    if {k:v["sha256"] for k,v in dataset["split_files"].items()} != {k:v["sha256"] for k,v in metadata["split_files"].items()}:
+        raise ValueError("frozen candidate split content mismatch")
+    for key in ("sampled_user_ids", "candidate_budget_per_source"):
+        if old[key] != config[key]:
+            raise ValueError(f"frozen candidate {key} mismatch")
+    for key in ("seed_items", "query_items", "item_knn_neighbors", "item_knn_fit_data_hash"):
+        if old["retrieval"][key] != config["retrieval"][key]:
+            raise ValueError(f"frozen retrieval {key} mismatch")
+    for key in ("metadata_policy", "label_policy", "cohort_policy", "history_size"):
+        if old["protocol"][key] != config["protocol"][key]:
+            raise ValueError(f"frozen protocol {key} mismatch")
+    if old["protocol"].get("query_normalization", "raw") != args.query_normalization:
+        raise ValueError("frozen candidate query normalization mismatch")
+    metrics = json.loads((source / "metrics.json").read_text(encoding="utf-8"))
+    store.put("frozen_retrieval_metrics", metrics["retrieval"])
+    config["frozen_candidates"] = {"experiment":str(source.resolve()),
+        "sha256":file_hash(source / "candidate_lists.jsonl"),
+        "latency": "retrieval latency copied from source run; this session does not rerun retrieval",
+        "source_metadata_snapshot": "use source checkpoint_identity when present; legacy source experiments may not record metadata content hashes"}
+    store.put("config", config)
+    total = store.get("total_users")
+    done = store.count("candidates")
+    progress = StageProgress("import frozen candidates", total, completed=done, every=args.progress_every)
+    expected = iter((u,s) for s in SEGMENTS for u in config["sampled_user_ids"][s])
+    batch, count = [], 0
+    with (source / "candidate_lists.jsonl").open(encoding="utf-8") as stream:
+        for position,line in enumerate(stream):
+            row = json.loads(line)
+            pair = next(expected, None)
+            if pair != (row["user_idx"],row["segment"]):
+                raise ValueError("frozen candidate order/user sample mismatch")
+            u = row["user_idx"]
+            if set(row["targets"]) != set(targets[u]) or set(row["targets_unseen_in_fit"]) != set(targets[u]) - seen_of[u]:
+                raise ValueError("frozen ground truth/history mismatch")
+            if set(row["candidate_sets"]) != set(MERGES):
+                raise ValueError("frozen merge definitions mismatch")
+            for names in row["candidate_sets"].values():
+                if any(i not in item2id for i in names):
+                    raise ValueError("unknown frozen candidate item")
+                if len(names) != len(set(names)):
+                    raise ValueError("duplicate frozen candidates")
+            count += 1
+            if position < done:
+                continue
+            batch.append((position,row))
+            if len(batch) >= args.batch_size:
+                store.append("candidates",batch)
+                batch.clear()
+                progress.update(store.count("candidates"))
+    if count != total:
+        raise ValueError("incomplete frozen candidate file")
+    store.append("candidates",batch)
+    progress.update(store.count("candidates"), force=True)
+
+
+def _confirm_frozen_baseline(store,item2id,ks,merge,variants):
+    source = Path(store.get("config")["frozen_candidates"]["experiment"])
+    expected = json.loads((source/"metrics.json").read_text(encoding="utf-8"))["ranking"][merge]["baseline"]
+    summary = RankingStreamSummary(item2id,ks)
+    for _,row in store.rows(f"scored:{merge}:baseline"):
+        summary.add_scored(row)
+    actual = summary.result([merge],{"baseline":1e-6})["ranking"][merge]["baseline"]
+    maximum = 0.
+    for segment in SEGMENTS:
+        a,b = actual["per_segment"][segment],expected["per_segment"][segment]
+        if a["users"] != b["users"]:
+            raise ValueError("baseline confirmation user denominator mismatch")
+        for k,metrics in a["metrics"].items():
+            if k not in b["metrics"]:
+                raise ValueError("source baseline lacks requested K; establish matching baseline first")
+            for name,value in metrics.items():
+                error = abs(value-b["metrics"][k][name])
+                maximum = max(maximum,error)
+                if error > 1e-12:
+                    raise ValueError(f"baseline confirmation failed: {merge}/{segment}/{name}")
+            if a["catalog_coverage"][k] != b["catalog_coverage"][k]:
+                raise ValueError("baseline confirmation catalog coverage mismatch")
+    reference_rows = 0
+    current = iter(store.rows(f"scored:{merge}:baseline"))
+    with (source/"scored.jsonl").open(encoding="utf-8") as stream:
+        for line in stream:
+            reference = json.loads(line)
+            if reference["merge"] != merge or reference["scorer"] != "baseline":
+                continue
+            item = next(current,None)
+            if item is None:
+                raise ValueError("source baseline has extra users")
+            _, row = item
+            for key in ("user_idx", "candidate_ids", "ranked_ids", "targets_unseen_in_fit", "excluded_seen", "unscored_item_ids"):
+                if row[key] != reference[key]:
+                    raise ValueError(f"baseline per-user {key} mismatch")
+            if len(row["scores"]) != len(reference["scores"]) or not np.allclose(row["scores"],reference["scores"],rtol=0,atol=1e-12):
+                raise ValueError("baseline per-user scores mismatch")
+            reference_rows += 1
+    if next(current,None) is not None or reference_rows != store.get("total_users"):
+        raise ValueError("source baseline is incomplete")
+    store.put("confirmation:"+merge,{"source":str(source),"metric_abs_tolerance":1e-12,"maximum_metric_abs_error":maximum,
+                                    "per_user_rank_and_score_confirmation":True,"users":reference_rows})
+    print(f"[baseline confirmed] {merge}, max metric error={maximum:.3g}",flush=True)
+
+
+def _finalize(args, paths, store, ks, variants, exp_root):
+    identity = store.get("identity")
+    if _source_fingerprint() != identity["source_fingerprint"] or _environment_versions() != identity["environment"]:
+        raise ValueError("implementation/environment changed during evaluation; results not published")
+    print("[provenance] revalidating input hashes before publication",flush=True)
+    inputs = list(identity["split_files"].values()) + list(identity["metadata_files"].values())
+    inputs += [{"path":p,"sha256":h} for p,h in identity["mapping_files"].items()]
+    for entry in inputs:
+        path = Path(entry["path"])
+        actual = file_hash(path) if path.exists() else None
+        if actual != entry["sha256"]:
+            raise ValueError(f"input changed during evaluation: {path}; results not published")
+    if args.candidates_from:
+        for name,digest in identity["frozen_artifacts"].items():
+            if file_hash(args.candidates_from/name) != digest:
+                raise ValueError("frozen source artifacts changed during evaluation")
+    print("[summary] streaming persisted rows", flush=True)
+    user_mapping, item2id = load_mappings(paths.mapped_dir)
+    del user_mapping
+    accumulator = RankingStreamSummary(item2id,ks)
+    total = store.get("total_users")
+    progress = StageProgress("summarize candidates",total,every=args.progress_every)
+    for position,row in store.rows("candidates",batch_size=args.batch_size):
+        accumulator.add_candidate(row)
+        progress.update(position+1)
+    streams = []
     for merge in MERGES:
-        retrieval_summary[merge] = {}
-        for segment in SEGMENTS:
-            us = sampled[segment]
-            cand = [retrieval_lists[(u, merge)] for u in us]
-            targets = [target_sets[u] for u in us]
-            novel = [novel_targets[u] for u in us]
-            from package.tools.evaluation import candidate_retrieval_metrics
-            retrieval_summary[merge][segment] = {
-                "all_validation_targets": candidate_retrieval_metrics(cand, targets, num_items),
-                "unseen_validation_targets": candidate_retrieval_metrics(cand, novel, num_items),
-                "mean_target_seen_in_fit": float(np.mean([len(target_sets[u] - novel_targets[u]) / max(1, len(target_sets[u])) for u in us])) if us else None,
-                "candidate_generation_latency_seconds": {
-                    name: _summarize(retrieval_times[segment][name])
-                    for name in ("item_cf", "semantic")
-                },
-            }
-
-    exp_root = args.experiments_dir or (paths.experiments_dir / "ranking_eval")
-    exp_dir = next_experiment_dir(exp_root)
-    max_sampled_user = max(users) if users else 0
-    metadata = {
-        "tag": paths.tag, "splits_dir": str(paths.splits_dir), "eval_on": args.eval_on,
-        "num_users": num_users, "num_items": num_items,
-        "mapping_hash": hashlib.sha256("".join(sorted(item2id)).encode()).hexdigest(),
-        "split_files": {
-            name: {"path": str(paths.split_path(name)), "size_bytes": paths.split_path(name).stat().st_size,
-                   "mtime_ns": paths.split_path(name).stat().st_mtime_ns}
-            for name in ("train", "validation", "test")
-        },
-    }
-    config = {
-        "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
-        "candidate_budget_per_source": args.candidate_budget, "candidate_merges": list(MERGES),
-        "retrieval": {"sources": ["popularity", "item_cf", "semantic"], "seed_items": args.seed_items,
-                      "query_items": args.query_items, "semantic_query_mode": "titles_from_fit_history",
-                      "item_knn_neighbors": neighbors, "item_knn_fit_data_hash": knn_hash,
-                      "item_knn_fit_seconds": knn_seconds},
-        "scorers": {"type": "BaselineScorer", "popularity_weights": weights,
-                    "baseline_weight": 1e-6, "same_saved_candidate_lists": True},
-        "ks": ks,
-        "target_protocol": "validation interactions; ranking quality reported on targets not in fit history; all-target candidate recall also retained",
-        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
-                   "metadata_coverage": coverage,
-                   "missing_sources": [p for _, p in meta_files if not Path(p).exists()],
-                   "allow_missing_sources": args.allow_missing_corpus_sources,
-                   "mode": "in_memory_build" if args.no_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
-        "max_sampled_user_idx": max_sampled_user,
-    }
-    metrics = {
-        "k_values": ks,
-        "catalog_size": num_items,
-        "retrieval": retrieval_summary,
-        "ranking": {merge: {variant: {"popularity_weight": v["popularity_weight"], "per_segment": v["per_segment"]}
-                             for variant, v in variants.items()} for merge, variants in ranking_results.items()},
-        "runtime_seconds": time.perf_counter() - t_start,
-    }
-    save_experiment(exp_dir, config=config, metrics=metrics, seed=args.seed,
-                    dataset_info=metadata, runtime_seconds=time.perf_counter() - t_start,
-                    notes=("All scorer variants receive identical persisted candidates per user and merge. "
-                           "Candidate generation uses popularity, ItemCF, and titles from fit history (realistic offline proxy). "
-                           "Ranking metrics use validation targets not seen in fit; target items already in fit are reported separately. "
-                           "This deterministic chain does not invoke the LLM planner."))
-    with (exp_dir / "candidate_lists.jsonl").open("w", encoding="utf-8") as f:
-        for row in candidate_records:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    with (exp_dir / "scored.jsonl").open("w", encoding="utf-8") as f:
-        for row in all_scored:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(f"Saved ranking evaluation: {exp_dir}")
-    for merge, variants in metrics["ranking"].items():
-        for variant, data in variants.items():
-            seg_text = " | ".join(
-                f"{seg}:n={data['per_segment'][seg]['users']},NDCG@10={data['per_segment'][seg]['metrics'].get('10',{}).get('ndcg@10',0):.4f},Recall@10={data['per_segment'][seg]['metrics'].get('10',{}).get('recall@10',0):.4f}"
-                for seg in SEGMENTS
-            )
-            print(f"{merge} {variant} {seg_text}")
+        for variant in variants:
+            stream = f"scored:{merge}:{variant}"
+            streams.append(stream)
+            if store.count(stream) != total:
+                raise ValueError("cannot finalize incomplete scored stream")
+            progress = StageProgress("summarize " + stream,total,every=args.progress_every)
+            for position,row in store.rows(stream,batch_size=args.batch_size):
+                accumulator.add_scored(row)
+                progress.update(position+1)
+    metrics = accumulator.result(MERGES,variants)
+    frozen = store.get("frozen_retrieval_metrics")
+    if frozen:
+        for merge in MERGES:
+            for segment in SEGMENTS:
+                metrics["retrieval"][merge][segment]["candidate_generation_latency_seconds"] = frozen[merge][segment]["candidate_generation_latency_seconds"]
+    metrics["measurement_scope"] = "fixed_candidate_scoring" if frozen else "deterministic_retrieve_rank_fetch"
+    metrics["tool_health_scope"] = "source retrieval records; no retrieval executed this session" if frozen else "retrieval records from observed sessions"
+    config = store.get("config")
+    config["checkpoint_identity"] = store.get("identity")
+    config["persistence"]["execution_sessions"] = store.get("execution_sessions",[])
+    config["baseline_confirmation"] = {m:store.get("confirmation:"+m) for m in MERGES}
+    pending = store.path / "publication"
+    pending.mkdir(exist_ok=True)
+    print("[export] candidate/scored JSONL; ETA unknown", flush=True)
+    store.export(["candidates"],pending/"candidate_lists.jsonl")
+    store.export(streams,pending/"scored.jsonl")
+    hashes = {name:file_hash(pending/name) for name in ("candidate_lists.jsonl","scored.jsonl")}
+    (pending/"artifact_hashes.json").write_text(json.dumps(hashes,indent=2),encoding="utf-8")
+    timing = store.timing()
+    timing["startup_verification_seconds"] = store.get("startup_verification_seconds",0.)
+    metrics["checkpoint_timing"] = timing
+    metrics["runtime_seconds"] = timing["committed_active_seconds"] + timing["startup_verification_seconds"]
+    config["retrieval_latency_provenance"] = "copied from frozen experiment" if frozen else "per-user timings persisted during retrieval"
+    # A separate, fresh manifest directory tolerates interruption while writing.
+    manifests = store.path / ("manifests_" + uuid.uuid4().hex)
+    save_experiment(manifests,config=config,metrics=metrics,seed=args.seed,
+                    dataset_info=store.get("dataset"),runtime_seconds=metrics["runtime_seconds"],
+                    notes="Batch checkpoints; identical persisted candidates per scorer. Historical static-catalog proxy. Runtime through JSONL export, excludes downtime; see checkpoint_timing.")
+    for name in ("config.yaml", "metrics.json", "README.md"):
+        (manifests/name).replace(pending/name)
+    manifests.rmdir()
+    while True:
+        destination = next_experiment_dir(exp_root)
+        store.put("publication_destination",str(destination.resolve()))
+        try:
+            pending.rename(destination)
+            break
+        except FileExistsError:
+            continue
+    store.put("final_experiment",str(destination.resolve()))
+    print(f"Saved ranking evaluation: {destination}",flush=True)
+    for merge in MERGES:
+        for variant in variants:
+            print(merge,variant,{s:metrics["ranking"][merge][variant]["per_segment"][s].get("metrics",{}).get("10",{}) for s in SEGMENTS},flush=True)
 
 
 if __name__ == "__main__":

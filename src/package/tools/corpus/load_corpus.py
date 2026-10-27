@@ -10,6 +10,8 @@ from pathlib import Path
 
 from ._sql import get_corpus_schema_fingerprint, CORPUS_LOGIC_VERSION
 from .item_corpus import ItemCorpus
+from ..recommenders.file_hash import file_hash
+from ..recommenders.mapping_hash import mapping_hash
 
 
 def load_corpus(
@@ -50,9 +52,9 @@ def load_corpus(
         metadata = json.load(f)
 
     # Validate format version
-    if metadata.get("format_version") != 1:
+    if metadata.get("format_version") not in (1, 2):
         raise ValueError(
-            f"Unsupported format version {metadata.get('format_version')}, expected 1. "
+            f"Unsupported format version {metadata.get('format_version')}, expected 1 or 2. "
             "Re-build with --save-corpus to generate a new file."
         )
 
@@ -79,6 +81,13 @@ def load_corpus(
             "Re-build with --save-corpus or adjust config."
         )
 
+    version = metadata["format_version"]
+    if version == 2 and (metadata.get("source_hash_protocol") != "sha256_file_bytes_v1"
+                         or metadata.get("mapping_hash_protocol") != "sorted_key_index_json_v1"):
+        raise ValueError("Corpus provenance hash protocol mismatch")
+    if version == 2 and metadata.get("source_domains") != [d for d, _ in meta_files]:
+        raise ValueError("Source metadata domain/order mismatch")
+
     # Validate source hashes
     current_hashes = []
     missing_sources = []
@@ -92,7 +101,7 @@ def load_corpus(
             continue
         stat = meta_path.stat()
         file_key = f"{meta_path}:{stat.st_size}:{stat.st_mtime}"
-        current_hashes.append(hashlib.sha256(file_key.encode("utf-8")).hexdigest())
+        current_hashes.append(file_hash(meta_path) if version == 2 else hashlib.sha256(file_key.encode("utf-8")).hexdigest())
 
     saved_hashes = metadata["source_hashes"]
     if len(saved_hashes) != len(current_hashes):
@@ -111,7 +120,7 @@ def load_corpus(
 
     # Validate mapping hash
     item_keys = sorted(item2id.keys())
-    current_mapping_hash = hashlib.sha256("".join(item_keys).encode("utf-8")).hexdigest()
+    current_mapping_hash = mapping_hash(item2id) if version == 2 else hashlib.sha256("".join(item_keys).encode("utf-8")).hexdigest()
     if current_mapping_hash != metadata["mapping_hash"]:
         raise ValueError(
             "Mapping hash mismatch: item2id has changed since corpus was saved. "
@@ -125,11 +134,14 @@ def load_corpus(
             "Re-build with --save-corpus."
         )
 
+    if version == 2 and file_hash(path) != metadata.get("artifact_sha256"):
+        raise ValueError("Corpus artifact checksum mismatch")
+
     # Load corpus using SQLite backup into memory
     # Step (g): backup
     t_backup = time.perf_counter()
-    mem_conn = sqlite3.connect(":memory:")
-    file_conn = sqlite3.connect(str(path))
+    mem_conn = sqlite3.connect(":memory:", check_same_thread=False)
+    file_conn = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
     try:
         file_conn.backup(mem_conn)
         mem_conn.commit()
@@ -155,6 +167,10 @@ def load_corpus(
 
     # Create ItemCorpus (this will set query_only and authorizer)
     corpus = ItemCorpus(mem_conn)
+    corpus._source_provenance = {"format_version": version,
+        "source_hash_protocol": metadata.get("source_hash_protocol", "legacy_path_size_mtime"),
+        "mapping_hash_protocol": metadata.get("mapping_hash_protocol", "legacy_keys_only"),
+        "missing_sources": missing_sources, "metadata_temporal_validity": "unverified"}
 
     load_time = time.perf_counter() - t0
     file_size_mb = path.stat().st_size / (1024 * 1024)
