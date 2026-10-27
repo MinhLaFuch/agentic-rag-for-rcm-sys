@@ -1,0 +1,433 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "planner",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 3,
+  "per_case_results": [
+    {
+      "case_id": "planner_001",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "domain": "Video Games",
+                "price_min": 0,
+                "price_max": 50,
+                "categories_any": [
+                  "Video Games"
+                ]
+              },
+              "limit": 30
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 24.622721300000194,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 1527,
+          "completion_tokens": 241,
+          "latency_seconds": 24.625
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "refusal_to_guess": 1.0,
+        "argument_correctness": 0.3333333333333333,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.8333333333333334,
+        "plan_validity": 1.0,
+        "clarification_precision": 1.0,
+        "tool_selection_accuracy": 1.0,
+        "clarification_recall": 1.0
+      },
+      "latency_seconds": 16.204982333333344,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_002",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "price_max": 100,
+                "categories_any": [
+                  "action games"
+                ]
+              },
+              "limit": 30
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 12.15012839999963,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 1545,
+          "completion_tokens": 228,
+          "latency_seconds": 12.155999999999949
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "refusal_to_guess": 1.0,
+        "argument_correctness": 0.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "plan_validity": 1.0,
+        "clarification_precision": 0.6666666666666666,
+        "tool_selection_accuracy": 0.0,
+        "clarification_recall": 1.0
+      },
+      "latency_seconds": 12.47401143333324,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_003",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SemanticSearchTool",
+            "args": {
+              "query": "games",
+              "limit": 20
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 10.295675399999709,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 1527,
+          "completion_tokens": 98,
+          "latency_seconds": 10.29700000000048
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "refusal_to_guess": 0.0,
+        "argument_correctness": 0.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.0,
+        "plan_validity": 1.0,
+        "clarification_precision": 0.0,
+        "tool_selection_accuracy": 0.0,
+        "clarification_recall": 0.0
+      },
+      "latency_seconds": 10.616835666667006,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_004",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SemanticSearchTool",
+            "args": {
+              "query": "popular products",
+              "limit": 30
+            }
+          },
+          {
+            "tool": "RecoModelTool",
+            "args": {
+              "user_id": "user_unknown_99999",
+              "candidates": "$1.candidates",
+              "top_k": 5
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 10.87086139999974,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 1528,
+          "completion_tokens": 151,
+          "latency_seconds": 10.875
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "refusal_to_guess": 0.3333333333333333,
+        "argument_correctness": 0.3333333333333333,
+        "reference_correctness": 0.3333333333333333,
+        "constraint_handling": 0.3333333333333333,
+        "plan_validity": 1.0,
+        "clarification_precision": 0.0,
+        "tool_selection_accuracy": 0.3333333333333333,
+        "clarification_recall": 0.3333333333333333
+      },
+      "latency_seconds": 11.273901833333184,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "argument_correctness_mean": 0.16666666666666666,
+    "argument_correctness_std": 0.16666666666666666,
+    "argument_correctness_min": 0.0,
+    "argument_correctness_max": 0.3333333333333333,
+    "clarification_precision_mean": 0.41666666666666663,
+    "clarification_precision_std": 0.4330127018922193,
+    "clarification_precision_min": 0.0,
+    "clarification_precision_max": 1.0,
+    "clarification_recall_mean": 0.5833333333333334,
+    "clarification_recall_std": 0.4330127018922193,
+    "clarification_recall_min": 0.0,
+    "clarification_recall_max": 1.0,
+    "constraint_handling_mean": 0.2916666666666667,
+    "constraint_handling_std": 0.3410563654946855,
+    "constraint_handling_min": 0.0,
+    "constraint_handling_max": 0.8333333333333334,
+    "plan_validity_mean": 1.0,
+    "plan_validity_std": 0.0,
+    "plan_validity_min": 1.0,
+    "plan_validity_max": 1.0,
+    "reference_correctness_mean": 0.5833333333333334,
+    "reference_correctness_std": 0.4330127018922193,
+    "reference_correctness_min": 0.0,
+    "reference_correctness_max": 1.0,
+    "refusal_to_guess_mean": 0.5833333333333334,
+    "refusal_to_guess_std": 0.4330127018922193,
+    "refusal_to_guess_min": 0.0,
+    "refusal_to_guess_max": 1.0,
+    "tool_selection_accuracy_mean": 0.3333333333333333,
+    "tool_selection_accuracy_std": 0.408248290463863,
+    "tool_selection_accuracy_min": 0.0,
+    "tool_selection_accuracy_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 12.642432816666695,
+    "std": 2.1619462116052044,
+    "min": 10.616835666667006,
+    "max": 16.204982333333344,
+    "p50": 11.873956633333211,
+    "p95": 15.645336698333328,
+    "p99": 16.09305320633334
+  },
+  "token_cost": null,
+  "timestamp": "2026-10-27T03:38:33.140742+00:00",
+  "git_sha": "782814126d539bd22518e109ca90374ab844adaf",
+  "tags_summary": {
+    "planner": {
+      "argument_correctness_mean": 0.16666666666666666,
+      "argument_correctness_std": 0.16666666666666666,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 0.3333333333333333,
+      "clarification_precision_mean": 0.41666666666666663,
+      "clarification_precision_std": 0.4330127018922193,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 0.5833333333333334,
+      "clarification_recall_std": 0.4330127018922193,
+      "clarification_recall_min": 0.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.2916666666666667,
+      "constraint_handling_std": 0.3410563654946855,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 0.8333333333333334,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.5833333333333334,
+      "reference_correctness_std": 0.4330127018922193,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 0.5833333333333334,
+      "refusal_to_guess_std": 0.4330127018922193,
+      "refusal_to_guess_min": 0.0,
+      "refusal_to_guess_max": 1.0,
+      "tool_selection_accuracy_mean": 0.3333333333333333,
+      "tool_selection_accuracy_std": 0.408248290463863,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 12.642432816666695,
+      "std": 2.1619462116052044,
+      "min": 10.616835666667006,
+      "max": 16.204982333333344,
+      "p50": 11.873956633333211,
+      "p95": 15.645336698333328,
+      "p99": 16.09305320633334
+    },
+    "normal": {
+      "argument_correctness_mean": 0.3333333333333333,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.3333333333333333,
+      "argument_correctness_max": 0.3333333333333333,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.8333333333333334,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.8333333333333334,
+      "constraint_handling_max": 0.8333333333333334,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 1.0,
+      "refusal_to_guess_std": 0.0,
+      "refusal_to_guess_min": 1.0,
+      "refusal_to_guess_max": 1.0,
+      "tool_selection_accuracy_mean": 1.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 1.0,
+      "tool_selection_accuracy_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 16.204982333333344,
+      "std": 0.0,
+      "min": 16.204982333333344,
+      "max": 16.204982333333344,
+      "p50": 16.204982333333344,
+      "p95": 16.204982333333344,
+      "p99": 16.204982333333344
+    },
+    "hard": {
+      "argument_correctness_mean": 0.0,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 0.0,
+      "clarification_precision_mean": 0.6666666666666666,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 0.6666666666666666,
+      "clarification_precision_max": 0.6666666666666666,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.0,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 0.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 0.0,
+      "refusal_to_guess_mean": 1.0,
+      "refusal_to_guess_std": 0.0,
+      "refusal_to_guess_min": 1.0,
+      "refusal_to_guess_max": 1.0,
+      "tool_selection_accuracy_mean": 0.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 12.47401143333324,
+      "std": 0.0,
+      "min": 12.47401143333324,
+      "max": 12.47401143333324,
+      "p50": 12.47401143333324,
+      "p95": 12.47401143333324,
+      "p99": 12.47401143333324
+    },
+    "ambiguous": {
+      "argument_correctness_mean": 0.0,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 0.0,
+      "clarification_precision_mean": 0.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 0.0,
+      "clarification_recall_mean": 0.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 0.0,
+      "clarification_recall_max": 0.0,
+      "constraint_handling_mean": 0.0,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 0.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 0.0,
+      "refusal_to_guess_std": 0.0,
+      "refusal_to_guess_min": 0.0,
+      "refusal_to_guess_max": 0.0,
+      "tool_selection_accuracy_mean": 0.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 10.616835666667006,
+      "std": 0.0,
+      "min": 10.616835666667006,
+      "max": 10.616835666667006,
+      "p50": 10.616835666667006,
+      "p95": 10.616835666667006,
+      "p99": 10.616835666667006
+    },
+    "must-not-guess": {
+      "argument_correctness_mean": 0.3333333333333333,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.3333333333333333,
+      "argument_correctness_max": 0.3333333333333333,
+      "clarification_precision_mean": 0.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 0.0,
+      "clarification_recall_mean": 0.3333333333333333,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 0.3333333333333333,
+      "clarification_recall_max": 0.3333333333333333,
+      "constraint_handling_mean": 0.3333333333333333,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.3333333333333333,
+      "constraint_handling_max": 0.3333333333333333,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.3333333333333333,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 0.3333333333333333,
+      "reference_correctness_max": 0.3333333333333333,
+      "refusal_to_guess_mean": 0.3333333333333333,
+      "refusal_to_guess_std": 0.0,
+      "refusal_to_guess_min": 0.3333333333333333,
+      "refusal_to_guess_max": 0.3333333333333333,
+      "tool_selection_accuracy_mean": 0.3333333333333333,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.3333333333333333,
+      "tool_selection_accuracy_max": 0.3333333333333333,
+      "success_rate": 1.0,
+      "mean": 11.273901833333184,
+      "std": 0.0,
+      "min": 11.273901833333184,
+      "max": 11.273901833333184,
+      "p50": 11.273901833333184,
+      "p95": 11.273901833333184,
+      "p99": 11.273901833333184
+    }
+  }
+}

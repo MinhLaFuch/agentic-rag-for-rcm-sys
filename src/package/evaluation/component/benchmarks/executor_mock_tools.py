@@ -9,7 +9,7 @@ These tools can be configured to:
 
 from typing import Any
 
-from package.tools.base import Tool, ToolResult
+from package.tools.base import Tool
 
 
 class ControlledSQLTool(Tool):
@@ -31,16 +31,16 @@ class ControlledSQLTool(Tool):
             import time
             time.sleep(10)  # Simulate timeout
         if self.should_fail:
-            return ToolResult(ok=False, data={}, error="Simulated tool failure")
+            return {"ok": False, "data": {}, "error": "Simulated tool failure"}
         if self.should_return_empty:
-            return ToolResult(ok=True, data={"candidates": [], "total_matches": 0})
-        return ToolResult(
-            ok=True,
-            data={
+            return {"ok": True, "data": {"candidates": [], "total_matches": 0}}
+        return {
+            "ok": True,
+            "data": {
                 "candidates": [{"item_id": f"item_{i}", "domain": "Video_Games"} for i in range(min(limit, 5))],
                 "total_matches": 5,
             },
-        )
+        }
 
 
 class ControlledItemCFTool(Tool):
@@ -58,16 +58,16 @@ class ControlledItemCFTool(Tool):
 
     def execute(self, items: list[str], top_k: int = 10, **kwargs: Any) -> dict[str, Any]:
         if self.should_fail:
-            return ToolResult(ok=False, data={}, error="Simulated CF failure")
+            return {"ok": False, "data": {}, "error": "Simulated CF failure"}
         if self.should_return_empty:
-            return ToolResult(ok=True, data={"candidates": [], "unknown_items": []})
-        return ToolResult(
-            ok=True,
-            data={
+            return {"ok": True, "data": {"candidates": [], "unknown_items": []}}
+        return {
+            "ok": True,
+            "data": {
                 "candidates": [{"item_id": f"similar_{i}", "similarity": 0.8} for i in range(min(top_k, 5))],
                 "unknown_items": [],
             },
-        )
+        }
 
 
 def get_controlled_tools(config: dict[str, Any] | None = None) -> list[Tool]:

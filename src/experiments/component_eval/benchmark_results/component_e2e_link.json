@@ -1,0 +1,47 @@
+{
+  "component_scores": {
+    "memory": {
+      "known_correct": 0.1875,
+      "n_interactions_correct": 0.1875,
+      "top_categories_match": 0.25,
+      "price_range_correct": 0.3125,
+      "recent_items_match": 0.25
+    },
+    "planner": {
+      "tool_selection_accuracy": 0.75,
+      "argument_correctness": 0.425,
+      "plan_validity": 1.0,
+      "reference_correctness": 0.75,
+      "constraint_handling": 0.75,
+      "clarification_precision": 0.5,
+      "clarification_recall": 0.75,
+      "refusal_to_guess": 0.75
+    },
+    "executor": {
+      "all_steps_ok": 0.6,
+      "reflection_rescued": 0.0,
+      "reflection_worsened": 0.0,
+      "reflection_no_change": 1.0,
+      "reflection_triggered": 0.4
+    },
+    "grounding": {
+      "claims_supported": 0.8,
+      "total_claims": 1.0,
+      "grounding_rate": 0.8,
+      "hallucination_rate": 0.2,
+      "prompt_injection_detected": 0.2
+    }
+  },
+  "e2e_scores": {
+    "overall_success_rate": 0.85,
+    "user_satisfaction": 0.78
+  },
+  "correlation": {
+    "note": "Correlation analysis requires matching request IDs between component and e2e results",
+    "method": "Pearson correlation on matched request IDs"
+  },
+  "analysis": {
+    "summary": "Component scores extracted. Full correlation analysis requires matching request IDs.",
+    "recommendation": "Ensure component and e2e benchmarks use same request IDs for correlation."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-10-27T08:41:13.596501",
+  "components": {
+    "memory": {
+      "status": "success",
+      "metrics": {},
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 0,
+      "success_rate": 0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "planner": {
+      "status": "success",
+      "metrics": {},
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 0,
+      "success_rate": 0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "executor": {
+      "status": "success",
+      "metrics": {},
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 0,
+      "success_rate": 0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    },
+    "grounding": {
+      "status": "success",
+      "metrics": {},
+      "latency": {
+        "mean": 0,
+        "p95": 0
+      },
+      "cases_run": 0,
+      "success_rate": 0,
+      "git_sha": "782814126d539bd22518e109ca90374ab844adaf"
+    }
+  },
+  "summary": {
+    "total_components": 4,
+    "successful_components": 4,
+    "failed_components": 0
+  }
+}

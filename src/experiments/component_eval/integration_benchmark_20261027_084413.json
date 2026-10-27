@@ -1,0 +1,338 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "integration",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "integration_001",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": true,
+        "plan": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool",
+          "ItemCFTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 1.0,
+        "no_mismatch": 1.0
+      },
+      "latency_seconds": 9.69999996414117e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_002",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": false,
+        "plan": [
+          {
+            "tool": "UnknownTool",
+            "args": {
+              "filters": {
+                "price_max": 50
+              }
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool",
+          "ItemCFTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 0.0,
+        "no_mismatch": 0.0
+      },
+      "latency_seconds": 5.6999999742402e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_003",
+      "actual_output": {
+        "boundary": "planner_executor",
+        "plan_valid": true,
+        "plan": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "candidates": "$1.candidates"
+            }
+          }
+        ],
+        "expected_tools": [
+          "SQLTool"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 1.0,
+        "no_mismatch": 1.0
+      },
+      "latency_seconds": 9.000000090964022e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_004",
+      "actual_output": {
+        "boundary": "executor_inference",
+        "output_valid": true,
+        "executor_output": {
+          "candidates": [
+            {
+              "item_id": "vg_001"
+            }
+          ],
+          "total_matches": 5
+        },
+        "expected_fields": [
+          "candidates",
+          "total_matches"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 1.0,
+        "no_mismatch": 1.0
+      },
+      "latency_seconds": 6.200000143508078e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_005",
+      "actual_output": {
+        "boundary": "executor_inference",
+        "output_valid": false,
+        "executor_output": {
+          "candidates": [
+            {
+              "item_id": "vg_001"
+            }
+          ]
+        },
+        "expected_fields": [
+          "candidates",
+          "total_matches"
+        ]
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 0.0,
+        "no_mismatch": 0.0
+      },
+      "latency_seconds": 6.900000016685226e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_006",
+      "actual_output": {
+        "boundary": "memory_planner",
+        "uses_memory": false,
+        "memory_profile": {
+          "top_categories": [
+            "Action",
+            "RPG"
+          ],
+          "price_range": [
+            10,
+            50
+          ]
+        },
+        "planner_args": {
+          "filters": {
+            "categories_any": [
+              "Action"
+            ]
+          }
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 0.0,
+        "no_mismatch": 0.0
+      },
+      "latency_seconds": 5.0999999530176865e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "integration_007",
+      "actual_output": {
+        "boundary": "memory_planner",
+        "uses_memory": false,
+        "memory_profile": {
+          "top_categories": [
+            "Action",
+            "RPG"
+          ]
+        },
+        "planner_args": {
+          "filters": {
+            "price_max": 100
+          }
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "contract_valid": 1.0,
+        "no_mismatch": 1.0
+      },
+      "latency_seconds": 4.300000000512227e-06,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "contract_valid_mean": 0.5714285714285714,
+    "contract_valid_std": 0.4948716593053935,
+    "contract_valid_min": 0.0,
+    "contract_valid_max": 1.0,
+    "no_mismatch_mean": 0.5714285714285714,
+    "no_mismatch_std": 0.4948716593053935,
+    "no_mismatch_min": 0.0,
+    "no_mismatch_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 6.7000000204383725e-06,
+    "std": 1.8477785993631797e-06,
+    "min": 4.300000000512227e-06,
+    "max": 9.69999996414117e-06,
+    "p50": 6.200000143508078e-06,
+    "p95": 9.490000002188026e-06,
+    "p99": 9.657999971750541e-06
+  },
+  "token_cost": null,
+  "timestamp": "2026-10-27T08:44:13.167085+00:00",
+  "git_sha": "782814126d539bd22518e109ca90374ab844adaf",
+  "tags_summary": {
+    "integration": {
+      "contract_valid_mean": 0.5714285714285714,
+      "contract_valid_std": 0.4948716593053935,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5714285714285714,
+      "no_mismatch_std": 0.4948716593053935,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 6.7000000204383725e-06,
+      "std": 1.8477785993631797e-06,
+      "min": 4.300000000512227e-06,
+      "max": 9.69999996414117e-06,
+      "p50": 6.200000143508078e-06,
+      "p95": 9.490000002188026e-06,
+      "p99": 9.657999971750541e-06
+    },
+    "planner_executor": {
+      "contract_valid_mean": 0.6666666666666666,
+      "contract_valid_std": 0.4714045207910317,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.6666666666666666,
+      "no_mismatch_std": 0.4714045207910317,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 8.133333343115131e-06,
+      "std": 1.7441967432359176e-06,
+      "min": 5.6999999742402e-06,
+      "max": 9.69999996414117e-06,
+      "p50": 9.000000090964022e-06,
+      "p95": 9.629999976823455e-06,
+      "p99": 9.685999966677627e-06
+    },
+    "success": {
+      "contract_valid_mean": 0.6666666666666666,
+      "contract_valid_std": 0.4714045207910317,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.6666666666666666,
+      "no_mismatch_std": 0.4714045207910317,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 7.000000020222312e-06,
+      "std": 1.96129207031846e-06,
+      "min": 5.0999999530176865e-06,
+      "max": 9.69999996414117e-06,
+      "p50": 6.200000143508078e-06,
+      "p95": 9.34999998207786e-06,
+      "p99": 9.629999967728508e-06
+    },
+    "error": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 6.475000020600419e-06,
+      "std": 1.7239127378764174e-06,
+      "min": 4.300000000512227e-06,
+      "max": 9.000000090964022e-06,
+      "p50": 6.299999995462713e-06,
+      "p95": 8.685000079822202e-06,
+      "p99": 8.937000088735657e-06
+    },
+    "executor_inference": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 6.550000080096652e-06,
+      "std": 3.499999365885742e-07,
+      "min": 6.200000143508078e-06,
+      "max": 6.900000016685226e-06,
+      "p50": 6.550000080096652e-06,
+      "p95": 6.865000023026368e-06,
+      "p99": 6.8930000179534544e-06
+    },
+    "memory_planner": {
+      "contract_valid_mean": 0.5,
+      "contract_valid_std": 0.5,
+      "contract_valid_min": 0.0,
+      "contract_valid_max": 1.0,
+      "no_mismatch_mean": 0.5,
+      "no_mismatch_std": 0.5,
+      "no_mismatch_min": 0.0,
+      "no_mismatch_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 4.699999976764957e-06,
+      "std": 3.9999997625272954e-07,
+      "min": 4.300000000512227e-06,
+      "max": 5.0999999530176865e-06,
+      "p50": 4.699999976764957e-06,
+      "p95": 5.059999955392413e-06,
+      "p99": 5.091999953492632e-06
+    }
+  }
+}

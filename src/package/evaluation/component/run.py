@@ -144,7 +144,10 @@ def run_benchmark_cli() -> None:
         output_path = Path(args.output)
     else:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        output_path = Path(f"{args.component}_benchmark_{timestamp}.json")
+        # Default to experiments directory
+        experiments_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        experiments_dir.mkdir(parents=True, exist_ok=True)
+        output_path = experiments_dir / f"{args.component}_benchmark_{timestamp}.json"
 
     # Save results
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -303,6 +306,18 @@ def _get_evaluator(component: str, config: dict[str, Any]):
         from .benchmarks.planner_benchmark import PlannerBenchmark
 
         return PlannerBenchmark(config)
+    elif component == "executor":
+        from .benchmarks.executor_benchmark import ExecutorBenchmark
+
+        return ExecutorBenchmark(config)
+    elif component == "grounding":
+        from .benchmarks.grounding_benchmark import GroundingBenchmark
+
+        return GroundingBenchmark(config)
+    elif component == "integration":
+        from .benchmarks.integration_benchmark import IntegrationBenchmark
+
+        return IntegrationBenchmark(config)
     else:
         raise NotImplementedError(
             f"Evaluator for component '{component}' not yet implemented. "
