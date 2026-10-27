@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
-from package.agents import TEMPLATES
-
 
 def sample_requests(language: str = "vi") -> dict[str, str]:
-    """Trả về các request mẫu cho từng kind."""
-    templates = TEMPLATES.get(language, TEMPLATES["vi"])
-    return {
-        "similar": templates["similar"].format(user_id="user123", item_id="Video_Games::B00EXAMPLE", k=5),
-        "personalized": templates["personalized"].format(user_id="user123", k=5),
-        "constrained": templates["constrained"].format(user_id="user123", category="Video Games", price_max=50, k=5),
-        "cold_text": templates["cold_text"].format(user_id="user456", category="Toys", k=5),
-        "ambiguous": templates["ambiguous"][0],  # "Gợi ý cho tôi sản phẩm hay."
-    }
+    """Trả về các request mẫu cho từng kind (profile-agnostic, identity injected from profile)."""
+    if language == "vi":
+        return {
+            "similar": "Gợi ý 5 sản phẩm tương tự như Video_Games::B00EXAMPLE.",
+            "personalized": "Gợi ý 5 sản phẩm phù hợp với sở thích của tôi.",
+            "constrained": "Gợi ý 5 sản phẩm Video Games dưới $50.",
+            "cold_text": "Gợi ý 5 sản phẩm Toys.",
+            "ambiguous": "Gợi ý cho tôi sản phẩm hay.",
+        }
+    else:  # en
+        return {
+            "similar": "Recommend 5 products similar to Video_Games::B00EXAMPLE.",
+            "personalized": "Recommend 5 products suitable for my preferences.",
+            "constrained": "Recommend 5 Video Games products under $50.",
+            "cold_text": "Recommend 5 Toys products.",
+            "ambiguous": "Recommend some good products for me.",
+        }

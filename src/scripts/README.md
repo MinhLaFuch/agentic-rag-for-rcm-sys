@@ -30,9 +30,14 @@ Model evaluation and benchmarking scripts for baselines, agents, and retrieval t
 Demo and UI scripts for showcasing the recommendation system.
 
 - **`run_demo.py`** - Launch Gradio demo UI (mock mode or real data mode)
+  - Features profile-based user selection (blank, cold, sparse, warm)
+  - Memory panel shows agent's memory tool usage and profile data
+  - Turn history for comparing runs across profiles
 - **`demo_full_agent.py`** - Demo with full PlanExecutor and all 5 tools
 
 **Usage**: Run demo for presentation or testing with real LLM
+
+**Profile Configuration**: Demo profiles are configured in `configs/agent/demo_profiles.yaml`. You can pin specific users for quick access by adding them to the `pinned` list. Auto-generated profiles (cold/sparse/warm) are created from the data at startup.
 
 ---
 

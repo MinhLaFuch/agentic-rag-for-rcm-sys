@@ -1,0 +1,76 @@
+# Jev (TypeSafe AI) judge configuration for LLM-as-a-judge evaluation.
+# Used to evaluate product recommendation assistant replies for faithfulness and communication quality.
+
+# Jev API configuration
+api_key: ${OPENROUTER_API_KEY:-}  # TypeSafe API key; set via env var or fill directly
+model: "jev-latest"              # Model to use (jev-latest, jev-1.14.0, jev-1.13.0)
+base_url: "https://api.typesafe.ai"
+timeout_seconds: 30.0
+
+# Long context: set to true for large states (requires TypeSafe-Danger-Zone-Long-Context header)
+enable_long_context: false
+
+# Evaluation configuration
+evaluation:
+  # Faithfulness axis: evaluate each claim against item data
+  faithfulness:
+    # Type of claim extraction: "llm" (use LLM planner) or "rule" (simple heuristics)
+    claim_extraction: "rule"
+
+    # Threshold for considering a claim "supported" (noul probability >= this value)
+    support_threshold: 0.7
+
+    # Jev question instructions for faithfulness
+    instructions: >
+      Given an item's fields (item_id, domain, title, store, price, average_rating,
+      rating_number, main_category) and a claim about it, determine if the claim is
+      supported by or directly follows from the item's own fields. The title may support
+      claims about what the product is. Rounding a rating or price is acceptable.
+      A claim is unsupported if it adds information not in the fields, contradicts a field,
+      or gives a value for a null field. Do not use outside knowledge.
+
+  # Communication axis: score on 4 criteria (1-5 scale)
+  communication:
+    # Use Jev Score questions for each criterion
+    criteria:
+      relevance:
+        instructions: >
+          Does the reply address what the request asked? Consider: right kind of products,
+          constraints such as price or category acknowledged.
+        rubric:
+          - "Poor: completely irrelevant or ignores request"
+          - "Fair: partially relevant but misses key aspects"
+          - "Good: addresses request but with minor issues"
+          - "Very good: addresses request well with minor flaws"
+          - "Excellent: perfectly addresses all aspects of request"
+
+      clarity:
+        instructions: >
+          Is the reply easy to read, short, with one or two lines per product, and no clutter?
+        rubric:
+          - "Poor: very long, cluttered, hard to read"
+          - "Fair: somewhat verbose but readable"
+          - "Good: reasonably concise and clear"
+          - "Very good: concise and clear with minor clutter"
+          - "Excellent: perfectly concise, clear, no clutter"
+
+      language:
+        instructions: >
+          Is the reply written in the same language as the request?
+        rubric:
+          - "Poor: completely wrong language"
+          - "Fair: noticeable language mismatch"
+          - "Good: mostly correct language with some errors"
+          - "Very good: correct language with minor issues"
+          - "Excellent: perfectly matches request language"
+
+      honesty_about_gaps:
+        instructions: >
+          When a field is null, does the reply say the information is unavailable instead
+          of hiding or guessing it?
+        rubric:
+          - "Poor: hides or guesses null field values"
+          - "Fair: sometimes acknowledges gaps, sometimes guesses"
+          - "Good: mostly acknowledges gaps"
+          - "Very good: acknowledges gaps with minor exceptions"
+          - "Excellent: perfectly honest about all gaps (or no null fields present)"

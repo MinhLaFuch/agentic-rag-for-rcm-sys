@@ -1,0 +1,9 @@
+{
+  "llm": {
+    "provider": "openai_compatible",
+    "base_url": "https://api.xah.io/v1",
+    "model": "gpt-5.4",
+    "api_key": "",
+    "timeout_seconds": 180.0
+  }
+}

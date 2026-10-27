@@ -19,8 +19,14 @@ def format_trace(trace: DemoTrace) -> str:
         ok = step.get("ok", False)
         error = step.get("error")
         latency = step.get("latency_seconds", 0)
+        args = step.get("args")
+        output_summary = step.get("output_summary")
         status_icon = "✓" if ok else "✗"
         lines.append(f"{i}. {status_icon} **{tool}** ({latency:.3f}s)")
+        if args:
+            lines.append(f"   Args: {args}")
+        if output_summary:
+            lines.append(f"   Output: {output_summary}")
         if error:
             lines.append(f"   Lỗi: {error}")
     lines.append("")
@@ -33,4 +39,17 @@ def format_trace(trace: DemoTrace) -> str:
     lines.append(f"- Tổng độ trễ LLM: {trace.usage.get('latency_seconds', 0):.2f}s")
     if trace.ask_user:
         lines.append(f"- Câu hỏi lại: {trace.ask_user}")
+    if trace.inference:
+        lines.append("")
+        lines.append("## Inference (tạo câu trả lời)")
+        lines.append(f"- Composer: {trace.inference.get('composer', 'unknown')}")
+        lines.append(f"- Grounded: {trace.inference.get('grounded', True)}")
+        if trace.inference.get('fallback_reason'):
+            lines.append(f"- Fallback reason: {trace.inference['fallback_reason']}")
+        if trace.inference.get('reason'):
+            lines.append(f"- Reason: {trace.inference['reason']}")
+        inf_usage = trace.inference.get('usage', {})
+        lines.append(f"- Lần gọi LLM: {inf_usage.get('attempts', 0)}")
+        lines.append(f"- Tokens: {inf_usage.get('prompt_tokens', 0)} + {inf_usage.get('completion_tokens', 0)}")
+        lines.append(f"- Độ trễ: {inf_usage.get('latency_seconds', 0):.2f}s")
     return "\n".join(lines)

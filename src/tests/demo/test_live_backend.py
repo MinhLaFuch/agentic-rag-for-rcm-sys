@@ -13,7 +13,7 @@ from package.config import get_data_paths
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
-from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error
+from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error, format_trace
 from package.tools import QueryTool, SQLTool
 from tests.tools_helpers import VG_A
 
@@ -259,6 +259,35 @@ def test_live_backend_get_sample_users(corpus):
     assert backend_with_params._allow_missing_corpus_sources is True
 
 
+def test_live_backend_get_profiles(corpus):
+    """LiveBackend.get_profiles phải trả list DemoProfile."""
+    from package.demo import LiveBackend, DemoProfile
+    from package.data.mapping import load_mappings
+    from package.data.split import load_splits
+    from package.config import get_data_paths
+
+    data_paths = get_data_paths()
+    train, _, _ = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    user2id, _ = load_mappings(data_paths.mapped_dir)
+
+    backend = LiveBackend()
+    backend._fit_df = train
+    backend._user_id_to_internal_id = user2id
+    backend._initialized = True  # Bypass initialization check for test
+
+    profiles = backend.get_profiles()
+
+    assert isinstance(profiles, list)
+    assert len(profiles) >= 1
+    assert all(isinstance(p, DemoProfile) for p in profiles)
+
+    # Check blank profile exists
+    blank = next((p for p in profiles if p.profile_id == "blank"), None)
+    assert blank is not None
+    assert blank.user_id is None
+    assert blank.segment == "blank"
+
+
 def test_live_backend_meta_files_uses_all_domains_when_none():
     """Khi không truyền domain, meta_files phải dùng tất cả domain từ config."""
     data_paths = get_data_paths()
@@ -354,3 +383,55 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     assert backend._knn_provenance["status"] == ("refit_cache_rejected" if reject_cache else "validated_cache")
     assert backend._knn_provenance["data_hash"] == item_knn_data_hash(fit)
     assert backend._knn_provenance["fit_splits"] == ["train"]
+
+
+def test_format_trace_with_inference():
+    """format_trace phải hiển thị thông tin inference khi có."""
+    from package.demo import DemoTrace
+
+    trace = DemoTrace(
+        plan=[{"tool": "QueryTool"}],
+        steps=[{"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        ask_user=None,
+        reflections=0,
+        first_attempt_ok=True,
+        truncated=False,
+        usage={"attempts": 1, "prompt_tokens": 100, "completion_tokens": 50, "latency_seconds": 0.5},
+        inference={
+            "composer": "llm",
+            "grounded": True,
+            "fallback_reason": None,
+            "reason": None,
+            "usage": {"attempts": 1, "prompt_tokens": 200, "completion_tokens": 100, "latency_seconds": 1.0},
+        },
+    )
+
+    formatted = format_trace(trace)
+
+    assert "## Inference (tạo câu trả lời)" in formatted
+    assert "Composer: llm" in formatted
+    assert "Grounded: True" in formatted
+    assert "Lần gọi LLM: 1" in formatted
+    assert "Tokens: 200 + 100" in formatted
+
+
+def test_format_trace_without_inference():
+    """format_trace không lỗi khi trace không có inference."""
+    from package.demo import DemoTrace
+
+    trace = DemoTrace(
+        plan=[{"tool": "QueryTool"}],
+        steps=[{"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        ask_user=None,
+        reflections=0,
+        first_attempt_ok=True,
+        truncated=False,
+        usage={"attempts": 1, "prompt_tokens": 100, "completion_tokens": 50, "latency_seconds": 0.5},
+        inference=None,
+    )
+
+    formatted = format_trace(trace)
+
+    assert "## Inference (tạo câu trả lời)" not in formatted
+    assert "## Plan JSON" in formatted
+    assert "## Thực thi từng step" in formatted

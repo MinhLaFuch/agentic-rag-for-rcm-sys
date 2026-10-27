@@ -8,6 +8,7 @@ from package.demo import (
     MockBackend,
     format_items,
     format_trace,
+    format_memory,
     status_badge,
     sample_requests,
 )
@@ -153,3 +154,179 @@ def test_demo_request_mode_validation():
     )
     assert request_planner.mode == "planner"
     assert request_type1.mode == "type1"
+
+
+def test_format_memory_basic():
+    """format_memory phải tạo văn bản từ MemoryView."""
+    from package.demo import MemoryView
+
+    view = MemoryView(
+        enabled=True,
+        called=True,
+        n_calls=1,
+        before={
+            "user_id": "user123",
+            "known": True,
+            "n_interactions": 10,
+            "top_categories": ["Electronics", "Toys"],
+            "price_range": {"min": 10.0, "max": 100.0},
+            "recent_items": ["Video_Games::B001", "Toys::B002"],
+        },
+        after={
+            "user_id": "user123",
+            "known": True,
+            "n_interactions": 10,
+            "top_categories": ["Electronics", "Toys"],
+            "price_range": {"min": 10.0, "max": 100.0},
+            "recent_items": ["Video_Games::B001", "Toys::B002"],
+        },
+        agent_calls=[
+            {
+                "tool": "MemoryTool",
+                "ok": True,
+                "error": None,
+                "args": {"user_id": "user123"},
+                "data": {"known": True, "n_interactions": 10},
+            }
+        ],
+        consumed_by=[
+            {
+                "memory_step_index": 0,
+                "consumer_step_index": 1,
+                "consumer_tool": "QueryTool",
+                "reference": "$0.top_categories",
+            }
+        ],
+    )
+
+    formatted = format_memory(view)
+    assert "Memory ON" in formatted
+    assert "MemoryTool called ✓" in formatted
+    assert "known ✓" in formatted
+    assert "1 call(s)" in formatted
+    assert "Profile Memory" in formatted
+    assert "Memory Consumed By" in formatted
+
+
+def test_format_memory_with_metadata():
+    """format_memory phải resolve item_id sang title khi có metadata."""
+    from package.demo import MemoryView
+
+    view = MemoryView(
+        enabled=True,
+        called=True,
+        n_calls=1,
+        before={
+            "user_id": "user123",
+            "known": True,
+            "n_interactions": 1,
+            "top_categories": [],
+            "price_range": None,
+            "recent_items": ["Video_Games::B001"],
+        },
+        after=None,
+        agent_calls=[],
+        consumed_by=[],
+    )
+
+    item_id_to_metadata = {
+        "Video_Games::B001": {
+            "title": "Test Game",
+            "domain": "Video_Games",
+        }
+    }
+
+    formatted = format_memory(view, item_id_to_metadata)
+    assert "Test Game" in formatted
+
+
+def test_mock_backend_memory_view():
+    """MockBackend phải trả về MemoryView khi memory on."""
+    backend = MockBackend()
+
+    request_on = DemoRequest(
+        user_id="mock_warm_user",
+        text="test",
+        reflect_rounds=0,
+        use_memory=True,
+        mode="planner",
+    )
+    result_on = backend.respond(request_on)
+    assert result_on.memory is not None
+    assert result_on.memory.enabled is True
+    assert result_on.memory.called is True
+
+    request_off = DemoRequest(
+        user_id="mock_warm_user",
+        text="test",
+        reflect_rounds=0,
+        use_memory=False,
+        mode="planner",
+    )
+    result_off = backend.respond(request_off)
+    assert result_off.memory is not None
+    assert result_off.memory.enabled is False
+    assert result_off.memory.called is False
+
+
+def test_build_profiles():
+    """build_profiles phải tạo list DemoProfile với blank, pinned, auto."""
+    import pandas as pd
+    from package.demo import build_profiles
+
+    # Create minimal fit_df
+    fit_df = pd.DataFrame({
+        "user_idx": [0, 0, 1, 2, 2, 2],
+        "item_idx": [0, 1, 2, 3, 4, 5],
+        "timestamp": [1, 2, 3, 4, 5, 6],
+    })
+    user2id = {"user0": 0, "user1": 1, "user2": 2}
+
+    profiles = build_profiles(fit_df, user2id)
+
+    assert isinstance(profiles, list)
+    assert len(profiles) >= 1
+
+    # Check blank profile
+    blank = next((p for p in profiles if p.profile_id == "blank"), None)
+    assert blank is not None
+    assert blank.user_id is None
+    assert blank.segment == "blank"
+
+    # Check auto profiles exist
+    auto_profiles = [p for p in profiles if p.profile_id.startswith("auto_")]
+    assert len(auto_profiles) > 0
+
+
+def test_detect_consumed_by():
+    """detect_consumed_by phải tìm $<n> references trong args."""
+    from package.demo._consumed_by import detect_consumed_by
+
+    steps = [
+        {"tool": "MemoryTool", "args": {"user_id": "user123"}},
+        {"tool": "QueryTool", "args": {"categories": "$0.top_categories"}},
+        {"tool": "SQLTool", "args": {"filters": {"categories_any": "$0.top_categories"}}},
+    ]
+
+    consumed = detect_consumed_by(steps, [0])
+
+    assert len(consumed) == 2
+    assert consumed[0]["memory_step_index"] == 0
+    assert consumed[0]["consumer_step_index"] == 1
+    assert consumed[0]["consumer_tool"] == "QueryTool"
+    assert consumed[1]["consumer_step_index"] == 2
+    assert consumed[1]["consumer_tool"] == "SQLTool"
+
+
+def test_detect_consumed_by_no_match():
+    """detect_consumed_by trả về rỗng khi không có reference."""
+    from package.demo._consumed_by import detect_consumed_by
+
+    steps = [
+        {"tool": "MemoryTool", "args": {"user_id": "user123"}},
+        {"tool": "QueryTool", "args": {"categories": ["Electronics"]}},
+    ]
+
+    consumed = detect_consumed_by(steps, [0])
+
+    assert len(consumed) == 0

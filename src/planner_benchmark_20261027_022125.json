@@ -1,0 +1,183 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "planner",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "planner_001",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "price_max": 50,
+                "domain": "Video_Games"
+              },
+              "limit": 10
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 0.00027269999998225103,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 100,
+          "completion_tokens": 50,
+          "latency_seconds": 0.1
+        }
+      },
+      "success": false,
+      "error": "name 'case' is not defined",
+      "metrics": {},
+      "latency_seconds": 0.00028919999999743595,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_002",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "ItemCFTool",
+            "args": {
+              "items": [
+                "item_vg_123"
+              ],
+              "top_k": 10
+            }
+          },
+          {
+            "tool": "SQLTool",
+            "args": {
+              "filters": {
+                "price_max": 100
+              },
+              "candidates": "$1.candidates",
+              "limit": 10
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 5.6299999982911686e-05,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 100,
+          "completion_tokens": 50,
+          "latency_seconds": 0.1
+        }
+      },
+      "success": false,
+      "error": "name 'case' is not defined",
+      "metrics": {},
+      "latency_seconds": 6.880000000819564e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_003",
+      "actual_output": {
+        "steps": [],
+        "question": null,
+        "latency_seconds": 4.0399999988949276e-05,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 100,
+          "completion_tokens": 10,
+          "latency_seconds": 0.05
+        }
+      },
+      "success": false,
+      "error": "name 'case' is not defined",
+      "metrics": {},
+      "latency_seconds": 4.590000003190653e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_004",
+      "actual_output": {
+        "steps": [],
+        "question": "I do not have information about this user. Could you provide your user ID?",
+        "latency_seconds": 3.940000010516087e-05,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 100,
+          "completion_tokens": 50,
+          "latency_seconds": 0.1
+        }
+      },
+      "success": false,
+      "error": "name 'case' is not defined",
+      "metrics": {},
+      "latency_seconds": 4.3900000036956044e-05,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "success_rate": 0.0
+  },
+  "latency": {
+    "mean": 0.00011195000001862354,
+    "std": 0.00010280186037852038,
+    "min": 4.3900000036956044e-05,
+    "max": 0.00028919999999743595,
+    "p50": 5.7350000020051084e-05,
+    "p95": 0.00025613999999904983,
+    "p99": 0.0002825879999977587
+  },
+  "token_cost": null,
+  "timestamp": "2026-10-27T02:21:25.307772+00:00",
+  "git_sha": "eec93f54b2870c6496b2fd7c40502a6dea97f599",
+  "tags_summary": {
+    "planner": {
+      "success_rate": 0.0,
+      "mean": 0.00011195000001862354,
+      "std": 0.00010280186037852038,
+      "min": 4.3900000036956044e-05,
+      "max": 0.00028919999999743595,
+      "p50": 5.7350000020051084e-05,
+      "p95": 0.00025613999999904983,
+      "p99": 0.0002825879999977587
+    },
+    "normal": {
+      "success_rate": 0.0,
+      "mean": 0.00028919999999743595,
+      "std": 0.0,
+      "min": 0.00028919999999743595,
+      "max": 0.00028919999999743595,
+      "p50": 0.00028919999999743595,
+      "p95": 0.00028919999999743595,
+      "p99": 0.00028919999999743595
+    },
+    "hard": {
+      "success_rate": 0.0,
+      "mean": 6.880000000819564e-05,
+      "std": 0.0,
+      "min": 6.880000000819564e-05,
+      "max": 6.880000000819564e-05,
+      "p50": 6.880000000819564e-05,
+      "p95": 6.880000000819564e-05,
+      "p99": 6.880000000819564e-05
+    },
+    "ambiguous": {
+      "success_rate": 0.0,
+      "mean": 4.590000003190653e-05,
+      "std": 0.0,
+      "min": 4.590000003190653e-05,
+      "max": 4.590000003190653e-05,
+      "p50": 4.590000003190653e-05,
+      "p95": 4.590000003190653e-05,
+      "p99": 4.590000003190653e-05
+    },
+    "must-not-guess": {
+      "success_rate": 0.0,
+      "mean": 4.3900000036956044e-05,
+      "std": 0.0,
+      "min": 4.3900000036956044e-05,
+      "max": 4.3900000036956044e-05,
+      "p50": 4.3900000036956044e-05,
+      "p95": 4.3900000036956044e-05,
+      "p99": 4.3900000036956044e-05
+    }
+  }
+}

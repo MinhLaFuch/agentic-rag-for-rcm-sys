@@ -140,7 +140,7 @@ def load_corpus(
     # Load corpus using SQLite backup into memory
     # Step (g): backup
     t_backup = time.perf_counter()
-    mem_conn = sqlite3.connect(":memory:")
+    mem_conn = sqlite3.connect(":memory:", check_same_thread=False)
     file_conn = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
     try:
         file_conn.backup(mem_conn)
