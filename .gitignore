@@ -9,3 +9,4 @@ resource
 # Durable local evaluation checkpoints include models and full candidate payloads.
 /src/experiments/checkpoints/
 /src/experiments/ranking_eval/_checkpoints/
+src/src.zip
