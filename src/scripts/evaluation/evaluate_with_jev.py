@@ -64,7 +64,7 @@ def main() -> int:
         "--config-file",
         type=Path,
         default=None,
-        help="Path to judge.yaml config. If not provided, uses configs/agent/judge.yaml"
+        help="Path to judge.yaml config. If not provided, uses configs/eval/judge.yaml"
     )
     parser.add_argument(
         "--output-file",

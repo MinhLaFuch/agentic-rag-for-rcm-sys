@@ -39,7 +39,7 @@ pip install httpx
 
 ## Configuration
 
-Edit `configs/agent/judge.yaml`:
+Edit `configs/eval/judge.yaml`:
 
 ```yaml
 api_key: ${TYPESAFE_API_KEY:-}  # Set via env var
@@ -65,7 +65,7 @@ evaluation:
 ### Python API
 
 ```python
-from package.evaluation import evaluate_product_reply_with_jev
+from package.evaluation.jev_product_evaluator import evaluate_product_reply_with_jev
 
 result = evaluate_product_reply_with_jev(
     request="I need a wireless mouse under $30",
@@ -114,18 +114,18 @@ print(result)
 
 ```bash
 # Single evaluation
-PYTHONPATH=. python scripts/evaluation/evaluate_with_jev.py \
+python -m scripts.evaluation.evaluate_with_jev \
   --request "I need a wireless mouse under $30" \
   --items-file items.json \
   --answer "Here's a great wireless mouse: Logitech M185 for $19.99..."
 
 # Batch evaluation from JSONL
-PYTHONPATH=. python scripts/evaluation/evaluate_with_jev.py \
+python -m scripts.evaluation.evaluate_with_jev \
   --input-file evaluations.jsonl \
   --output-file results.json
 
 # With custom config
-PYTHONPATH=. python scripts/evaluation/evaluate_with_jev.py \
+python -m scripts.evaluation.evaluate_with_jev \
   --input-file evaluations.jsonl \
   --config-file custom_judge.yaml
 ```

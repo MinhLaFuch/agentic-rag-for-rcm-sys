@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from ..judge import JevClient
+from .judge import JevClient
 
 
 def evaluate_product_reply_with_jev(
@@ -48,7 +48,7 @@ def evaluate_product_reply_with_jev(
     """
     # Load config
     if config_path is None:
-        config_path = Path(__file__).parent.parent.parent / "configs" / "agent" / "judge.yaml"
+        config_path = Path(__file__).parent.parent.parent / "configs" / "eval" / "judge.yaml"
 
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)

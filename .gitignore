@@ -1,6 +1,7 @@
 .*
 !.gitignore
 !.gitmodules
+!.gitattributes
 resource
 # Keep bulky ranking-evaluation raw artifacts local; commit summaries instead.
 /src/experiments/ranking_eval/exp_*/candidate_lists.jsonl
@@ -10,3 +11,7 @@ resource
 /src/experiments/checkpoints/
 /src/experiments/ranking_eval/_checkpoints/
 src/src.zip
+
+# Virtual environment
+.venv/
+src/.venv/

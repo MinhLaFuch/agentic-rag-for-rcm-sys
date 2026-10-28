@@ -25,16 +25,17 @@ requires = ["setuptools>=68,<75"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["package*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]
+testpaths = ["src/tests"]
+pythonpath = ["src"]
 log_cli = true
 log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s"
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-log_file = "../experiments/agent_eval/component_benchmarks/pytest.log"
+log_file = "experiments/agent_eval/component_benchmarks/pytest.log"
 log_file_level = "INFO"
 log_file_format = "%(asctime)s [%(levelname)8s] %(message)s"
 log_file_date_format = "%Y-%m-%d %H:%M:%S"

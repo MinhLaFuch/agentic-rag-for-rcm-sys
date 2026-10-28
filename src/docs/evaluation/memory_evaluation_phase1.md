@@ -45,7 +45,7 @@ python -m package.evaluation.component.run \
     --component memory_correctness \
     --dataset package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl \
     --runs 1 \
-    --output memory_correctness_benchmark_v3.json
+    --output experiments/agent_eval/component_benchmarks/memory_correctness_benchmark_v3.json
 ```
 
 **Results**:
