@@ -1,4 +1,4 @@
-# Inference config: tầng sinh câu trả lời cuối (package/inference/_limits.py), xem docs/inference_contract.md.
+# Inference config: tầng sinh câu trả lời cuối (package/inference/_limits.py); status/mode ở package/inference/_schema.py.
 # LLM provider/model lấy từ llm.yaml; hành vi planner ở agent.yaml. File này chỉ chứa hành vi của bước trả lời.
 
 inference:

@@ -34,7 +34,7 @@ def evaluate_product_reply_with_jev(
         items: List of selected products, each with fields: item_id, domain, title, store, price,
                average_rating, rating_number, main_category. Null fields mean information unavailable.
         answer: The assistant's reply to evaluate.
-        config_path: Path to judge.yaml config. If None, uses default configs/agent/judge.yaml.
+        config_path: Path to judge.yaml config. If None, uses default configs/eval/judge.yaml.
 
     Returns:
         JSON object with evaluation results containing:
