@@ -88,6 +88,35 @@ def create_test_interactions() -> pd.DataFrame:
         {"user_id": "u_dup_items", "item_id": "Video_Games::vg_b", "user_idx": 10, "item_idx": 1, "rating": 5, "timestamp": 2},
     ])
 
+    # u_love_hate_mix: ratings 5,4,3,2,1 to test love/hate thresholds
+    interactions.extend([
+        {"user_id": "u_love_hate_mix", "item_id": "Video_Games::vg_a", "user_idx": 11, "item_idx": 0, "rating": 5, "timestamp": 0},
+        {"user_id": "u_love_hate_mix", "item_id": "Video_Games::vg_b", "user_idx": 11, "item_idx": 1, "rating": 4, "timestamp": 1},
+        {"user_id": "u_love_hate_mix", "item_id": "Video_Games::vg_c", "user_idx": 11, "item_idx": 2, "rating": 3, "timestamp": 2},
+        {"user_id": "u_love_hate_mix", "item_id": "Video_Games::vg_d", "user_idx": 11, "item_idx": 3, "rating": 2, "timestamp": 3},
+        {"user_id": "u_love_hate_mix", "item_id": "Video_Games::vg_e", "user_idx": 11, "item_idx": 4, "rating": 1, "timestamp": 4},
+    ])
+
+    # u_all_love: all ratings >=4
+    interactions.extend([
+        {"user_id": "u_all_love", "item_id": "Video_Games::vg_a", "user_idx": 12, "item_idx": 0, "rating": 5, "timestamp": 0},
+        {"user_id": "u_all_love", "item_id": "Video_Games::vg_b", "user_idx": 12, "item_idx": 1, "rating": 4, "timestamp": 1},
+        {"user_id": "u_all_love", "item_id": "Video_Games::vg_c", "user_idx": 12, "item_idx": 2, "rating": 5, "timestamp": 2},
+    ])
+
+    # u_all_hate: all ratings <=2
+    interactions.extend([
+        {"user_id": "u_all_hate", "item_id": "Video_Games::vg_a", "user_idx": 13, "item_idx": 0, "rating": 2, "timestamp": 0},
+        {"user_id": "u_all_hate", "item_id": "Video_Games::vg_b", "user_idx": 13, "item_idx": 1, "rating": 1, "timestamp": 1},
+        {"user_id": "u_all_hate", "item_id": "Video_Games::vg_c", "user_idx": 13, "item_idx": 2, "rating": 2, "timestamp": 2},
+    ])
+
+    # u_no_rating: interactions without rating column (will be added later via column drop)
+    interactions.extend([
+        {"user_id": "u_no_rating", "item_id": "Video_Games::vg_a", "user_idx": 14, "item_idx": 0, "rating": 5, "timestamp": 0},
+        {"user_id": "u_no_rating", "item_id": "Video_Games::vg_b", "user_idx": 14, "item_idx": 1, "rating": 4, "timestamp": 1},
+    ])
+
     return pd.DataFrame(interactions)
 
 
@@ -174,4 +203,16 @@ def create_test_mappings(interactions: pd.DataFrame):
     # Add u_empty (exists but has no interactions)
     user2id["u_empty"] = len(user2id)
 
+    # Add u_no_rating to user2id mapping (it has interactions in the base dataset)
+    if "u_no_rating" not in user2id:
+        user2id["u_no_rating"] = len(user2id)
+
     return user2id, item2id, id2item
+
+
+def get_interactions_without_rating(interactions: pd.DataFrame, user_id: str) -> pd.DataFrame:
+    """Return a copy of interactions for the given user with the rating column dropped."""
+    user_interactions = interactions[interactions["user_id"] == user_id].copy()
+    if "rating" in user_interactions.columns:
+        user_interactions = user_interactions.drop(columns=["rating"])
+    return user_interactions

@@ -10,6 +10,7 @@ from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from package.tools.corpus import ItemCorpus
 from .._evaluator import ComponentEvaluator
+from .memory_correctness_setup import get_interactions_without_rating
 
 
 class MemoryCorrectnessEvaluator(ComponentEvaluator):
@@ -51,6 +52,9 @@ class MemoryCorrectnessEvaluator(ComponentEvaluator):
         df = self.interactions
         if as_of is not None and mode == "pretruncated":
             df = df[df["timestamp"] <= as_of]
+        # For u_no_rating case, drop the rating column
+        if user_id == "u_no_rating":
+            df = get_interactions_without_rating(df, user_id)
         try:
             tool = self.tool_factory(df, self.user2id, self.item2id, self.corpus, as_of_timestamp=as_of)
             return tool.execute(user_id, top_n_categories=top_n)
@@ -77,9 +81,25 @@ class MemoryCorrectnessEvaluator(ComponentEvaluator):
         m["recent_items_exact"] = float(actual_output.get("recent_items") == expected["recent_items"])
         m["recent_items_set_match"] = float(
             set(actual_output.get("recent_items", [])) == set(expected["recent_items"]))
+
+        # Love/hate fields
+        m["love_categories_exact"] = float(actual_output.get("love_categories") == expected["love_categories"])
+        m["love_categories_set_match"] = float(
+            set(actual_output.get("love_categories", [])) == set(expected["love_categories"]))
+        m["hate_categories_exact"] = float(actual_output.get("hate_categories") == expected["hate_categories"])
+        m["hate_categories_set_match"] = float(
+            set(actual_output.get("hate_categories", [])) == set(expected["hate_categories"]))
+        m["loved_items_exact"] = float(actual_output.get("loved_items") == expected["loved_items"])
+        m["loved_items_set_match"] = float(
+            set(actual_output.get("loved_items", [])) == set(expected["loved_items"]))
+        m["hated_items_exact"] = float(actual_output.get("hated_items") == expected["hated_items"])
+        m["hated_items_set_match"] = float(
+            set(actual_output.get("hated_items", [])) == set(expected["hated_items"]))
+
         m["all_fields_match"] = float(all(m[k] == 1.0 for k in (
             "known_correct", "n_interactions_correct", "top_categories_exact",
-            "price_range_exact", "recent_items_exact")))
+            "price_range_exact", "recent_items_exact", "love_categories_exact",
+            "hate_categories_exact", "loved_items_set_match", "hated_items_set_match")))
 
         probe = expected.get("leakage_probe")
         if probe is not None:

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 
 from ...api import LLMMessage, LLMProvider
 from ...api import LLMProviderError
 from ...tools.base import Tool
-from ._helper import _blocks_reflect, _extract_plan, _invented_ids, _reflect_problem, _resolve_refs, _simplify_args_for_log, _step_report, _summarize_output, _unknown_args
-from .._limits import get_agent_limits
+from ._helper import _blocks_reflect, _compute_execution_quality, _extract_plan, _invented_ids, _is_quality_improvement, _reflect_problem, _resolve_refs, _resolve_session_refs_only, _simplify_args_for_log, _step_report, _summarize_output, _unknown_args
+from .._limits import get_agent_limits, get_memory_limits
 from ._prompt import SYSTEM_PROMPT
 from ..toolkit import build_tool_prompt
+from ..session import Session
 
 RETRY_NOTICE = (
     "Your previous reply was rejected: {error}\n"
@@ -53,8 +55,10 @@ class PlanExecutor:
         max_steps: int | None = None,
         plan_retries: int | None = None,
         reflect_rounds: int | None = None,
+        session: Session | None = None,
     ) -> None:
         limits = get_agent_limits()
+        memory_limits = get_memory_limits()
         self.llm = llm
         self.tools = {t.name: t for t in tools}
         self.max_tokens = limits.max_tokens if max_tokens is None else max_tokens
@@ -64,6 +68,12 @@ class PlanExecutor:
         self.reflect_rounds = limits.reflect_rounds if reflect_rounds is None else reflect_rounds
         if self.reflect_rounds < 0:
             raise ValueError("reflect_rounds must be >= 0")
+        self.session = session or Session(
+            max_turns=10,
+            max_shown_items=50,
+            max_candidates=100,
+            max_turn_chars=500,
+        )
         self.last_response = None
         self.last_reflections = 0
         self.last_first_attempt_ok = True
@@ -89,7 +99,12 @@ class PlanExecutor:
         return resp
 
     def plan(self, user_request: str) -> list[dict[str, Any]]:
-        system = SYSTEM_PROMPT.format(tools=build_tool_prompt(list(self.tools.values())))
+        # Inject session state into the system prompt
+        session_state = json.dumps(self.session.to_dict(), ensure_ascii=False)
+        system = SYSTEM_PROMPT.format(
+            tools=build_tool_prompt(list(self.tools.values())),
+            session_state=session_state
+        )
         messages = [LLMMessage(role="system", content=system), LLMMessage(role="user", content=user_request)]
         self.last_plan, self.last_question, self.last_truncated = [], None, False
         self.last_reflections, self.last_first_attempt_ok, self.last_attempt_plans = 0, True, []
@@ -123,6 +138,12 @@ class PlanExecutor:
         problem = _reflect_problem(results, self.last_question)
         self.last_first_attempt_ok = problem is None
         messages = [*self._messages[:2], LLMMessage(role="assistant", content=self.last_response.text)]
+
+        # Track quality for reflection quality gate
+        previous_quality = _compute_execution_quality(results)
+        best_results = results
+        best_quality = previous_quality
+
         while problem and not _blocks_reflect(results) and self.last_reflections < self.reflect_rounds:
             self.last_reflections += 1
             notice = REFLECT_NOTICE.format(problem=problem, report=_step_report(results))
@@ -138,10 +159,61 @@ class PlanExecutor:
             steps = steps[: self.max_steps]
             self.last_plan, self.last_question = steps, question
             self.last_attempt_plans.append(steps)
-            results = self._execute(steps, user_request)
+            new_results = self._execute(steps, user_request)
+            new_quality = _compute_execution_quality(new_results)
+
+            # Quality gate: only accept reflected plan if it improves
+            if _is_quality_improvement(best_quality, new_quality):
+                best_results = new_results
+                best_quality = new_quality
+                results = new_results
+            else:
+                # Keep the previous best result
+                results = best_results
+
             problem = _reflect_problem(results, question)
             messages = [*messages, LLMMessage(role="assistant", content=resp.text)]
+
+        # Update session state after successful execution
+        self._update_session(user_request, results)
+
         return results
+
+    def _update_session(self, user_request: str, results: list[dict[str, Any]]) -> None:
+        """Update session state after each turn based on execution results."""
+        # Add the turn
+        plan_text = json.dumps(self.last_plan, ensure_ascii=False)
+        answer = self.last_response.text if self.last_response else ""
+        self.session.add_turn(user_request, plan_text, answer)
+
+        # Extract shown items and candidates from results
+        shown_items = []
+        candidates = []
+        ranked = []
+
+        for step in results:
+            if not step["ok"]:
+                continue
+            data = step.get("data", {})
+            tool_name = step.get("tool", "")
+
+            # QueryTool shows items
+            if tool_name == "QueryTool":
+                items = data.get("items", [])
+                shown_items.extend([i.get("item_id") for i in items if isinstance(i, dict) and "item_id" in i])
+
+            # SQLTool/SemanticSearchTool provide candidates
+            if tool_name in ("SQLTool", "SemanticSearchTool"):
+                step_candidates = data.get("candidates", [])
+                candidates.extend(step_candidates)
+
+            # RecoModelTool provides ranked items
+            if tool_name == "RecoModelTool":
+                step_ranked = data.get("ranked", [])
+                ranked.extend([r.get("item_id") for r in step_ranked if isinstance(r, dict) and "item_id" in r])
+
+        self.session.add_shown_items(shown_items)
+        self.session.set_candidates(candidates, ranked)
 
     def _execute(self, steps: list[dict[str, Any]], user_request: str) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
@@ -156,38 +228,42 @@ class PlanExecutor:
             if tool is None:
                 entry["error"] = "unknown tool"
                 entry["error_kind"] = "unknown_tool"
-            elif invented := _invented_ids(raw_args, user_request):
-                entry["error"] = f"id(s) not found in the request (invented?): {invented}"
-                entry["invented_ids"] = invented  # the tool is NOT executed with an id the user never gave
-                entry["error_kind"] = "invented_id"
             elif unknown := _unknown_args(tool, raw_args):
                 entry["error"] = unknown  # actionable, and the tool is not called with args it does not declare
                 entry["error_kind"] = "unknown_args"
             else:
-                try:
-                    resolved_args = _resolve_refs(raw_args, results)
-                    res = tool(agent="planner", **resolved_args)
-                    entry.update(ok=res.ok, data=res.data, error=res.error)
-                    # Update args with resolved values
-                    entry["args"] = _simplify_args_for_log(resolved_args)
-                    entry["output_summary"] = _summarize_output(res.data, name)
-                    if "note" in res.data:
-                        entry["note"] = res.data["note"]
-                    # Tool error (ok=False) but no exception
-                    if not res.ok:
-                        entry["error_kind"] = "tool_error"
-                except ValueError as exc:
-                    # Distinguish reference errors from other ValueErrors
-                    error_msg = str(exc)
-                    if "step" in error_msg and ("has not run yet" in error_msg or "failed" in error_msg or "not found" in error_msg):
-                        entry["error"] = error_msg
-                        entry["error_kind"] = "bad_reference"
-                    else:
+                # Resolve session references first (for invented ID check)
+                args_for_check = _resolve_session_refs_only(raw_args, self.session)
+                if invented := _invented_ids(args_for_check, user_request, self.session.get_valid_ids()):
+                    entry["error"] = f"id(s) not found in the request or session (invented?): {invented}"
+                    entry["invented_ids"] = invented  # the tool is NOT executed with an id the user never gave
+                    entry["error_kind"] = "invented_id"
+                else:
+                    try:
+                        # Resolve step references for actual execution
+                        resolved_args = _resolve_refs(raw_args, results, self.session)
+                        res = tool(agent="planner", **resolved_args)
+                        entry.update(ok=res.ok, data=res.data, error=res.error)
+                        # Update args with resolved values
+                        entry["args"] = _simplify_args_for_log(resolved_args)
+                        entry["output_summary"] = _summarize_output(res.data, name)
+                        if "note" in res.data:
+                            entry["note"] = res.data["note"]
+                        # Tool error (ok=False) but no exception
+                        if not res.ok:
+                            entry["error_kind"] = "tool_error"
+                    except ValueError as exc:
+                        # Distinguish reference errors from other ValueErrors
+                        error_msg = str(exc)
+                        if "step" in error_msg and ("has not run yet" in error_msg or "failed" in error_msg or "not found" in error_msg):
+                            entry["error"] = error_msg
+                            entry["error_kind"] = "bad_reference"
+                        else:
+                            entry["error"] = f"{type(exc).__name__}: {exc}"
+                            entry["error_kind"] = "exception"
+                    except Exception as exc:  # args sai tên/kiểu (TypeError...) không được làm hỏng các step còn lại
                         entry["error"] = f"{type(exc).__name__}: {exc}"
                         entry["error_kind"] = "exception"
-                except Exception as exc:  # args sai tên/kiểu (TypeError...) không được làm hỏng các step còn lại
-                    entry["error"] = f"{type(exc).__name__}: {exc}"
-                    entry["error_kind"] = "exception"
             entry["latency_seconds"] = round(time.perf_counter() - started, 6)
             results.append(entry)
         return results

@@ -1,0 +1,19 @@
+# Reference plans for Layer 4: Agentic Process Quality evaluation.
+# Ordered groups of tools a good plan visits (any tool of a group counts, groups in this order).
+# Groups are filtered by the tools the agent actually has, so a planner without MemoryTool is not penalised for it.
+
+reference_plans:
+  similar:
+    - ["ItemCFTool"]
+    - ["RecoModelTool"]
+  personalized:
+    - ["MemoryTool"]
+    - ["SemanticSearchTool", "SQLTool"]
+    - ["RecoModelTool"]
+  constrained:
+    - ["SemanticSearchTool", "SQLTool"]
+    - ["RecoModelTool"]
+  cold_text:
+    - ["SemanticSearchTool", "SQLTool"]
+    - ["RecoModelTool"]
+  ambiguous: []

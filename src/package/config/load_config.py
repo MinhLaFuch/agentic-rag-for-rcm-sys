@@ -20,6 +20,11 @@ import yaml
 from ._error import ConfigError
 from ._constants import CONFIG_DIR
 from ._helper import _interpolate_env
+from ._schemas import validate_config
+
+# Module-level cache for config file modification times
+# Used to detect when config files have changed and invalidate caches
+_file_mtime_cache: dict[str, float] = {}
 
 def load_config(name: str, config_dir: Path | None = None) -> dict[str, Any]:
     """
@@ -33,7 +38,38 @@ def load_config(name: str, config_dir: Path | None = None) -> dict[str, Any]:
     if not path.exists():
         raise ConfigError(f"Config file not found: {path}")
 
+    # Check if file has changed since last load
+    current_mtime = path.stat().st_mtime
+    if name in _file_mtime_cache and _file_mtime_cache[name] != current_mtime:
+        # File changed, clear the LRU cache in _limits.py
+        # Lazy import to avoid circular dependency
+        try:
+            from ..agents._limits import get_agent_limits, get_memory_limits
+            get_agent_limits.cache_clear()
+            get_memory_limits.cache_clear()
+        except ImportError:
+            pass
+        try:
+            from ..tools._limits import get_tool_limits
+            get_tool_limits.cache_clear()
+        except ImportError:
+            pass
+        try:
+            from ..inference._limits import get_inference_limits
+            get_inference_limits.cache_clear()
+        except ImportError:
+            pass
+        try:
+            from ..evaluation._schema import get_reference_plans
+            get_reference_plans.cache_clear()
+        except ImportError:
+            pass
+
+    _file_mtime_cache[name] = current_mtime
+
     with path.open("r", encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
 
-    return _interpolate_env(raw)
+    interpolated = _interpolate_env(raw)
+    validated = validate_config(name, interpolated)
+    return validated

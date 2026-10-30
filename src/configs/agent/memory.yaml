@@ -1,0 +1,17 @@
+# Memory config (MemoryTool + Session state) — giới hạn và ngưỡng cho memory dài hạn và phiên đa lượt.
+
+memory:
+  # Hồ sơ dài hạn (MemoryTool)
+  love_min_rating: 4          # rating >= giá trị này => item được coi là "liked" (thêm vào love_categories)
+  hate_max_rating: 2          # rating <= giá trị này => item được coi là "disliked" (thêm vào hate_categories)
+  top_n_loved_items: 10       # số lượng item được yêu thích nhất được trả về (loved_items)
+  top_n_hated_items: 10       # số lượng item bị ghét nhất được trả về (hated_items)
+  top_n_categories: 5         # số lượng category phổ biến nhất được trả về (cả love và hate categories)
+  recent_items: 10           # số lượng item gần nhất được trả về (đã có trong MemoryTool hiện tại)
+
+  # Phiên đa lượt (Session state) - TODO: sẽ implement trong P2
+  session:
+    max_turns: 10             # số lượt tối đa trong một phiên (cũ hơn bị loại)
+    max_shown_items: 50       # số item đã hiển thị tối đa được lưu (cũ hơn bị loại)
+    max_candidates: 100       # số ứng viên tối đa được lưu per lượt
+    max_turn_chars: 500       # số ký tự tối đa cho tóm tắt câu trả lời lượt (cũ hơn bị cắt)

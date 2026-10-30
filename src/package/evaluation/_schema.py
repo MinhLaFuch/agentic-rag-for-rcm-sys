@@ -1,5 +1,11 @@
 """Contracts of the agent evaluation (fixed in code on purpose; tunables are in configs/agent/agent_eval.yaml)."""
 
+from __future__ import annotations
+
+from functools import lru_cache
+
+from ..config.load_config import load_config
+
 EVAL_SCHEMA_VERSION = 2
 
 SEGMENTS = ("cold", "sparse", "warm")
@@ -21,12 +27,48 @@ KIND_SEGMENTS = {
 KINDS = tuple(KIND_SEGMENTS)
 ORACLE_KINDS = ("constrained", "cold_text")  # built from held-out items: an upper-bound scenario, not a real query log
 
-# Ordered groups of tools a good plan visits (any tool of a group counts, groups in this order).
-# Groups are filtered by the tools the agent actually has, so a planner without MemoryTool is not penalised for it.
-REFERENCE_PLANS = {
-    "similar": (("ItemCFTool",), ("RecoModelTool",)),
-    "personalized": (("MemoryTool",), ("SemanticSearchTool", "SQLTool"), ("RecoModelTool",)),
-    "constrained": (("SemanticSearchTool", "SQLTool"), ("RecoModelTool",)),
-    "cold_text": (("SemanticSearchTool", "SQLTool"), ("RecoModelTool",)),
-    "ambiguous": (),
-}
+
+@lru_cache(maxsize=1)
+def get_reference_plans() -> dict[str, tuple[tuple[str, ...], ...]]:
+    """
+    Load reference plans from configs/agent/reference_plans.yaml.
+
+    Ordered groups of tools a good plan visits (any tool of a group counts, groups in this order).
+    Groups are filtered by the tools the agent actually has, so a planner without MemoryTool is not penalised for it.
+
+    Returns:
+        dict mapping request kind to tuple of tuples (tool groups)
+    """
+    cfg = load_config("agent/reference_plans")["reference_plans"]
+    # Convert list of lists to tuple of tuples for immutability
+    return {kind: tuple(tuple(group) for group in groups) for kind, groups in cfg.items()}
+
+
+# Backward compatibility: expose REFERENCE_PLANS as a property that loads from config
+# This allows existing code to continue working while new code can use get_reference_plans()
+def _get_reference_plans_cached() -> dict[str, tuple[tuple[str, ...], ...]]:
+    """Cached accessor for reference plans."""
+    return get_reference_plans()
+
+
+# Create a property-like accessor
+class _ReferencePlans:
+    """Lazy accessor for reference plans."""
+
+    def __getitem__(self, key: str) -> tuple[tuple[str, ...], ...]:
+        return get_reference_plans()[key]
+
+    def __iter__(self):
+        return iter(get_reference_plans())
+
+    def keys(self):
+        return get_reference_plans().keys()
+
+    def values(self):
+        return get_reference_plans().values()
+
+    def items(self):
+        return get_reference_plans().items()
+
+
+REFERENCE_PLANS = _ReferencePlans()

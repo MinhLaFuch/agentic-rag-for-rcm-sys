@@ -109,10 +109,9 @@ def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
 def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage(corpus):
     script = _load_run_agent_eval()
     plain = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
-    infer_llm = ScriptedLLM()
 
     def answerer(outcome):
-        infer_llm.replies.append(good_reply(outcome.items))
+        infer_llm = ScriptedLLM(good_reply(outcome.items))
         return compose_answer(outcome, infer_llm, mode="llm")
 
     with_answer = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2, answerer=answerer, inference_mode="llm")
@@ -129,7 +128,7 @@ def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_plan
 
 
 def test_run_planner_answers_even_when_the_plan_failed_and_never_calls_the_llm_for_it(corpus):
-    infer_llm = ScriptedLLM()
+    infer_llm = ScriptedLLM("")
     traj = _load_run_agent_eval().run_planner(
         _executor(corpus, "nope"), _two_items_request(), "planner", 2,
         answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
@@ -138,7 +137,7 @@ def test_run_planner_answers_even_when_the_plan_failed_and_never_calls_the_llm_f
 
 
 def test_run_planner_ask_user_returns_the_question_as_the_answer(corpus):
-    infer_llm = ScriptedLLM()
+    infer_llm = ScriptedLLM("")
     traj = _load_run_agent_eval().run_planner(
         _executor(corpus, plan(ask_user="Bạn cần loại sản phẩm nào?")), _request("gợi ý sản phẩm hay"), "planner", 2,
         answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
@@ -202,11 +201,12 @@ def test_inference_mode_is_a_cli_flag(monkeypatch, capsys):
 def test_end_to_end_scenario(corpus, mode):
     script = _load_run_agent_eval()
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text=f"similar to {VG_A} and {VG_B}", targets=[1])
-    infer_llm = ScriptedLLM()
+    from tests.agents.inference.helpers import item, good_reply
+    
+    test_items = [item(VG_A, "Game A"), item(VG_B, "Game B")]
+    infer_llm = ScriptedLLM(good_reply(test_items) if mode == "llm" else "")
 
     def answerer(outcome):
-        if mode == "llm":
-            infer_llm.replies.append(good_reply(outcome.items))
         return compose_answer(outcome, infer_llm, mode=mode)
 
     traj = script.run_planner(_executor(corpus, QUERY_PLAN), request, "planner", 2, answerer=answerer, inference_mode=mode)

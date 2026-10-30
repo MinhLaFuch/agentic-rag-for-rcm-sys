@@ -11,7 +11,7 @@ from package.tools import BaselineScorer, QueryTool, SQLTool, ToolCallLogger, It
 from package.memory.memory_tool import MemoryTool
 from package.tools.recommenders import ItemKNNRecommender
 from tests.agents.fakes.scripted_llm import ScriptedLLM
-from tests.tools_helpers import VG_A
+from tests.tools_helpers import VG_A, VG_B, VG_C
 
 
 def plan(*steps, ask_user=None) -> str:
@@ -52,8 +52,11 @@ def test_plan_is_cut_to_max_steps(corpus):
 
 def test_invented_id_is_reported_and_the_tool_is_not_run(corpus):
     logger = ToolCallLogger()
+    # Pass a session with empty valid IDs so the invented ID is still rejected
+    from package.agents.session import Session
+    session = Session()
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::made_up"]}})), [QueryTool(corpus, logger=logger)]
+        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::made_up"]}})), [QueryTool(corpus, logger=logger)], session=session
     )
     results = executor.run(f"tell me about {VG_A}")
     assert not results[0]["ok"] and results[0]["invented_ids"] == ["Video_Games::made_up"]
@@ -61,7 +64,8 @@ def test_invented_id_is_reported_and_the_tool_is_not_run(corpus):
 
 
 def test_id_copied_from_the_request_is_executed(corpus):
-    executor = PlanExecutor(ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A]}})), [QueryTool(corpus)])
+    from package.agents.session import Session
+    executor = PlanExecutor(ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A]}})), [QueryTool(corpus)], session=Session())
     results = executor.run(f"tell me about {VG_A}")
     assert results[0]["ok"] and results[0]["invented_ids"] == []
 
@@ -192,12 +196,14 @@ def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     """SYSTEM_PROMPT should include SQLTool, MemoryTool, and the new examples."""
     from package.agents.planner._prompt import SYSTEM_PROMPT
     from package.agents import build_tools
+    import json
 
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(5).fit(interactions)
     tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
     planner_tools = tools.for_planner_memory()  # Include MemoryTool
-    prompt = SYSTEM_PROMPT.format(tools=build_tool_prompt(planner_tools))
+    session_state = json.dumps({"turns_count": 0, "shown_items": [], "candidates": [], "ranked": [], "constraints": {}, "feedback": {}}, ensure_ascii=False)
+    prompt = SYSTEM_PROMPT.format(tools=build_tool_prompt(planner_tools), session_state=session_state)
 
     # Check that SQLTool and MemoryTool are mentioned
     assert "SQLTool" in prompt
@@ -208,6 +214,10 @@ def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     assert '"$1.top_categories"' in prompt
     assert '"$1.price_range.max"' in prompt
     assert '"$1.recent_items"' in prompt
+
+    # Check that session state is included
+    assert "Session state" in prompt
+    assert "$S." in prompt
 
 
 def test_memory_tool_output_is_not_summarized():
@@ -234,3 +244,89 @@ def test_failed_step_still_has_args_but_no_output_summary(corpus):
     assert results[0]["args"] == {"invalid_arg": 1}
     # output_summary is not added when the tool is not executed
     assert "output_summary" not in results[0]
+
+
+def test_session_reference_is_resolved(corpus):
+    """Test that $S. references are resolved from session state."""
+    from package.agents.session import Session
+    from package.agents.planner._helper import _resolve_refs
+
+    session = Session()
+    session.add_shown_items([VG_A, VG_B])
+
+    # Test the resolution logic directly
+    args = {"item_ids": "$S.shown_items.1"}
+    resolved = _resolve_refs(args, [], session)
+    
+    # The reference should be resolved to VG_B
+    assert resolved["item_ids"] == VG_B
+
+
+def test_id_from_session_is_allowed(corpus):
+    """Test that IDs from session (shown_items, candidates, ranked) are not treated as invented."""
+    from package.agents.session import Session
+
+    session = Session()
+    session.add_shown_items([VG_A])
+    session.set_candidates([VG_B], [VG_C])
+
+    # Use an ID from session that is NOT in the request
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_B]}})),
+        [QueryTool(corpus)],
+        session=session
+    )
+    results = executor.run("tell me about something else")
+    # Should succeed because VG_B is in session candidates
+    assert results[0]["ok"]
+    assert results[0]["invented_ids"] == []
+
+
+def test_id_not_in_request_or_session_is_rejected(corpus):
+    """Test that IDs not in request or session are treated as invented."""
+    from package.agents.session import Session
+
+    session = Session()
+    session.add_shown_items([VG_A])
+
+    # Use an ID that is neither in request nor session
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::unknown"]}})),
+        [QueryTool(corpus)],
+        session=session
+    )
+    results = executor.run("tell me about something")
+    # Should fail because the ID is invented
+    assert not results[0]["ok"]
+    assert results[0]["invented_ids"] == ["Video_Games::unknown"]
+
+
+def test_session_state_updated_after_turn(corpus):
+    """Test that session state is updated after a successful turn."""
+    from package.agents.session import Session
+
+    session = Session()
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "SQLTool", "args": {"limit": 2}})),
+        [SQLTool(corpus)],
+        session=session
+    )
+    results = executor.run("list items")
+
+    # Session should be updated
+    assert len(session.turns) == 1
+    assert session.turns[0].user_request == "list items"
+    # Candidates should be populated from SQLTool result
+    assert len(session.candidates) > 0 or len(session.shown_items) > 0
+
+
+def test_session_with_none_preserves_existing_behavior(corpus):
+    """Test that session=None works exactly like before (no session integration)."""
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A]}})),
+        [QueryTool(corpus)],
+        session=None
+    )
+    results = executor.run(f"tell me about {VG_A}")
+    assert results[0]["ok"]
+    assert results[0]["invented_ids"] == []

@@ -1,5 +1,6 @@
 import dataclasses
 import re
+import time
 
 import pytest
 import yaml
@@ -74,4 +75,65 @@ def test_every_data_paths_dir_is_distinct_and_under_project():
     dirs = [getattr(paths, f.name) for f in dataclasses.fields(paths) if f.name != "tag"]
     assert len(set(dirs)) == len(dirs)
     assert all(CONFIG_DIR.parent in d.parents for d in dirs)
+
+
+def test_config_cache_invalidation_on_file_change(tmp_path, monkeypatch):
+    """Test that modifying a config file clears the LRU cache in _limits.py."""
+    (tmp_path / "test_config.yaml").write_text("test:\n  value: 10\n", encoding="utf-8")
+
+    # First load
+    cfg1 = load_config("test_config", config_dir=tmp_path)
+    assert cfg1["test"]["value"] == 10
+
+    # Wait a bit to ensure mtime changes
+    time.sleep(0.01)
+
+    # Modify the file
+    (tmp_path / "test_config.yaml").write_text("test:\n  value: 20\n", encoding="utf-8")
+
+    # Second load should get the new value
+    cfg2 = load_config("test_config", config_dir=tmp_path)
+    assert cfg2["test"]["value"] == 20
+
+
+def test_config_schema_validation(tmp_path):
+    """Test that Pydantic schema validation works for agent configs."""
+    # Create agent subdirectory
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+
+    # Valid config
+    (agent_dir / "agent.yaml").write_text(
+        "agent:\n  max_steps: 8\n  plan_retries: 1\n  reflect_rounds: 1\n  reflect_error_chars: 300\n"
+        "  max_tokens: 2048\n  temperature: 0.0\n  type1:\n    candidate_multiplier: 5\n    min_candidates: 50\n",
+        encoding="utf-8",
+    )
+    cfg = load_config("agent/agent", config_dir=tmp_path)
+    assert cfg["agent"]["max_steps"] == 8
+
+    # Invalid config (negative value)
+    (agent_dir / "agent.yaml").write_text(
+        "agent:\n  max_steps: -1\n  plan_retries: 1\n  reflect_rounds: 1\n  reflect_error_chars: 300\n"
+        "  max_tokens: 2048\n  temperature: 0.0\n  type1:\n    candidate_multiplier: 5\n    min_candidates: 50\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError, match="Config validation failed"):
+        load_config("agent/agent", config_dir=tmp_path)
+
+
+def test_config_schema_validation_invalid_language(tmp_path):
+    """Test that language validation works."""
+    # Create agent subdirectory
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir(exist_ok=True)
+
+    (agent_dir / "agent_eval.yaml").write_text(
+        "agent_eval:\n  agents: [baseline]\n  k: 10\n  per_segment: 20\n  n_ambiguous: 6\n"
+        "  language: 'fr'\n  price_slack: 1.25\n  price_round_to: 5\n  min_metadata_coverage: 0.5\n"
+        "  trajectory_error_chars: 300\n  max_consecutive_llm_errors: 5\n"
+        "  experiments_subdir: 'agent_eval'\n  trajectory_file: 'test.jsonl'\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError, match="Config validation failed"):
+        load_config("agent/agent_eval", config_dir=tmp_path)
 

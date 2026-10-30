@@ -11,7 +11,7 @@ import json
 import sys
 from pathlib import Path
 
-from .memory_correctness_setup import create_test_interactions, create_test_mappings, create_test_meta
+from .memory_correctness_setup import create_test_interactions, create_test_mappings, create_test_meta, get_interactions_without_rating
 from .memory_oracle import compute_memory_oracle, leakage_probe
 
 DATASET_PATH = Path(__file__).with_name("memory_correctness_dataset.jsonl")
@@ -37,6 +37,15 @@ SPECS = [
      "full frame + as_of=4: the tool's leakage guard must raise LeakageError"),
     ("correctness_016", "u_leakage_test", 3, 9, "untruncated", ["leakage_guard", "control"],
      "full frame + as_of=9 (= max ts of ALL users, so no future rows anywhere): guard must NOT raise"),
+    # Love/hate test cases
+    ("correctness_017", "u_love_hate_mix", 5, None, None, ["love_hate", "mixed_ratings"],
+     "User with ratings 5,4,3,2,1: love >=4, hate <=2"),
+    ("correctness_018", "u_all_love", 5, None, None, ["love_hate", "all_love"],
+     "All ratings >=4: love populated, hate empty"),
+    ("correctness_019", "u_all_hate", 5, None, None, ["love_hate", "all_hate"],
+     "All ratings <=2: hate populated, love empty"),
+    ("correctness_020", "u_no_rating", 5, None, None, ["love_hate", "no_rating_column"],
+     "Interactions without rating column: love/hate empty, legacy fields work"),
 ]
 
 
@@ -53,10 +62,25 @@ def build_cases() -> list[dict]:
         if mode == "untruncated" and "negative" in tags:
             expected = {"expect_error": "LeakageError"}
         else:
-            expected = compute_memory_oracle(inter, uid, user2id, item2id, meta, top_n, as_of)
+            # For u_no_rating, use interactions without rating column
+            if uid == "u_no_rating":
+                inter_for_case = get_interactions_without_rating(inter, uid)
+            else:
+                inter_for_case = inter
+
+            # Use default love/hate thresholds matching memory.yaml
+            expected = compute_memory_oracle(
+                inter_for_case, uid, user2id, item2id, meta,
+                top_n_categories=top_n,
+                as_of_timestamp=as_of,
+                love_min_rating=4,
+                hate_max_rating=2,
+                top_n_loved_items=10,
+                top_n_hated_items=10
+            )
             if as_of is not None:
                 expected["leakage_probe"] = leakage_probe(
-                    inter, uid, user2id, item2id, as_of, expected["n_interactions"])
+                    inter_for_case, uid, user2id, item2id, as_of, expected["n_interactions"])
         cases.append({"case_id": cid, "input": inp, "expected": expected,
                       "tags": ["correctness", *tags], "metadata": {"description": desc}})
     return cases

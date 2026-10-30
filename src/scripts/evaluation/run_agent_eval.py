@@ -39,7 +39,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from package.agents import PlanExecutor, Type1Agent, build_tools
+from package.agents import PlanExecutor, Type1Agent, build_tools, Session
 from package.agents import extract_recommendations, get_agent_limits
 from package.evaluation import (
     AGENTS,
@@ -89,6 +89,8 @@ def empty_trajectory(request: AgentRequest, agent: str, tools_available: list[st
         "plan": [], "ask_user": None, "steps": [], "recommended": [], "usage": {}, "error": None,
         "provider_error": False, "truncated": False, "wall_seconds": 0.0,
         "reflections": 0, "first_attempt_ok": None, "reflect_rounds": None,
+        # Session state (if enabled)
+        "session_enabled": False, "session_state": None,
         # Inference (None / {} = this agent has no answer, e.g. the baseline); answer_fallback = why the template replaced the LLM text
         "answer": None, "answer_status": None, "answer_grounded": None, "answer_composer": None, "answer_fallback": None,
         "answer_reason": None, "inference_usage": {}, "inference_mode": None,
@@ -106,12 +108,13 @@ def attach_answer(traj: dict[str, Any], answer: Any, inference_mode: str) -> Non
 
 def is_resumable(
     rec: dict[str, Any], text_of: dict[str, str], agents: list[str], reflect_rounds: int, inference_mode: str | None = None,
-    protocol_hash: str | None = None,
+    protocol_hash: str | None = None, session_enabled: bool = False,
 ) -> bool:
     """
     A saved trajectory is reused only for the same request text, a requested agent and (planners) the same reflect_rounds.
     Agents that get an answer (type1, planners) also need the same inference_mode, so LLM and template answers never mix in one
     experiment; a record without the field was written before Inference existed: it is reused and its answer columns stay empty.
+    Session state must also match if enabled.
     """
     if protocol_hash is not None and rec.get("evaluation_protocol_hash") != protocol_hash:
         return False
@@ -119,7 +122,12 @@ def is_resumable(
         return False
     if inference_mode is not None and rec["agent"] in INFERENCE_AGENTS and rec.get("inference_mode", inference_mode) != inference_mode:
         return False
-    return rec["agent"] not in PLANNER_AGENTS or rec.get("reflect_rounds", 0) == reflect_rounds  # no field = before plan-reflect = 0
+    if rec["agent"] in PLANNER_AGENTS and rec.get("reflect_rounds", 0) != reflect_rounds:
+        return False
+    # Session state must match
+    if rec.get("session_enabled", False) != session_enabled:
+        return False
+    return True
 
 
 def _error_chars() -> int:
@@ -156,6 +164,12 @@ def run_planner(
                 usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
                 first_attempt_ok=executor.last_first_attempt_ok and traj["error"] is None)
     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
+
+    # Capture session state if enabled
+    if executor.session is not None:
+        traj["session_enabled"] = True
+        traj["session_state"] = executor.session.to_dict()
+
     if answerer is not None:
         outcome = outcome_from_plan_results(request.text, results, question=executor.last_question, plan_error=traj["error"])
         attach_answer(traj, answerer(outcome), inference_mode)
@@ -202,6 +216,8 @@ def main() -> None:
     )
     ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
                     help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
+    ap.add_argument("--enable-session", action="store_true",
+                    help="Enable multi-turn session state (currently single-turn evaluation with session infrastructure)")
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
@@ -298,8 +314,10 @@ def main() -> None:
             raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY "
                              "(or run with --agents baseline,type1 --inference-mode template)")
     if any(a in PLANNER_AGENTS for a in agents):
-        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds)
-        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds)
+        # Create session if enabled (currently single-turn, but infrastructure wired)
+        session = Session() if args.enable_session else None
+        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=session)
+        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=session)
 
     # Build provenance (hashes of prompts, tool schemas, git state, limits)
     provenance = build_run_provenance(
@@ -351,7 +369,7 @@ def main() -> None:
             rec = json.loads(line)
             if rec.get("evaluation_protocol_hash") != protocol_hash:
                 raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; choose a new --trajectory-file")
-            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode, protocol_hash):  # drop stale records (other text / agent / reflect_rounds)
+            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode, protocol_hash, session_enabled=args.enable_session):  # drop stale records (other text / agent / reflect_rounds / session)
                 done[(rec["request_id"], rec["agent"])] = rec
     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
