@@ -69,24 +69,16 @@ class PlannerBenchmark(ComponentEvaluator):
         user_request = case_input.get("user_request", "")
         started = time.perf_counter()
 
-        try:
-            steps = self.executor.plan(user_request)
-            question = self.executor.last_question
-            latency = time.perf_counter() - started
+        steps = self.executor.plan(user_request)
+        question = self.executor.last_question
+        latency = time.perf_counter() - started
 
-            return {
-                "steps": steps,
-                "question": question,
-                "latency_seconds": latency,
-                "usage": self.executor.last_usage,
-            }
-        except Exception as e:
-            return {
-                "steps": [],
-                "question": None,
-                "error": str(e),
-                "latency_seconds": time.perf_counter() - started,
-            }
+        return {
+            "steps": steps,
+            "question": question,
+            "latency_seconds": latency,
+            "usage": self.executor.last_usage,
+        }
 
     def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
         """Score planner output against expected."""
@@ -105,10 +97,6 @@ class PlannerBenchmark(ComponentEvaluator):
             "clarification_recall": 0.0,
             "refusal_to_guess": 0.0,
         }
-
-        # If there's an error, all metrics are 0
-        if "error" in actual_output:
-            return metrics
 
         # Check if expected question matches (for ambiguous cases)
         if expected_question is not None:
