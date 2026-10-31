@@ -1,0 +1,198 @@
+{
+  "format_version": 1,
+  "created_at_unix": 1793317454.3213167,
+  "protocol": {
+    "tag": "multi_domain",
+    "evaluation_split": "validation",
+    "segment_definition": {
+      "cold": "0 unique train pairs",
+      "sparse": "1..4 unique train pairs",
+      "warm": ">4 unique train pairs"
+    },
+    "ground_truth": "unique observed evaluation user-item pairs; binary relevance",
+    "target_seen_policy": "reported separately; do not count seen targets as novel retrieval hits"
+  },
+  "mappings": {
+    "users": 2757103,
+    "items": 678281,
+    "user_mapping_hash": "91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6",
+    "item_mapping_hash": "12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8",
+    "user_mapping_file_sha256": "0209b4c085de29b04ba8e39706a68ea695d3c997e7247dcc1ce4ae1b1a64b752",
+    "item_mapping_file_sha256": "3724b8fa3abffbd26a894fa3a6b9f1cce93cb85ffed7919d79577daedef4d7ce"
+  },
+  "environment": {
+    "python": "3.12.2",
+    "packages": {
+      "numpy": "2.5.4",
+      "pandas": "3.0.6",
+      "pyarrow": "18.1.0",
+      "PyYAML": "6.0.3",
+      "scipy": "1.18.1",
+      "httpx": "0.27.2"
+    },
+    "missing_or_out_of_constraint": []
+  },
+  "splits": {
+    "train": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\train.parquet",
+      "bytes": 2132738419,
+      "sha256": "0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28"
+    },
+    "validation": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\validation.parquet",
+      "bytes": 298978513,
+      "sha256": "af06fa2e8288ab1ea8a2faeb6dcb5d3ea748b613994633b04eeff217910f9beb"
+    },
+    "test": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\test.parquet",
+      "bytes": 296357912,
+      "sha256": "c9e85f3fb269e05cfd8eb93aaa4b8f9eb7f7ae7247047f308605b0fb8844b73e"
+    }
+  },
+  "population": {
+    "train_rows": 21687358,
+    "unique_train_pairs": 21629272,
+    "duplicate_train_rows": 58086,
+    "evaluation_rows": 2710920,
+    "unique_evaluation_pairs": 2705341,
+    "evaluation_users_with_targets": 1129419,
+    "novel_evaluation_pairs": 2703235,
+    "seen_evaluation_pairs": 2106,
+    "segments": {
+      "cold": {
+        "users_with_targets": 67319,
+        "target_pairs": 297489,
+        "novel_target_pairs": 297489,
+        "targets_seen_in_fit_pairs": 0,
+        "history_unique_items_min": 0,
+        "history_unique_items_median": 0.0,
+        "history_unique_items_max": 0
+      },
+      "sparse": {
+        "users_with_targets": 443377,
+        "target_pairs": 1007534,
+        "novel_target_pairs": 1007027,
+        "targets_seen_in_fit_pairs": 507,
+        "history_unique_items_min": 1,
+        "history_unique_items_median": 3.0,
+        "history_unique_items_max": 4
+      },
+      "warm": {
+        "users_with_targets": 618723,
+        "target_pairs": 1400318,
+        "novel_target_pairs": 1398719,
+        "targets_seen_in_fit_pairs": 1599,
+        "history_unique_items_min": 5,
+        "history_unique_items_median": 8.0,
+        "history_unique_items_max": 2258
+      }
+    }
+  },
+  "artifacts": {
+    "corpus": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\corpus_multi_domain.sqlite",
+      "exists": true,
+      "sha256": "892c4a23477e04ca4d8192ac3c0ce9b1dae0096ed178fff82bb09d8f9a7e6a88",
+      "sidecar": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\corpus_multi_domain.meta.json",
+      "sidecar_exists": true,
+      "sidecar_fields": {
+        "format_version": 1,
+        "artifact_sha256": null,
+        "num_items": 678281,
+        "coverage": 1.0,
+        "mapping_hash": "13e3e5b362225fcb912db2c1d6bb5d6ef7a728c193547f9688296c4cd3ebc848",
+        "mapping_hash_protocol": null,
+        "source_hash_protocol": null
+      },
+      "artifact_hash_matches_sidecar": null,
+      "mapping_hash_matches": true,
+      "legacy_source_provenance": {
+        "paths": [
+          "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\metadata\\meta_Video_Games.jsonl",
+          "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\metadata\\meta_Toys_and_Games.jsonl",
+          "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\metadata\\meta_Electronics.jsonl"
+        ],
+        "expected_hashes": [
+          "41b538ead2c15f4a413dc9821e0fa9d64ee5b00426d131f0eadc2ae064b05fda",
+          "8bdcf7b6db5cfecb6ee79428aa657e5f64189c7052ea2dfaae195df683a390b7",
+          "25bd1e9090271a3e2ba372c894b4581b25eac660cd428b25141cb20eb3adb196"
+        ],
+        "current_hashes": [
+          "803e425960b256e0c0af0e6e7f474f58a1a586685e9ee33465c0c10b9ff104c1",
+          "3814b38d49a16354efc82c99634f77dfa147de0b45550e45d44fb32bbebe3d1c",
+          "4dd286483bdec81956382ad14db9d75a628c23fef749803210f44352d32fa015"
+        ],
+        "hashes_match": false,
+        "missing": [],
+        "hash_protocol": "legacy_path_size_mtime"
+      },
+      "quick_check": "ok",
+      "tables": [
+        "item_categories",
+        "items",
+        "items_fts",
+        "items_fts_config",
+        "items_fts_content",
+        "items_fts_data",
+        "items_fts_docsize",
+        "items_fts_idx"
+      ],
+      "items_rows": 678281,
+      "fts_rows": 678281,
+      "mapping_item_set_matches": true,
+      "mapping_items_missing_from_corpus": 0,
+      "corpus_items_missing_from_mapping": 0,
+      "fts_has_all_rows": true,
+      "compatible": false,
+      "provenance_limit": "legacy manifest has no SQLite artifact checksum; verified schema/logic, item set, FTS counts and loader-compatible source/mapping fingerprints"
+    },
+    "itemknn": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\experiments\\checkpoints\\full_validation_seed42_v1\\fit_item_knn.npz",
+      "exists": true,
+      "sha256": "9562ad3f4e48b4ddf8db1ea9a74cd1add23a9e0a74d5015ca0f44dded7a5e140",
+      "meta_path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\experiments\\checkpoints\\full_validation_seed42_v1\\fit_item_knn.meta.json",
+      "provenance": {
+        "scope": "dataset_bound",
+        "user_mapping_hash": "91f7a6159e294171bc2580341fbf48e033a6c222b22e74ff1d217ba47f5ce7f6",
+        "item_mapping_hash": "12014fb780510e7df39498735bb8d55b639737e3c0499984a98c174b5b8791a8",
+        "eval_on": "validation",
+        "fit_splits": [
+          "train"
+        ],
+        "tag": "multi_domain"
+      },
+      "artifact_hash_matches": true,
+      "mapping_hashes_match": true,
+      "fit_split_hash_binding": {
+        "present": false,
+        "current_train_sha256": "0af46c04a7e0d0dbb9d54944c896e54daeb3ffb8c20216bcd033829fc24d6f28"
+      },
+      "compatible": true,
+      "compatible_for_full_run": false,
+      "compatibility_note": "loader must recompute ItemKNN data hash against loaded train pairs before reuse"
+    },
+    "semantic_catalog": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\experiments\\checkpoints\\semantic_minilm_v1\\catalog_full",
+      "exists": true,
+      "status": "complete",
+      "rows": 678281,
+      "valid_rows": 678281,
+      "mapping_hash_matches": true,
+      "corpus_sha256": "892c4a23477e04ca4d8192ac3c0ce9b1dae0096ed178fff82bb09d8f9a7e6a88",
+      "artifact_hashes_verified": true,
+      "compatible": true,
+      "corpus_matches": true
+    }
+  },
+  "readiness": {
+    "full_validation_population_defined": true,
+    "mapping_indices_validated_against_split_ranges": true,
+    "evaluation_environment_ready": true,
+    "corpus_ready": false,
+    "current_metadata_sources_present": true,
+    "itemknn_cache_reusable_without_runtime_data_hash_check": false,
+    "semantic_ready": true,
+    "cold_users_have_fit_history_query": false,
+    "recommendation": "Use ranking_eval.py with --no-prebuilt-corpus and a fresh checkpoint directory. It attempts an in-memory corpus build from current metadata without overwriting the legacy SQLite snapshot; confirm that build completes and coverage passes. ItemKNN is fitted and checkpointed against current train pairs. History-based CF/FTS is unavailable for cold users; report this segment separately."
+  }
+}

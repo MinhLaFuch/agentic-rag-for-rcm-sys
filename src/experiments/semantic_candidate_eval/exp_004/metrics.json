@@ -1,0 +1,98 @@
+{
+  "bm25": {
+    "users": 500,
+    "eligible_users": 500,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.01,
+    "candidate_coverage": 0.007772020725388601,
+    "hit_rate": 0.018,
+    "mean_candidate_set_size": 25.0,
+    "catalog_coverage": 0.017202309957082683,
+    "unique_items_retrieved": 11668,
+    "target_interactions": 1158
+  },
+  "dense": {
+    "users": 500,
+    "eligible_users": 500,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.012866666666666665,
+    "candidate_coverage": 0.012953367875647668,
+    "hit_rate": 0.028,
+    "mean_candidate_set_size": 25.0,
+    "catalog_coverage": 0.01673347771793696,
+    "unique_items_retrieved": 11350,
+    "target_interactions": 1158
+  },
+  "cf_plus_bm25": {
+    "users": 500,
+    "eligible_users": 500,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.0118,
+    "candidate_coverage": 0.010362694300518135,
+    "hit_rate": 0.022,
+    "mean_candidate_set_size": 44.018,
+    "catalog_coverage": 0.02981655095749402,
+    "unique_items_retrieved": 20224,
+    "target_interactions": 1158
+  },
+  "cf_plus_dense": {
+    "users": 500,
+    "eligible_users": 500,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.014266666666666667,
+    "candidate_coverage": 0.01468048359240069,
+    "hit_rate": 0.03,
+    "mean_candidate_set_size": 44.012,
+    "catalog_coverage": 0.02940374269661099,
+    "unique_items_retrieved": 19944,
+    "target_interactions": 1158
+  },
+  "latency": {
+    "bm25_query_seconds": {
+      "mean": 0.35125507980000065,
+      "p50": 0.29915345000006255,
+      "p95": 0.814011560000074
+    },
+    "dense_exact_search_seconds": {
+      "mean": 0.6859277438000044,
+      "p50": 0.5714700499999026,
+      "p95": 1.1611866349999218
+    },
+    "query_encode_batch_seconds": 2.2557778000000326,
+    "query_encode_amortized_seconds_per_user": 0.004511555600000065,
+    "dense_total_amortized_seconds_per_user": 0.6904392994000045
+  },
+  "source_consistency": {
+    "users": 500,
+    "saved_bm25_top25_exact_id_matches": 500,
+    "saved_bm25_id_match_rate": 1.0,
+    "saved_bm25_exact_score_matches": 500,
+    "saved_bm25_score_match_rate": 1.0,
+    "candidate_budget_union": 50,
+    "per_source_quota": 25
+  },
+  "paired_candidate_recall": {
+    "dense_vs_bm25": {
+      "mean_delta": 0.0028666666666666662,
+      "paired95_ci": [
+        -0.0039,
+        0.0096
+      ],
+      "improved": 7,
+      "worse": 2,
+      "unchanged": 491
+    },
+    "cf_plus_dense_vs_cf_plus_bm25": {
+      "mean_delta": 0.002466666666666667,
+      "paired95_ci": [
+        -0.004200000000000001,
+        0.009
+      ],
+      "improved": 7,
+      "worse": 2,
+      "unchanged": 491
+    }
+  },
+  "qualification": "fixed-cohort development validation; retrieval-only; no ranking or production decision",
+  "runtime_seconds": 542.3489360000001
+}

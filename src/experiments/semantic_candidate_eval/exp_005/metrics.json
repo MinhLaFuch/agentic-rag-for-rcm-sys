@@ -1,0 +1,388 @@
+{
+  "bm25": {
+    "users": 1000,
+    "eligible_users": 1000,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.0023333333333333335,
+    "candidate_coverage": 0.0031890660592255125,
+    "hit_rate": 0.007,
+    "mean_candidate_set_size": 24.978,
+    "catalog_coverage": 0.03240839710975245,
+    "unique_items_retrieved": 21982,
+    "target_interactions": 2195
+  },
+  "dense": {
+    "users": 1000,
+    "eligible_users": 1000,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.0029166666666666664,
+    "candidate_coverage": 0.002733485193621868,
+    "hit_rate": 0.006,
+    "mean_candidate_set_size": 25.0,
+    "catalog_coverage": 0.031680085392337395,
+    "unique_items_retrieved": 21488,
+    "target_interactions": 2195
+  },
+  "cf_plus_bm25": {
+    "users": 1000,
+    "eligible_users": 1000,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.005833333333333333,
+    "candidate_coverage": 0.005466970387243736,
+    "hit_rate": 0.011,
+    "mean_candidate_set_size": 44.013,
+    "catalog_coverage": 0.05594878818660703,
+    "unique_items_retrieved": 37949,
+    "target_interactions": 2195
+  },
+  "cf_plus_dense": {
+    "users": 1000,
+    "eligible_users": 1000,
+    "empty_ground_truth": 0,
+    "candidate_recall": 0.006416666666666666,
+    "candidate_coverage": 0.005011389521640091,
+    "hit_rate": 0.01,
+    "mean_candidate_set_size": 44.072,
+    "catalog_coverage": 0.055387074088762624,
+    "unique_items_retrieved": 37568,
+    "target_interactions": 2195
+  },
+  "latency": {
+    "bm25_query_seconds": {
+      "mean": 0.3270872392000001,
+      "p50": 0.3117394000000786,
+      "p95": 0.609532225000089
+    },
+    "dense_exact_search_seconds": {
+      "mean": 0.6642326705000005,
+      "p50": 0.6237022000000252,
+      "p95": 0.8656626550000281
+    },
+    "query_encode_batch_seconds": 6.359242300000005,
+    "query_encode_amortized_seconds_per_user": 0.006359242300000005,
+    "dense_total_amortized_seconds_per_user": 0.6705919128000004
+  },
+  "source_consistency": {
+    "users": 1000,
+    "historical_bm25_comparison_users": 0,
+    "saved_bm25_top25_exact_id_matches": 0,
+    "saved_bm25_id_match_rate": null,
+    "saved_bm25_exact_score_matches": 0,
+    "saved_bm25_score_match_rate": null,
+    "candidate_budget_union": 50,
+    "per_source_quota": 25
+  },
+  "paired_candidate_recall": {
+    "dense_vs_bm25": {
+      "mean_delta": 0.0005833333333333334,
+      "paired95_ci": [
+        -0.0009166666666666666,
+        0.003
+      ],
+      "improved": 1,
+      "worse": 2,
+      "unchanged": 997
+    },
+    "cf_plus_dense_vs_cf_plus_bm25": {
+      "mean_delta": 0.0005833333333333334,
+      "paired95_ci": [
+        -0.0009166666666666666,
+        0.003
+      ],
+      "improved": 1,
+      "worse": 2,
+      "unchanged": 997
+    }
+  },
+  "qualification": "independent 1000-user sparse validation sample relative to semantic exp_004; not an untouched holdout; retrieval-only",
+  "runtime_seconds": 1037.9508322000001,
+  "history_segments": {
+    "3": {
+      "bm25": {
+        "users": 296,
+        "eligible_users": 296,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.002533783783783784,
+        "candidate_coverage": 0.003048780487804878,
+        "hit_rate": 0.006756756756756757,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.010146237326417812,
+        "unique_items_retrieved": 6882,
+        "target_interactions": 656
+      },
+      "dense": {
+        "users": 296,
+        "eligible_users": 296,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0016891891891891893,
+        "candidate_coverage": 0.001524390243902439,
+        "hit_rate": 0.0033783783783783786,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.010016497587283147,
+        "unique_items_retrieved": 6794,
+        "target_interactions": 656
+      },
+      "cf_plus_bm25": {
+        "users": 296,
+        "eligible_users": 296,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.002533783783783784,
+        "candidate_coverage": 0.003048780487804878,
+        "hit_rate": 0.006756756756756757,
+        "mean_candidate_set_size": 44.2195945945946,
+        "catalog_coverage": 0.017834791185364178,
+        "unique_items_retrieved": 12097,
+        "target_interactions": 656
+      },
+      "cf_plus_dense": {
+        "users": 296,
+        "eligible_users": 296,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0016891891891891893,
+        "candidate_coverage": 0.001524390243902439,
+        "hit_rate": 0.0033783783783783786,
+        "mean_candidate_set_size": 44.23986486486486,
+        "catalog_coverage": 0.017749280902752695,
+        "unique_items_retrieved": 12039,
+        "target_interactions": 656
+      }
+    },
+    "4": {
+      "bm25": {
+        "users": 399,
+        "eligible_users": 399,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0027151211361737676,
+        "candidate_coverage": 0.004830917874396135,
+        "hit_rate": 0.007518796992481203,
+        "mean_candidate_set_size": 24.99749373433584,
+        "catalog_coverage": 0.013898369554801034,
+        "unique_items_retrieved": 9427,
+        "target_interactions": 621
+      },
+      "dense": {
+        "users": 399,
+        "eligible_users": 399,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.005221386800334169,
+        "candidate_coverage": 0.00644122383252818,
+        "hit_rate": 0.010025062656641603,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.013790744543927959,
+        "unique_items_retrieved": 9354,
+        "target_interactions": 621
+      },
+      "cf_plus_bm25": {
+        "users": 399,
+        "eligible_users": 399,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.01023391812865497,
+        "candidate_coverage": 0.011272141706924315,
+        "hit_rate": 0.015037593984962405,
+        "mean_candidate_set_size": 43.78947368421053,
+        "catalog_coverage": 0.024062298663828117,
+        "unique_items_retrieved": 16321,
+        "target_interactions": 621
+      },
+      "cf_plus_dense": {
+        "users": 399,
+        "eligible_users": 399,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.012740183792815371,
+        "candidate_coverage": 0.01288244766505636,
+        "hit_rate": 0.017543859649122806,
+        "mean_candidate_set_size": 43.87468671679198,
+        "catalog_coverage": 0.024040183935566527,
+        "unique_items_retrieved": 16306,
+        "target_interactions": 621
+      }
+    },
+    "1": {
+      "bm25": {
+        "users": 151,
+        "eligible_users": 151,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0011037527593818985,
+        "candidate_coverage": 0.002044989775051125,
+        "hit_rate": 0.006622516556291391,
+        "mean_candidate_set_size": 24.86092715231788,
+        "catalog_coverage": 0.005375353282783979,
+        "unique_items_retrieved": 3646,
+        "target_interactions": 489
+      },
+      "dense": {
+        "users": 151,
+        "eligible_users": 151,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0,
+        "candidate_coverage": 0.0,
+        "hit_rate": 0.0,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.005366507391479342,
+        "unique_items_retrieved": 3640,
+        "target_interactions": 489
+      },
+      "cf_plus_bm25": {
+        "users": 151,
+        "eligible_users": 151,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0011037527593818985,
+        "candidate_coverage": 0.002044989775051125,
+        "hit_rate": 0.006622516556291391,
+        "mean_candidate_set_size": 44.0,
+        "catalog_coverage": 0.009434143076394591,
+        "unique_items_retrieved": 6399,
+        "target_interactions": 489
+      },
+      "cf_plus_dense": {
+        "users": 151,
+        "eligible_users": 151,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0,
+        "candidate_coverage": 0.0,
+        "hit_rate": 0.0,
+        "mean_candidate_set_size": 44.09933774834437,
+        "catalog_coverage": 0.009429720130742274,
+        "unique_items_retrieved": 6396,
+        "target_interactions": 489
+      }
+    },
+    "2": {
+      "bm25": {
+        "users": 154,
+        "eligible_users": 154,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0021645021645021645,
+        "candidate_coverage": 0.002331002331002331,
+        "hit_rate": 0.006493506493506494,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.005502144391483765,
+        "unique_items_retrieved": 3732,
+        "target_interactions": 429
+      },
+      "dense": {
+        "users": 154,
+        "eligible_users": 154,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.0021645021645021645,
+        "candidate_coverage": 0.002331002331002331,
+        "hit_rate": 0.006493506493506494,
+        "mean_candidate_set_size": 25.0,
+        "catalog_coverage": 0.005412211163219964,
+        "unique_items_retrieved": 3671,
+        "target_interactions": 429
+      },
+      "cf_plus_bm25": {
+        "users": 154,
+        "eligible_users": 154,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.005411255411255411,
+        "candidate_coverage": 0.004662004662004662,
+        "hit_rate": 0.012987012987012988,
+        "mean_candidate_set_size": 44.20779220779221,
+        "catalog_coverage": 0.009597792065530363,
+        "unique_items_retrieved": 6510,
+        "target_interactions": 429
+      },
+      "cf_plus_dense": {
+        "users": 154,
+        "eligible_users": 154,
+        "empty_ground_truth": 0,
+        "candidate_recall": 0.005411255411255411,
+        "candidate_coverage": 0.004662004662004662,
+        "hit_rate": 0.012987012987012988,
+        "mean_candidate_set_size": 44.23376623376623,
+        "catalog_coverage": 0.009527024935093272,
+        "unique_items_retrieved": 6462,
+        "target_interactions": 429
+      }
+    }
+  },
+  "paired_candidate_recall_by_history": {
+    "dense_vs_bm25": {
+      "3": {
+        "mean_delta": -0.0008445945945945946,
+        "paired95_ci": [
+          -0.002533783783783784,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 1,
+        "unchanged": 295
+      },
+      "4": {
+        "mean_delta": 0.002506265664160401,
+        "paired95_ci": [
+          0.0,
+          0.007518796992481203
+        ],
+        "improved": 1,
+        "worse": 0,
+        "unchanged": 398
+      },
+      "1": {
+        "mean_delta": -0.0011037527593818985,
+        "paired95_ci": [
+          -0.0033112582781456954,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 1,
+        "unchanged": 150
+      },
+      "2": {
+        "mean_delta": 0.0,
+        "paired95_ci": [
+          0.0,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 0,
+        "unchanged": 154
+      }
+    },
+    "cf_plus_dense_vs_cf_plus_bm25": {
+      "3": {
+        "mean_delta": -0.0008445945945945946,
+        "paired95_ci": [
+          -0.002533783783783784,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 1,
+        "unchanged": 295
+      },
+      "4": {
+        "mean_delta": 0.002506265664160401,
+        "paired95_ci": [
+          0.0,
+          0.007518796992481203
+        ],
+        "improved": 1,
+        "worse": 0,
+        "unchanged": 398
+      },
+      "1": {
+        "mean_delta": -0.0011037527593818985,
+        "paired95_ci": [
+          -0.0033112582781456954,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 1,
+        "unchanged": 150
+      },
+      "2": {
+        "mean_delta": 0.0,
+        "paired95_ci": [
+          0.0,
+          0.0
+        ],
+        "improved": 0,
+        "worse": 0,
+        "unchanged": 154
+      }
+    }
+  },
+  "segment_metric_source": "derived from the saved fixed-cohort candidate_lists.jsonl; grouped by unique fit-history item count"
+}

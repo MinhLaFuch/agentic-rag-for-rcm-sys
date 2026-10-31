@@ -1,0 +1,180 @@
+{
+  "format_version": 1,
+  "created_at_unix": 1793456801.9314198,
+  "protocol": {
+    "tag": "multi_domain_v2_audit_20261030",
+    "evaluation_split": "validation",
+    "segment_definition": {
+      "cold": "0 unique train pairs",
+      "sparse": "1..4 unique train pairs",
+      "warm": ">4 unique train pairs"
+    },
+    "ground_truth": "unique observed evaluation user-item pairs; binary relevance",
+    "target_seen_policy": "reported separately; do not count seen targets as novel retrieval hits"
+  },
+  "mappings": {
+    "users": 23332162,
+    "items": 2637776,
+    "user_mapping_hash": "e9523cde0c00fd1093ff7b026fe9fb50ec88584ca6489c4647a370fffa029504",
+    "item_mapping_hash": "5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d",
+    "user_mapping_file_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+    "item_mapping_file_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803"
+  },
+  "environment": {
+    "python": "3.12.2",
+    "packages": {
+      "numpy": "2.5.4",
+      "pandas": "3.0.6",
+      "pyarrow": "18.1.0",
+      "PyYAML": "6.0.3",
+      "scipy": "1.18.1",
+      "httpx": "0.27.2"
+    },
+    "missing_or_out_of_constraint": []
+  },
+  "splits": {
+    "train": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\train.parquet",
+      "bytes": 1607020531,
+      "sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467"
+    },
+    "validation": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\validation.parquet",
+      "bytes": 309812597,
+      "sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81"
+    },
+    "test": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\test.parquet",
+      "bytes": 293320171,
+      "sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2"
+    }
+  },
+  "population": {
+    "train_rows": 48766894,
+    "unique_train_pairs": 48694801,
+    "duplicate_train_rows": 72093,
+    "evaluation_rows": 7787433,
+    "unique_evaluation_pairs": 7779830,
+    "evaluation_users_with_targets": 5096026,
+    "novel_evaluation_pairs": 7777161,
+    "seen_evaluation_pairs": 2669,
+    "segments": {
+      "cold": {
+        "users_with_targets": 2471043,
+        "target_pairs": 3282474,
+        "novel_target_pairs": 3282474,
+        "targets_seen_in_fit_pairs": 0,
+        "history_unique_items_min": 0,
+        "history_unique_items_median": 0.0,
+        "history_unique_items_max": 0
+      },
+      "sparse": {
+        "users_with_targets": 1919045,
+        "target_pairs": 2835072,
+        "novel_target_pairs": 2834054,
+        "targets_seen_in_fit_pairs": 1018,
+        "history_unique_items_min": 1,
+        "history_unique_items_median": 2.0,
+        "history_unique_items_max": 4
+      },
+      "warm": {
+        "users_with_targets": 705938,
+        "target_pairs": 1662284,
+        "novel_target_pairs": 1660633,
+        "targets_seen_in_fit_pairs": 1651,
+        "history_unique_items_min": 5,
+        "history_unique_items_median": 8.0,
+        "history_unique_items_max": 2370
+      }
+    }
+  },
+  "artifacts": {
+    "corpus": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\corpus_multi_domain_v2_audit_20261030.sqlite",
+      "exists": true,
+      "sha256": "004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8",
+      "sidecar": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\corpus_multi_domain_v2_audit_20261030.meta.json",
+      "sidecar_exists": true,
+      "sidecar_fields": {
+        "format_version": 2,
+        "artifact_sha256": "004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8",
+        "num_items": 2637776,
+        "coverage": 1.0,
+        "mapping_hash": "5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d",
+        "mapping_hash_protocol": "sorted_key_index_json_v1",
+        "source_hash_protocol": "sha256_file_bytes_v1"
+      },
+      "artifact_hash_matches_sidecar": true,
+      "mapping_hash_matches": true,
+      "quick_check": "ok",
+      "tables": [
+        "item_categories",
+        "items",
+        "items_fts",
+        "items_fts_config",
+        "items_fts_content",
+        "items_fts_data",
+        "items_fts_docsize",
+        "items_fts_idx"
+      ],
+      "items_rows": 2637776,
+      "fts_rows": 2637776,
+      "mapping_item_set_matches": true,
+      "mapping_items_missing_from_corpus": 0,
+      "corpus_items_missing_from_mapping": 0,
+      "fts_has_all_rows": true,
+      "compatible": true
+    },
+    "itemknn": {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain_v2_audit_20261030\\item_knn_multi_domain_v2_audit_20261030_validation.npz",
+      "exists": true,
+      "sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "meta_path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain_v2_audit_20261030\\item_knn_multi_domain_v2_audit_20261030_validation.meta.json",
+      "provenance": {
+        "scope": "dataset_bound",
+        "user_mapping_hash": "d38373ff5cac4820a6005d71a244d7c02cf6f13c09e87a344b8785cdefea509c",
+        "item_mapping_hash": "70c8a3c68264b57c54877a39f69a3250d72270dbfac180e1068d0e26bcdd812b",
+        "eval_on": "validation",
+        "fit_splits": [
+          "train_core"
+        ],
+        "tag": "multi_domain_v2_audit_20261030"
+      },
+      "artifact_hash_matches": true,
+      "mapping_hashes_match": true,
+      "mapping_scope": "fit_core",
+      "fit_split_hash_binding": {
+        "present": false,
+        "current_train_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467"
+      },
+      "expected_fit_splits": [
+        "train_core"
+      ],
+      "fit_splits_match": true,
+      "eval_split_matches": true,
+      "tag_matches": true,
+      "compatible": true,
+      "compatible_for_full_run": false,
+      "compatibility_note": "loader must recompute ItemKNN data hash against the recorded fit split rows before reuse"
+    },
+    "semantic_catalog": {
+      "path": null,
+      "exists": false,
+      "compatible": false,
+      "reason": "missing semantic artifact",
+      "corpus_matches": false
+    }
+  },
+  "readiness": {
+    "full_validation_population_defined": true,
+    "mapping_indices_validated_against_split_ranges": true,
+    "evaluation_environment_ready": true,
+    "corpus_ready": true,
+    "itemknn_provenance_compatible": true,
+    "current_metadata_sources_present": true,
+    "itemknn_cache_reusable_without_runtime_data_hash_check": false,
+    "semantic_ready": false,
+    "cold_users_have_fit_history_query": false,
+    "recommendation": "Use ranking_eval.py for validation on this tag and confirm the ItemKNN loader recomputes its data hash against the recorded fit rows. The corpus passed artifact, mapping, item-set, and FTS checks. A semantic catalog was not found; it is not required for a CF/corpus baseline. History-based CF/FTS is unavailable for cold users, so report that segment separately."
+  }
+}

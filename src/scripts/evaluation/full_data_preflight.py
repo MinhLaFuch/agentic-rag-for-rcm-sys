@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from package.config import get_data_paths, get_domains, load_config
+from package.tools.recommenders.fit_split_names import fit_split_names
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -149,7 +150,41 @@ def _corpus_check(path: Path, item2id: dict[str, int], expected_item_hash: str,
     return result
 
 
-def _artifact_check(path: Path | None, kind: str, item_hash: str, user_hash: str, split_hashes: dict) -> dict:
+def _expected_fit_splits(data_paths, eval_on: str) -> list[str]:
+    """Read the split protocol recorded for this tag, falling back to legacy rules."""
+    manifest_path = data_paths.splits_dir / "stage_3.manifest.json"
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("flags", {}).get("data_protocol") == "temporal_train_core":
+            return ["train_core"]
+    return fit_split_names(eval_on)
+
+
+def _expected_itemknn_mapping_hashes(data_paths, default_item_hash: str,
+                                    default_user_hash: str) -> tuple[str, str, str]:
+    """Use the fit-only mappings recorded by Stage 3 for temporal train-core caches."""
+    manifest_path = data_paths.splits_dir / "stage_3.manifest.json"
+    if not manifest_path.is_file():
+        return default_item_hash, default_user_hash, "full"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("flags", {}).get("data_protocol") != "temporal_train_core":
+        return default_item_hash, default_user_hash, "full"
+    records = {record.get("path", "").replace("\\", "/"): record
+               for record in manifest.get("outputs", [])}
+    tag_prefix = f"resource/mapped/{data_paths.tag}/fit_core/"
+    item_record = records.get(tag_prefix + "item2id.json", {})
+    user_record = records.get(tag_prefix + "user2id.json", {})
+    item_hash = item_record.get("mapping_hash")
+    user_hash = user_record.get("mapping_hash")
+    if not item_hash or not user_hash:
+        return default_item_hash, default_user_hash, "full_fallback_manifest_missing_fit_mapping_hash"
+    return item_hash, user_hash, "fit_core"
+
+
+def _artifact_check(path: Path | None, kind: str, item_hash: str, user_hash: str,
+                    split_hashes: dict, *, eval_on: str = "validation",
+                    expected_fit_splits: list[str] | None = None,
+                    expected_tag: str | None = None) -> dict:
     out = {"path": str(path.resolve()) if path else None, "exists": bool(path and path.exists())}
     if path is None or not path.exists():
         return out | {"compatible": False, "reason": f"missing {kind} artifact"}
@@ -165,13 +200,19 @@ def _artifact_check(path: Path | None, kind: str, item_hash: str, user_hash: str
         out["artifact_hash_matches"] = meta.get("artifact_sha256") == out["sha256"]
         out["mapping_hashes_match"] = (provenance.get("item_mapping_hash") == item_hash and
                                          provenance.get("user_mapping_hash") == user_hash)
+        out["mapping_scope"] = "fit_core" if expected_fit_splits == ["train_core"] else "full"
         # The cache metadata does not bind a split file hash. data_hash is only
         # validated by the loader against the rows loaded at runtime.
         out["fit_split_hash_binding"] = {"present": False, "current_train_sha256": split_hashes.get("train")}
+        expected_fit_splits = expected_fit_splits or fit_split_names(eval_on)
+        out["expected_fit_splits"] = expected_fit_splits
+        out["fit_splits_match"] = provenance.get("fit_splits") == expected_fit_splits
+        out["eval_split_matches"] = provenance.get("eval_on") == eval_on
+        out["tag_matches"] = provenance.get("tag") == expected_tag if expected_tag else bool(provenance.get("tag"))
         out["compatible"] = bool(out["artifact_hash_matches"] and out["mapping_hashes_match"]
-            and provenance.get("fit_splits") == ["train"] and provenance.get("eval_on") == "validation")
+            and out["fit_splits_match"] and out["eval_split_matches"] and out["tag_matches"])
         out["compatible_for_full_run"] = False
-        out["compatibility_note"] = "loader must recompute ItemKNN data hash against loaded train pairs before reuse"
+        out["compatibility_note"] = "loader must recompute ItemKNN data hash against the recorded fit split rows before reuse"
     else:
         manifest_path = path / "manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -230,15 +271,14 @@ def run(args) -> dict:
             "history_unique_items_max": int(train_history[ids].max()) if len(ids) else None,
         }
     corpus = _corpus_check(paths.corpus_path, item2id, item_hash, paths, domains)
-    knn_candidates = sorted(paths.experiments_dir.rglob("fit_item_knn.npz"))
-    itemknn_path = next((p for p in knn_candidates if p.with_suffix(".meta.json").is_file()
-        and (lambda m: m.get("provenance", {}).get("tag") == tag
-             and m.get("provenance", {}).get("eval_on") == args.eval_on
-             and m.get("provenance", {}).get("item_mapping_hash") == item_hash
-             and m.get("provenance", {}).get("user_mapping_hash") == user_hash
-             and m.get("provenance", {}).get("fit_splits") == ["train"])
-            (json.loads(p.with_suffix(".meta.json").read_text(encoding="utf-8")))), None)
-    itemknn = _artifact_check(itemknn_path, "itemknn", item_hash, user_hash, split_hashes)
+    itemknn_path = paths.item_knn_path(args.eval_on)
+    expected_fit_splits = _expected_fit_splits(paths, args.eval_on)
+    knn_item_hash, knn_user_hash, knn_mapping_scope = _expected_itemknn_mapping_hashes(
+        paths, item_hash, user_hash)
+    itemknn = _artifact_check(itemknn_path if itemknn_path.is_file() else None, "itemknn",
+        knn_item_hash, knn_user_hash, split_hashes, eval_on=args.eval_on,
+        expected_fit_splits=expected_fit_splits, expected_tag=tag)
+    itemknn["mapping_scope"] = knn_mapping_scope
     semantic_candidates = sorted(paths.experiments_dir.rglob("manifest.json"))
     semantic_path = next((p.parent for p in semantic_candidates if p.parent.name == "catalog_full"
         and (lambda m: m.get("identity", {}).get("mapping_hash") == item_hash
@@ -309,12 +349,13 @@ def run(args) -> dict:
             "mapping_indices_validated_against_split_ranges": True,
             "evaluation_environment_ready": not environment["missing_or_out_of_constraint"],
             "corpus_ready": bool(corpus.get("compatible")),
+            "itemknn_provenance_compatible": bool(itemknn.get("compatible")),
             "current_metadata_sources_present": bool(corpus.get("legacy_source_provenance") is None
                 or not corpus.get("legacy_source_provenance", {}).get("missing")),
             "itemknn_cache_reusable_without_runtime_data_hash_check": False,
             "semantic_ready": bool(semantic.get("compatible")),
             "cold_users_have_fit_history_query": False,
-            "recommendation": "Use ranking_eval.py with --no-prebuilt-corpus and a fresh checkpoint directory. It attempts an in-memory corpus build from current metadata without overwriting the legacy SQLite snapshot; confirm that build completes and coverage passes. ItemKNN is fitted and checkpointed against current train pairs. History-based CF/FTS is unavailable for cold users; report this segment separately."},
+            "recommendation": "Use ranking_eval.py for validation on this tag and confirm the ItemKNN loader recomputes its data hash against the recorded fit rows. The corpus passed artifact, mapping, item-set, and FTS checks. A semantic catalog was not found; it is not required for a CF/corpus baseline. History-based CF/FTS is unavailable for cold users, so report that segment separately."},
     }
 
 
