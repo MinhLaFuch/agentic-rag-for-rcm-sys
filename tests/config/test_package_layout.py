@@ -26,7 +26,7 @@ EXEMPT_DIRS = {"component", "component/benchmarks"}
 EXEMPT_FILES = {
     "package/config/load_config.py",
     "package/evaluation/build_run_provenance.py",
-    "package/evaluation/layer5_deployment/score_layer5_deployment.py",
+    "package/evaluation/layer5_deployment/layer5_deployment.py",
     "scripts/evaluation/run_agent_eval.py",
 }
 

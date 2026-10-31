@@ -7,6 +7,9 @@ from functools import lru_cache
 
 from ..config.load_config import ConfigError, load_config
 
+# Re-export from package.memory for backward compatibility
+from ..memory.limits import get_memory_limits, MemoryLimits
+
 
 @dataclass(frozen=True)
 class AgentLimits:
@@ -41,26 +44,3 @@ def get_agent_limits() -> AgentLimits:
         if getattr(limits, name) < 0:
             raise ConfigError(f"configs/agent/agent.yaml: {name} must be >= 0")
     return limits
-
-
-@dataclass(frozen=True)
-class MemoryLimits:
-    love_min_rating: int
-    hate_max_rating: int
-    top_n_loved_items: int
-    top_n_hated_items: int
-    top_n_categories: int
-    recent_items: int
-
-
-@lru_cache(maxsize=1)
-def get_memory_limits() -> MemoryLimits:
-    cfg = load_config("agent/memory")["memory"]
-    return MemoryLimits(
-        love_min_rating=int(cfg["love_min_rating"]),
-        hate_max_rating=int(cfg["hate_max_rating"]),
-        top_n_loved_items=int(cfg["top_n_loved_items"]),
-        top_n_hated_items=int(cfg["top_n_hated_items"]),
-        top_n_categories=int(cfg["top_n_categories"]),
-        recent_items=int(cfg["recent_items"]),
-    )
