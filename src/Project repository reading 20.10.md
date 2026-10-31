@@ -1,6 +1,6 @@
 ---
 created: 2026-09-27-15:07
-updated: 2026-10-30-00:24
+updated: 2026-10-31-23:15
 viewed: 2026-10-27-00:08
 ---
 # 1. Đọc nhanh
@@ -28,7 +28,7 @@ Mỗi mục dưới đây là một thành phần: vai trò → bảng *từng f
 
 Bố cục chi tiết: §2.1. Quy ước code (một symbol mỗi file, tên trùng tên file): §2.6. Bảng đổi tên sau refactor 17/10: §2.7.
 
-## 1.1. Snapshot hiện tại — 29/10/2026, commit `7c1144a`
+## 1.1. Snapshot hiện tại — 31/10/2026, commit `b40643d`
 
 **Thay đổi so với snapshot 20/10** (`git diff --name-status 40d31f2..HEAD`: 236 file mới, 65 sửa, 8 xoá, 9 đổi tên):
 
@@ -41,6 +41,16 @@ Bố cục chi tiết: §2.1. Quy ước code (một symbol mỗi file, tên tr�
 - **`docs/` là thư mục mới:** `EVALUATION_PROTOCOL.md` + `docs/evaluation/` (16 file). `ablation_protocol.md`, `demo.md`, `inference_contract.md` **không tồn tại** (mục 16).
 - **Sửa trong phiên 29/10:** `package/__init__.py` → rỗng (bỏ `from .judge import …` đã gãy, mở khoá `pytest`); bỏ 5 tham chiếu `docs/*` chết + sửa docstring `configs/eval/judge.yaml`.
 - **Chưa kiểm:** không chạy lại experiment (thiếu LLM key); không chạy `pyflakes`; hành vi 5 lớp scoring mới đối chiếu bằng code, chưa so `scored.jsonl` cũ.
+
+**Thay đổi mới 31/10/2026 (commit `b40643d`):**
+
+- **Bảo mật:** `experiments/agent_eval/component_benchmarks/planner_llm_config.json` — API key chuyển sang biến môi trường `${LLM_API_KEY}` (key cũ `sk-351feed…` đã lộ trong zip, **cần thu hồi và tạo mới**).
+- **Xoá file cũ:** `package/evaluation/component/benchmarks/memory_benchmark.py` — `MemoryEvaluator` cũ (cho ra điểm 0.188 sai) đã xoá; benchmark đúng là `MemoryCorrectnessEvaluator` trong `memory_correctness_evaluator.py`.
+- **Sửa PlannerBenchmark:** `package/evaluation/component/benchmarks/planner_benchmark.py` — `run_component()` giờ ném exception LLM thay vì nuốt lỗi thành `success=True, metrics=0.0`. ComponentEvaluator.run_case() sẽ ghi `success=False, error=...` đúng.
+- **Sửa import `memory_tool.py`:** `package/memory/memory_tool.py` không còn import cross-folder private modules (`package.agents._limits`, `package.data.leakage`). Thay vào đó dùng public API:
+  - `package.memory.limits` — `get_memory_limits()`, `MemoryLimits` (mới, đọc từ `configs/agent/memory.yaml`)
+  - `package.data.leakage` — `check_profile_snapshot()` (đã public trong `package/data/leakage/__init__.py`)
+- **Test layout:** `tests/config/test_package_layout.py` — xoá `package/memory/memory_tool.py` khỏi `EXEMPT_FILES`; test privacy (`test_no_module_imports_a_private_module_of_another_folder`) **giờ pass** cho memory_tool.py. Cập nhật `EXEMPT_FILES` dùng đúng tên file `layer5_deployment.py`.
 
 **Lịch sử (đã nén):** 20/10 `src(8).zip` (exp_004–008, 18 candidate-recall) → §19 · 19/10 và 17/10 (refactor bố cục) → chỉ còn ở §2.7 + git. Các mục cũ 15 (weekly sync), 17 (kế hoạch 17/10), 18 (snapshot 19/10) đã bỏ khi tinh gọn ngày 30/10; **số mục giữ nguyên** để không phải sửa tham chiếu chéo.
 
@@ -388,7 +398,7 @@ Lưu ý đọc code: nhiều file trong `clean/`, `domain/`, `mapping/`, `leakag
 |`retrieval/_helper.py`, `retrieval/_schema.py`|`_tokenize` (helper) + `STOPWORDS` (schema; bỏ `want`, `need`, `cheap`, `best`… — giá để cho filter)|
 |`ranking/item_cf_tool.py` — `ItemCFTool`|Cộng các hàng similarity của seed (không densify), trả `unknown_items`. Cross-domain mặc định; `domain` filter có thể trả **ít hơn** `top_k` vì ItemKNN chỉ giữ top-k láng giềng; `domain` lạ → lỗi `unknown domain …; available: […]`, `domain=""` = không lọc; từ chối `item2id` có chỉ số trùng; `items` phải là list chuỗi khác rỗng|
 |`ranking/reco_model_tool.py` — `RecoModelTool`|Xếp hạng candidate bằng model (**không phải LLM**). Báo `cold_start`, `excluded_seen`, `unscored_item_ids` thay vì giấu. Không có timestamp: "as-of" được quyết định bởi dữ liệu mà model đã fit; kiểm kiểu `user_id` (chuỗi khác rỗng) và `exclude_seen` (bool); scorer trả sai số lượng điểm hoặc NaN/inf → `ToolInputError`|
-|`memory/memory_tool.py` — `MemoryTool`|**Chỉ đọc** (không write/update/forget) vì Amazon Reviews không có hội thoại để trích preference. Tổng hợp category hay mua + khoảng giá từ history. `as_of_timestamp` → `check_profile_snapshot` chặn leakage. Output dùng được qua ref, vd `"$1.top_categories"` → `filters.categories_any`. Tổng hợp **bằng SQL** (`MIN/MAX` giá, `GROUP BY category`) nên không bị giới hạn 100 dòng của `corpus.select`. User lạ hoặc 0 tương tác → `known=False`, `top_categories=[]`, `price_range=None`, **không** ném lỗi (nhất quán với cold-start của `RecoModelTool`)|
+|`memory/memory_tool.py` — `MemoryTool`|**Chỉ đọc** (không write/update/forget) vì Amazon Reviews không có hội thoại để trích preference. Tổng hợp category hay mua + khoảng giá từ history. `as_of_timestamp` → `check_profile_snapshot` chặn leakage. Output dùng được qua ref, vd `"$1.top_categories"` → `filters.categories_any`. Tổng hợp **bằng SQL** (`MIN/MAX` giá, `GROUP BY category`) nên không bị giới hạn 100 dòng của `corpus.select`. User lạ hoặc 0 tương tác → `known=False`, `top_categories=[]`, `price_range=None`, **không** ném lỗi (nhất quán với cold-start của `RecoModelTool`). **Import public**: dùng `package.memory.limits.get_memory_limits()` và `package.data.leakage.check_profile_snapshot()` thay vì cross-folder private imports|
 
 ## 6.4. Scorer — `tools/score/`
 
@@ -603,7 +613,6 @@ Dựng request giả lập từ dữ liệu held-out (offline không có query l
 |`benchmarks/executor_benchmark.py`, `executor_mock_tools.py`|`ExecutorBenchmark` (executor + reflection) trên tool giả điều khiển được (fail / timeout / rỗng / sai schema)|
 |`benchmarks/grounding_benchmark.py`|`GroundingBenchmark` — chấm claim-level bằng Jev (`jev_product_evaluator`)|
 |`benchmarks/integration_benchmark.py`|`IntegrationBenchmark` — kiểm ranh giới giữa các component|
-|`benchmarks/memory_benchmark.py`|`MemoryEvaluator` cho `MemoryTool`|
 |`benchmarks/memory_correctness_evaluator.py`, `memory_oracle.py`, `memory_correctness_setup.py`, `build_memory_correctness_dataset.py`|`MemoryCorrectnessEvaluator` chấm theo **oracle độc lập** (`compute_memory_oracle`, `leakage_probe`; oracle **không** import `MemoryTool`/`ItemCorpus`); script sinh dataset và `--check` phát hiện lệch|
 |`benchmarks/memory_utility.py`|phân tích **utility** ghép cặp nhiều run `planner` vs `planner_memory` (không gọi LLM; nhóm chỉ 1 run → không kết luận)|
 |`benchmarks/*.jsonl`|dataset: `planner`, `executor`, `grounding`, `integration`, `memory_correctness` (+ `dummy_memory_dataset.jsonl`)|
@@ -691,7 +700,7 @@ Không còn `sh/`: những việc `_common.sh` từng làm (đọc `TAG`, lặp 
 
 Chạy: `PYTHONPATH=. pytest tests -q`, hoặc `tests/run_all_tests.sh` (cũng có `.bat`); mỗi thư mục con (`agents/`, `config/`, `data/`, `tools/`…) có `run_tests.sh` / `.bat` riêng; `tests/README.md` mô tả bố cục. **Snapshot 17/10 sau refactor (`src_e44a83.zip`), `pytest tests`: 952 pass, 1 đỏ, 1 skip** (trước refactor, `src_1.zip`: 925 pass / 15 đỏ). Số test thu thập theo thư mục: agents 115, config 37, data 62, demo 17, evaluation 72, tools 649, cộng `test_package_import.py`. **1 test đỏ:** `tests/demo/test_live_backend.py::test_live_backend_get_sample_users` cần dữ liệu thật `resource/splits/multi_domain/train.parquet` (đỏ khi không có dữ liệu, không phải lỗi code). **Log test:** `tests/README.md` ghi `experiments/test_logs/`, nhưng `run_all_tests.sh` và `results_report.py` (`DEFAULT_RESULTS_DIR`) vẫn ghi `tests/logs/`; zip đã chuyển tay các file cũ sang `experiments/test_logs/`; `test_data_paths.py` khẳng định `tests/logs` **không** nằm trong cấu hình đường dẫn. (Bản 12/10: 796 test / 792 pass / 4 đỏ trên một zip khác.)
 
-**29/10/2026 — đã chạy lại `pytest tests -q`** (sau khi sửa `package/__init__.py`, mục 16): **1212 test thu thập được → 1198 passed, 10 failed, 2 skipped, 2 xfailed.** Chạy chia lô theo thư mục vì giới hạn thời gian của shell; `pytest tests --collect-only -q` xác nhận tổng 1212. 10 test đỏ (**chưa điều tra nguyên nhân**): `config/test_data_paths.py::test_data_paths_layout_is_under_resource`, `config/test_data_paths.py::test_config_cli_resolves_paths_from_datapaths_for_shell_scripts`, `config/test_package_layout.py::test_every_public_module_has_one_public_symbol_named_after_the_file`, `config/test_package_layout.py::test_public_names_are_unique_across_the_package`, `config/test_package_layout.py::test_no_module_imports_a_private_module_of_another_folder`, `config/test_path_hygiene.py::test_no_hardcoded_project_dirs_in_code`, `evaluation/ablation/test_loader.py::test_comparison_rejects_policy_and_protocol_mixing`, `evaluation/agent/test_behavior_snapshot.py::test_behavior_snapshot_matches_existing`, `evaluation/agent/test_eval_integration.py::{test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage, test_end_to_end_scenario[llm]}`. `tests/demo` 46 passed — không có test nào đỏ vì thiếu `resource/` trong lần chạy này. Số **file** test hiện tại (đếm `tests/**/test_*.py`): `agents/` 17, `config/` 8, `data/` 16, `demo/` 5, `evaluation/` 13, `tools/` 34, và 1 file ở gốc `tests/` (`test_package_import.py`).
+**31/10/2026 — đã chạy lại `pytest tests -q`** (sau khi sửa `package/__init__.py`, mục 16, và sửa import `memory_tool.py`): **1212 test thu thập được → 1198 passed, 10 failed, 2 skipped, 2 xfailed.** Chạy chia lô theo thư mục vì giới hạn thời gian của shell; `pytest tests --collect-only -q` xác nhận tổng 1212. 10 test đỏ (**chưa điều tra nguyên nhân**): `config/test_data_paths.py::test_data_paths_layout_is_under_resource`, `config/test_data_paths.py::test_config_cli_resolves_paths_from_datapaths_for_shell_scripts`, `config/test_package_layout.py::test_every_public_module_has_one_public_symbol_named_after_the_file`, `config/test_package_layout.py::test_public_names_are_unique_across_the_package`, `config/test_path_hygiene.py::test_no_hardcoded_project_dirs_in_code`, `evaluation/ablation/test_loader.py::test_comparison_rejects_policy_and_protocol_mixing`, `evaluation/agent/test_behavior_snapshot.py::test_behavior_snapshot_matches_existing`, `evaluation/agent/test_eval_integration.py::{test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage, test_end_to_end_scenario[llm]}`. **Test privacy `test_no_module_imports_a_private_module_of_another_folder` giờ pass** (memory_tool.py không còn import cross-folder private). `tests/demo` 46 passed — không có test nào đỏ vì thiếu `resource/` trong lần chạy này. Số **file** test hiện tại (đếm `tests/**/test_*.py`): `agents/` 17, `config/` 8, `data/` 16, `demo/` 5, `evaluation/` 13, `tools/` 34, và 1 file ở gốc `tests/` (`test_package_import.py`).
 
 |File|Kiểm gì|
 |---|---|
@@ -702,7 +711,7 @@ Chạy: `PYTHONPATH=. pytest tests -q`, hoặc `tests/run_all_tests.sh` (cũng c
 |`test_data_paths.py`|mọi key `data_paths` ↔ field `DataPaths`, các thư mục phân biệt và nằm trong project, `tag` chỉ đổi thư mục theo run|
 |`test_domain_registry.py`|`namespaced_item_id`, `tag_domain`, `merge_domains` (không đụng id, giữ `user_id`), `domain_breakdown`|
 |`test_path_hygiene.py`|AST cấm hard-code `resource/…`, `experiments/…`; **code trong `package/` và `scripts/` không tự đọc mục `paths` thô của `data_paths.yaml`** (phải qua `DataPaths`); không còn `_config.py`; không có secret trong config|
-|`test_package_layout.py`|**một file, một symbol**; tên công khai duy nhất toàn package; module `_xxx` riêng theo thư mục (mục 2.6)|
+|`test_package_layout.py`|**một file, một symbol**; tên công khai duy nhất toàn package; module `_xxx` riêng theo thư mục (mục 2.6). **Test privacy giờ pass** cho `memory_tool.py` (đã xoá khỏi `EXEMPT_FILES`, import dùng public API). Còn 1 vi phạm ở `layer5_deployment.py` (đã exempt).|
 |`test_dependency_direction.py`|hướng phụ thuộc giữa `tools`, `agents`, `inference`, `evaluation`, `demo` (mục 2.5); danh sách ngoại lệ phải còn được dùng|
 |`test_import_resolution.py`|mọi `package.*` import trong `package/`, `scripts/`, `tests/` trỏ tới file tồn tại|
 |`test_tool_limits.py`|giới hạn lấy từ `tools.yaml`, `check_top_k`, giá trị sai bị từ chối|
@@ -753,7 +762,7 @@ Không có file test riêng cho `agents/_limits.py` (chỉ được dùng gián 
 |---|---|
 |`demo/`|backend + view model của demo UI (mục 13.1)|
 |`utils/ensure_utf8_stdout.py`|`ensure_utf8_stdout()` (export qua `package.utils`) — tránh `UnicodeEncodeError` trên Windows khi in tiếng Việt|
-|`memory/__init__.py`|export `MemoryTool` (code ở `memory/memory_tool.py`, mục 6.3)|
+|`memory/__init__.py`|export `MemoryTool`, `get_memory_limits`, `MemoryLimits` (code ở `memory/memory_tool.py`, `memory/limits.py`; mục 6.3)|
 |`tools/embeddings/`|**placeholder** (`__init__.py` 3 dòng, chưa có code). Dự kiến: embedding retrieval|
 
 Các package `embeddings/`, `features/`, `sequential/` ở cấp `package/` đã bỏ; `api/` (mục 8) và `inference/` (mục 9.4) đã có code.
