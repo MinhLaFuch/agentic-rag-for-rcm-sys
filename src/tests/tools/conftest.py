@@ -63,6 +63,7 @@ def world() -> World:
     meta = pd.DataFrame(
         {
             "parent_asin": ["A1", "B2", "C3", "D4", "A1", "E5"],
+            "first_seen_ts": [1, 1, 1, 1, 1, 1],
             "domain": ["Games"] * 4 + ["Toys"] * 2,
             "title": [
                 "Quiet Mechanical Keyboard", "Wireless Gaming Mouse", "Gaming Headset",

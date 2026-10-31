@@ -42,6 +42,29 @@ class DemoResult:
     usage: dict[str, Any]
     error: str | None  # thông báo lỗi rút gọn (chỉ khi status="tool_error")
     recommendation_source: str | None = None
+    memory: MemoryView | None = None
+
+
+@dataclass
+class DemoProfile:
+    """Profile người dùng cho demo UI."""
+    profile_id: str
+    label: str
+    description: str
+    user_id: str | None  # None = blank profile (new user)
+    segment: str  # "blank", "cold", "sparse", "warm", hoặc custom
+
+
+@dataclass
+class MemoryView:
+    """View của memory tool cho UI."""
+    enabled: bool
+    called: bool
+    n_calls: int
+    before: dict[str, Any] | None
+    after: dict[str, Any] | None
+    agent_calls: list[dict[str, Any]]
+    consumed_by: list[dict[str, Any]]
 
 
 @dataclass
@@ -52,5 +75,7 @@ class DemoRequest:
     reflect_rounds: int  # 0 hoặc 1
     use_memory: bool
     mode: str  # "planner" hoặc "type1"
+    inference_mode: str = "llm"  # "llm" hoặc "template"
+    profile_id: str | None = None
     intent_query: str | None = None
     intent_filters: dict[str, Any] | None = None

@@ -7,11 +7,11 @@ import json
 import subprocess
 from typing import Any
 
-from ..agents._limits import get_agent_limits
-from ..agents.planner._prompt import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
-from ..agents.toolkit.build_tool_prompt import build_tool_prompt
-from ..inference._limits import get_inference_limits
-from ..inference.compose._prompt import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
+from ..agents import get_agent_limits
+from ..agents.planner import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
+from ..agents.toolkit import build_tool_prompt
+from ..inference import get_inference_limits
+from ..inference.compose import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
 from ..tools.base import Tool
 
 

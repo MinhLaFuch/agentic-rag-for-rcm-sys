@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+from package.config import get_data_paths
 
 
 def link_component_to_e2e(
@@ -133,14 +134,14 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Link component results with end-to-end results")
-    parser.add_argument("--component-dir", type=str, default=None, help="Directory with component results (default: experiments/agent_eval/component_benchmarks)")
+    parser.add_argument("--component-dir", type=str, default=None, help="Directory with component results (defaults to configured evaluation artifacts)")
     parser.add_argument("--e2e-file", type=str, help="Path to end-to-end results JSON")
-    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
+    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (defaults to configured evaluation artifacts)")
     args = parser.parse_args()
 
-    # Default to experiments directory
+    default_dir = get_data_paths().experiments_dir / "agent_eval" / "component_benchmarks"
     if args.output_dir is None:
-        output_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        output_dir = default_dir
     else:
         output_dir = Path(args.output_dir)
     
@@ -148,7 +149,7 @@ def main():
 
     # Default component dir
     if args.component_dir is None:
-        component_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        component_dir = default_dir
     else:
         component_dir = Path(args.component_dir)
 

@@ -6,7 +6,8 @@ from ..recommenders.fit_provenance import fit_provenance
 
 
 def evaluation_protocol(*, eval_on, tag, fit_df, target_df, user2id, item2id,
-                        segments, sampled, metadata_policy, evaluation_kind="ranking"):
+                        segments, sampled, metadata_policy, evaluation_kind="ranking",
+                        cohort_policy="existing pre-split filtered cohort; future-informed selection"):
     if fit_df.empty or target_df.empty or "timestamp" not in fit_df or "timestamp" not in target_df:
         raise ValueError("non-empty fit/target with timestamps required")
     for frame in (fit_df, target_df):
@@ -23,7 +24,7 @@ def evaluation_protocol(*, eval_on, tag, fit_df, target_df, user2id, item2id,
         "target_timestamp_min": int(target_df.timestamp.min()),
         "metadata_policy": metadata_policy,
         "label_policy": "all observed review user-item pairs are binary positives, independent of stars",
-        "cohort_policy": "existing pre-split filtered cohort; future-informed selection",
+        "cohort_policy": cohort_policy,
         "history_size": "unique fit items, consistent with binary CSR",
         "segment_population_users": dict(Counter(segments.values())),
         "segment_sample_users": {s: len(us) for s, us in sampled.items()},

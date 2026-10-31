@@ -18,6 +18,7 @@ import yaml
 from package.agents import Type1Agent,get_agent_limits
 from package.agents.type1.recent_seed_items import recent_seed_items
 from package.config import get_data_paths,get_domains,load_config
+from package.data import build_first_seen_timestamps
 from package.data.mapping import load_mappings
 from package.tools import ItemCFTool,RecoModelTool,QueryTool,SemanticSearchTool
 from package.tools.base import ToolResult
@@ -354,8 +355,11 @@ def main():
         model=load_item_knn(args.item_knn,neighbors,train[["user_idx","item_idx"]],user2id=users,item2id=items,eval_on="validation",tag=d["tag"])
         if model._fit_data_hash!=cfg["retrieval"]["item_knn_fit_data_hash"]: raise ValueError("fit hash mismatch")
         print("[corpus] building current snapshot, matching live demo metadata policy",flush=True)
-        corpus,_,coverage=build_corpus([(domain,str(paths.meta_path(domain))) for domain in get_domains()],items,
-                                       float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]))
+        meta_files = [(domain,str(paths.meta_path(domain))) for domain in get_domains()]
+        first_seen_ts = build_first_seen_timestamps([(domain, paths.cleaned_path(domain)) for domain, _ in meta_files])
+        corpus,_,coverage=build_corpus(meta_files,items,
+                                       float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+                                       first_seen_ts=first_seen_ts)
         tools=(ItemCFTool(model,items,corpus=corpus),RecoModelTool(BaselineScorer(model),users,items,corpus=corpus),QueryTool(corpus))
         search=SemanticSearchTool(corpus,exact_count=not runtime_rrf) if content else None
         counted_search=SemanticSearchTool(corpus) if runtime_rrf else None

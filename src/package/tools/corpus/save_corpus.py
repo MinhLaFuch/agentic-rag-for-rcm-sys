@@ -21,6 +21,8 @@ def save_corpus(
     min_coverage: float,
     coverage: float,
     build_times: dict[str, float],
+    coverage_by_domain: dict | None = None,
+    duplicates_dropped_by_domain: dict[str, int] | None = None,
 ) -> float:
     """Save ItemCorpus to SQLite file with metadata validation.
 
@@ -54,13 +56,20 @@ def save_corpus(
         "format_version": 2,
         "source_hash_protocol": "sha256_file_bytes_v1",
         "source_domains": [domain for domain, _ in meta_files],
-        "metadata_temporal_validity": "unverified",
+        "metadata_temporal_validity": "first_seen proxy only; static metadata validity unverified",
+        "first_seen_protocol": "minimum_timestamp_per_namespaced_item_in_all_cleaned_interactions_v1",
+        "num_items_with_first_seen_ts": int(corpus._conn.execute(
+            "SELECT COUNT(*) FROM items WHERE first_seen_ts IS NOT NULL"
+        ).fetchone()[0]),
+        "first_seen_definition": "minimum event timestamp in cleaned interactions; not a launch/availability date",
         "mapping_hash_protocol": "sorted_key_index_json_v1",
         "schema_fingerprint": get_corpus_schema_fingerprint(),
         "logic_version": CORPUS_LOGIC_VERSION,
         "num_items": len(item2id),
         "min_coverage": min_coverage,
         "coverage": coverage,
+        "coverage_by_domain": coverage_by_domain or {},
+        "metadata_duplicates_dropped_by_domain": duplicates_dropped_by_domain or {},
         "source_hashes": source_hashes,
         "mapping_hash": assignment_hash,
         "build_times": build_times,

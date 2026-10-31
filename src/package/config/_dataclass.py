@@ -50,6 +50,18 @@ class DataPaths:
     def cleaned_path(self, domain: str) -> Path:
         return self.cleaned_dir / domain / INTERACTIONS_FILE
 
+    def stage1_manifest_path(self, domain: str, *, tag_scoped: bool = False) -> Path:
+        """Return the Stage 1 manifest for this tag, falling back to the legacy shared path.
+
+        Stage 1 cleaned Parquet files are shared across downstream tags, so their provenance
+        manifests must be tag-scoped to let multiple immutable pipeline runs coexist.
+        """
+        domain_dir = self.cleaned_path(domain).parent
+        scoped = domain_dir / "manifests" / self.tag / "stage_1.manifest.json"
+        if tag_scoped or scoped.is_file():
+            return scoped
+        return domain_dir / "stage_1.manifest.json"
+
     @property
     def filtered_path(self) -> Path:
         return self.filtered_dir / INTERACTIONS_FILE

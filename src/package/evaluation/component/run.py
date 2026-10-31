@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
 from ._schema import BenchmarkSummary
 from ._regression import compare_benchmarks, format_regression_report
+from package.config import get_data_paths
 
 
 def get_git_sha() -> str:
@@ -144,8 +145,7 @@ def run_benchmark_cli() -> None:
         output_path = Path(args.output)
     else:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        # Default to experiments directory
-        experiments_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        experiments_dir = get_data_paths().experiments_dir / "agent_eval" / "component_benchmarks"
         experiments_dir.mkdir(parents=True, exist_ok=True)
         output_path = experiments_dir / f"{args.component}_benchmark_{timestamp}.json"
 

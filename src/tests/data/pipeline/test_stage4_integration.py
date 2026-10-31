@@ -72,7 +72,7 @@ def test_stage4_skip_corpus_skips_corpus_building(tmp_path):
 
     # Build with skip_corpus - should not create corpus file
     from package.data.pipeline import build_artifacts
-    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True)
+    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True, allow_manifest_mismatch=True)
 
     assert "corpus" in report
     assert report["corpus"] == {}  # Empty because skipped

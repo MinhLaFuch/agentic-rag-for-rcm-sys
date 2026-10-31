@@ -15,6 +15,8 @@ agent_eval:
   price_slack: 1.25     # ngân sách của request "constrained" = giá item bị giấu x hệ số này, làm tròn lên
   price_round_to: 5     # bội số làm tròn của ngân sách (đơn vị USD)
   min_metadata_coverage: 0.5      # dưới tỉ lệ item mapping có metadata này thì dừng (sai file meta / sai định dạng id)
+  # Per-domain overrides; domains not listed inherit min_metadata_coverage.
+  min_metadata_coverage_by_domain: {}
   trajectory_error_chars: 300     # lỗi của step / plan bị cắt còn chừng này ký tự trong file trajectory (cùng mức inference.reason_chars)
   max_consecutive_llm_errors: 5   # lỗi provider (timeout/auth...) liên tiếp từng này lần thì dừng cả lần chạy
   experiments_subdir: "agent_eval"                  # nằm trong data_paths.paths.experiments_dir

@@ -22,12 +22,12 @@ def _create_synthetic_review_data(tmp_dir: Path, domain: str, num_rows: int = 10
             "user_id": f"u{((i // 5) % 10)}",  # Some users with sparse interactions
             "parent_asin": f"i{i % 20}",  # Some items with sparse interactions
             "rating": 5.0 if i % 2 == 0 else 4.0,
-            "timestamp": 1000 + i * 10,
+            "timestamp": 900000000000 + i * 10,
             "title": f"Title {i}",
         })
     # Add some problematic rows
-    rows.append({"user_id": "u_bad", "parent_asin": "i1", "rating": None, "timestamp": 2000, "title": "bad"})  # missing rating
-    rows.append({"user_id": "u1", "parent_asin": "i1", "rating": 5.0, "timestamp": 1000, "title": "dup"})  # duplicate
+    rows.append({"user_id": "u_bad", "parent_asin": "i1", "rating": None, "timestamp": 900000000000, "title": "bad"})  # missing rating
+    rows.append({"user_id": "u1", "parent_asin": "i1", "rating": 5.0, "timestamp": 900000000000, "title": "dup"})  # duplicate
 
     path = tmp_dir / f"{domain}.jsonl.gz"
     with gzip.open(path, "wt", encoding="utf-8") as f:
@@ -266,7 +266,7 @@ def test_pipeline_k_core_blocked():
                     "user_id": f"u{i}",
                     "parent_asin": f"i{i}",
                     "rating": 5.0,
-                    "timestamp": 1000 + i * 10,
+                    "timestamp": 900000000000 + i * 10,
                     "title": f"Title {i}",
                 }) + "\n")
 

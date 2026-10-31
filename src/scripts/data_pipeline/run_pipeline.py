@@ -43,6 +43,13 @@ def main() -> None:
     )
     parser.add_argument("--tag", help="Run tag (default: tag from run_tag.yaml). Used for stages 2 and 3.")
     parser.add_argument("--force", action="store_true", help="Overwrite existing outputs.")
+    protocol = parser.add_mutually_exclusive_group()
+    protocol.add_argument("--temporal-train-core", action="store_true",
+                          help="Opt in: Stage 2 skips k-core; Stage 3 uses fixed cutoffs and creates train-only fit-core.")
+    protocol.add_argument("--legacy-kcore-before-split", action="store_true",
+                          help="Explicitly use the legacy pre-split k-core + quantile split (also the default).")
+    parser.add_argument("--allow-manifest-mismatch", action="store_true", help="Continue after upstream manifest mismatch/missing manifest; records a warning in output manifest.")
+    parser.add_argument("--scratch-dir", help="Scratch directory for disk-backed Stage 3 (temporal_train_core).")
     parser.add_argument(
         "--chunk-size",
         type=int,
@@ -93,6 +100,7 @@ def main() -> None:
         parser.error("--chunk-size must be a positive integer")
 
     paths = get_data_paths(tag)
+    data_protocol = "temporal_train_core" if args.temporal_train_core else "legacy_kcore_before_split"
 
     # Fail-fast checks before running any stage
     errors = []
@@ -171,12 +179,15 @@ def main() -> None:
 
         if 2 in stages:
             stage_start = time.time()
-            merge_filter_domains(paths, domains, force=args.force, cold_start_report=args.cold_start_report)
+            merge_filter_domains(paths, domains, force=args.force, cold_start_report=args.cold_start_report,
+                                 allow_manifest_mismatch=args.allow_manifest_mismatch,
+                                 legacy_kcore_before_split=(data_protocol == "legacy_kcore_before_split"))
             stage_times[2] = time.time() - stage_start
 
         if 3 in stages:
             stage_start = time.time()
-            map_split(paths, force=args.force)
+            map_split(paths, force=args.force, allow_manifest_mismatch=args.allow_manifest_mismatch,
+                      data_protocol=data_protocol, scratch_dir=args.scratch_dir)
             stage_times[3] = time.time() - stage_start
 
         if 4 in stages:
@@ -189,6 +200,7 @@ def main() -> None:
                 skip_corpus=args.skip_corpus,
                 skip_item_knn=args.skip_item_knn,
                 force=args.force,
+                allow_manifest_mismatch=args.allow_manifest_mismatch,
             )
             stage_times[4] = time.time() - stage_start
 

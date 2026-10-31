@@ -5,12 +5,17 @@ from .mapping_hash import mapping_hash
 from .fit_split_names import fit_split_names
 
 
-def fit_provenance(fit_pairs, *, user2id=None, item2id=None, eval_on=None, tag=None) -> dict:
+def fit_provenance(fit_pairs, *, user2id=None, item2id=None, eval_on=None, tag=None, fit_splits=None) -> dict:
     """Unmapped synthetic models remain usable; dataset-bound loads require mappings."""
     if (user2id is None) != (item2id is None):
         raise ValueError("provide both user2id and item2id")
     if eval_on is not None and (user2id is None or not tag):
         raise ValueError("dataset-bound provenance requires mappings and tag")
+    if fit_splits is not None:
+        if eval_on is None or not isinstance(fit_splits, (list, tuple)) or not fit_splits:
+            raise ValueError("fit_splits override requires dataset-bound provenance and a non-empty list")
+        if any(not isinstance(name, str) or not name.strip() for name in fit_splits):
+            raise ValueError("fit_splits must contain non-empty strings")
     nu = int(fit_pairs.user_idx.max()) + 1 if len(fit_pairs) else 0
     ni = int(fit_pairs.item_idx.max()) + 1 if len(fit_pairs) else 0
     if user2id is not None and (nu > len(user2id) or ni > len(item2id)):
@@ -19,7 +24,8 @@ def fit_provenance(fit_pairs, *, user2id=None, item2id=None, eval_on=None, tag=N
         "scope": "dataset_bound" if eval_on is not None else "numeric_pairs_only",
         "user_mapping_hash": mapping_hash(user2id) if user2id is not None else None,
         "item_mapping_hash": mapping_hash(item2id) if item2id is not None else None,
-        "eval_on": eval_on, "fit_splits": fit_split_names(eval_on) if eval_on else None,
+        "eval_on": eval_on,
+        "fit_splits": list(fit_splits) if fit_splits is not None else (fit_split_names(eval_on) if eval_on else None),
         "tag": tag,
     }
 

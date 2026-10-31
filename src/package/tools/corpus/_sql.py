@@ -15,6 +15,7 @@ CREATE TABLE items (
     item_id TEXT PRIMARY KEY,
     domain TEXT NOT NULL,
     original_item_id TEXT,
+    first_seen_ts INTEGER,
     title TEXT,
     store TEXT,
     price REAL,
@@ -70,7 +71,7 @@ FROM items i
 # ---- schema fingerprint ------------------------------------------------- #
 
 # Version of the from_dataframe logic - increment when changing construction logic
-CORPUS_LOGIC_VERSION = 1
+CORPUS_LOGIC_VERSION = 2
 
 # Fingerprint of the schema (CREATE TABLE, CREATE INDEX, FTS) - used to detect outdated corpus files
 # This hash is computed from the SQL strings above; if _sql.py changes, regenerate this hash.

@@ -91,6 +91,13 @@ class RecoModelTool(Tool):
                 else:
                     scorable.append(i)
 
+        temporal_policy = getattr(self.corpus, "_evaluation_metadata_policy", None) or {}
+        if self.corpus is not None and temporal_policy.get("first_seen_filter") and scorable:
+            visible = set(self.corpus.item_domains(scorable))
+            hidden = [item_id for item_id in scorable if item_id not in visible]
+            unscored.extend(hidden)
+            scorable = [item_id for item_id in scorable if item_id in visible]
+
         excluded_seen: list[str] = []
         if exclude_seen and not cold_start:
             seen = self.scorer.seen_items(user_idx)

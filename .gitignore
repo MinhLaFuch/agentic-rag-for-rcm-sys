@@ -20,3 +20,6 @@ resource
 /src/experiments/sparse_content_eval/exp_*/requests.jsonl
 /src/experiments/sparse_content_replay/exp_*/replays.jsonl
 /src/experiments/sparse_guard_replay/exp_*/replays.jsonl
+
+# Semantic retrieval evaluations persist full candidate payloads locally.
+/src/experiments/semantic_candidate_eval/exp_*/candidate_lists.jsonl

@@ -8,6 +8,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from package.config import get_data_paths
 
 
 def run_all_benchmarks(
@@ -215,12 +216,12 @@ def main():
 
     parser = argparse.ArgumentParser(description="Run all component benchmarks and generate unified report")
     parser.add_argument("--runs", type=int, default=1, help="Number of runs per benchmark")
-    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
+    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (defaults to configured evaluation artifacts)")
     args = parser.parse_args()
 
-    # Default to experiments directory
+    # Use the configured artifact root so relocation does not require code edits.
     if args.output_dir is None:
-        output_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        output_dir = get_data_paths().experiments_dir / "agent_eval" / "component_benchmarks"
     else:
         output_dir = Path(args.output_dir)
     

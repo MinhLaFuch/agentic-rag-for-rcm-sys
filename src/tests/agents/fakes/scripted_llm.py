@@ -38,6 +38,11 @@ class ScriptedLLM(LLMProvider):
         """List of calls with messages and parameters."""
         return self._calls
 
+    @property
+    def replies(self) -> list[str | None | LLMProviderError]:
+        """Mutable pending response queue for answer-composition tests."""
+        return self._script
+
     def complete(
         self,
         messages: list[LLMMessage],

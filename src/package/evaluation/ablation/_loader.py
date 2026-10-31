@@ -122,6 +122,14 @@ def check_compatibility(
     if dataset_a.get("eval_on") != dataset_b.get("eval_on"):
         return False, f"eval_on mismatch: {dataset_a.get('eval_on')} vs {dataset_b.get('eval_on')}"
 
+    protocol_a = cfg_a.get("protocol")
+    protocol_b = cfg_b.get("protocol")
+    if protocol_a is not None and protocol_b is not None:
+        if protocol_a.get("metadata_policy") != protocol_b.get("metadata_policy"):
+            return False, "metadata_policy mismatch"
+    if protocol_a != protocol_b:
+        return False, "protocol mismatch"
+
     if cfg_a.get("language") != cfg_b.get("language"):
         return False, f"language mismatch: {cfg_a.get('language')} vs {cfg_b.get('language')}"
 

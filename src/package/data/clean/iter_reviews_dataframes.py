@@ -25,6 +25,7 @@ def iter_reviews_dataframes(
         lines=True,
         compression="infer",
         convert_dates=False,
+        dtype={"user_id": "string", "parent_asin": "string"},
         chunksize=chunksize,
     )
     for df in reader:

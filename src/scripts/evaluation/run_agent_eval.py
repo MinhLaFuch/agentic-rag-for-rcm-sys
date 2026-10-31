@@ -52,13 +52,14 @@ from package.evaluation import (
     score_trajectory,
     summarize,
 )
-from package.evaluation._schema import EVAL_SCHEMA_VERSION
+from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.build_run_provenance import build_run_provenance
-from package.config import get_data_paths, load_config
+from package.config import get_data_paths, get_domains, load_config
 from package.config.load_config import ConfigError
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
+from package.data.manifest import verify_tag_manifest
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.api import build_llm_provider
@@ -73,6 +74,7 @@ from package.tools.recommenders import ItemKNNRecommender
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.evaluation.cohort_policy_for_tag import cohort_policy_for_tag
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.recommenders.mapping_hash import mapping_hash
 
@@ -217,6 +219,11 @@ def main() -> None:
     per_segment = args.per_segment or int(cfg["per_segment"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     data_paths = get_data_paths(args.tag)
+    tag_manifest = verify_tag_manifest(data_paths, domains=get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
@@ -244,7 +251,13 @@ def main() -> None:
     knn_artifact_status = "fit_fresh_no_prebuilt"
     if args.no_prebuilt:
         print("Build corpus in RAM (--no-prebuilt)")
-        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
+        first_seen_ts = build_first_seen_timestamps(
+            [(domain, data_paths.cleaned_path(domain)) for domain, _ in meta_files]
+        )
+        corpus, meta, coverage, build_times = build_corpus(
+            meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True,
+            first_seen_ts=first_seen_ts,
+        )
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:
         corpus_path = data_paths.corpus_path
@@ -266,7 +279,8 @@ def main() -> None:
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
-        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent")
+        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent",
+        cohort_policy=cohort_policy_for_tag(data_paths.tag))
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
@@ -418,7 +432,8 @@ def main() -> None:
     }
     exp_dir = save_experiment(
         next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
-        config={"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+        config={"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": args.request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,

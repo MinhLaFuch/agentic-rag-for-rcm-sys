@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from pandas.api.types import union_categoricals
 
 
 def merge_domains(tagged_dfs: list[pd.DataFrame]) -> pd.DataFrame:
@@ -23,4 +24,28 @@ def merge_domains(tagged_dfs: list[pd.DataFrame]) -> pd.DataFrame:
             "trước khi merge."
         )
 
-    return pd.concat(tagged_dfs, ignore_index=True)
+    # Keep category-encoded item/domain columns encoded across domains. Pandas
+    # otherwise may coerce categories with different vocabularies to object,
+    # recreating one Python object per event during concat.
+    categorical_columns = [
+        column
+        for column in ("parent_asin", "original_item_id", "domain")
+        if all(
+            column in frame.columns and isinstance(frame[column].dtype, pd.CategoricalDtype)
+            for frame in tagged_dfs
+        )
+    ]
+    aligned = tagged_dfs
+    if categorical_columns:
+        category_sets = {
+            column: union_categoricals([frame[column].array for frame in tagged_dfs]).categories
+            for column in categorical_columns
+        }
+        aligned = []
+        for frame in tagged_dfs:
+            view = frame.copy(deep=False)
+            for column, categories in category_sets.items():
+                view[column] = frame[column].cat.set_categories(categories)
+            aligned.append(view)
+
+    return pd.concat(aligned, ignore_index=True)

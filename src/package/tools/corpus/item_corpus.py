@@ -37,6 +37,7 @@ from ._sql import (
     CATEGORIES_TABLE_SCHEMA,
     FTS_POPULATE_SQL,
     FTS_TABLE_SCHEMA,
+    ITEMS_TABLE_SCHEMA,
     ITEMS_INDEXES,
 )
 
@@ -121,6 +122,7 @@ class ItemCorpus:
         for col in ITEM_COLUMNS:
             if col not in df.columns:
                 df[col] = None
+        df["first_seen_ts"] = pd.to_numeric(df["first_seen_ts"], errors="coerce")
         df["price"] = pd.to_numeric(
             df["price"].astype("string").str.replace(r"[$,]", "", regex=True), errors="coerce"
         )  # "19.99" -> 19.99 ; null / ranges -> NaN -> NULL
@@ -128,7 +130,8 @@ class ItemCorpus:
         df["rating_number"] = numeric_column(df["rating_number"], "rating_number")
 
         conn = sqlite3.connect(":memory:")
-        df[list(ITEM_COLUMNS)].to_sql("items", conn, index=False)
+        conn.execute(ITEMS_TABLE_SCHEMA)
+        df[list(ITEM_COLUMNS)].to_sql("items", conn, if_exists="append", index=False)
 
         cats = df["categories"] if "categories" in df.columns else pd.Series([None] * len(df))
         rows = []

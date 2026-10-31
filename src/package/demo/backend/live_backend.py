@@ -13,8 +13,8 @@ from package.agents.type1.recommend_from_intent import recommend_from_intent
 from package.agents.type1.recent_seed_items import recent_seed_items
 from package.api import build_llm_provider
 from package.api import LLMProviderError
-from package.config import get_data_paths, load_config
-from package.data import ITEM_ID_SEPARATOR
+from package.config import get_data_paths, get_domains, load_config
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
@@ -29,6 +29,7 @@ from package.tools.recommenders.fit_provenance import fit_provenance
 from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from ..adapter import adapt_from_plan_executor
 from ..adapter import adapt_from_plan_executor_error
+from .._profile_builder import build_profiles
 from ..view import DemoItem, DemoRequest, DemoResult, DemoTrace
 
 
@@ -117,7 +118,14 @@ class LiveBackend:
             print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
         else:
             print("Build corpus in RAM (--no-prebuilt)")
-            corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]), timing=True)
+            corpus_domains = self._domain or get_domains()
+            first_seen_ts = build_first_seen_timestamps(
+                [(domain, data_paths.cleaned_path(domain)) for domain in corpus_domains]
+            )
+            corpus, meta, coverage, build_times = build_corpus(
+                meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]), timing=True,
+                first_seen_ts=first_seen_ts,
+            )
             print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
         # Build item_id_to_metadata từ corpus

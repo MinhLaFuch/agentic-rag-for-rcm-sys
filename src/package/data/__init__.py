@@ -8,6 +8,7 @@ from . import loader
 from . import mapping
 from . import split
 from .domain import domain_breakdown, merge_domains, namespaced_item_id, tag_domain
+from .build_first_seen_timestamps import build_first_seen_timestamps
 
 __all__ = [
     "ITEM_ID_SEPARATOR",
@@ -24,6 +25,7 @@ __all__ = [
     "domain_breakdown",
     "merge_domains",
     "namespaced_item_id",
+    "build_first_seen_timestamps",
     "tag_domain",
 ]
 

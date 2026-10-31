@@ -25,9 +25,9 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.mapping import load_mappings
-from package.data.split import load_splits
+from package.data.manifest import verify_tag_manifest
 from package.tools import ItemCFTool, QueryTool, RecoModelTool, SemanticSearchTool
 from package.tools.base import ToolCallLogger
 from package.tools.corpus import build_corpus, load_corpus
@@ -38,13 +38,17 @@ from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.tools.score import BaselineScorer
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.evaluation.cohort_policy_for_tag import cohort_policy_for_tag
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
 from package.tools.recommenders.mapping_hash import mapping_hash
 from package.tools.recommenders.file_hash import file_hash
 from package.tools.evaluation.confirmation_cohort import confirmation_cohort
 
-from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
+if __package__:
+    from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
+else:
+    from candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
 SEGMENTS = ("cold", "sparse", "warm")
 MERGES = ("union_rr", "union_all")
@@ -52,6 +56,25 @@ MERGES = ("union_rr", "union_all")
 
 def _ids_to_namespaced(ids: list[int], id2item: dict[int, str]) -> list[str]:
     return [id2item[int(i)] for i in ids if int(i) in id2item]
+
+
+def _load_eval_splits(paths, eval_on: str):
+    """Load only frames required by this temporal evaluation.
+
+    Validation does not need the test rows in memory. Test evaluation still
+    loads train+validation for fitting and test as its target.
+    """
+    columns = ["user_idx", "item_idx", "timestamp"]
+    train = pd.read_parquet(paths.split_path("train"), columns=columns)
+    if eval_on == "validation":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.DataFrame(columns=columns)
+    elif eval_on == "test":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.read_parquet(paths.split_path("test"), columns=columns)
+    else:
+        raise ValueError(f"unsupported evaluation split: {eval_on}")
+    return train, validation, test
 
 
 def _summarize(values: list[float]) -> dict[str, float | int | None]:
@@ -158,6 +181,11 @@ def main() -> None:
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
         ap.error("candidate-budget exceeds tools.max_candidates")
     paths = get_data_paths(args.tag)
+    tag_manifest = verify_tag_manifest(paths, domains=get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = [(d, str(paths.meta_path(d))) for d in get_domains()]
     exp_root = args.experiments_dir or (paths.experiments_dir / "ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
@@ -166,6 +194,7 @@ def main() -> None:
     print("[provenance] hashing input files; ETA unknown until completed", flush=True)
     identity = {
         "format": 1, "source_fingerprint": _source_fingerprint(), "environment": _environment_versions(),
+        "tag_manifest_sha256": tag_manifest["manifest_sha256"],
         "parameters": {k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()
                        if k not in {"resume", "work_dir", "batch_size", "progress_every", "experiments_dir"}},
         "effective_neighbors": args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"]),
@@ -206,13 +235,13 @@ def main() -> None:
             return
         store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
         if not store.get("scoring_complete"):
-            _run_stages(args, paths, meta_files, store, ks, variants)
+            _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest)
         _finalize(args, paths, store, ks, variants, exp_root)
 
 
-def _run_stages(args, paths, meta_files, store, ks, variants):
+def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     print("[splits] loading and sampling; ETA unknown", flush=True)
-    train, validation, test = load_splits(paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    train, validation, test = _load_eval_splits(paths, args.eval_on)
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
     user2id, item2id = load_mappings(paths.mapped_dir)
     id2user = {v: k for k, v in user2id.items()}
@@ -245,15 +274,17 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
             allow_missing_sources=args.allow_missing_corpus_sources,
         )
     else:
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
         corpus, _, coverage = build_corpus(
             meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+            first_seen_ts=first_seen_ts,
         )
 
     metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=segments_by_user,
-        sampled=sampled, metadata_policy=metadata_policy)
+        sampled=sampled, metadata_policy=metadata_policy, cohort_policy=cohort_policy_for_tag(paths.tag))
 
     protocol_manifest["query_normalization"] = args.query_normalization
 
@@ -293,6 +324,8 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         },
     }
     config = {
+        "manifest_status": tag_manifest["status"],
+        "manifest_sha256": tag_manifest["manifest_sha256"],
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
         "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),

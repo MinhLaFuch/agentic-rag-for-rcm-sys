@@ -19,7 +19,7 @@ def load_item_knn(
     path: Path,
     k: int,
     fit_pairs: pd.DataFrame,
-    *, user2id=None, item2id=None, eval_on=None, tag=None,
+    *, user2id=None, item2id=None, eval_on=None, tag=None, fit_splits=None,
 ) -> ItemKNNRecommender:
     """Load ItemKNNRecommender model from NPZ file with validation.
 
@@ -53,7 +53,8 @@ def load_item_knn(
             "Re-fit with --save-item-knn to generate a new file."
         )
 
-    expected = fit_provenance(fit_pairs, user2id=user2id, item2id=item2id, eval_on=eval_on, tag=tag)
+    expected = fit_provenance(fit_pairs, user2id=user2id, item2id=item2id, eval_on=eval_on, tag=tag,
+                              fit_splits=fit_splits)
     if metadata.get("provenance") != expected:
         raise ValueError("ItemKNN provenance mismatch: mapping assignments, fit split, tag or scope changed; refit required")
     if metadata.get("algorithm") != "binary_cosine_topk_v1" or metadata.get("data_hash_protocol") != "sorted_event_pairs_int64_le_v1":

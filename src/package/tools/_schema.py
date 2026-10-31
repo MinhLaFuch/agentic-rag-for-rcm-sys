@@ -7,6 +7,7 @@ ITEM_COLUMNS = (
     "item_id",  # namespaced "{domain}::{parent_asin}"
     "domain",
     "original_item_id",
+    "first_seen_ts",  # earliest cleaned interaction; proxy, not actual launch date
     "title",
     "store",  # closest field to "brand" in Amazon Reviews 2023
     "price",  # REAL, NULL when missing (~55% in Video_Games)
@@ -16,7 +17,7 @@ ITEM_COLUMNS = (
 )
 
 SCHEMA_HINT = (
-    "items(item_id TEXT, domain TEXT, original_item_id TEXT, title TEXT, store TEXT, "
+    "items(item_id TEXT, domain TEXT, original_item_id TEXT, first_seen_ts INTEGER, title TEXT, store TEXT, "
     "price REAL NULL, average_rating REAL, rating_number REAL, main_category TEXT); "
     "item_categories(item_id TEXT, category TEXT)  -- multi-label, one row per (item, category); "
     "items_fts(title, store, main_category, categories)  -- FTS5 table for full-text search"

@@ -149,6 +149,11 @@ def test_build_corpus_works_with_namespaced_mapping(tmp_path):
     _write_meta(tmp_path / "meta_D1.jsonl.gz", [("a", "t1"), ("b", "t2")])
     corpus, meta, coverage = build_corpus([("D1", str(tmp_path / "meta_D1.jsonl.gz"))], {"D1::a": 0, "D1::b": 1}, 0.5)
     assert coverage == 1.0 and len(meta) == 2 and corpus.domains() == ["D1"]
+    assert coverage.by_domain["D1"] == {
+        "mapping_items": 2, "metadata_items": 2, "coverage": 1.0, "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0,
+    }
+    assert meta.attrs["duplicates_dropped_by_domain"] == {"D1": 0}
 
 
 def test_build_corpus_rejects_plain_id_mapping(tmp_path):
@@ -156,6 +161,37 @@ def test_build_corpus_rejects_plain_id_mapping(tmp_path):
     _write_meta(tmp_path / "meta_D1.jsonl.gz", [("a", "t1"), ("b", "t2")])
     with pytest.raises(ValueError):
         build_corpus([("D1", str(tmp_path / "meta_D1.jsonl.gz"))], {"a": 0, "b": 1}, 0.5)
+
+
+def test_build_corpus_coverage_is_full_and_checked_per_domain(tmp_path):
+    path = tmp_path / "meta.jsonl.gz"
+    # The first domain is fully covered, but Electronics is completely missing.
+    _write_meta(path, [(f"a{i}", "title") for i in range(5200)])
+    mapping = {f"D1::a{i}": i for i in range(5200)}
+    mapping.update({f"Electronics::e{i}": 5200 + i for i in range(1000)})
+    with pytest.raises(ValueError, match=r"Electronics.*0\.0%"):
+        build_corpus([("D1", str(path)), ("Electronics", str(path))], mapping, 0.5)
+
+
+def test_build_corpus_dedupes_metadata_by_completeness_and_reports_count(tmp_path):
+    path = tmp_path / "meta.jsonl.gz"
+    records = [
+        {"parent_asin": "a", "title": "", "store": None},
+        {"parent_asin": "a", "title": "complete title", "store": "shop"},
+        {"parent_asin": "b", "title": "first title", "store": None},
+        {"parent_asin": "b", "title": "second title", "store": None},
+    ]
+    with gzip.open(path, "wt", encoding="utf-8") as stream:
+        for record in records:
+            stream.write(json.dumps(record) + "\n")
+    corpus, meta, coverage = build_corpus([("D1", str(path))], {"D1::a": 0, "D1::b": 1}, 1.0)
+    assert coverage == 1.0
+    assert coverage.by_domain["D1"]["coverage"] == 1.0
+    assert coverage.by_domain["D1"]["duplicate_metadata_rows_dropped"] == 2
+    assert meta.attrs["duplicates_dropped_by_domain"] == {"D1": 2}
+    rows, _ = corpus.select("SELECT item_id, title FROM items")
+    titles = {row["item_id"]: row["title"] for row in rows}
+    assert titles == {"D1::a": "complete title", "D1::b": "first title"}
 
 
 # ---------------------------------------------------------------- read-only protection

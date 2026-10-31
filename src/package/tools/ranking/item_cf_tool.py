@@ -91,9 +91,14 @@ class ItemCFTool(Tool):
                 raise ToolInputError(f"unknown domain {domain!r}; available: {known_domains}")
 
         n = self.similarity.shape[0]
+        temporal_policy = getattr(self.corpus, "_evaluation_metadata_policy", None) or {}
+        visible_seed_ids = (set(self.corpus.item_domains(seeds)
+                                if self.corpus is not None and temporal_policy.get("first_seen_filter") else []))
+        enforce_visibility = self.corpus is not None and temporal_policy.get("first_seen_filter")
 
         def is_row(s: str) -> bool:  # a valid similarity row: 0 <= idx < n  (-1 would silently pick the LAST row)
-            return s in self.item2id and 0 <= self.item2id[s] < n
+            return (s in self.item2id and 0 <= self.item2id[s] < n
+                    and (not enforce_visibility or s in visible_seed_ids))
 
         seed_idx = [self.item2id[s] for s in seeds if is_row(s)]
         unknown = [s for s in seeds if not is_row(s)]
@@ -117,6 +122,8 @@ class ItemCFTool(Tool):
 
         candidates: list[dict[str, Any]] = []
         for item_id, score in zip(ids, scores):
+            if enforce_visibility and item_id not in domains:
+                continue
             if domain is not None and domains.get(item_id) != domain:
                 continue
             entry = {"item_id": item_id, "similarity": score}

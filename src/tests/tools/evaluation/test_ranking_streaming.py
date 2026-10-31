@@ -33,11 +33,13 @@ def environment(tmp_path, monkeypatch):
     for name,df in (("train",train),("validation",val),("test",test)):
         df.to_parquet(paths.split_path(name))
     meta = pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,
+                         "first_seen_ts":[1]*7,
                          "title":["Pok\u00e9mon keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"load_mappings",lambda *a:(user2id,item2id))
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
+    monkeypatch.setattr(script,"build_first_seen_timestamps",lambda *a,**k:{item:1 for item in item2id})
     return tmp_path,paths,item2id
 
 

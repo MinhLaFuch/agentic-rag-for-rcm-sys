@@ -1,12 +1,3 @@
-"""
-So sánh thí nghiệm ablation (base template).
-
-Cách chạy:
-    PYTHONPATH=. python scripts/experiments/compare_experiments.py
-
-Đọc config từ configs/agent/ablation.yaml, load dữ liệu từ các exp_NNN directories,
-so sánh theo các contrast được định nghĩa, và sinh báo cáo markdown/CSV/JSON.
-"""
 
 from __future__ import annotations
 

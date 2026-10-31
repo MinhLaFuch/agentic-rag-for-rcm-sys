@@ -231,6 +231,22 @@ def test_dataset_bound_provenance(tmp_path):
         load_item_knn(path, 2, pairs, **context)
 
 
+def test_explicit_fit_split_provenance_round_trips_and_is_enforced(tmp_path):
+    import json
+
+    pairs = pd.DataFrame({"user_idx": [0, 0, 1], "item_idx": [0, 1, 1]})
+    model = ItemKNNRecommender(2).fit(pairs)
+    path = tmp_path / "train_core_model.npz"
+    context = dict(user2id={"u0": 0, "u1": 1}, item2id={"i0": 0, "i1": 1},
+                   eval_on="test", tag="temporal", fit_splits=["train_core"])
+    save_item_knn(model, path, 2, pairs, **context)
+    metadata = json.loads(path.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert metadata["provenance"]["fit_splits"] == ["train_core"]
+    load_item_knn(path, 2, pairs, **context)
+    with pytest.raises(ValueError, match="provenance mismatch"):
+        load_item_knn(path, 2, pairs, **(context | {"fit_splits": ["train", "validation"]}))
+
+
 def test_legacy_cache_requires_refit(tmp_path):
     import json
     pairs = pd.DataFrame({"user_idx": [0, 0], "item_idx": [0, 1]})

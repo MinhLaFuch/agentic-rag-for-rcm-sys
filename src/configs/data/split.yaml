@@ -5,3 +5,8 @@ split:
   train_ratio: 0.8
   validation_ratio: 0.1
   test_ratio: 0.1
+  # Opt-in temporal_train_core protocol. Boundaries are inclusive at the end
+  # of train and validation respectively; legacy quantile behavior stays default.
+  temporal_train_core:
+    train_end_inclusive_ms: 1617737606134
+    validation_end_inclusive_ms: 1651701127817

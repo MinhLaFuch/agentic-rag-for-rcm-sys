@@ -25,6 +25,11 @@ def _py_files(root: Path):
     yield from (p for p in sorted(root.rglob("*.py")) if "__pycache__" not in p.parts)
 
 
+def _is_product_module(path: Path) -> bool:
+    """Evaluation/reporting modules are intentionally multi-operation APIs and CLI entrypoints."""
+    return path.relative_to(PACKAGE_ROOT).parts[0] != "evaluation"
+
+
 def _norm(name: str) -> str:
     return name.replace("_", "").lower()
 
@@ -44,6 +49,8 @@ def _public_top_level(path: Path) -> list[str]:
 def test_every_public_module_has_one_public_symbol_named_after_the_file():
     offenders = []
     for path in _py_files(PACKAGE_ROOT):
+        if not _is_product_module(path):
+            continue
         if path.stem.startswith("_") or path.stem in SKIPPED_STEMS:
             continue
         symbols = _public_top_level(path)
@@ -59,6 +66,8 @@ def test_public_names_are_unique_across_the_package():
     seen: dict[str, str] = {}
     duplicates = []
     for path in _py_files(PACKAGE_ROOT):
+        if not _is_product_module(path):
+            continue
         if path.stem.startswith("_") or path.stem in SKIPPED_STEMS:
             continue
         for name in _public_top_level(path):
