@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from ._helper import _append_popular_unseen, _keep_top_neighbors
+from ..shared._helper import _append_popular_unseen, _keep_top_neighbors
 from .baseline_popularity_recommender import BaselinePopularityRecommender
 
 

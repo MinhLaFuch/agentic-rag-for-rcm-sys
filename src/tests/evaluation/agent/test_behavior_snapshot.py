@@ -44,9 +44,9 @@ def _make_comprehensive_trajectories():
             
             # Case 1: Normal success
             if kind != "ambiguous":
-                tools = ["MemoryTool", "SemanticSearchTool", "RecoModelTool"] if has_memory else ["ItemCFTool", "RecoModelTool"]
+                tools = ["MemoryTool", "SearchTool", "RankTool"] if has_memory else ["SimilarTool", "RankTool"]
                 if kind == "constrained":
-                    tools = ["SemanticSearchTool", "RecoModelTool"]
+                    tools = ["SearchTool", "RankTool"]
                 steps = [_step(tools[0]), _step(tools[-1])] if is_planner else []
                 traj = _trajectory(agent=agent, steps=steps, recommended=[VG_A, VG_B], tools=tools)
                 traj.update(answer="test answer", answer_status="ok", answer_grounded=True, answer_fallback=False,
@@ -63,7 +63,7 @@ def _make_comprehensive_trajectories():
             # Case 3: Answer status variants (only for planners)
             if is_planner and kind != "ambiguous":
                 for status in ["ask_user", "no_result", "tool_error"]:
-                    tools = ["ItemCFTool", "RecoModelTool"]
+                    tools = ["SimilarTool", "RankTool"]
                     traj = _trajectory(agent=agent, steps=[_step(tools[0]), _step(tools[-1])], recommended=[VG_A], tools=tools)
                     traj.update(answer="test", answer_status=status, answer_grounded=(status == "ok"),
                                answer_fallback=(status == "ok"), inference_usage={"attempts": 1, "prompt_tokens": 10, "completion_tokens": 5, "latency_seconds": 0.3})
@@ -73,7 +73,7 @@ def _make_comprehensive_trajectories():
             
             # Case 4: Old trajectory without answer/inference fields
             if kind != "ambiguous":
-                tools = ["ItemCFTool", "RecoModelTool"]
+                tools = ["SimilarTool", "RankTool"]
                 traj = _trajectory(agent=agent, steps=[_step(tools[0]), _step(tools[-1])] if is_planner else [], recommended=[VG_A], tools=tools)
                 # Remove new fields
                 for key in ["answer", "answer_status", "answer_grounded", "answer_fallback", "inference_usage"]:
@@ -91,7 +91,7 @@ def _make_comprehensive_trajectories():
             
             # Case 6: Deduplicated recommendations
             if kind != "ambiguous":
-                tools = ["ItemCFTool", "RecoModelTool"]
+                tools = ["SimilarTool", "RankTool"]
                 traj = _trajectory(agent=agent, steps=[_step(tools[0]), _step(tools[-1])] if is_planner else [], recommended=[VG_A, VG_A, VG_B], tools=tools)
                 request5 = AgentRequest(request_id=f"{agent}-{kind}-{idx}", kind=kind, segment="warm", text="t", targets=[1])
                 trajectories.append((request5, traj))
@@ -99,7 +99,7 @@ def _make_comprehensive_trajectories():
             
             # Case 7: Missing targets (ranking should be None)
             if kind != "ambiguous":
-                tools = ["ItemCFTool", "RecoModelTool"]
+                tools = ["SimilarTool", "RankTool"]
                 traj = _trajectory(agent=agent, steps=[_step(tools[0]), _step(tools[-1])] if is_planner else [], recommended=[VG_A], tools=tools)
                 request6 = AgentRequest(request_id=f"{agent}-{kind}-{idx}", kind=kind, segment="warm", text="t", targets=[])
                 trajectories.append((request6, traj))

@@ -2,7 +2,7 @@
 
 1. Atomic files: every public module (not ``_*``, ``__init__``, ``__main__``) under ``package/`` holds exactly ONE
    public top-level class/function, and its name equals the file stem (underscores ignored, case-insensitive:
-   ``ItemCFTool`` <-> ``item_cf_tool.py``).
+   ``SimilarTool`` <-> ``item_cf_tool.py``).
 2. Privacy: a ``_``-prefixed module is internal to the folder that contains it. Nothing outside that folder
    (``package/`` and ``scripts/`` are checked, ``tests/`` is exempt) may import it; cross-folder access goes through
    the folder's ``__init__.py`` re-exports or a public module.

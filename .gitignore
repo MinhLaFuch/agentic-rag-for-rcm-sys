@@ -15,3 +15,17 @@ src/src.zip
 # Virtual environment
 .venv/
 src/.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# pytest
+.pytest_cache/
+
+# Local resources
+src/resource/item_knn/
+src/resource/corpus/
+
+# Graphify output
+src/graphify-out/

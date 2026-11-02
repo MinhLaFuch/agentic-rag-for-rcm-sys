@@ -2,6 +2,7 @@
 # Used to evaluate product recommendation assistant replies for faithfulness and communication quality.
 
 # Jev API configuration
+provider: "jev"                  # Judgment provider to use (jev)
 api_key: ${OPENROUTER_API_KEY:-}  # TypeSafe API key via OpenRouter; set via env var or fill directly
 model: "jev-latest"              # Model to use (jev-latest, jev-1.14.0, jev-1.13.0)
 base_url: "https://api.typesafe.ai"

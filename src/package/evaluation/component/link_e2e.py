@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from package.config import get_data_paths
+
 
 def link_component_to_e2e(
     component_results: dict[str, str],
@@ -138,9 +140,12 @@ def main():
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
     args = parser.parse_args()
 
-    # Default to experiments directory
+    # Default to experiments directory using config
+    paths = get_data_paths()
+    default_exp_dir = paths.experiments_dir / "agent_eval" / "component_benchmarks"
+
     if args.output_dir is None:
-        output_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        output_dir = default_exp_dir
     else:
         output_dir = Path(args.output_dir)
     
@@ -148,7 +153,7 @@ def main():
 
     # Default component dir
     if args.component_dir is None:
-        component_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        component_dir = default_exp_dir
     else:
         component_dir = Path(args.component_dir)
 

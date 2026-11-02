@@ -14,7 +14,7 @@ from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error, format_trace
-from package.tools import QueryTool, SQLTool
+from package.tools import LookupTool, FilterTool
 from tests.tools_helpers import VG_A
 
 
@@ -45,8 +45,8 @@ def plan(*steps, ask_user=None) -> str:
 
 def test_adapt_from_plan_executor_ok_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor thành DemoResult với status='ok'."""
-    steps = [{"tool": "QueryTool", "args": {"item_ids": [VG_A]}}]
-    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [QueryTool(corpus)])
+    steps = [{"tool": "LookupTool", "args": {"item_ids": [VG_A]}}]
+    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [LookupTool(corpus)])
     results = executor.run(f"tell me about {VG_A}")
 
     request = DemoRequest(
@@ -91,7 +91,7 @@ def test_adapt_from_plan_executor_ok_status(corpus):
 
 def test_adapt_from_plan_executor_ask_user_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor với ask_user thành status='ask_user'."""
-    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which category?")), [SQLTool(corpus)])
+    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which category?")), [FilterTool(corpus)])
     results = executor.run("recommend something")
 
     request = DemoRequest(
@@ -121,9 +121,9 @@ def test_adapt_from_plan_executor_ask_user_status(corpus):
 
 def test_adapt_from_plan_executor_no_result_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor không có item thành status='no_result'."""
-    steps = [{"tool": "SQLTool", "args": {"limit": 0}}]
+    steps = [{"tool": "FilterTool", "args": {"limit": 0}}]
     # Cung cấp 2 replies để tránh lỗi pop từ empty list (nếu có reflect)
-    executor = PlanExecutor(ScriptedLLM(plan(*steps), plan(*steps)), [SQLTool(corpus)], reflect_rounds=0)
+    executor = PlanExecutor(ScriptedLLM(plan(*steps), plan(*steps)), [FilterTool(corpus)], reflect_rounds=0)
     results = executor.run("list items")
 
     request = DemoRequest(
@@ -187,8 +187,8 @@ def test_adapter_cuts_error_message():
 
 def test_adapter_no_api_key_in_result(corpus):
     """API key không được xuất hiện trong DemoResult/trace."""
-    steps = [{"tool": "QueryTool", "args": {"item_ids": [VG_A]}}]
-    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [QueryTool(corpus)])
+    steps = [{"tool": "LookupTool", "args": {"item_ids": [VG_A]}}]
+    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [LookupTool(corpus)])
     results = executor.run(f"tell me about {VG_A}")
 
     request = DemoRequest(
@@ -355,9 +355,9 @@ def test_live_backend_prebuilt_with_files_uses_load_functions():
 def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache):
     from dataclasses import replace
     from package.demo.backend import live_backend as module
-    from package.tools.recommenders import ItemKNNRecommender
-    from package.tools.recommenders.fit_provenance import fit_provenance
-    from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+    from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+    from package.tools.recommenders.shared.provenance import fit_provenance
+    from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
     interactions, user2id, item2id = cf_setup
     fit = interactions.assign(timestamp=1)
     empty = fit.iloc[:0]
@@ -390,8 +390,8 @@ def test_format_trace_with_inference():
     from package.demo import DemoTrace
 
     trace = DemoTrace(
-        plan=[{"tool": "QueryTool"}],
-        steps=[{"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        plan=[{"tool": "LookupTool"}],
+        steps=[{"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1}],
         ask_user=None,
         reflections=0,
         first_attempt_ok=True,
@@ -420,8 +420,8 @@ def test_format_trace_without_inference():
     from package.demo import DemoTrace
 
     trace = DemoTrace(
-        plan=[{"tool": "QueryTool"}],
-        steps=[{"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        plan=[{"tool": "LookupTool"}],
+        steps=[{"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1}],
         ask_user=None,
         reflections=0,
         first_attempt_ok=True,

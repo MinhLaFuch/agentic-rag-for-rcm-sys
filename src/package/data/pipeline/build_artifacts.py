@@ -11,8 +11,8 @@ from ...tools.evaluation import select_fit_target
 from .build_meta_files import build_meta_files
 from ...tools.corpus import save_corpus
 from ...tools.corpus.build_corpus import build_corpus
-from ...tools.recommenders import ItemKNNRecommender
-from ...tools.recommenders.save_item_knn import save_item_knn
+from ...tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from ...tools.recommenders.shared.save_item_knn import save_item_knn
 
 
 def build_artifacts(

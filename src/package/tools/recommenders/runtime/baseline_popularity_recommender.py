@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from ._helper import _append_popular_unseen, _user_item_matrix
+from ..shared._helper import _append_popular_unseen, _user_item_matrix
 
 
 class BaselinePopularityRecommender:

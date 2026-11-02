@@ -9,10 +9,10 @@ from typing import Any
 from package.tools.base import Tool, ToolResult
 
 
-class MockSQLTool(Tool):
-    """Mock SQLTool for testing."""
+class MockFilterTool(Tool):
+    """Mock FilterTool for testing."""
 
-    name = "SQLTool"
+    name = "FilterTool"
     description = "Retrieve candidate items with structured filters."
     input_schema = {
         "filters": {
@@ -37,10 +37,10 @@ class MockSQLTool(Tool):
         }
 
 
-class MockSemanticSearchTool(Tool):
-    """Mock SemanticSearchTool for testing."""
+class MockSearchTool(Tool):
+    """Mock SearchTool for testing."""
 
-    name = "SemanticSearchTool"
+    name = "SearchTool"
     description = "Search items by keywords."
     input_schema = {"query": "str", "limit": "int"}
     output_schema = {"candidates": "list[dict]", "total_matches": "int"}
@@ -55,10 +55,10 @@ class MockSemanticSearchTool(Tool):
         }
 
 
-class MockItemCFTool(Tool):
-    """Mock ItemCFTool for testing."""
+class MockSimilarTool(Tool):
+    """Mock SimilarTool for testing."""
 
-    name = "ItemCFTool"
+    name = "SimilarTool"
     description = "Retrieve items similar to given item(s)."
     input_schema = {"items": "list[str]", "top_k": "int"}
     output_schema = {"candidates": "list[dict]", "unknown_items": "list[str]"}
@@ -72,10 +72,10 @@ class MockItemCFTool(Tool):
         }
 
 
-class MockRecoModelTool(Tool):
-    """Mock RecoModelTool for testing."""
+class MockRankTool(Tool):
+    """Mock RankTool for testing."""
 
-    name = "RecoModelTool"
+    name = "RankTool"
     description = "Rank a candidate set for a user."
     input_schema = {"user_id": "str", "candidates": "list[str]", "top_k": "int"}
     output_schema = {"ranked": "list[dict]", "model": "str"}
@@ -92,4 +92,4 @@ class MockRecoModelTool(Tool):
 
 def get_mock_tools() -> list[Tool]:
     """Return list of mock tools for Planner evaluation."""
-    return [MockSQLTool(), MockSemanticSearchTool(), MockItemCFTool(), MockRecoModelTool()]
+    return [MockFilterTool(), MockSearchTool(), MockSimilarTool(), MockRankTool()]

@@ -117,6 +117,61 @@ def create_test_interactions() -> pd.DataFrame:
         {"user_id": "u_no_rating", "item_id": "Video_Games::vg_b", "user_idx": 14, "item_idx": 1, "rating": 4, "timestamp": 1},
     ])
 
+    # u_mixed_ratings: ratings 5,4,3,2,1 with distinct items
+    interactions.extend([
+        {"user_id": "u_mixed_ratings", "item_id": "Video_Games::vg_a", "user_idx": 15, "item_idx": 0, "rating": 5, "timestamp": 0},
+        {"user_id": "u_mixed_ratings", "item_id": "Video_Games::vg_b", "user_idx": 15, "item_idx": 1, "rating": 4, "timestamp": 1},
+        {"user_id": "u_mixed_ratings", "item_id": "Video_Games::vg_c", "user_idx": 15, "item_idx": 2, "rating": 3, "timestamp": 2},
+        {"user_id": "u_mixed_ratings", "item_id": "Video_Games::vg_d", "user_idx": 15, "item_idx": 3, "rating": 2, "timestamp": 3},
+        {"user_id": "u_mixed_ratings", "item_id": "Video_Games::vg_e", "user_idx": 15, "item_idx": 4, "rating": 1, "timestamp": 4},
+    ])
+
+    # u_boundary_love: rating exactly 4.0 (boundary for love)
+    interactions.extend([
+        {"user_id": "u_boundary_love", "item_id": "Video_Games::vg_a", "user_idx": 16, "item_idx": 0, "rating": 4, "timestamp": 0},
+        {"user_id": "u_boundary_love", "item_id": "Video_Games::vg_b", "user_idx": 16, "item_idx": 1, "rating": 3, "timestamp": 1},
+    ])
+
+    # u_boundary_hate: rating exactly 2.0 (boundary for hate)
+    interactions.extend([
+        {"user_id": "u_boundary_hate", "item_id": "Video_Games::vg_a", "user_idx": 17, "item_idx": 0, "rating": 3, "timestamp": 0},
+        {"user_id": "u_boundary_hate", "item_id": "Video_Games::vg_b", "user_idx": 17, "item_idx": 1, "rating": 2, "timestamp": 1},
+    ])
+
+    # u_large_recent: 15 interactions to test recent_items capping at 10
+    for i in range(15):
+        interactions.append({
+            "user_id": "u_large_recent",
+            "item_id": f"Video_Games::vg_{chr(97 + i)}",  # vg_a to vg_o
+            "user_idx": 18,
+            "item_idx": i,
+            "rating": 5,
+            "timestamp": i,
+        })
+
+    # u_many_categories: 15 interactions across 5 distinct categories (Action, Puzzle, RPG, Strategy, Simulation cycling)
+    categories_cycle = ["Action", "Puzzle", "RPG", "Strategy", "Simulation"]
+    for i in range(15):
+        interactions.append({
+            "user_id": "u_many_categories",
+            "item_id": f"Video_Games::vg_{chr(97 + i)}",
+            "user_idx": 19,
+            "item_idx": i,
+            "rating": 5,
+            "timestamp": i,
+        })
+
+    # u_single_category: 5 interactions all in Action
+    for i in range(5):
+        interactions.append({
+            "user_id": "u_single_category",
+            "item_id": f"Video_Games::vg_{chr(97 + i)}",
+            "user_idx": 20,
+            "item_idx": i,
+            "rating": 5,
+            "timestamp": i,
+        })
+
     return pd.DataFrame(interactions)
 
 
@@ -127,16 +182,16 @@ def create_test_corpus() -> ItemCorpus:
 
 def create_test_meta() -> pd.DataFrame:
     """Raw item metadata. The oracle reads this directly so it never depends on ItemCorpus SQL."""
-    # Base items vg_a to vg_j (prices 1.0, 150.0, 300.0 pattern)
+    # Base items vg_a to vg_o (prices 1.0, 150.0, 300.0 pattern)
     # Null price items
     # Outlier price item
     meta_data = []
 
-    # vg_a to vg_j with alternating prices
-    prices = [1.0, 150.0, 300.0, 1.0, 150.0, 300.0, 1.0, 150.0, 300.0, 1.0]
-    categories = ["Action", "Puzzle", "RPG", "Action", "Puzzle", "RPG", "Action", "Puzzle", "RPG", "Action"]
+    # vg_a to vg_o with alternating prices and categories
+    prices = [1.0, 150.0, 300.0, 1.0, 150.0, 300.0, 1.0, 150.0, 300.0, 1.0, 150.0, 300.0, 1.0, 150.0, 300.0]
+    categories = ["Action", "Puzzle", "RPG", "Action", "Puzzle", "RPG", "Action", "Puzzle", "RPG", "Action", "Strategy", "Simulation", "Sports", "Racing", "Adventure"]
 
-    for i in range(10):
+    for i in range(15):
         meta_data.append({
             "parent_asin": f"vg_{chr(97 + i)}",
             "domain": "Video_Games",

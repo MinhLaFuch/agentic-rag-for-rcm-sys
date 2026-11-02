@@ -99,6 +99,7 @@ def check_compatibility(
     - language khớp
     - k khớp
     - eval_schema_version khớp (exp cũ không có trường này = phiên bản 1)
+    - protocol.metadata_policy khớp (nếu có protocol)
 
     Trả về (compatible, reason)
     """
@@ -133,5 +134,23 @@ def check_compatibility(
     version_b = cfg_b.get("eval_schema_version", 1)
     if version_a != version_b:
         return False, f"eval_schema_version mismatch: {version_a} vs {version_b} (cannot compare experiments with different schema versions)"
+
+    # Check protocol metadata_policy if present
+    protocol_a = cfg_a.get("protocol", {})
+    protocol_b = cfg_b.get("protocol", {})
+    if protocol_a or protocol_b:
+        # If one has protocol and the other doesn't, that's a mismatch
+        if bool(protocol_a) != bool(protocol_b):
+            return False, "protocol present in one config but not the other"
+        policy_a = protocol_a.get("metadata_policy", {}).get("name") if protocol_a.get("metadata_policy") else None
+        policy_b = protocol_b.get("metadata_policy", {}).get("name") if protocol_b.get("metadata_policy") else None
+        if policy_a != policy_b:
+            return False, f"metadata_policy mismatch: {policy_a} vs {policy_b}"
+        # Check request_content_sha256 if present in either
+        req_sha_a = protocol_a.get("request_content_sha256")
+        req_sha_b = protocol_b.get("request_content_sha256")
+        if req_sha_a is not None or req_sha_b is not None:
+            if req_sha_a != req_sha_b:
+                return False, f"request_content_sha256 mismatch: {req_sha_a} vs {req_sha_b}"
 
     return True, ""

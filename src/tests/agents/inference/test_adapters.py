@@ -12,11 +12,11 @@ def step(tool, data=None, ok=True, error=None, invented_ids=()):
 
 
 def ranked(*ids):
-    return step("RecoModelTool", {"ranked": [{"rank": n, "item_id": i, "score": 0.9 - n / 10, "domain": i.split("::")[0]} for n, i in enumerate(ids, 1)]})
+    return step("RankTool", {"ranked": [{"rank": n, "item_id": i, "score": 0.9 - n / 10, "domain": i.split("::")[0]} for n, i in enumerate(ids, 1)]})
 
 
 def query(*rows):
-    return step("QueryTool", {"items": list(rows), "missing_item_ids": [], "truncated": False})
+    return step("LookupTool", {"items": list(rows), "missing_item_ids": [], "truncated": False})
 
 
 def row(item_id, **kw):
@@ -25,7 +25,7 @@ def row(item_id, **kw):
 
 
 def test_plan_items_keep_the_agent_order_and_take_metadata_from_query_tool():
-    # QueryTool returns rows in a different order than the ranking: the ranking wins, QueryTool only fills metadata
+    # LookupTool returns rows in a different order than the ranking: the ranking wins, LookupTool only fills metadata
     results = [ranked(B, A), query(row(A), row(B))]
     out = outcome_from_plan_results("req", results, question=None, max_items=10)
     assert [i["item_id"] for i in out.items] == extract_recommendations(results, 10) == [B, A]
@@ -47,7 +47,7 @@ def test_items_without_a_metadata_step_only_have_their_id():
 
 
 def test_search_candidates_provide_metadata_and_query_tool_wins_on_conflict():
-    search = step("SemanticSearchTool", {"candidates": [{**row(A), "title": "from search", "score": 3.0}]})
+    search = step("SearchTool", {"candidates": [{**row(A), "title": "from search", "score": 3.0}]})
     out = outcome_from_plan_results("req", [search], question=None, max_items=10)
     assert out.items[0]["title"] == "from search"
     both = outcome_from_plan_results("req", [search, query(row(A, title="from query"))], question=None, max_items=10)
@@ -56,10 +56,10 @@ def test_search_candidates_provide_metadata_and_query_tool_wins_on_conflict():
 
 def test_errors_are_cut_and_invented_ids_collected():
     long_error = "Traceback " + "e" * 2000
-    results = [step("ItemCFTool", ok=False, error=long_error),
-               step("QueryTool", ok=False, error="id(s) not found", invented_ids=["Video_Games::zzz"])]
+    results = [step("SimilarTool", ok=False, error=long_error),
+               step("LookupTool", ok=False, error="id(s) not found", invented_ids=["Video_Games::zzz"])]
     out = outcome_from_plan_results("req", results, question=None, max_items=10)
-    assert [e["tool"] for e in out.errors] == ["ItemCFTool", "QueryTool"]
+    assert [e["tool"] for e in out.errors] == ["SimilarTool", "LookupTool"]
     assert len(out.errors[0]["error"]) <= 300 and out.invented_ids == ["Video_Games::zzz"] and out.items == []
 
 

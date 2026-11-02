@@ -98,7 +98,7 @@ def test_frozen_candidates_and_weight_variants(environment,monkeypatch):
     source = launch(monkeypatch,base,"source")
     def no_retrieval(*a,**k):
         raise AssertionError("frozen mode must not call SemanticSearch")
-    monkeypatch.setattr(script.SemanticSearchTool,"execute",no_retrieval)
+    monkeypatch.setattr(script.SearchTool,"execute",no_retrieval)
     result=launch(monkeypatch,base,"frozen",frozen=source,weights="0,1e-6")
     assert (source/"candidate_lists.jsonl").read_bytes()==(result/"candidate_lists.jsonl").read_bytes()
     m=json.loads((result/"metrics.json").read_text())

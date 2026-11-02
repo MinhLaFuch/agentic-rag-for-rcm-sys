@@ -1,6 +1,0 @@
-__pycache__/
-*.pyc
-.pytest_cache/
-resource/item_knn/
-resource/corpus/
-graphify-out

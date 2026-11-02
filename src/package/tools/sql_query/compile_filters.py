@@ -189,7 +189,7 @@ def compile_filters(
     Compile structured filters to parameterised SQL WHERE clause and params.
 
     Args:
-        filters: Dictionary of filter conditions (same as SQLTool input_schema)
+        filters: Dictionary of filter conditions (same as FilterTool input_schema)
         domains_known: Set of valid domain names for validation
         corpus: ItemCorpus instance for category validation (optional)
 

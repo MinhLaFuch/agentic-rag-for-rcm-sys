@@ -95,3 +95,39 @@ docs/            # xem trên
 3. Domain (`DOMAIN` env var) không được hard-code trong business logic.
 4. Mọi tool call của agent phải log được (timestamp, agent, action, tool, input hash, output, latency).
 5. Không báo "hoàn thành" một phase nếu chưa có code chạy được + test pass + doc cập nhật.
+
+---
+
+## Prompts Reference
+
+> **Source of truth**: `_prompt.py` files in each module. This section is a curated view for quick lookup.
+
+### 1. Planner Agent (`package/agents/planner/_prompt.py`)
+**Purpose**: Plans tool calls for product recommendation  
+**Key components**:
+- `SYSTEM_PROMPT` — Full system prompt with tool descriptions, rules, examples
+- **Tools exposed**: ItemCFTool, SemanticSearchTool, RecoModelTool, QueryTool, SQLTool, MemoryTool
+- **Reference syntax**: `$1.candidates`, `$S.shown_items.1`, `$1.love_categories`
+- **Output format**: JSON `{steps: [...], ask_user: ...}`
+
+### 2. Answer Composer (`package/inference/compose/_prompt.py`)
+**Purpose**: Composes final user-facing response from ranked products  
+**Key components**:
+- `SYSTEM_PROMPT` — Rules for formatting product list (Vietnamese default)
+- `RETRY_NOTICE` — Sent when LLM output fails validation
+- **Shared texts** (defined in this file):
+  - `NO_RESULT_TEXT` — "Chưa tìm thấy sản phẩm phù hợp..."
+  - `TOOL_ERROR_TEXT` — "Xin lỗi, hệ thống chưa xử lý được..."
+  - `OK_HEADER` — "Dưới đây là các sản phẩm gợi ý cho bạn:"
+  - `PARTIAL_HEADER` — "Các sản phẩm tìm được (kết quả có thể chưa đầy đủ):"
+  - `ID_ONLY_NOTE` — "Chưa có thông tin chi tiết, chỉ có mã sản phẩm."
+
+### 3. Agent Request Templates (`package/agents/_schema.py`)
+**Purpose**: Evaluation request templates (VI/EN)  
+**Types**: `similar`, `personalized`, `constrained`, `cold_text`, `ambiguous`
+
+---
+
+### Maintenance Rule
+> When you modify a `_prompt.py`, **update this section** in the same PR.  
+> The README is your "reading.md" — keep it in sync.

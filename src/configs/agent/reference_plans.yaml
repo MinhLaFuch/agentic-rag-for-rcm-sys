@@ -4,16 +4,21 @@
 
 reference_plans:
   similar:
-    - ["ItemCFTool"]
-    - ["RecoModelTool"]
+    - ["SimilarTool"]
+    - ["RankTool"]
   personalized:
     - ["MemoryTool"]
-    - ["SemanticSearchTool", "SQLTool"]
-    - ["RecoModelTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
   constrained:
-    - ["SemanticSearchTool", "SQLTool"]
-    - ["RecoModelTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
   cold_text:
-    - ["SemanticSearchTool", "SQLTool"]
-    - ["RecoModelTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
   ambiguous: []
+  exclusion:
+    - ["MemoryTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
+  unanswerable: []

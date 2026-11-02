@@ -12,6 +12,7 @@ from typing import Any
 
 from .llm_provider import LLMProvider
 from .openai_compatible_provider import OpenAICompatibleProvider
+from .judgment_provider import JudgmentProvider, JevProvider
 
 
 def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
@@ -38,5 +39,29 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
         )
     raise ValueError(
         f"Unknown LLM provider: {provider!r}. Supported providers: openai_compatible"
+    )
+
+
+def build_judgment_provider(config: dict[str, Any]) -> JudgmentProvider:
+    """
+    Factory tạo JudgmentProvider từ config.
+
+    config kỳ vọng có dạng (xem configs/eval/judge.yaml):
+        provider: jev
+        model: <model name> (default: jev-latest)
+        base_url: <API base URL> (default: https://api.typesafe.ai)
+        api_key: <API key hoặc đọc từ env TYPESAFE_API_KEY>
+        timeout_seconds: <timeout> (default: 30.0)
+    """
+    provider = config.get("provider", "jev")
+    if provider == "jev":
+        return JevProvider(
+            api_key=config.get("api_key"),
+            model=config.get("model", "jev-latest"),
+            base_url=config.get("base_url", "https://api.typesafe.ai"),
+            timeout=float(config.get("timeout_seconds", 30.0)),
+        )
+    raise ValueError(
+        f"Unknown judgment provider: {provider!r}. Supported providers: jev"
     )
 

@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from package.config import get_data_paths
+
 
 def run_all_benchmarks(
     runs: int = 1,
@@ -164,24 +166,29 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
         if data["status"] == "success":
             lines.append(f"- Status: ✅ Success")
             lines.append(f"- Cases run: {data['cases_run']}")
-            lines.append(f"- Success rate: {data['success_rate']:.2%}")
+            lines.append("")
+            lines.append("**Execution Reliability**:")
+            lines.append(f"- Success rate (ran without exception): {data['success_rate']:.2%}")
+            lines.append("")
+            lines.append("**Performance**:")
             lines.append(f"- Mean latency: {data['latency']['mean']:.4f}s")
             lines.append(f"- P95 latency: {data['latency']['p95']:.4f}s")
-            lines.append(f"- Git SHA: {data.get('git_sha', 'N/A')}")
             lines.append("")
-            lines.append("**Metrics**:")
+            lines.append("**Functional Correctness Metrics**:")
             for metric, value in data["metrics"].items():
                 lines.append(f"- {metric}: {value:.4f}")
+            lines.append("")
+            lines.append(f"- Git SHA: {data.get('git_sha', 'N/A')}")
         else:
             lines.append(f"- Status: ❌ {data['status']}")
             lines.append(f"- Error: {data.get('error', 'Unknown')}")
         
         lines.append("")
 
-    # Add weakest component analysis
-    lines.append("## Weakest Component Analysis")
+    # Add execution reliability analysis
+    lines.append("## Execution Reliability Analysis")
     lines.append("")
-    lines.append("(Based on lowest mean key metric per component)")
+    lines.append("Distinguishes component execution success from functional correctness.")
     lines.append("")
 
     successful = {
@@ -190,19 +197,61 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
     }
     
     if successful:
-        # Find component with lowest mean metric
+        lines.append("**Execution Success Rates**:")
+        for comp, data in successful.items():
+            success_rate = data.get('success_rate', 0)
+            status_icon = "✅" if success_rate >= 0.95 else "⚠️" if success_rate >= 0.8 else "❌"
+            lines.append(f"- {comp}: {success_rate:.2%} {status_icon}")
+        lines.append("")
+    else:
+        lines.append("- No successful components to analyze")
+        lines.append("")
+
+    # Add functional correctness analysis
+    lines.append("## Functional Correctness Analysis")
+    lines.append("")
+    lines.append("Measures whether component behavior is correct when it executes successfully.")
+    lines.append("")
+
+    if successful:
+        lines.append("**Correctness by Component**:")
+        for comp, data in successful.items():
+            metrics = data.get("metrics", {})
+            if metrics:
+                # Calculate mean correctness metric (excluding success_rate which is execution reliability)
+                correctness_metrics = {k: v for k, v in metrics.items() if not k.endswith('_mean') or 'success' not in k}
+                if correctness_metrics:
+                    mean_correctness = sum(correctness_metrics.values()) / len(correctness_metrics)
+                    status_icon = "✅" if mean_correctness >= 0.95 else "⚠️" if mean_correctness >= 0.8 else "❌"
+                    lines.append(f"- {comp}: {mean_correctness:.2%} {status_icon}")
+                else:
+                    lines.append(f"- {comp}: No correctness metrics")
+            else:
+                lines.append(f"- {comp}: No metrics")
+        lines.append("")
+
+    # Add weakest component analysis
+    lines.append("## Weakest Component Analysis")
+    lines.append("")
+    lines.append("(Based on lowest mean correctness metric per component)")
+    lines.append("")
+
+    if successful:
+        # Find component with lowest mean correctness metric
         component_scores = {}
         for comp, data in successful.items():
             metrics = data.get("metrics", {})
             if metrics:
-                mean_metric = sum(metrics.values()) / len(metrics)
-                component_scores[comp] = mean_metric
+                correctness_metrics = {k: v for k, v in metrics.items() if not k.endswith('_mean') or 'success' not in k}
+                if correctness_metrics:
+                    mean_metric = sum(correctness_metrics.values()) / len(correctness_metrics)
+                    component_scores[comp] = mean_metric
         
         if component_scores:
             weakest = min(component_scores.items(), key=lambda x: x[1])
-            lines.append(f"- **Weakest component**: {weakest[0]} (mean metric: {weakest[1]:.4f})")
+            lines.append(f"- **Weakest component**: {weakest[0]} (mean correctness: {weakest[1]:.4f})")
         else:
-            lines.append("- No metrics to analyze")
+            lines.append("- No correctness metrics to analyze")
     else:
         lines.append("- No successful components to analyze")
 
@@ -218,9 +267,10 @@ def main():
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
     args = parser.parse_args()
 
-    # Default to experiments directory
+    # Default to experiments directory using config
     if args.output_dir is None:
-        output_dir = Path(__file__).parent.parent.parent.parent / "experiments" / "agent_eval" / "component_benchmarks"
+        paths = get_data_paths()
+        output_dir = paths.experiments_dir / "agent_eval" / "component_benchmarks"
     else:
         output_dir = Path(args.output_dir)
     

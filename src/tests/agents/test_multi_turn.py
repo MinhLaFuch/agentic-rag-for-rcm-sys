@@ -14,7 +14,7 @@ import json
 import pytest
 
 from package.agents import PlanExecutor
-from package.tools import QueryTool, SQLTool, ItemCFTool, RecoModelTool
+from package.tools import LookupTool, FilterTool, SimilarTool, RankTool
 from package.tools.recommenders import ItemKNNRecommender
 from package.agents.session import Session
 from tests.agents.fakes.scripted_llm import ScriptedLLM
@@ -37,7 +37,7 @@ def test_m1_price_refinement(corpus, cf_setup):
 
     session = Session()
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"limit": 5}})),
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 5}})),
         planner_tools,
         session=session
     )
@@ -51,7 +51,7 @@ def test_m1_price_refinement(corpus, cf_setup):
     session.update_constraints({"price_max": 50})
 
     # Turn 2: User asks for cheaper items
-    price_plan = plan({"tool": "SQLTool", "args": {"filters": {"price_max": "$S.constraints.price_max"}, "limit": 5}})
+    price_plan = plan({"tool": "FilterTool", "args": {"filters": {"price_max": "$S.constraints.price_max"}, "limit": 5}})
     executor2 = PlanExecutor(
         ScriptedLLM(price_plan, price_plan),
         planner_tools,
@@ -79,7 +79,7 @@ def test_m2_position_reference(corpus, cf_setup):
 
     # Turn 2: Ask for items similar to the second shown item
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "ItemCFTool", "args": {"items": ["$S.shown_items.1"], "top_k": 5}})),
+        ScriptedLLM(plan({"tool": "SimilarTool", "args": {"items": ["$S.shown_items.1"], "top_k": 5}})),
         planner_tools,
         session=session
     )
@@ -100,8 +100,8 @@ def test_m3_exclusion_persistence(corpus):
 
     # Turn 2: Request should respect the exclusion
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"filters": {"exclude_item_ids": "$S.constraints.exclude_item_ids"}, "limit": 5}})),
-        [SQLTool(corpus)],
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"filters": {"exclude_item_ids": "$S.constraints.exclude_item_ids"}, "limit": 5}})),
+        [FilterTool(corpus)],
         session=session
     )
 
@@ -118,8 +118,8 @@ def test_m4_no_repeat_of_shown_items(corpus):
 
     # Turn 2: Request more items
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"filters": {"exclude_item_ids": "$S.shown_items"}, "limit": 5}})),
-        [SQLTool(corpus)],
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"filters": {"exclude_item_ids": "$S.shown_items"}, "limit": 5}})),
+        [FilterTool(corpus)],
         session=session
     )
 
@@ -137,7 +137,7 @@ def test_m5_clarification_flow(corpus):
     ask_user_plan = json.dumps({"steps": [], "ask_user": "What product type do you like?"})
     executor1 = PlanExecutor(
         ScriptedLLM(ask_user_plan),
-        [SQLTool(corpus)],
+        [FilterTool(corpus)],
         session=session
     )
 
@@ -147,10 +147,10 @@ def test_m5_clarification_flow(corpus):
     assert len(session.turns) == 1
 
     # Turn 2: User provides clarification
-    clarification_plan = plan({"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 5}})
+    clarification_plan = plan({"tool": "FilterTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 5}})
     executor2 = PlanExecutor(
         ScriptedLLM(clarification_plan, clarification_plan, clarification_plan),  # Provide enough responses
-        [SQLTool(corpus)],
+        [FilterTool(corpus)],
         session=session
     )
 
@@ -171,8 +171,8 @@ def test_m6_topic_change(corpus):
     session.update_constraints({"category": "Electronics"})
 
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"filters": {"categories_any": ["Electronics"]}, "limit": 5}})),
-        [SQLTool(corpus)],
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"filters": {"categories_any": ["Electronics"]}, "limit": 5}})),
+        [FilterTool(corpus)],
         session=session
     )
 
@@ -196,7 +196,7 @@ def test_m7_long_term_memory_usage(corpus, cf_setup):
 
     # Simplified test: just verify session is preserved across turns with memory tools
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"limit": 5}})),
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 5}})),
         planner_tools,
         session=session
     )

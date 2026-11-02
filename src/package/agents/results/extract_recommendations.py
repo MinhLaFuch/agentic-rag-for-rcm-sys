@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-# Preference order: a ranked list beats raw retrieval order, which beats QueryTool (SQL IN order, not rank order).
-_GROUPS = (("RecoModelTool",), ("SemanticSearchTool", "SQLTool", "ItemCFTool"), ("QueryTool",))
-_ROWS_KEY = {"RecoModelTool": "ranked", "QueryTool": "items"}  # every other tool returns `candidates`
+# Preference order: a ranked list beats raw retrieval order, which beats LookupTool (SQL IN order, not rank order).
+_GROUPS = (("RankTool",), ("SearchTool", "FilterTool", "SimilarTool"), ("LookupTool",))
+_ROWS_KEY = {"RankTool": "ranked", "LookupTool": "items"}  # every other tool returns `candidates`
 
 
 def extract_recommendations(results: list[dict[str, Any]], k: int) -> list[str]:

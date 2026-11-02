@@ -7,7 +7,7 @@ import warnings
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, QueryTool
+from package.tools import ItemCorpus, LookupTool
 from package.tools.base import ToolInputError
 from package.tools.corpus import build_corpus
 
@@ -179,13 +179,13 @@ def test_build_corpus_rejects_plain_id_mapping(tmp_path):
 )
 def test_writes_and_unsafe_statements_are_rejected_and_data_is_untouched(world, sql):
     before = world.corpus.select("SELECT COUNT(*) AS n FROM items")[0]
-    result = QueryTool(world.corpus)(query=sql)
+    result = LookupTool(world.corpus)(query=sql)
     assert not result.ok
     assert world.corpus.select("SELECT COUNT(*) AS n FROM items")[0] == before
 
 
 def test_valid_select_and_cte_work(world):
-    tool = QueryTool(world.corpus)
+    tool = LookupTool(world.corpus)
     assert tool(query="SELECT COUNT(*) AS n FROM items").data["items"] == [{"n": 6}]
     cte = "WITH g AS (SELECT item_id FROM items WHERE domain='Games') SELECT COUNT(*) AS n FROM g"
     assert tool(query=cte).data["items"] == [{"n": 4}]

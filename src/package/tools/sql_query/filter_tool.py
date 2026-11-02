@@ -1,8 +1,8 @@
 """
-SQLTool: retrieve candidate items with structured conditions.
+FilterTool: retrieve candidate items with structured conditions.
 
 Filters are compiled to parameterised SQL (no string interpolation of user
-values), so the LLM cannot inject SQL through this tool; use QueryTool for
+values), so the LLM cannot inject SQL through this tool; use LookupTool for
 free-form SELECTs.
 """
 
@@ -16,17 +16,17 @@ from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
 from .compile_filters import compile_filters
 
-class SQLTool(Tool):
+class FilterTool(Tool):
     """
     Retrieve candidate items with structured conditions.  Filters are compiled to
     parameterised SQL (no string interpolation of user values), so the LLM can
-    never inject SQL through this tool; use QueryTool for free-form SELECTs.
+    never inject SQL through this tool; use LookupTool for free-form SELECTs.
     """
 
-    name = "SQLTool"
+    name = "FilterTool"
     description = (
         "Retrieve candidate items with structured filters (domain, category, price, rating, store). "
-        "Does not require a text query; use SemanticSearchTool for keyword-based retrieval. "
+        "Does not require a text query; use SearchTool for keyword-based retrieval. "
         "Categories must be exact names from the catalog (case-sensitive). Unknown filter keys are rejected."
     )
     input_schema = {

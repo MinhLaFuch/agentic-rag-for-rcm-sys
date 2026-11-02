@@ -76,7 +76,7 @@ def test_ok_partial_with_failed_tool():
         request_text="test",
         items=[{"item_id": "item1"}],
         question=None,
-        errors=[{"tool": "SQLTool", "error": "timeout"}],
+        errors=[{"tool": "FilterTool", "error": "timeout"}],
         invented_ids=[],
         cold_start=None,
         n_steps=2,
@@ -84,7 +84,7 @@ def test_ok_partial_with_failed_tool():
     status, reason = classify_outcome(outcome)
     assert status == "ok"
     assert "partial" in reason
-    assert "SQLTool" in reason
+    assert "FilterTool" in reason
     assert "failed" in reason
 
 
@@ -94,14 +94,14 @@ def test_tool_error_no_items_with_errors():
         request_text="test",
         items=[],
         question=None,
-        errors=[{"tool": "SQLTool", "error": "timeout"}],
+        errors=[{"tool": "FilterTool", "error": "timeout"}],
         invented_ids=[],
         cold_start=None,
         n_steps=1,
     )
     status, reason = classify_outcome(outcome)
     assert status == "tool_error"
-    assert "SQLTool" in reason
+    assert "FilterTool" in reason
     assert "timeout" in reason
 
 
@@ -160,8 +160,8 @@ def test_multiple_failed_tools_in_partial():
         items=[{"item_id": "item1"}],
         question=None,
         errors=[
-            {"tool": "SQLTool", "error": "timeout"},
-            {"tool": "QueryTool", "error": "not found"},
+            {"tool": "FilterTool", "error": "timeout"},
+            {"tool": "LookupTool", "error": "not found"},
         ],
         invented_ids=[],
         cold_start=None,
@@ -170,5 +170,5 @@ def test_multiple_failed_tools_in_partial():
     status, reason = classify_outcome(outcome)
     assert status == "ok"
     assert "partial" in reason
-    assert "SQLTool" in reason
-    assert "QueryTool" in reason
+    assert "FilterTool" in reason
+    assert "LookupTool" in reason

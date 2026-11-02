@@ -12,10 +12,10 @@ from typing import Any
 from package.tools.base import Tool
 
 
-class ControlledSQLTool(Tool):
-    """Mock SQLTool with controlled behavior."""
+class ControlledFilterTool(Tool):
+    """Mock FilterTool with controlled behavior."""
 
-    name = "SQLTool"
+    name = "FilterTool"
     description = "Retrieve candidate items with structured filters."
     input_schema = {"filters": "dict", "limit": "int"}
     output_schema = {"candidates": "list", "total_matches": "int"}
@@ -43,10 +43,10 @@ class ControlledSQLTool(Tool):
         }
 
 
-class ControlledItemCFTool(Tool):
-    """Mock ItemCFTool with controlled behavior."""
+class ControlledSimilarTool(Tool):
+    """Mock SimilarTool with controlled behavior."""
 
-    name = "ItemCFTool"
+    name = "SimilarTool"
     description = "Retrieve items similar to given item(s)."
     input_schema = {"items": "list", "top_k": "int"}
     output_schema = {"candidates": "list", "unknown_items": "list"}
@@ -74,12 +74,12 @@ def get_controlled_tools(config: dict[str, Any] | None = None) -> list[Tool]:
     """Return controlled mock tools based on config."""
     config = config or {}
     return [
-        ControlledSQLTool(
+        ControlledFilterTool(
             should_fail=config.get("sql_fail", False),
             should_timeout=config.get("sql_timeout", False),
             should_return_empty=config.get("sql_empty", False),
         ),
-        ControlledItemCFTool(
+        ControlledSimilarTool(
             should_fail=config.get("cf_fail", False),
             should_return_empty=config.get("cf_empty", False),
         ),

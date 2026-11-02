@@ -45,10 +45,10 @@ def test_corpus_schema_matches_schema_hint():
 
 def test_query_tool_handles_trailing_comment_in_query(corpus):
     """SQL queries with trailing -- comments should not break the wrapper."""
-    from package.tools import QueryTool
+    from package.tools import LookupTool
 
     # Query with trailing comment
-    result = QueryTool(corpus)(query="SELECT item_id FROM items WHERE domain='Video_Games' -- test comment")
+    result = LookupTool(corpus)(query="SELECT item_id FROM items WHERE domain='Video_Games' -- test comment")
     assert result.ok
     assert len(result.data["items"]) > 0
 

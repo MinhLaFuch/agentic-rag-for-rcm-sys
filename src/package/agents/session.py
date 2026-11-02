@@ -11,8 +11,8 @@ from typing import Any
 
 
 @dataclass
-class Turn:
-    """A single turn in the conversation."""
+class _Turn:
+    """A single turn in the conversation (internal)."""
     user_request: str
     plan: str
     answer_summary: str  # Truncated summary of the agent's response
@@ -53,7 +53,7 @@ class Session:
         # Truncate answer summary if needed
         answer_summary = answer[:self.max_turn_chars] if len(answer) > self.max_turn_chars else answer
 
-        turn = Turn(
+        turn = _Turn(
             user_request=user_request,
             plan=plan,
             answer_summary=answer_summary
@@ -104,7 +104,7 @@ class Session:
         Valid IDs = shown_items ∪ candidates ∪ ranked
         """
         valid = set(self.shown_items) | set(self.ranked)
-        # candidates might be dicts (from SQLTool), extract item_id if needed
+        # candidates might be dicts (from FilterTool), extract item_id if needed
         for c in self.candidates:
             if isinstance(c, dict) and "item_id" in c:
                 valid.add(c["item_id"])

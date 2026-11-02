@@ -7,7 +7,7 @@ import pytest
 from package.agents import PlanExecutor, build_tool_prompt
 from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
-from package.tools import BaselineScorer, QueryTool, SQLTool, ToolCallLogger, ItemCFTool
+from package.tools import BaselineScorer, LookupTool, FilterTool, ToolCallLogger, SimilarTool
 from package.memory.memory_tool import MemoryTool
 from package.tools.recommenders import ItemKNNRecommender
 from tests.agents.fakes.scripted_llm import ScriptedLLM
@@ -19,8 +19,8 @@ def plan(*steps, ask_user=None) -> str:
 
 
 def test_retries_once_on_invalid_json_then_succeeds(corpus):
-    llm = ScriptedLLM("not json at all", plan({"tool": "SQLTool", "args": {"limit": 2}}))
-    executor = PlanExecutor(llm, [SQLTool(corpus)], plan_retries=1)
+    llm = ScriptedLLM("not json at all", plan({"tool": "FilterTool", "args": {"limit": 2}}))
+    executor = PlanExecutor(llm, [FilterTool(corpus)], plan_retries=1)
     results = executor.run("list some items")
     assert results[0]["ok"]
     assert executor.last_usage["attempts"] == 2
@@ -30,7 +30,7 @@ def test_retries_once_on_invalid_json_then_succeeds(corpus):
 
 
 def test_raises_when_retries_are_exhausted(corpus):
-    executor = PlanExecutor(ScriptedLLM("nope", "still nope"), [SQLTool(corpus)], plan_retries=1)
+    executor = PlanExecutor(ScriptedLLM("nope", "still nope"), [FilterTool(corpus)], plan_retries=1)
     with pytest.raises(ValueError):
         executor.run("list some items")
     assert executor.last_usage["attempts"] == 2
@@ -39,13 +39,13 @@ def test_raises_when_retries_are_exhausted(corpus):
 def test_no_retry_when_disabled(corpus):
     llm = ScriptedLLM("nope")
     with pytest.raises(ValueError):
-        PlanExecutor(llm, [SQLTool(corpus)], plan_retries=0).run("x")
+        PlanExecutor(llm, [FilterTool(corpus)], plan_retries=0).run("x")
     assert len(llm.calls) == 1
 
 
 def test_plan_is_cut_to_max_steps(corpus):
-    step = {"tool": "SQLTool", "args": {"limit": 1}}
-    executor = PlanExecutor(ScriptedLLM(plan(step, step, step)), [SQLTool(corpus)], max_steps=2)
+    step = {"tool": "FilterTool", "args": {"limit": 1}}
+    executor = PlanExecutor(ScriptedLLM(plan(step, step, step)), [FilterTool(corpus)], max_steps=2)
     results = executor.run("list items")
     assert len(results) == 2 and executor.last_truncated
 
@@ -56,7 +56,7 @@ def test_invented_id_is_reported_and_the_tool_is_not_run(corpus):
     from package.agents.session import Session
     session = Session()
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::made_up"]}})), [QueryTool(corpus, logger=logger)], session=session
+        ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": ["Video_Games::made_up"]}})), [LookupTool(corpus, logger=logger)], session=session
     )
     results = executor.run(f"tell me about {VG_A}")
     assert not results[0]["ok"] and results[0]["invented_ids"] == ["Video_Games::made_up"]
@@ -65,48 +65,48 @@ def test_invented_id_is_reported_and_the_tool_is_not_run(corpus):
 
 def test_id_copied_from_the_request_is_executed(corpus):
     from package.agents.session import Session
-    executor = PlanExecutor(ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A]}})), [QueryTool(corpus)], session=Session())
+    executor = PlanExecutor(ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": [VG_A]}})), [LookupTool(corpus)], session=Session())
     results = executor.run(f"tell me about {VG_A}")
     assert results[0]["ok"] and results[0]["invented_ids"] == []
 
 
 def test_reference_to_an_earlier_step_is_resolved(corpus):
     steps = [
-        {"tool": "SQLTool", "args": {"limit": 2}},
-        {"tool": "QueryTool", "args": {"item_ids": "$1.candidates.*.item_id"}},
+        {"tool": "FilterTool", "args": {"limit": 2}},
+        {"tool": "LookupTool", "args": {"item_ids": "$1.candidates.*.item_id"}},
     ]
-    results = PlanExecutor(ScriptedLLM(plan(*steps)), [SQLTool(corpus), QueryTool(corpus)]).run("show me items")
+    results = PlanExecutor(ScriptedLLM(plan(*steps)), [FilterTool(corpus), LookupTool(corpus)]).run("show me items")
     assert [r["ok"] for r in results] == [True, True] and len(results[1]["data"]["items"]) == 2
 
 
 def test_ask_user_gives_an_empty_plan_and_a_question(corpus):
-    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which product type?")), [SQLTool(corpus)])
+    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which product type?")), [FilterTool(corpus)])
     assert executor.run("recommend something") == []
     assert executor.last_question == "Which product type?"
 
 
 def test_every_tool_the_planner_can_see_documents_itself(corpus, cf_setup):
-    # Regression: RecoModelTool once reached the planner with no description and `input_schema: {}`.
+    # Regression: RankTool once reached the planner with no description and `input_schema: {}`.
     from package.agents import build_tool_prompt
     from package.memory.memory_tool import MemoryTool
-    from package.tools import BaselineScorer, ItemCFTool, RecoModelTool, SemanticSearchTool, SQLTool
+    from package.tools import BaselineScorer, SimilarTool, RankTool, SearchTool, FilterTool
     from package.tools.recommenders import ItemKNNRecommender
 
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(5).fit(interactions)
-    tools = [ItemCFTool(knn, item2id, corpus=corpus), RecoModelTool(BaselineScorer(knn), user2id, item2id, corpus=corpus),
-             QueryTool(corpus), SQLTool(corpus), SemanticSearchTool(corpus), MemoryTool(interactions, user2id, item2id, corpus)]
+    tools = [SimilarTool(knn, item2id, corpus=corpus), RankTool(BaselineScorer(knn), user2id, item2id, corpus=corpus),
+             LookupTool(corpus), FilterTool(corpus), SearchTool(corpus), MemoryTool(interactions, user2id, item2id, corpus)]
     for tool in tools:
         assert tool.description and tool.input_schema and tool.output_schema, tool.name
     prompt = build_tool_prompt(tools)
     assert "returns:" in prompt and "user_id" in prompt and "categories_any" in prompt  # filter keys are spelled out
-    assert "Electronics" in SemanticSearchTool(corpus).input_schema["filters"]["domain"]  # real domain names, not "Amazon"
-    # SQLTool should be included in the planner's tools
-    assert SQLTool.name in [t.name for t in tools]
+    assert "Electronics" in SearchTool(corpus).input_schema["filters"]["domain"]  # real domain names, not "Amazon"
+    # FilterTool should be included in the planner's tools
+    assert FilterTool.name in [t.name for t in tools]
 
 
 def test_sqltool_is_in_planner_toolset(corpus, cf_setup):
-    """SQLTool should be available to the planner via for_planner()."""
+    """FilterTool should be available to the planner via for_planner()."""
     from package.agents import build_tools
 
     interactions, user2id, item2id = cf_setup
@@ -115,37 +115,37 @@ def test_sqltool_is_in_planner_toolset(corpus, cf_setup):
 
     planner_tools = tools.for_planner()
     tool_names = [t.name for t in planner_tools]
-    assert "SQLTool" in tool_names
-    assert "ItemCFTool" in tool_names
-    assert "RecoModelTool" in tool_names
-    assert "QueryTool" in tool_names
-    assert "SemanticSearchTool" in tool_names
+    assert "FilterTool" in tool_names
+    assert "SimilarTool" in tool_names
+    assert "RankTool" in tool_names
+    assert "LookupTool" in tool_names
+    assert "SearchTool" in tool_names
 
-    # planner_memory should also have SQLTool
+    # planner_memory should also have FilterTool
     planner_memory_tools = tools.for_planner_memory()
-    assert "SQLTool" in [t.name for t in planner_memory_tools]
+    assert "FilterTool" in [t.name for t in planner_memory_tools]
     assert "MemoryTool" in [t.name for t in planner_memory_tools]
 
 
 def test_filter_key_sent_at_top_level_gets_an_actionable_error_and_the_tool_is_not_called(corpus):
-    from package.tools import SemanticSearchTool
+    from package.tools import SearchTool
 
     logger = ToolCallLogger()
-    flat = {"tool": "SemanticSearchTool", "args": {"query": "game", "categories_any": ["Games"], "price_max": 20}}
-    results = PlanExecutor(ScriptedLLM(plan(flat)), [SemanticSearchTool(corpus, logger=logger)], reflect_rounds=0).run("find games")  # reflect off: this test is about the first run's error
+    flat = {"tool": "SearchTool", "args": {"query": "game", "categories_any": ["Games"], "price_max": 20}}
+    results = PlanExecutor(ScriptedLLM(plan(flat)), [SearchTool(corpus, logger=logger)], reflect_rounds=0).run("find games")  # reflect off: this test is about the first run's error
     assert not results[0]["ok"] and logger.records == []
     assert "belongs inside `filters`" in results[0]["error"] and "categories_any" in results[0]["error"]
-    nested = {"tool": "SemanticSearchTool", "args": {"query": "game", "filters": {"categories_any": ["Games"], "price_max": 20}}}
-    assert PlanExecutor(ScriptedLLM(plan(nested)), [SemanticSearchTool(corpus)]).run("find games")[0]["ok"]
+    nested = {"tool": "SearchTool", "args": {"query": "game", "filters": {"categories_any": ["Games"], "price_max": 20}}}
+    assert PlanExecutor(ScriptedLLM(plan(nested)), [SearchTool(corpus)]).run("find games")[0]["ok"]
 
 
 def test_step_includes_args_and_output_summary(corpus):
     """New fields for trajectory logging: args (resolved) and output_summary."""
     steps = [
-        {"tool": "SQLTool", "args": {"limit": 2}},
-        {"tool": "QueryTool", "args": {"item_ids": "$1.candidates.*.item_id"}},
+        {"tool": "FilterTool", "args": {"limit": 2}},
+        {"tool": "LookupTool", "args": {"item_ids": "$1.candidates.*.item_id"}},
     ]
-    results = PlanExecutor(ScriptedLLM(plan(*steps)), [SQLTool(corpus), QueryTool(corpus)]).run("show me items")
+    results = PlanExecutor(ScriptedLLM(plan(*steps)), [FilterTool(corpus), LookupTool(corpus)]).run("show me items")
     assert results[0]["ok"]
     assert "args" in results[0]
     assert results[0]["args"] == {"limit": 2}
@@ -165,21 +165,21 @@ def test_step_includes_args_and_output_summary(corpus):
 
 def test_step_includes_note_when_present(corpus, cf_setup):
     """Tool output with 'note' field should be copied to step."""
-    from package.tools import ItemCFTool
+    from package.tools import SimilarTool
     from package.tools.recommenders import ItemKNNRecommender
 
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(5).fit(interactions)
-    item_cf = ItemCFTool(knn, item2id, corpus=corpus)
+    item_cf = SimilarTool(knn, item2id, corpus=corpus)
 
     # Use an unknown item to force empty candidates and generate a note
     # Include it in the request text to avoid "invented id" check
     unknown_item = "Video_Games::unknown_item_12345"
-    steps = [{"tool": "ItemCFTool", "args": {"items": [unknown_item]}}]
+    steps = [{"tool": "SimilarTool", "args": {"items": [unknown_item]}}]
     # Disable reflect to avoid multiple LLM calls
     results = PlanExecutor(ScriptedLLM(plan(*steps)), [item_cf], reflect_rounds=0).run(f"similar to {unknown_item}")
     assert results[0]["ok"]
-    # ItemCFTool returns note when candidates is empty
+    # SimilarTool returns note when candidates is empty
     assert "note" in results[0]["data"]
     assert "note" in results[0]
     assert results[0]["note"] == results[0]["data"]["note"]
@@ -193,7 +193,7 @@ def test_output_summary_is_size_limited(corpus):
 
 
 def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
-    """SYSTEM_PROMPT should include SQLTool, MemoryTool, and the new examples."""
+    """SYSTEM_PROMPT should include FilterTool, MemoryTool, and the new examples."""
     from package.agents.planner._prompt import SYSTEM_PROMPT
     from package.agents import build_tools
     import json
@@ -205,8 +205,8 @@ def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     session_state = json.dumps({"turns_count": 0, "shown_items": [], "candidates": [], "ranked": [], "constraints": {}, "feedback": {}}, ensure_ascii=False)
     prompt = SYSTEM_PROMPT.format(tools=build_tool_prompt(planner_tools), session_state=session_state)
 
-    # Check that SQLTool and MemoryTool are mentioned
-    assert "SQLTool" in prompt
+    # Check that FilterTool and MemoryTool are mentioned
+    assert "FilterTool" in prompt
     assert "MemoryTool" in prompt
 
     # Check that the new examples are present
@@ -237,8 +237,8 @@ def test_memory_tool_output_is_not_summarized():
 
 def test_failed_step_still_has_args_but_no_output_summary(corpus):
     """When a step fails, args should still be logged but output_summary is empty."""
-    steps = [{"tool": "SQLTool", "args": {"invalid_arg": 1}}]
-    results = PlanExecutor(ScriptedLLM(plan(*steps)), [SQLTool(corpus)], reflect_rounds=0).run("list items")
+    steps = [{"tool": "FilterTool", "args": {"invalid_arg": 1}}]
+    results = PlanExecutor(ScriptedLLM(plan(*steps)), [FilterTool(corpus)], reflect_rounds=0).run("list items")
     assert not results[0]["ok"]
     assert "args" in results[0]
     assert results[0]["args"] == {"invalid_arg": 1}
@@ -272,8 +272,8 @@ def test_id_from_session_is_allowed(corpus):
 
     # Use an ID from session that is NOT in the request
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_B]}})),
-        [QueryTool(corpus)],
+        ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": [VG_B]}})),
+        [LookupTool(corpus)],
         session=session
     )
     results = executor.run("tell me about something else")
@@ -291,8 +291,8 @@ def test_id_not_in_request_or_session_is_rejected(corpus):
 
     # Use an ID that is neither in request nor session
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::unknown"]}})),
-        [QueryTool(corpus)],
+        ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": ["Video_Games::unknown"]}})),
+        [LookupTool(corpus)],
         session=session
     )
     results = executor.run("tell me about something")
@@ -307,8 +307,8 @@ def test_session_state_updated_after_turn(corpus):
 
     session = Session()
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "SQLTool", "args": {"limit": 2}})),
-        [SQLTool(corpus)],
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 2}})),
+        [FilterTool(corpus)],
         session=session
     )
     results = executor.run("list items")
@@ -316,15 +316,15 @@ def test_session_state_updated_after_turn(corpus):
     # Session should be updated
     assert len(session.turns) == 1
     assert session.turns[0].user_request == "list items"
-    # Candidates should be populated from SQLTool result
+    # Candidates should be populated from FilterTool result
     assert len(session.candidates) > 0 or len(session.shown_items) > 0
 
 
 def test_session_with_none_preserves_existing_behavior(corpus):
     """Test that session=None works exactly like before (no session integration)."""
     executor = PlanExecutor(
-        ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A]}})),
-        [QueryTool(corpus)],
+        ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": [VG_A]}})),
+        [LookupTool(corpus)],
         session=None
     )
     results = executor.run(f"tell me about {VG_A}")

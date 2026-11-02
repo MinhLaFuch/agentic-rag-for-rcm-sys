@@ -28,20 +28,19 @@ from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.tools import ItemCFTool, QueryTool, RecoModelTool, SemanticSearchTool
+from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
 from package.tools.base import ToolCallLogger
 from package.tools.corpus import build_corpus, load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
 from package.tools.evaluation.metrics import ranking_metrics_at_k
-from package.tools.recommenders import ItemKNNRecommender, build_interaction_matrix
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.tools.recommenders.shared.build_interaction_matrix import build_interaction_matrix
+from package.tools.recommenders.shared.model_metadata import item_knn_data_hash, mapping_hash, file_hash
 from package.tools.score import BaselineScorer
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.mapping_hash import mapping_hash
-from package.tools.recommenders.file_hash import file_hash
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
@@ -104,8 +103,8 @@ from package.tools.evaluation.ranking_run_store import RankingRunStore
 from package.tools.evaluation.stage_progress import StageProgress
 from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
 from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
-from package.tools.recommenders.save_item_knn import save_item_knn
-from package.tools.recommenders.load_item_knn import load_item_knn
+from package.tools.recommenders.shared.save_item_knn import save_item_knn
+from package.tools.recommenders.shared.load_item_knn import load_item_knn
 
 
 def main() -> None:
@@ -262,9 +261,9 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         knn_hash = item_knn_data_hash(fit_df[["user_idx", "item_idx"]])
     knn_seconds = time.perf_counter() - knn_started
     print(f"[ItemKNN] ready in {knn_seconds:.1f}s", flush=True)
-    item_cf = ItemCFTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
-    semantic = SemanticSearchTool(corpus, logger=ToolCallLogger())
-    query_tool = QueryTool(corpus, logger=ToolCallLogger())
+    item_cf = SimilarTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
+    semantic = SearchTool(corpus, logger=ToolCallLogger())
+    query_tool = LookupTool(corpus, logger=ToolCallLogger())
     get_text = item_text_tables(corpus, namespaced)
     popular_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable")
     max_candidates = int(load_config("agent/tools")["tools"]["max_candidates"])
@@ -402,7 +401,7 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
             done = store.count(stream)
             progress = StageProgress(stream, total, completed=done, every=args.progress_every)
             scorer = BaselineScorer(knn, popularity_weight=weight)
-            reco = RecoModelTool(scorer, user2id, item2id, corpus=corpus)
+            reco = RankTool(scorer, user2id, item2id, corpus=corpus)
             batch = []
             for position,record in store.rows("candidates", start=done, batch_size=args.batch_size):
                 user,segment = record["user_idx"],record["segment"]

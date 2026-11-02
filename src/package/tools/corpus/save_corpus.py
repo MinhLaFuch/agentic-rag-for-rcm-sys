@@ -9,8 +9,7 @@ from pathlib import Path
 
 from ._sql import get_corpus_schema_fingerprint, CORPUS_LOGIC_VERSION
 from .item_corpus import ItemCorpus
-from ..recommenders.file_hash import file_hash
-from ..recommenders.mapping_hash import mapping_hash
+from ..recommenders.shared.model_metadata import file_hash, mapping_hash
 
 
 def save_corpus(

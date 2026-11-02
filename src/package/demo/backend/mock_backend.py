@@ -43,8 +43,8 @@ _MOCK_ITEMS = [
 
 _MOCK_TRAILS = {
     "ok": DemoTrace(
-        plan=[{"tool": "QueryTool", "args": {"item_ids": ["Video_Games::B00EXAMPLE1"]}}],
-        steps=[{"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        plan=[{"tool": "LookupTool", "args": {"item_ids": ["Video_Games::B00EXAMPLE1"]}}],
+        steps=[{"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1}],
         ask_user=None,
         reflections=0,
         first_attempt_ok=True,
@@ -63,8 +63,8 @@ _MOCK_TRAILS = {
         inference={"composer": "template", "grounded": True, "fallback_reason": None, "reason": "ask_user", "usage": {"attempts": 0}},
     ),
     "no_result": DemoTrace(
-        plan=[{"tool": "SemanticSearchTool", "args": {"query": "nonexistent"}}],
-        steps=[{"tool": "SemanticSearchTool", "ok": True, "error": None, "latency_seconds": 0.2}],
+        plan=[{"tool": "SearchTool", "args": {"query": "nonexistent"}}],
+        steps=[{"tool": "SearchTool", "ok": True, "error": None, "latency_seconds": 0.2}],
         ask_user=None,
         reflections=0,
         first_attempt_ok=True,
@@ -73,8 +73,8 @@ _MOCK_TRAILS = {
         inference={"composer": "template", "grounded": True, "fallback_reason": None, "reason": "no_result", "usage": {"attempts": 0}},
     ),
     "tool_error": DemoTrace(
-        plan=[{"tool": "QueryTool", "args": {"item_ids": ["invalid"]}}],
-        steps=[{"tool": "QueryTool", "ok": False, "error": "Item not found", "latency_seconds": 0.1}],
+        plan=[{"tool": "LookupTool", "args": {"item_ids": ["invalid"]}}],
+        steps=[{"tool": "LookupTool", "ok": False, "error": "Item not found", "latency_seconds": 0.1}],
         ask_user=None,
         reflections=0,
         first_attempt_ok=False,
@@ -240,7 +240,7 @@ class MockBackend:
                 {
                     "memory_step_index": 0,
                     "consumer_step_index": 1,
-                    "consumer_tool": "QueryTool",
+                    "consumer_tool": "LookupTool",
                     "reference": "$0.top_categories",
                 }
             ],

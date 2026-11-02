@@ -10,9 +10,9 @@ from typing import Any
 import pandas as pd
 import scipy.sparse as sp
 
-from .item_knn_data_hash import item_knn_data_hash
-from .file_hash import file_hash
-from .fit_provenance import fit_provenance
+from .model_metadata import item_knn_data_hash
+from .model_metadata import file_hash
+from .provenance import fit_provenance
 
 
 def save_item_knn(

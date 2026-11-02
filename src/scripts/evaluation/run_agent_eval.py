@@ -69,12 +69,11 @@ from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.tools.recommenders.shared.model_metadata import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
-from package.tools.recommenders.mapping_hash import mapping_hash
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",

@@ -1,4 +1,4 @@
-"""QueryTool: ask the corpus for item information (by ids or one read-only SELECT)."""
+"""LookupTool: ask the corpus for item information (by ids or one read-only SELECT)."""
 
 from __future__ import annotations
 
@@ -10,10 +10,10 @@ from .._limits import MAX_QUERY_ROWS, QUERY_DEFAULT_MAX_ROWS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 
 
-class QueryTool(Tool):
+class LookupTool(Tool):
     """Ask the corpus for item information: by item ids, or by a raw read-only SELECT."""
 
-    name = "QueryTool"
+    name = "LookupTool"
     description = (
         "Look up item information. Provide either `item_ids` (namespaced) or a single "
         f"read-only `query` (SELECT). Tables: {SCHEMA_HINT}. Results are capped at {MAX_QUERY_ROWS} rows."

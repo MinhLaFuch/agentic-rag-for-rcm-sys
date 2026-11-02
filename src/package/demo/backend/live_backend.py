@@ -21,10 +21,10 @@ from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import select_fit_target
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.load_item_knn import load_item_knn
-from package.tools.recommenders.fit_provenance import fit_provenance
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.tools.recommenders.shared.load_item_knn import load_item_knn
+from package.tools.recommenders.shared.provenance import fit_provenance
+from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
 from .._consumed_by import detect_consumed_by
 from .._memory_snapshot import take_memory_snapshot
 from .._profile_builder import build_profiles

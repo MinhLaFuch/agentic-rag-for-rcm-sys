@@ -1,4 +1,4 @@
-"""RecoModelTool: rank a candidate set for a user with a recommendation model (not an LLM)."""
+"""RankTool: rank a candidate set for a user with a recommendation model (not an LLM)."""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ from ..corpus import ItemCorpus
 from ..score import CandidateScorer
 
 
-class RecoModelTool(Tool):
+class RankTool(Tool):
     """
     Rank a candidate set for a user with a recommendation model (not an LLM).
-    Feed it the `candidates` from SQLTool / ItemCFTool directly.
+    Feed it the `candidates` from SimilarTool / SearchTool / FilterTool directly.
 
     Leakage: the tool has no timestamp; the "as-of" time is fixed by which
     interactions the scorer's model was fitted on (train for validation runs,
@@ -22,10 +22,10 @@ class RecoModelTool(Tool):
 
     """
 
-    name = "RecoModelTool"
+    name = "RankTool"
     description = (
         "Rank a candidate set for a user with a recommendation model (not an LLM). "
-        "Feed it `candidates` from ItemCFTool / SemanticSearchTool / SQLTool as-is."
+        "Feed it `candidates` from SimilarTool / SearchTool / FilterTool as-is."
     )
     input_schema = {
         "user_id": "str  -- required",

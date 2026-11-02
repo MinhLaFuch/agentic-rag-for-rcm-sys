@@ -1,13 +1,13 @@
-"""Test category validation in SQLTool and SemanticSearchTool."""
+"""Test category validation in FilterTool and SearchTool."""
 
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, SQLTool, SemanticSearchTool
+from package.tools import ItemCorpus, FilterTool, SearchTool
 
 
 def test_sqltool_rejects_invalid_category():
-    """SQLTool should reject categories that don't exist in the catalog."""
+    """FilterTool should reject categories that don't exist in the catalog."""
     meta = pd.DataFrame({
         "parent_asin": ["a", "b"],
         "title": ["x", "y"],
@@ -15,7 +15,7 @@ def test_sqltool_rejects_invalid_category():
         "categories": [["Electronics", "Computers"], "Audio"],
     })
     corpus = ItemCorpus.from_dataframe(meta)
-    tool = SQLTool(corpus)
+    tool = FilterTool(corpus)
 
     # Valid category should work
     result = tool(filters={"categories_any": ["Electronics"]})
@@ -28,7 +28,7 @@ def test_sqltool_rejects_invalid_category():
 
 
 def test_sqltool_normalizes_category_case():
-    """SQLTool should normalize category case if it exists with different case."""
+    """FilterTool should normalize category case if it exists with different case."""
     meta = pd.DataFrame({
         "parent_asin": ["a", "b"],
         "title": ["x", "y"],
@@ -36,7 +36,7 @@ def test_sqltool_normalizes_category_case():
         "categories": [["Electronics", "Computers"], "Audio"],
     })
     corpus = ItemCorpus.from_dataframe(meta)
-    tool = SQLTool(corpus)
+    tool = FilterTool(corpus)
 
     # Different case should be normalized
     result = tool(filters={"categories_any": ["electronics"]})
@@ -45,7 +45,7 @@ def test_sqltool_normalizes_category_case():
 
 
 def test_sqltool_suggests_similar_categories():
-    """SQLTool should suggest similar categories when given invalid one."""
+    """FilterTool should suggest similar categories when given invalid one."""
     meta = pd.DataFrame({
         "parent_asin": ["a", "b", "c"],
         "title": ["x", "y", "z"],
@@ -53,7 +53,7 @@ def test_sqltool_suggests_similar_categories():
         "categories": [["Electronics", "Computers"], "Audio", "Gaming"],
     })
     corpus = ItemCorpus.from_dataframe(meta)
-    tool = SQLTool(corpus)
+    tool = FilterTool(corpus)
 
     # Similar typo should get suggestions
     result = tool(filters={"categories_any": ["Eletronics"]})
@@ -62,7 +62,7 @@ def test_sqltool_suggests_similar_categories():
 
 
 def test_semantic_search_tool_validates_categories():
-    """SemanticSearchTool should also validate categories."""
+    """SearchTool should also validate categories."""
     meta = pd.DataFrame({
         "parent_asin": ["a", "b"],
         "title": ["Mechanical Keyboard", "Wireless Mouse"],
@@ -70,7 +70,7 @@ def test_semantic_search_tool_validates_categories():
         "categories": [["Electronics", "Computers"], "Audio"],
     })
     corpus = ItemCorpus.from_dataframe(meta)
-    tool = SemanticSearchTool(corpus)
+    tool = SearchTool(corpus)
 
     # Valid category should work
     result = tool(query="keyboard", filters={"categories_any": ["Electronics"]})

@@ -91,8 +91,8 @@ class SessionConfig(BaseModel):
 class ToolsConfig(BaseModel):
     """Tools config from configs/agent/tools.yaml."""
 
-    max_candidates: int = Field(gt=0, description="Max candidates from SQLTool/ItemCFTool/SemanticSearchTool")
-    max_query_rows: int = Field(gt=0, description="Max rows from QueryTool")
+    max_candidates: int = Field(gt=0, description="Max candidates from FilterTool/SimilarTool/SearchTool")
+    max_query_rows: int = Field(gt=0, description="Max rows from LookupTool")
     sql_time_budget_seconds: float = Field(gt=0.0, description="SQL time budget in seconds")
     max_output_summary_chars: int = Field(gt=0, description="Max chars for output summary in trajectory")
     defaults: ToolsDefaultsConfig = Field(description="Default values for tool arguments")
@@ -102,9 +102,9 @@ class ToolsConfig(BaseModel):
 class ToolsDefaultsConfig(BaseModel):
     """Default values for tool arguments."""
 
-    sql_limit: int = Field(gt=0, description="Default SQLTool limit")
-    item_cf_top_k: int = Field(gt=0, description="Default ItemCFTool top_k")
-    query_max_rows: int = Field(gt=0, description="Default QueryTool max_rows")
+    sql_limit: int = Field(gt=0, description="Default FilterTool limit")
+    item_cf_top_k: int = Field(gt=0, description="Default SimilarTool top_k")
+    query_max_rows: int = Field(gt=0, description="Default LookupTool max_rows")
     memory_top_n_categories: int = Field(gt=0, description="Default MemoryTool top_n_categories")
     memory_recent_items: int = Field(gt=0, description="Default MemoryTool recent_items")
 
@@ -112,7 +112,7 @@ class ToolsDefaultsConfig(BaseModel):
 class SemanticSearchConfig(BaseModel):
     """Semantic search specific config."""
 
-    default_limit: int = Field(gt=0, description="Default limit for SemanticSearchTool")
+    default_limit: int = Field(gt=0, description="Default limit for SearchTool")
     max_query_tokens: int = Field(gt=0, description="Max tokens for BM25 query after stopword removal")
 
 

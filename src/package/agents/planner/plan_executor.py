@@ -29,12 +29,17 @@ REFLECT_NOTICE = (
 class PlanExecutor:
     """
     Plan-first executor: one LLM call writes the whole JSON plan, then the steps run in order.
-    Limits (max_steps, plan_retries, reflect_rounds, max_tokens, temperature) default to configs/agent/agent.yaml.
+    Limits (max_steps, plan_retries, reflect_rounds, max_tokens, temperature, reflect_quality_threshold) default to configs/agent/agent.yaml.
 
     plan-reflect: when a plan ran but a step failed, or it produced no item (and is not an ask_user), run() sends the
     LLM the step report (REFLECT_NOTICE) and runs the corrected plan, up to `reflect_rounds` times (0 = off).
     It never reflects when a step used an invented id, or hit the SQL time budget (a new plan would not help).
     A reflect reply that is not a usable plan (or a provider error during reflect) is dropped and the previous result is kept.
+
+    quality-based reflection: when reflect_quality_threshold > 0, also triggers reflection if the recommendation
+    pipeline quality score is below the threshold. Quality is computed deterministically based on which tools were used
+    (retrieval-only = 0.5, ranking without collaborative signal = 0.7, full pipeline with collaborative signal = 1.0).
+    This helps detect suboptimal plans even when all tools execute successfully.
 
     After plan()/run() the `last_*` attributes describe the latest request:
       last_plan / last_question  the parsed plan and the clarifying question (ask_user)
@@ -55,6 +60,7 @@ class PlanExecutor:
         max_steps: int | None = None,
         plan_retries: int | None = None,
         reflect_rounds: int | None = None,
+        reflect_quality_threshold: float | None = None,
         session: Session | None = None,
     ) -> None:
         limits = get_agent_limits()
@@ -66,8 +72,11 @@ class PlanExecutor:
         self.max_steps = limits.max_steps if max_steps is None else max_steps
         self.plan_retries = limits.plan_retries if plan_retries is None else plan_retries
         self.reflect_rounds = limits.reflect_rounds if reflect_rounds is None else reflect_rounds
+        self.reflect_quality_threshold = limits.reflect_quality_threshold if reflect_quality_threshold is None else reflect_quality_threshold
         if self.reflect_rounds < 0:
             raise ValueError("reflect_rounds must be >= 0")
+        if not (0.0 <= self.reflect_quality_threshold <= 1.0):
+            raise ValueError("reflect_quality_threshold must be between 0.0 and 1.0")
         self.session = session or Session(
             max_turns=10,
             max_shown_items=50,
@@ -99,8 +108,15 @@ class PlanExecutor:
         return resp
 
     def plan(self, user_request: str) -> list[dict[str, Any]]:
-        # Inject session state into the system prompt
-        session_state = json.dumps(self.session.to_dict(), ensure_ascii=False)
+        # Inject session state into the system prompt only when session has actual content
+        # (i.e., this is a multi-turn conversation with prior turns)
+        session_state = ""
+        if self.session and (self.session.turns or self.session.shown_items or self.session.constraints or self.session.feedback):
+            session_state = json.dumps(self.session.to_dict(), ensure_ascii=False)
+        else:
+            # No session state to inject - use empty string to avoid "Session state: {}" in prompt
+            session_state = "{}"
+        
         system = SYSTEM_PROMPT.format(
             tools=build_tool_prompt(list(self.tools.values())),
             session_state=session_state
@@ -135,7 +151,7 @@ class PlanExecutor:
 
     def run(self, user_request: str) -> list[dict[str, Any]]:
         results = self._execute(self.plan(user_request), user_request)
-        problem = _reflect_problem(results, self.last_question)
+        problem = _reflect_problem(results, self.last_question, self.reflect_quality_threshold)
         self.last_first_attempt_ok = problem is None
         messages = [*self._messages[:2], LLMMessage(role="assistant", content=self.last_response.text)]
 
@@ -171,7 +187,7 @@ class PlanExecutor:
                 # Keep the previous best result
                 results = best_results
 
-            problem = _reflect_problem(results, question)
+            problem = _reflect_problem(results, question, self.reflect_quality_threshold)
             messages = [*messages, LLMMessage(role="assistant", content=resp.text)]
 
         # Update session state after successful execution
@@ -197,18 +213,18 @@ class PlanExecutor:
             data = step.get("data", {})
             tool_name = step.get("tool", "")
 
-            # QueryTool shows items
-            if tool_name == "QueryTool":
+            # LookupTool shows items
+            if tool_name == "LookupTool":
                 items = data.get("items", [])
                 shown_items.extend([i.get("item_id") for i in items if isinstance(i, dict) and "item_id" in i])
 
-            # SQLTool/SemanticSearchTool provide candidates
-            if tool_name in ("SQLTool", "SemanticSearchTool"):
+            # FilterTool/SearchTool provide candidates
+            if tool_name in ("FilterTool", "SearchTool"):
                 step_candidates = data.get("candidates", [])
                 candidates.extend(step_candidates)
 
-            # RecoModelTool provides ranked items
-            if tool_name == "RecoModelTool":
+            # RankTool provides ranked items
+            if tool_name == "RankTool":
                 step_ranked = data.get("ranked", [])
                 ranked.extend([r.get("item_id") for r in step_ranked if isinstance(r, dict) and "item_id" in r])
 

@@ -191,15 +191,36 @@ def _blocks_reflect(results: list[dict[str, Any]]) -> bool:
     SQL timeout errors are surfaced to reflection but may still be blocked
     if they persist across reflection rounds.
     """
-    return any(r.get("invented_ids") for r in results)
+    return any(r.get("invented_ids") for r in results) or any(_is_time_budget(r.get("error")) for r in results)
 
 
-def _reflect_problem(results: list[dict[str, Any]], question: str | None) -> str | None:
-    """Why this run needs a corrected plan (None = fine): a failed step, or no item at all for a plan that is not ask_user."""
+def _reflect_problem(results: list[dict[str, Any]], question: str | None, quality_threshold: float = 0.0) -> str | None:
+    """
+    Why this run needs a corrected plan (None = fine):
+    - a failed step
+    - no item at all for a plan that is not ask_user
+    - low recommendation quality (suboptimal pipeline usage) - only if threshold > 0
+    
+    Args:
+        results: execution results
+        question: ask_user question if present
+        quality_threshold: minimum quality score to avoid reflection (0.0 = disabled)
+    """
+    # Execution failures
     if any(not r["ok"] for r in results):
         return "at least one step failed."
+    
+    # Empty results
     if not question and not extract_recommendations(results, 1):
         return "no step returned any item (empty results), so there is nothing to recommend."
+    
+    # Low recommendation quality (but only if this is not a clarifying question AND threshold is enabled)
+    if not question and quality_threshold > 0.0:
+        rec_quality = _compute_recommendation_quality(results)
+        # Trigger reflection if quality is strictly below configured threshold
+        if rec_quality < quality_threshold:
+            return f"recommendation pipeline quality is low (score={rec_quality:.1f}): the plan should use retrieval + ranking with collaborative filtering for better results."
+    
     return None
 
 
@@ -279,6 +300,62 @@ def _simplify_args_for_log(args: dict[str, Any]) -> dict[str, Any]:
     return simplified
 
 
+def _compute_recommendation_quality(results: list[dict[str, Any]]) -> float:
+    """
+    Compute a deterministic recommendation quality score (0.0 to 1.0).
+    This is separate from execution quality and focuses on result relevance.
+    
+    Quality criteria (deterministic, no LLM):
+    - 0.0 if no items returned
+    - 0.2 if items returned but no retrieval/ranking step used (e.g., only LookupTool)
+    - 0.5 if retrieval only (no ranking step)
+    - 0.7 if ranking used but from semantic search only (no collaborative signal)
+    - 1.0 if ranking used with collaborative signal (ItemCF or MemoryTool in the plan)
+    
+    The score does NOT judge semantic relevance to the user's query - that would
+    require an LLM judge or embedding similarity. Instead, it rewards using
+    the full recommendation pipeline (retrieval + ranking) over partial pipelines.
+    
+    Returns:
+        float: quality score from 0.0 to 1.0
+    """
+    from ..results import extract_recommendations
+    
+    # Check if any items were returned
+    items = extract_recommendations(results, 1)
+    if not items:
+        return 0.0
+    
+    # Identify which tools were used successfully
+    used_tools = {r["tool"] for r in results if r["ok"]}
+
+    # Check for collaborative signal
+    has_collaborative = "SimilarTool" in used_tools or "MemoryTool" in used_tools
+
+    # Check for ranking step
+    has_ranking = "RankTool" in used_tools
+
+    # Check for retrieval
+    has_retrieval = any(t in used_tools for t in ["SearchTool", "FilterTool", "SimilarTool"])
+
+    # Compute quality score
+    if not has_retrieval and not has_ranking:
+        # Only LookupTool or similar - no actual recommendation logic
+        return 0.2
+    elif has_retrieval and not has_ranking:
+        # Retrieval only, no ranking
+        return 0.5
+    elif has_ranking and not has_collaborative:
+        # Ranking from semantic search only (no personalization)
+        return 0.7
+    elif has_ranking and has_collaborative:
+        # Full pipeline with collaborative signal
+        return 1.0
+    
+    # Fallback
+    return 0.5
+
+
 def _compute_execution_quality(results: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Compute quality metrics for execution results.
@@ -291,6 +368,7 @@ def _compute_execution_quality(results: list[dict[str, Any]]) -> dict[str, Any]:
         - n_items: number of items returned (from extract_recommendations)
         - has_error: whether any step has an error
         - error_kinds: set of error kinds present
+        - rec_quality: recommendation quality score (0-1)
     """
     from ..results import extract_recommendations
 
@@ -299,6 +377,7 @@ def _compute_execution_quality(results: list[dict[str, Any]]) -> dict[str, Any]:
     n_items = len(extract_recommendations(results, 1))
     has_error = any(r.get("error") for r in results)
     error_kinds = set(r.get("error_kind") for r in results if r.get("error_kind"))
+    rec_quality = _compute_recommendation_quality(results)
 
     return {
         "failed_steps": failed_steps,
@@ -306,21 +385,23 @@ def _compute_execution_quality(results: list[dict[str, Any]]) -> dict[str, Any]:
         "n_items": n_items,
         "has_error": has_error,
         "error_kinds": error_kinds,
+        "rec_quality": rec_quality,
     }
 
 
 def _is_quality_improvement(old_quality: dict[str, Any], new_quality: dict[str, Any]) -> bool:
     """
-    Determine if new execution quality is better than old quality.
+    Determine if new execution quality is better than or equal to old quality.
 
     Improvement criteria (in order of priority):
     1. Fewer failed steps
-    2. More items returned
-    3. Fewer error kinds (different types of errors)
-    4. Not worse on any metric (strict improvement)
+    2. Higher recommendation quality score
+    3. More items returned
+    4. Fewer error kinds (different types of errors)
+    5. If all equal, accept if not worse (more steps = more thorough)
 
     Returns:
-        True if new_quality is better than old_quality
+        True if new_quality is not worse than old_quality
     """
     # Priority 1: Fewer failed steps is always better
     if new_quality["failed_steps"] < old_quality["failed_steps"]:
@@ -328,18 +409,28 @@ def _is_quality_improvement(old_quality: dict[str, Any], new_quality: dict[str, 
     if new_quality["failed_steps"] > old_quality["failed_steps"]:
         return False
 
-    # Priority 2: More items is better (if same number of failed steps)
+    # Priority 2: Higher recommendation quality is better
+    if new_quality["rec_quality"] > old_quality["rec_quality"]:
+        return True
+    if new_quality["rec_quality"] < old_quality["rec_quality"]:
+        return False
+
+    # Priority 3: More items is better (if same failed steps and rec_quality)
     if new_quality["n_items"] > old_quality["n_items"]:
         return True
     if new_quality["n_items"] < old_quality["n_items"]:
         return False
 
-    # Priority 3: Fewer error kinds is better
+    # Priority 4: Fewer error kinds is better
     if len(new_quality["error_kinds"]) < len(old_quality["error_kinds"]):
         return True
     if len(new_quality["error_kinds"]) > len(old_quality["error_kinds"]):
         return False
 
-    # If all metrics are equal, no improvement
+    # Priority 5: If all metrics equal, accept if new has more total steps (more thorough)
+    # or if they're completely equal (accept the new attempt)
+    if new_quality["total_steps"] >= old_quality["total_steps"]:
+        return True
+
     return False
 

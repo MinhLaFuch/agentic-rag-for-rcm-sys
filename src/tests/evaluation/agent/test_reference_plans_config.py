@@ -21,14 +21,14 @@ def test_reference_plans_loaded_from_config():
     assert "ambiguous" in plans
 
     # Check structure
-    assert plans["similar"] == (("ItemCFTool",), ("RecoModelTool",))
+    assert plans["similar"] == (("SimilarTool",), ("RankTool",))
     assert plans["ambiguous"] == ()
 
 
 def test_reference_plans_backward_compatibility():
     """Test that REFERENCE_PLANS dict-like accessor works."""
     # Should support __getitem__
-    assert REFERENCE_PLANS["similar"] == (("ItemCFTool",), ("RecoModelTool",))
+    assert REFERENCE_PLANS["similar"] == (("SimilarTool",), ("RankTool",))
 
     # Should support iteration
     kinds = list(REFERENCE_PLANS.keys())
@@ -54,31 +54,31 @@ def test_reference_plans_cache_invalidation(tmp_path):
 
     # Create initial config
     (agent_dir / "reference_plans.yaml").write_text(
-        "reference_plans:\n  similar:\n    - ['ItemCFTool']\n    - ['RecoModelTool']\n  personalized:\n    - ['MemoryTool']\n"
-        "    - ['SemanticSearchTool', 'SQLTool']\n    - ['RecoModelTool']\n  constrained:\n    - ['SemanticSearchTool', 'SQLTool']\n"
-        "    - ['RecoModelTool']\n  cold_text:\n    - ['SemanticSearchTool', 'SQLTool']\n    - ['RecoModelTool']\n  ambiguous: []\n",
+        "reference_plans:\n  similar:\n    - ['SimilarTool']\n    - ['RankTool']\n  personalized:\n    - ['MemoryTool']\n"
+        "    - ['SearchTool', 'FilterTool']\n    - ['RankTool']\n  constrained:\n    - ['SearchTool', 'FilterTool']\n"
+        "    - ['RankTool']\n  cold_text:\n    - ['SearchTool', 'FilterTool']\n    - ['RankTool']\n  ambiguous: []\n",
         encoding="utf-8",
     )
 
     # Load with custom config dir
     from package.config.load_config import load_config
     cfg = load_config("agent/reference_plans", config_dir=tmp_path / "configs")
-    assert cfg["reference_plans"]["similar"] == [["ItemCFTool"], ["RecoModelTool"]]
+    assert cfg["reference_plans"]["similar"] == [["SimilarTool"], ["RankTool"]]
 
     # Wait to ensure mtime changes
     time.sleep(0.01)
 
     # Modify config
     (agent_dir / "reference_plans.yaml").write_text(
-        "reference_plans:\n  similar:\n    - ['SemanticSearchTool']\n    - ['RecoModelTool']\n  personalized:\n    - ['MemoryTool']\n"
-        "    - ['SemanticSearchTool', 'SQLTool']\n    - ['RecoModelTool']\n  constrained:\n    - ['SemanticSearchTool', 'SQLTool']\n"
-        "    - ['RecoModelTool']\n  cold_text:\n    - ['SemanticSearchTool', 'SQLTool']\n    - ['RecoModelTool']\n  ambiguous: []\n",
+        "reference_plans:\n  similar:\n    - ['SearchTool']\n    - ['RankTool']\n  personalized:\n    - ['MemoryTool']\n"
+        "    - ['SearchTool', 'FilterTool']\n    - ['RankTool']\n  constrained:\n    - ['SearchTool', 'FilterTool']\n"
+        "    - ['RankTool']\n  cold_text:\n    - ['SearchTool', 'FilterTool']\n    - ['RankTool']\n  ambiguous: []\n",
         encoding="utf-8",
     )
 
     # Reload should get new values
     cfg2 = load_config("agent/reference_plans", config_dir=tmp_path / "configs")
-    assert cfg2["reference_plans"]["similar"] == [["SemanticSearchTool"], ["RecoModelTool"]]
+    assert cfg2["reference_plans"]["similar"] == [["SearchTool"], ["RankTool"]]
 
 
 def test_reference_plans_validation(tmp_path):

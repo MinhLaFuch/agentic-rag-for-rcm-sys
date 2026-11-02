@@ -21,6 +21,7 @@ class AgentLimits:
     type1_candidate_multiplier: int
     type1_min_candidates: int
     reflect_error_chars: int
+    reflect_quality_threshold: float  # Minimum quality score to avoid reflection (0.0 = disabled)
 
 
 @lru_cache(maxsize=1)
@@ -35,6 +36,7 @@ def get_agent_limits() -> AgentLimits:
         type1_candidate_multiplier=int(cfg["type1"]["candidate_multiplier"]),
         type1_min_candidates=int(cfg["type1"]["min_candidates"]),
         reflect_error_chars=int(cfg["reflect_error_chars"]),
+        reflect_quality_threshold=float(cfg.get("reflect_quality_threshold", 0.0)),  # Default 0.0 = disabled
     )
     positive = ("max_steps", "max_tokens", "type1_candidate_multiplier", "type1_min_candidates", "reflect_error_chars")
     for name in positive:
@@ -43,4 +45,6 @@ def get_agent_limits() -> AgentLimits:
     for name in ("plan_retries", "reflect_rounds"):
         if getattr(limits, name) < 0:
             raise ConfigError(f"configs/agent/agent.yaml: {name} must be >= 0")
+    if not (0.0 <= limits.reflect_quality_threshold <= 1.0):
+        raise ConfigError(f"configs/agent/agent.yaml: reflect_quality_threshold must be between 0.0 and 1.0")
     return limits

@@ -11,8 +11,8 @@ import pytest
 import scipy.sparse as sp
 
 from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.load_item_knn import load_item_knn
-from package.tools.recommenders.save_item_knn import save_item_knn
+from package.tools.recommenders.shared.load_item_knn import load_item_knn
+from package.tools.recommenders.shared.save_item_knn import save_item_knn
 
 
 def test_save_load_same_similarity():
@@ -245,7 +245,7 @@ def test_legacy_cache_requires_refit(tmp_path):
 
 
 def test_data_hash_retains_duplicate_events_and_rejects_fractional_ids():
-    from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+    from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
     pairs = pd.DataFrame({"user_idx": [0, 0], "item_idx": [0, 1]})
     assert item_knn_data_hash(pairs) != item_knn_data_hash(pd.concat([pairs, pairs.iloc[:1]]))
     with pytest.raises(ValueError, match="integers"):
@@ -253,7 +253,7 @@ def test_data_hash_retains_duplicate_events_and_rejects_fractional_ids():
 
 
 def test_same_count_changed_pairs_and_mapping_order(tmp_path):
-    from package.tools.recommenders.mapping_hash import mapping_hash
+    from package.tools.recommenders.shared.model_metadata import mapping_hash
     assert mapping_hash({"a": 0, "b": 1}) == mapping_hash({"b": 1, "a": 0})
     pairs = pd.DataFrame({"user_idx": [0, 0, 1, 1], "item_idx": [0, 1, 1, 2]})
     path = tmp_path / "model.npz"

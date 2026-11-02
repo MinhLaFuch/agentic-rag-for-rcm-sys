@@ -14,7 +14,7 @@ from package.inference import (
     outcome_from_type1,
 )
 from package.inference.grounding import check_grounding
-from package.tools import QueryTool
+from package.tools import LookupTool
 from tests.agents.test_plan_executor import plan
 from tests.agents.inference.helpers import FailingLLM, ScriptedLLM, NoneOrEmptyLLM, good_reply, item, outcome, reply
 from tests.agents.fakes.scripted_llm import ScriptedLLM as FakeScriptedLLM
@@ -33,8 +33,8 @@ def three():
 
 def test_planner_items_get_a_grounded_llm_answer_and_nothing_else_changes(corpus):
     request = f"tell me about {VG_A} and {VG_B}"
-    planner_llm = ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": [VG_A, VG_B]}}))
-    executor = PlanExecutor(planner_llm, [QueryTool(corpus)])
+    planner_llm = ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": [VG_A, VG_B]}}))
+    executor = PlanExecutor(planner_llm, [LookupTool(corpus)])
     results = executor.run(request)
     usage_before, plan_before = dict(executor.last_usage), list(executor.last_plan)
     agent_ids = extract_recommendations(results, 10)
@@ -250,16 +250,16 @@ def test_no_result_is_announced_without_the_llm():
 def test_tool_error_hides_internal_errors():
     llm = ScriptedLLM()
     secret = "Traceback (most recent call last): KeyError SECRET_TABLE " + "z" * 2000
-    out = outcome([], errors=[{"tool": "ItemCFTool", "error": secret[:300]}])
+    out = outcome([], errors=[{"tool": "SimilarTool", "error": secret[:300]}])
     answer = compose_answer(out, llm, **KW)
     assert answer.status == "tool_error" and answer.items == [] and llm.calls == []
-    assert "SECRET_TABLE" not in answer.text and "Traceback" not in answer.text and "ItemCFTool" not in answer.text
-    assert len(answer.text) < 400 and answer.reason.startswith("tool_error") and "ItemCFTool" in answer.reason and len(answer.reason) <= 400
+    assert "SECRET_TABLE" not in answer.text and "Traceback" not in answer.text and "SimilarTool" not in answer.text
+    assert len(answer.text) < 400 and answer.reason.startswith("tool_error") and "SimilarTool" in answer.reason and len(answer.reason) <= 400
 
 
 def test_invented_ids_are_a_tool_error_even_when_other_steps_returned_items():
     llm = ScriptedLLM()
-    out = outcome(three(), invented_ids=[FAKE], errors=[{"tool": "QueryTool", "error": "id(s) not found"}])
+    out = outcome(three(), invented_ids=[FAKE], errors=[{"tool": "LookupTool", "error": "id(s) not found"}])
     answer = compose_answer(out, llm, **KW)
     assert answer.status == "tool_error" and answer.items == [] and llm.calls == [] and FAKE not in answer.text
     assert FAKE in answer.reason
@@ -271,7 +271,7 @@ def test_plan_error_is_a_tool_error():
 
 
 def test_failed_step_with_no_items_is_a_tool_error():
-    out = outcome([], errors=[{"tool": "RecoModelTool", "error": "no scorer"}])
+    out = outcome([], errors=[{"tool": "RankTool", "error": "no scorer"}])
     assert compose_answer(out, ScriptedLLM(), **KW).status == "tool_error"
 
 
@@ -284,9 +284,9 @@ def test_question_wins_only_when_the_plan_has_no_steps():
 
 
 def test_a_failed_auxiliary_step_still_gives_an_ok_partial_answer():
-    out = outcome(three(), errors=[{"tool": "QueryTool", "error": "timeout"}])
+    out = outcome(three(), errors=[{"tool": "LookupTool", "error": "timeout"}])
     answer = compose_answer(out, ScriptedLLM(good_reply(three())), **KW)
-    assert answer.status == "ok" and answer.reason.startswith("partial") and "QueryTool" in answer.reason
+    assert answer.status == "ok" and answer.reason.startswith("partial") and "LookupTool" in answer.reason
     template = compose_template(out)
     assert template.status == "ok" and template.text != compose_template(outcome(three())).text  # neutral wording
 
@@ -312,7 +312,7 @@ def test_defaults_come_from_inference_yaml(monkeypatch):
 
 
 def test_max_items_cut_is_applied_by_the_adapter_and_the_answer_shows_only_those():
-    results = [{"tool": "RecoModelTool", "ok": True, "error": None, "invented_ids": [],
+    results = [{"tool": "RankTool", "ok": True, "error": None, "invented_ids": [],
                 "data": {"ranked": [{"rank": n, "item_id": f"Video_Games::i{n}", "score": 1.0, "domain": "Video_Games"} for n in range(1, 6)]}}]
     out = outcome_from_plan_results("req", results, question=None, max_items=2)
     answer = compose_template(out)

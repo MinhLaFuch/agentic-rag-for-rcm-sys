@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from .judge import JevClient
+from package.api import JevProvider
 
 
 def evaluate_product_reply_with_jev(
@@ -53,8 +53,8 @@ def evaluate_product_reply_with_jev(
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
 
-    # Initialize Jev client
-    jev = JevClient(
+    # Initialize Jev provider
+    jev = JevProvider(
         api_key=config.get("api_key"),
         model=config.get("model", "jev-latest"),
         base_url=config.get("base_url", "https://api.typesafe.ai"),
@@ -182,7 +182,7 @@ def _has_significant_overlap(text: str, title: str) -> bool:
 def _evaluate_faithfulness_with_jev(
     claims: list[dict[str, Any]],
     items: list[dict[str, Any]],
-    jev: JevClient,
+    jev: JevProvider,
     config: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """
@@ -308,7 +308,7 @@ def _evaluate_faithfulness_with_jev(
 def _evaluate_communication_with_jev(
     request: str,
     answer: str,
-    jev: JevClient,
+    jev: JevProvider,
     config: dict[str, Any],
 ) -> tuple[dict[str, int], dict[str, int]]:
     """

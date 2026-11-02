@@ -1,6 +1,6 @@
 """
-Read-only item store shared by QueryTool, SQLTool, SemanticSearchTool, and MemoryTool
-(also used by ItemCFTool and RecoModelTool to attach domain).
+Read-only item store shared by LookupTool, FilterTool, SearchTool, and MemoryTool
+(also used by SimilarTool and RankTool to attach domain).
 
 Built once from a metadata DataFrame, then locked: `query_only` pragma plus an
 authoriser that only allows SELECT.  Item ids are namespaced "{domain}::{parent_asin}";
@@ -182,7 +182,7 @@ class ItemCorpus:
             if time.monotonic() > deadline:
                 raise SQLTimeOutError(
                     "query exceeded the time budget. "
-                    "Try narrowing with fewer domains/categories, or add keywords (for SemanticSearchTool), "
+                    "Try narrowing with fewer domains/categories, or add keywords (for SearchTool), "
                     "or reduce the result limit."
                 ) from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc
@@ -203,7 +203,7 @@ class ItemCorpus:
             if time.monotonic() > deadline:
                 raise SQLTimeOutError(
                     "query exceeded the time budget. "
-                    "Try narrowing with fewer domains/categories, or add keywords (for SemanticSearchTool), "
+                    "Try narrowing with fewer domains/categories, or add keywords (for SearchTool), "
                     "or reduce the result limit."
                 ) from exc
             raise ToolInputError(f"SQL error: {exc}. Schema: {SCHEMA_HINT}") from exc

@@ -1,7 +1,7 @@
 """
 Type1Agent — agent-assisted recommender, plan cố định, không LLM.
 
-Thứ tự cố định: retrieve (ItemCFTool) -> rank (RecoModelTool) -> fetch (QueryTool).
+Thứ tự cố định: retrieve (SimilarTool) -> rank (RankTool) -> fetch (LookupTool).
 LLM ranking để dành làm "improvement room" sau (đã quyết định), bản này chỉ ráp
 lại 3 tool đã test trong tests/tools — không có logic mới cần tin.
 """
@@ -9,14 +9,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from ...tools.ranking.item_cf_tool import ItemCFTool
-from ...tools.ranking.reco_model_tool import RecoModelTool
-from ...tools.sql_query.query_tool import QueryTool
+from ...tools.ranking.similar_tool import SimilarTool
+from ...tools.ranking.rank_tool import RankTool
+from ...tools.sql_query.lookup_tool import LookupTool
 from .._limits import get_agent_limits
 
 
 class Type1Agent:
-    def __init__(self, itemcf_tool: ItemCFTool, reco_tool: RecoModelTool, query_tool: QueryTool) -> None:
+    def __init__(self, itemcf_tool: SimilarTool, reco_tool: RankTool, query_tool: LookupTool) -> None:
         self.itemcf_tool = itemcf_tool
         self.reco_tool = reco_tool
         self.query_tool = query_tool
@@ -33,7 +33,7 @@ class Type1Agent:
         if not candidates:
             return {"ok": False, "stage": "retrieve", "error": "no candidates returned"}
 
-        # 2. Rank — RecoModelTool xếp hạng lại candidate bằng model (không LLM)
+        # 2. Rank — RankTool xếp hạng lại candidate bằng model (không LLM)
         ranked = self.reco_tool(user_id=user_id, candidates=candidates, top_k=top_k)
         if not ranked.ok:
             return {"ok": False, "stage": "rank", "error": ranked.error}

@@ -39,12 +39,12 @@ from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import split_path
 from package.tools.corpus import ItemCorpus
-from package.tools.ranking.item_cf_tool import ItemCFTool
-from package.tools.ranking.reco_model_tool import RecoModelTool
+from package.tools.ranking.item_cf_tool import SimilarTool
+from package.tools.ranking.reco_model_tool import RankTool
 from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools.score import BaselineScorer
-from package.tools.sql_query.query_tool import QueryTool
-from package.tools.sql_query.sql_tool import SQLTool
+from package.tools.sql_query.query_tool import LookupTool
+from package.tools.sql_query.sql_tool import FilterTool
 
 
 class _Tee:
@@ -154,23 +154,23 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     corpus_ids = list(corpus.item_domains(list(item2id)))  # mapped items that exist in the corpus
 
     # ------------------------------------------------------------ SQL tools
-    section("QueryTool / SQLTool on the corpus")
-    query, sql = QueryTool(corpus), SQLTool(corpus)
+    section("LookupTool / FilterTool on the corpus")
+    query, sql = LookupTool(corpus), FilterTool(corpus)
     top = sql(limit=5)
-    show_result("SQLTool: top 5 by rating_number", top, "candidates")
+    show_result("FilterTool: top 5 by rating_number", top, "candidates")
     if has_meta:
-        show_result("SQLTool: price<=30, rating>=4.5, 100+ ratings",
+        show_result("FilterTool: price<=30, rating>=4.5, 100+ ratings",
                     sql(filters={"price_max": 30, "min_rating": 4.5, "min_rating_number": 100}, limit=5), "candidates")
     for d in corpus.domains():
         r = sql(filters={"domain": d}, limit=3)
-        show_result(f"SQLTool: domain={d}", r, "candidates")
+        show_result(f"FilterTool: domain={d}", r, "candidates")
     if top.ok and top.data["candidates"]:
         ids = [c["item_id"] for c in top.data["candidates"]]
         r = query(item_ids=ids)
-        check("QueryTool: look up those ids", r.ok and not r.data["missing_item_ids"])
+        check("LookupTool: look up those ids", r.ok and not r.data["missing_item_ids"])
     r = query(query="SELECT domain, COUNT(*) AS n FROM items GROUP BY domain")
-    show_result("QueryTool: items per domain", r, "items", n=5)
-    check("QueryTool rejects DELETE", not query(query="DELETE FROM items").ok)
+    show_result("LookupTool: items per domain", r, "items", n=5)
+    check("LookupTool rejects DELETE", not query(query="DELETE FROM items").ok)
 
     # ----------------------------------------------------------------- model
     section(f"Fit {args.model} on TRAIN only")
@@ -178,7 +178,7 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     model = (ItemKNNRecommender(args.neighbors) if args.model == "knn" else PopularityRecommender()).fit(train)
     print(f"  fitted in {time.time() - t0:.0f}s")
     scorer = BaselineScorer(model)
-    reco = RecoModelTool(scorer, user2id, item2id, corpus=corpus)
+    reco = RankTool(scorer, user2id, item2id, corpus=corpus)
 
     # pick a real validation user who has train history
     train_users = set(train["user_idx"].unique())
@@ -197,18 +197,18 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     print(f"  demo user {demo_user} has {len(hist)} train interactions")
 
     # ---------------------------------------------------------------- ItemCF
-    section("ItemCFTool / RecoModelTool on a real user")
+    section("SimilarTool / RankTool on a real user")
     if args.model == "knn":
-        cf = ItemCFTool(model, item2id, corpus=corpus)
+        cf = SimilarTool(model, item2id, corpus=corpus)
         seeds = [id2item[i] for i in hist[:3]]
         r = cf(items=seeds, top_k=5)
-        show_result("ItemCFTool: neighbours of the user's first 3 items", r, "candidates")
+        show_result("SimilarTool: neighbours of the user's first 3 items", r, "candidates")
     else:
-        print("  (skipped ItemCFTool: needs --model knn)")
+        print("  (skipped SimilarTool: needs --model knn)")
 
     pool = sql(filters={"exclude_item_ids": [id2item[i] for i in hist]}, limit=200)
     r = reco(user_id=demo_user, candidates=pool.data["candidates"], top_k=5)
-    show_result("RecoModelTool: rank SQLTool's top-200 for the user", r, "ranked")
+    show_result("RankTool: rank FilterTool's top-200 for the user", r, "ranked")
     if r.ok:
         check("not treated as cold start", r.data["cold_start"] is False)
         check("no already-seen item in the ranking",

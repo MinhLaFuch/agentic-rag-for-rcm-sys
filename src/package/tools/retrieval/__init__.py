@@ -1,3 +1,3 @@
-from .semantic_search_tool import SemanticSearchTool
+from .search_tool import SearchTool
 
-__all__ = ["SemanticSearchTool"]
+__all__ = ["SearchTool"]

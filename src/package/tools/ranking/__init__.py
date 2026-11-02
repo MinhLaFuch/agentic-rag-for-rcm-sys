@@ -1,4 +1,4 @@
-from .item_cf_tool import ItemCFTool
-from .reco_model_tool import RecoModelTool
+from .similar_tool import SimilarTool
+from .rank_tool import RankTool
 
-__all__ = ["ItemCFTool", "RecoModelTool"]
+__all__ = ["SimilarTool", "RankTool"]

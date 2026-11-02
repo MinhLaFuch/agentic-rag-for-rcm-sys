@@ -34,7 +34,7 @@ class MemoryTool(Tool):
         "user_id": "str", "known": "bool  -- False = no history (unknown user or 0 interactions: cold start)", "n_interactions": "int",
         "top_categories": "list[str]  -- e.g. use as filters.categories_any via \"$1.top_categories\"",
         "price_range": "{min, max} | None  -- e.g. \"$1.price_range.max\" for filters.price_max",
-        "recent_items": "list[str]  -- namespaced item ids, most recent first; use as ItemCFTool.items via \"$1.recent_items\"",
+        "recent_items": "list[str]  -- namespaced item ids, most recent first; use as SimilarTool.items via \"$1.recent_items\"",
         "love_categories": "list[str]  -- categories the user likes (rating >= love_min_rating)",
         "hate_categories": "list[str]  -- categories the user dislikes (rating <= hate_max_rating)",
         "loved_items": "list[str]  -- item ids the user loves most (highest-rated items)",
@@ -64,7 +64,7 @@ class MemoryTool(Tool):
         self.limits = get_memory_limits()
 
     def execute(self, user_id: str, top_n_categories: int | None = None) -> dict[str, Any]:
-        uidx = self.user2id.get(user_id)  # user lạ hoặc 0 tương tác: known=False (cold-start, như RecoModelTool), không ném lỗi
+        uidx = self.user2id.get(user_id)  # user lạ hoặc 0 tương tác: known=False (cold-start, như RankTool), không ném lỗi
         if top_n_categories is None:
             top_n_categories = self.limits.top_n_categories
 

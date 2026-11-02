@@ -4,7 +4,7 @@ import sqlite3
 import pandas as pd
 import pytest
 
-from package.tools import SQLTool, SemanticSearchTool
+from package.tools import FilterTool, SearchTool
 from package.tools.corpus import ItemCorpus
 from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
 
@@ -23,10 +23,10 @@ def test_historical_masks_aggregates_and_price_in_all_tools():
     assert record["historical_causal_claim"] is False
     rows, _ = corpus.select("SELECT * FROM items ORDER BY item_id")
     assert all(r[f] is None for r in rows for f in ("price", "average_rating", "rating_number"))
-    assert [r["item_id"] for r in SQLTool(corpus).execute()["candidates"]] == ["D::a", "D::b"]
-    assert [r["item_id"] for r in SemanticSearchTool(corpus).execute("keyboard")["candidates"]] == ["D::a", "D::b"]
-    assert SQLTool(corpus).execute(filters={"min_rating_number": 2})["candidates"] == []
-    assert SQLTool(corpus).execute(filters={"price_max": 50})["candidates"] == []
+    assert [r["item_id"] for r in FilterTool(corpus).execute()["candidates"]] == ["D::a", "D::b"]
+    assert [r["item_id"] for r in SearchTool(corpus).execute("keyboard")["candidates"]] == ["D::a", "D::b"]
+    assert FilterTool(corpus).execute(filters={"min_rating_number": 2})["candidates"] == []
+    assert FilterTool(corpus).execute(filters={"price_max": 50})["candidates"] == []
     assert apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10) == record
 
 
@@ -46,7 +46,7 @@ def test_snapshot_explicit_and_policy_cannot_be_changed():
     corpus = make_corpus()
     record = apply_metadata_policy(corpus, "snapshot", as_of_timestamp=10)
     assert record["snapshot_mutable_fields_used"]
-    assert SQLTool(corpus).execute()["candidates"][0]["item_id"] == "D::b"
+    assert FilterTool(corpus).execute()["candidates"][0]["item_id"] == "D::b"
     with pytest.raises(ValueError, match="reload"):
         apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10)
 

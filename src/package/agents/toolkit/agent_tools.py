@@ -5,17 +5,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ...memory.memory_tool import MemoryTool
-from ...tools import ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool, SQLTool
+from ...tools import SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool
 from ...tools.base import Tool
 
 
 @dataclass
 class AgentTools:
-    item_cf: ItemCFTool
-    reco: RecoModelTool
-    query: QueryTool
-    search: SemanticSearchTool
-    sql: SQLTool
+    item_cf: SimilarTool
+    reco: RankTool
+    query: LookupTool
+    search: SearchTool
+    sql: FilterTool
     memory: MemoryTool
 
     def for_planner(self) -> list[Tool]:

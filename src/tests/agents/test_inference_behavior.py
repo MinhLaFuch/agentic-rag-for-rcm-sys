@@ -52,7 +52,7 @@ def test_tool_error_template_mode_no_llm_call():
         request_text="test",
         items=[],
         question=None,
-        errors=[{"tool": "SQLTool", "error": "timeout"}],
+        errors=[{"tool": "FilterTool", "error": "timeout"}],
         invented_ids=[],
         cold_start=None,
         n_steps=1,

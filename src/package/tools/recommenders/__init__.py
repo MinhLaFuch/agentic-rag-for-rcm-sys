@@ -1,22 +1,46 @@
-# DataFrame-based recommenders (used in agent tools: BaselineScorer, ItemCFTool, RecoModelTool)
-# These accept pandas DataFrame and return direct item lists
-from .baseline_popularity_recommender import BaselinePopularityRecommender
-from .baseline_item_knn_recommender import BaselineItemKNNRecommender
-from .popularity_recommender import PopularityRecommender
-from .popularity_matrix_recommender import PopularityMatrixRecommender
-from .item_knn_recommender import ItemKNNRecommender
-from .item_knn_matrix_recommender import ItemKNNMatrixRecommender
+"""Recommender models for runtime and offline evaluation.
 
-# Matrix-based recommenders (used in evaluation pipeline and experiments)
-# These accept sparse CSR matrix and return scores, with recommend() for top-k extraction
-from .recommender import Recommender
-from .bpr_mf_recommender import BPRMFRecommender
-from .random_recommender import RandomRecommender
-from .fallback_recommender import FallbackRecommender
+This module is organized into three subdirectories:
+- runtime/: Runtime-capable models used in agent tools (DataFrame API)
+- evaluation/: Evaluation-only models used in offline experiments (Matrix API)
+- shared/: Shared components (protocols, factories, utilities)
 
-# Utilities
-from .build_interaction_matrix import build_interaction_matrix
-from .build_model import ALL_MODELS, build_model
+Re-export for backward compatibility:
+"""
+
+# Runtime models (DataFrame API, used in agent tools)
+from .runtime import (
+    PopularityRecommender,
+    ItemKNNRecommender,
+    BaselinePopularityRecommender,
+    BaselineItemKNNRecommender,
+)
+
+# Evaluation models (Matrix API, used in offline experiments)
+from .evaluation import (
+    PopularityMatrixRecommender,
+    ItemKNNMatrixRecommender,
+    BPRMFRecommender,
+    RandomRecommender,
+    FallbackRecommender,
+)
+
+# Shared components
+from .shared import (
+    Recommender,
+    ALL_MODELS,
+    build_model,
+    build_interaction_matrix,
+    fit_provenance,
+    file_hash,
+    mapping_hash,
+    fit_split_names,
+    item_knn_data_hash,
+)
+
+# ItemKNN persistence (imported directly to avoid circular dependencies)
+from .shared.load_item_knn import load_item_knn
+from .shared.save_item_knn import save_item_knn
 
 # Legacy aliases for backward compatibility (will be deprecated in future).
 # NOTE: despite the "ABC" suffix these are the CONCRETE sparse-matrix classes, not abstract base classes.
@@ -26,21 +50,29 @@ ItemKNNRecommenderABC = ItemKNNMatrixRecommender
 PopularityRecommenderABC = PopularityMatrixRecommender
 
 __all__ = [
+    # Runtime models
+    "PopularityRecommender",
+    "ItemKNNRecommender",
+    "BaselinePopularityRecommender",
+    "BaselineItemKNNRecommender",
+    # Evaluation models
+    "PopularityMatrixRecommender",
+    "ItemKNNMatrixRecommender",
+    "BPRMFRecommender",
+    "RandomRecommender",
+    "FallbackRecommender",
+    # Shared components
+    "Recommender",
     "ALL_MODELS",
     "build_model",
     "build_interaction_matrix",
-    "Recommender",
-    "BPRMFRecommender",
-    "FallbackRecommender",
-    "RandomRecommender",
-    # DataFrame-based (for agent tools)
-    "BaselineItemKNNRecommender",
-    "BaselinePopularityRecommender",
-    "ItemKNNRecommender",
-    "PopularityRecommender",
-    # Matrix-based (for evaluation/experiments)
-    "ItemKNNMatrixRecommender",
-    "PopularityMatrixRecommender",
+    "fit_provenance",
+    "file_hash",
+    "mapping_hash",
+    "fit_split_names",
+    "item_knn_data_hash",
+    "load_item_knn",
+    "save_item_knn",
     # Legacy aliases (deprecated)
     "ItemKNNRecommenderABC",
     "PopularityRecommenderABC",

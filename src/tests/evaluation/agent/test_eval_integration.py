@@ -10,7 +10,7 @@ from package.evaluation import INFERENCE_AGENTS, AgentRequest, score_trajectory,
 from package.evaluation._schema import ANSWER_STATUSES
 from package.inference import compose_answer
 from package.inference._schema import STATUSES
-from package.tools import QueryTool
+from package.tools import LookupTool
 from tests.evaluation.agent.test_agent_eval import ITEM2ID, _load_run_agent_eval, _step, _trajectory
 from tests.agents.test_plan_executor import ScriptedLLM, plan
 from tests.agents.inference.helpers import good_reply
@@ -25,7 +25,7 @@ def _request(text="t"):
 
 
 def _answered(status="ok", grounded=True, fallback=None, composer="llm", **kw):
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B], **kw)
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B], **kw)
     traj.update(answer="text", answer_status=status, answer_grounded=grounded, answer_composer=composer, answer_fallback=fallback,
                 answer_reason=None, inference_mode="llm",
                 inference_usage={"attempts": 2, "prompt_tokens": 40, "completion_tokens": 12, "latency_seconds": 0.7})
@@ -42,7 +42,7 @@ def test_answer_statuses_of_the_evaluation_match_the_inference_statuses():
 # ---------------------------------------------------------------- scoring
 
 def test_new_columns_do_not_change_any_existing_column(corpus):
-    bare = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    bare = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     row_bare = score_trajectory(_request(), bare, item2id=ITEM2ID, corpus=corpus, k=2)
     row_full = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
     assert {k: v for k, v in row_full.items() if k not in NEW_COLUMNS} == {k: v for k, v in row_bare.items() if k not in NEW_COLUMNS}
@@ -50,7 +50,7 @@ def test_new_columns_do_not_change_any_existing_column(corpus):
 
 
 def test_old_trajectories_without_an_answer_score_with_empty_answer_columns(corpus):
-    row = score_trajectory(_request(), _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A]),
+    row = score_trajectory(_request(), _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A]),
                            item2id=ITEM2ID, corpus=corpus, k=2)
     assert all(row[c] is None for c in NEW_COLUMNS)
 
@@ -91,14 +91,14 @@ def test_summary_columns_print_the_answer_metrics():
 # ---------------------------------------------------------------- run_planner / run_type1
 
 def _executor(corpus, *replies):
-    return PlanExecutor(ScriptedLLM(*replies), [QueryTool(corpus)], plan_retries=0, reflect_rounds=0)
+    return PlanExecutor(ScriptedLLM(*replies), [LookupTool(corpus)], plan_retries=0, reflect_rounds=0)
 
 
 def _two_items_request():
     return _request(f"tell me about {VG_A} and {VG_B}")
 
 
-QUERY_PLAN = plan({"tool": "QueryTool", "args": {"item_ids": [VG_A, VG_B]}})
+QUERY_PLAN = plan({"tool": "LookupTool", "args": {"item_ids": [VG_A, VG_B]}})
 
 
 def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):

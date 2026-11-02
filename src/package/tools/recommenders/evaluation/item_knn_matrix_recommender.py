@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from .recommender import Recommender
+from ..shared.recommender import Recommender
 
 
 class ItemKNNMatrixRecommender(Recommender):

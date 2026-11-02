@@ -9,18 +9,18 @@ from package.agents import PlanExecutor
 from package.config.load_config import load_config
 from package.api.build_llm_provider import build_llm_provider
 from package.memory.memory_tool import MemoryTool
-from package.tools.ranking.item_cf_tool import ItemCFTool
-from package.tools.ranking.reco_model_tool import RecoModelTool
-from package.tools.retrieval.semantic_search_tool import SemanticSearchTool
-from package.tools.sql_query.query_tool import QueryTool
+from package.tools.ranking.item_cf_tool import SimilarTool
+from package.tools.ranking.reco_model_tool import RankTool
+from package.tools.retrieval.semantic_search_tool import SearchTool
+from package.tools.sql_query.query_tool import LookupTool
 
 def build_tools(knn, scorer, user2id, item2id, interactions, corpus):
     # 1 chỗ duy nhất liệt kê tool nào agent được dùng — thêm/bớt tool chỉ sửa ở đây
     return [
-        ItemCFTool(knn, item2id, corpus=corpus),
-        RecoModelTool(scorer, user2id, item2id, corpus=corpus),
-        QueryTool(corpus),
-        SemanticSearchTool(corpus),
+        SimilarTool(knn, item2id, corpus=corpus),
+        RankTool(scorer, user2id, item2id, corpus=corpus),
+        LookupTool(corpus),
+        SearchTool(corpus),
         MemoryTool(interactions, user2id, item2id, corpus),
     ]
 

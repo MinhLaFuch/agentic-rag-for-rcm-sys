@@ -1,4 +1,4 @@
-"""ItemCFTool: items similar to seed item(s), from a fitted ItemKNNRecommender."""
+"""SimilarTool: items similar to seed item(s), from a fitted ItemKNNRecommender."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .._limits import ITEM_CF_DEFAULT_TOP_K, MAX_CANDIDATES
 from ..corpus import ItemCorpus
 
 
-class ItemCFTool(Tool):
+class SimilarTool(Tool):
     """
     Items similar to seed item(s), from a fitted ItemKNNRecommender's similarity
     matrix. With several seeds, similarities are summed (can exceed 1.0).
@@ -22,7 +22,7 @@ class ItemCFTool(Tool):
     can return fewer than `top_k` items.
     """
 
-    name = "ItemCFTool"
+    name = "SimilarTool"
     description = "Retrieve items similar to given item(s) using item-item collaborative filtering."
     input_schema = {
         "items": "list[str]  -- namespaced seed item ids (non-empty strings)",
@@ -74,7 +74,7 @@ class ItemCFTool(Tool):
             raise ToolInputError(
                 "`items` must contain at least one item id. "
                 "For personalized recommendations, get seed items from MemoryTool.recent_items "
-                "or from a retrieval step (SemanticSearchTool/SQLTool)."
+                "or from a retrieval step (SearchTool/FilterTool)."
             )
         top_k = check_top_k(top_k, name="top_k")
         if not isinstance(exclude_input, bool):
@@ -82,7 +82,7 @@ class ItemCFTool(Tool):
         if domain is not None and not isinstance(domain, str):
             raise ToolInputError(f"`domain` must be a string or null, got {type(domain).__name__}: {domain!r}")
         if domain is not None and not domain.strip():
-            domain = None  # empty string = no filter (same convention as SQLTool / SemanticSearchTool)
+            domain = None  # empty string = no filter (same convention as FilterTool / SearchTool)
         if domain is not None:
             if self.corpus is None:
                 raise ToolInputError("domain filtering needs the tool to be built with a corpus")

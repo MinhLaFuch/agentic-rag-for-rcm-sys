@@ -1,5 +1,5 @@
 from .compile_filters import compile_filters
-from .query_tool import QueryTool
-from .sql_tool import SQLTool
+from .lookup_tool import LookupTool
+from .filter_tool import FilterTool
 
-__all__ = ["QueryTool", "SQLTool", "compile_filters"]
+__all__ = ["LookupTool", "FilterTool", "compile_filters"]

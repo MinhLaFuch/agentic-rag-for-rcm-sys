@@ -1,16 +1,16 @@
 """
-SemanticSearchTool: retrieve candidate items from free text (BM25 over item metadata).
+SearchTool: retrieve candidate items from free text (BM25 over item metadata).
 
-Why this tool exists: ItemCFTool / RecoModelTool need user history, and ~72% of users
+Why this tool exists: SimilarTool / RankTool need user history, and ~72% of users
 have a single interaction.  For those users the only signal is what they *say*
-("quiet keyboard for coding under $50"), and SQLTool can only match structured
+("quiet keyboard for coding under $50"), and FilterTool can only match structured
 fields.  This tool turns text into candidates the rest of the pipeline can use.
 
 "Semantic" is aspirational in this first version: it is lexical (SQLite FTS5 + BM25),
 not embedding-based.  Measure candidate recall first; only add embeddings if
 lexical recall on cold users is poor.  The interface stays the same either way.
 
-Output candidates carry `item_id`, so they can be passed as-is to RecoModelTool.
+Output candidates carry `item_id`, so they can be passed as-is to RankTool.
 """
 
 from __future__ import annotations
@@ -25,17 +25,17 @@ from .._schema import FILTER_KEYS, ITEM_COLUMNS
 from ._helper import _tokenize
 
 
-class SemanticSearchTool(Tool):
+class SearchTool(Tool):
     """
     Retrieve candidate items by free-text query (BM25 over title, store, main_category,
-    categories).  Structured filters use the same keys as SQLTool, so the planner
+    categories).  Structured filters use the same keys as FilterTool, so the planner
     can combine "what the user said" with "hard constraints" in one call.
     """
 
-    name = "SemanticSearchTool"
+    name = "SearchTool"
     description = (
         "Search items by keywords (BM25 over title, store, categories). "
-        "Requires a text query; use SQLTool for purely structured filters without keywords. "
+        "Requires a text query; use FilterTool for purely structured filters without keywords. "
         "Pass ENGLISH keywords (the catalog is English): translate the user's request first. "
         "Categories must be exact names from the catalog (case-sensitive). "
         "Returns ranked candidates with a relevance score."
@@ -93,7 +93,7 @@ class SemanticSearchTool(Tool):
         if not tokens:
             raise ToolInputError(f"`query` has no searchable words after cleaning: {query!r}")
 
-        # Same validation and parameterised compilation as SQLTool (unknown keys rejected).
+        # Same validation and parameterised compilation as FilterTool (unknown keys rejected).
         unknown = set(filters) - FILTER_KEYS
         if unknown:
             raise ToolInputError(f"unknown filter(s) {sorted(unknown)}; allowed: {sorted(FILTER_KEYS)}")

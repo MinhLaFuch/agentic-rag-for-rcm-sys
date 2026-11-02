@@ -8,8 +8,8 @@ reranking or agent work.
 
 Sources
   popularity   global top-N by train count               (works for everyone, incl. cold)
-  item_cf      ItemCFTool seeded with the user's recent items   (needs history)
-  semantic     SemanticSearchTool, query built as below         (needs a query)
+  item_cf      SimilarTool seeded with the user's recent items   (needs history)
+  semantic     SearchTool, query built as below         (needs a query)
   union        all three, merged round-robin to N (budget-matched) and plain union (larger)
 
 Where the semantic query comes from (there are no real user queries offline, so it is simulated):
@@ -45,7 +45,7 @@ from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.tools import ItemCFTool, SemanticSearchTool
+from package.tools import SimilarTool, SearchTool
 from package.tools import get_tool_limits
 from package.tools.base import ToolCallLogger
 from package.tools.corpus import build_corpus, load_corpus
@@ -61,12 +61,12 @@ from package.tools.evaluation import (
 )
 from package.tools.recommenders import build_interaction_matrix
 from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.tools.recommenders.shared.model_metadata import mapping_hash
 
 MAX_CANDIDATES = get_tool_limits().max_candidates
 
@@ -264,8 +264,8 @@ def main() -> None:
     knn_fit_data_hash = item_knn_data_hash(fit_pairs)
     knn = ItemKNNRecommender(neighbors=args.neighbors).fit(fit_pairs)
     knn_seconds = time.perf_counter() - knn_started
-    item_cf = ItemCFTool(knn, item2id, logger=ToolCallLogger())
-    search = SemanticSearchTool(corpus, logger=ToolCallLogger())
+    item_cf = SimilarTool(knn, item2id, logger=ToolCallLogger())
+    search = SearchTool(corpus, logger=ToolCallLogger())
     pop_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable").tolist()
     fit_item_seen = np.asarray(fit_matrix.sum(axis=0)).ravel() > 0
 
