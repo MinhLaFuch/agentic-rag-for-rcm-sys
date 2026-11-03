@@ -8,7 +8,8 @@ from ._schema import (
     CAMPAIGN_VERSION,
 )
 
-from .runner import CampaignRunner, CheckpointManager
+from .campaign_runner import CampaignRunner
+from .checkpoint_manager import CheckpointManager
 
 __all__ = [
     "CampaignConfig",

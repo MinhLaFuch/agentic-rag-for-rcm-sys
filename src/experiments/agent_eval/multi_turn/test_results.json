@@ -1,4 +1,6 @@
 {
+  "_warning": "DỮ LIỆU MOCK - KHÔNG PHẢI KẾT QUẢ THỰC. Mọi chỉ số = 1.0, latency ~1e-5s. Chỉ dùng cho test unit.",
+  "mock": true,
   "multi_turn_version": "1.0.0",
   "total_conversations": 11,
   "turn_success_rate": 1.0,

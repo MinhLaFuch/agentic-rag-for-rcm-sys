@@ -282,3 +282,67 @@ def test_two_independent_sessions_do_not_interfere():
 
     assert session1.get_valid_ids() == {VG_A}
     assert session2.get_valid_ids() == {VG_B}
+
+
+def test_session_none_means_no_session_state(corpus):
+    """Test that session=None means no session state is created or injected."""
+    # Create executor without session
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 5}})),
+        [FilterTool(corpus)],
+        session=None
+    )
+
+    # Verify no session is created
+    assert executor.session is None
+
+    # Run request
+    results = executor.run("gợi ý game")
+    assert results[0]["ok"]
+
+    # Still no session
+    assert executor.session is None
+
+
+def test_no_session_leak_between_requests(corpus):
+    """Test that requests on same executor with session=None are independent."""
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 5}}), plan({"tool": "FilterTool", "args": {"limit": 5}})),
+        [FilterTool(corpus)],
+        session=None
+    )
+
+    # Request 1 with item IDs in text
+    results1 = executor.run(f"show me {VG_A}")
+    assert results1[0]["ok"]
+
+    # Request 2 should not see VG_A from request 1
+    # If session leaked, VG_A would be in valid_ids
+    results2 = executor.run("show something else")
+    assert results2[0]["ok"]
+
+    # Verify no session was created
+    assert executor.session is None
+
+
+def test_explicit_session_preserves_state(corpus):
+    """Test that explicit session preserves state across turns."""
+    session = Session()
+    executor = PlanExecutor(
+        ScriptedLLM(plan({"tool": "FilterTool", "args": {"limit": 5}}), plan({"tool": "FilterTool", "args": {"limit": 5}})),
+        [FilterTool(corpus)],
+        session=session
+    )
+
+    # Turn 1
+    results1 = executor.run("gợi ý game")
+    assert results1[0]["ok"]
+    assert len(session.turns) == 1
+
+    # Turn 2 on same executor with same session
+    results2 = executor.run("cho thêm")
+    assert results2[0]["ok"]
+    assert len(session.turns) == 2
+
+    # Session is preserved
+    assert executor.session is session

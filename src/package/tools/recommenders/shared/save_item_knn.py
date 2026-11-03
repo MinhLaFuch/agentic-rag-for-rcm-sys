@@ -12,7 +12,7 @@ import scipy.sparse as sp
 
 from .model_metadata import item_knn_data_hash
 from .model_metadata import file_hash
-from .provenance import fit_provenance
+from .fit_provenance import fit_provenance
 
 
 def save_item_knn(

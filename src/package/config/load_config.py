@@ -42,26 +42,26 @@ def load_config(name: str, config_dir: Path | None = None) -> dict[str, Any]:
     current_mtime = path.stat().st_mtime
     if name in _file_mtime_cache and _file_mtime_cache[name] != current_mtime:
         # File changed, clear the LRU cache in _limits.py
-        # Lazy import to avoid circular dependency
+        # Use public cache clearing functions to avoid cross-folder imports
         try:
-            from ..agents._limits import get_agent_limits, get_memory_limits
-            get_agent_limits.cache_clear()
-            get_memory_limits.cache_clear()
+            from ..agents._limits import clear_agent_limits_cache, clear_memory_limits_cache
+            clear_agent_limits_cache()
+            clear_memory_limits_cache()
         except ImportError:
             pass
         try:
-            from ..tools._limits import get_tool_limits
-            get_tool_limits.cache_clear()
+            from ..tools._limits import clear_tool_limits_cache
+            clear_tool_limits_cache()
         except ImportError:
             pass
         try:
-            from ..inference._limits import get_inference_limits
-            get_inference_limits.cache_clear()
+            from ..inference._limits import clear_inference_limits_cache
+            clear_inference_limits_cache()
         except ImportError:
             pass
         try:
-            from ..evaluation._schema import get_reference_plans
-            get_reference_plans.cache_clear()
+            from ..evaluation._schema import clear_reference_plans_cache
+            clear_reference_plans_cache()
         except ImportError:
             pass
 

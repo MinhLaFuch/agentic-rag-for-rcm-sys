@@ -23,7 +23,7 @@ from package.api import build_llm_provider
 from package.evaluation.component._evaluator import ComponentEvaluator
 from package.evaluation.component._schema import BenchmarkCase, BenchmarkResult
 
-from .planner_mock_tools import get_mock_tools
+from .get_mock_tools import get_mock_tools
 
 
 class PlannerBenchmark(ComponentEvaluator):

@@ -1,5 +1,5 @@
 from .memory_tool import MemoryTool
-from .limits import get_memory_limits, MemoryLimits
+from .get_memory_limits import get_memory_limits, MemoryLimits
 
 __all__ = [
     "MemoryTool",

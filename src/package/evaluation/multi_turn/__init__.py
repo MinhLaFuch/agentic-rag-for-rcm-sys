@@ -9,7 +9,7 @@ from ._schema import (
     MULTI_TURN_VERSION,
 )
 
-from .evaluator import MultiTurnEvaluator
+from .multi_turn_evaluator import MultiTurnEvaluator
 
 __all__ = [
     "TurnInput",

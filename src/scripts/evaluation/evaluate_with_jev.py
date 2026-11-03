@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-from package.evaluation.jev_product_evaluator import evaluate_product_reply_with_jev
+from package.evaluation.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
 
 
 def load_jsonl(file_path: Path) -> list[dict]:

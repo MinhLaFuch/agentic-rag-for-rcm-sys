@@ -8,7 +8,7 @@ from functools import lru_cache
 from ..config.load_config import ConfigError, load_config
 
 # Re-export from package.memory for backward compatibility
-from ..memory.limits import get_memory_limits, MemoryLimits
+from ..memory.get_memory_limits import get_memory_limits, MemoryLimits
 
 
 @dataclass(frozen=True)
@@ -48,3 +48,14 @@ def get_agent_limits() -> AgentLimits:
     if not (0.0 <= limits.reflect_quality_threshold <= 1.0):
         raise ConfigError(f"configs/agent/agent.yaml: reflect_quality_threshold must be between 0.0 and 1.0")
     return limits
+
+
+def clear_agent_limits_cache() -> None:
+    """Clear the agent limits cache when config files change."""
+    get_agent_limits.cache_clear()
+
+
+def clear_memory_limits_cache() -> None:
+    """Clear the memory limits cache when config files change."""
+    get_memory_limits.cache_clear()
+

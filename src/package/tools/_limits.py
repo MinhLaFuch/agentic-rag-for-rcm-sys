@@ -56,6 +56,11 @@ def get_tool_limits() -> ToolLimits:
     return limits
 
 
+def clear_tool_limits_cache() -> None:
+    """Clear the tool limits cache when config files change."""
+    get_tool_limits.cache_clear()
+
+
 _LIMITS = get_tool_limits()
 MAX_CANDIDATES = _LIMITS.max_candidates
 MAX_QUERY_ROWS = _LIMITS.max_query_rows

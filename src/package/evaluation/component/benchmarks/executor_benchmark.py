@@ -15,8 +15,8 @@ from typing import Any
 from package.agents.planner import PlanExecutor
 from package.evaluation.component._evaluator import ComponentEvaluator
 
-from .executor_mock_tools import get_controlled_tools
-from .planner_mock_llm import get_mock_llm
+from .get_controlled_tools import get_controlled_tools
+from .get_mock_llm import get_mock_llm
 
 
 class ExecutorBenchmark(ComponentEvaluator):

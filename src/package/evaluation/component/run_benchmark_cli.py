@@ -1,0 +1,228 @@
+"""CLI entrypoint for running component benchmarks."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+from pathlib import Path
+from typing import Any
+from datetime import datetime, timezone
+
+from package.config import get_data_paths
+
+from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
+from ._schema import BenchmarkSummary
+from ._regression import compare_benchmarks, format_regression_report
+
+
+def _get_evaluator(component: str, config: dict[str, Any]):
+    """Import and instantiate the appropriate evaluator for the component."""
+    if component == "memory":
+        from .benchmarks.memory_benchmark import MemoryEvaluator
+        from package.tools.corpus import ItemCorpus
+        import pandas as pd
+
+        meta = pd.DataFrame({
+            "parent_asin": ["vg_a", "vg_b", "vg_c"],
+            "domain": ["Video_Games"] * 3,
+            "title": ["Game A", "Game B", "Game C"],
+            "store": ["StoreA", "StoreB", "StoreC"],
+            "price": [300.0, 1.0, 150.0],
+            "average_rating": [4.5, 3.5, 4.0],
+            "rating_number": [100, 50, 75],
+            "main_category": ["Action", "Puzzle", "RPG"],
+            "categories": [["Action"], ["Puzzle"], ["RPG"]],
+        })
+        corpus = ItemCorpus.from_dataframe(meta)
+
+        interactions = pd.DataFrame({
+            "user_id": ["u1"] * 3,
+            "item_id": ["Video_Games::vg_a", "Video_Games::vg_b", "Video_Games::vg_c"],
+            "user_idx": [0] * 3,
+            "item_idx": [0, 1, 2],
+            "rating": [5, 4, 5],
+            "timestamp": [0, 1, 2],
+        })
+        user2id = {"u1": 0, "u0": 1, "unknown_user": 2}
+        item2id = {"Video_Games::vg_a": 0, "Video_Games::vg_b": 1, "Video_Games::vg_c": 2}
+
+        return MemoryEvaluator(interactions, user2id, item2id, corpus, config)
+    elif component == "memory_correctness":
+        from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
+        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+
+        return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
+    elif component == "planner":
+        from .benchmarks.planner_benchmark import PlannerBenchmark
+        return PlannerBenchmark(config)
+    elif component == "executor":
+        from .benchmarks.executor_benchmark import ExecutorBenchmark
+        return ExecutorBenchmark(config)
+    elif component == "grounding":
+        from .benchmarks.grounding_benchmark import GroundingBenchmark
+        return GroundingBenchmark(config)
+    elif component == "integration":
+        from .benchmarks.integration_benchmark import IntegrationBenchmark
+        return IntegrationBenchmark(config)
+    else:
+        raise NotImplementedError(
+            f"Evaluator for component '{component}' not yet implemented. "
+            "Please implement a ComponentEvaluator subclass for this component."
+        )
+
+def run_benchmark_cli() -> None:
+    """CLI entrypoint for running component benchmarks."""
+    parser = argparse.ArgumentParser(
+        description="Run component-level benchmarks for individual components",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--component",
+        type=str,
+        required=True,
+        help="Name of the component to benchmark (e.g., memory, planner, executor, reflection, inference, grounding)",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=True,
+        help="Path to the benchmark dataset file (JSON or JSONL)",
+    )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=1,
+        help="Number of times to run each case (for averaging)",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=None,
+        help="Path to save the benchmark results JSON (default: <component>_benchmark_<timestamp>.json)",
+    )
+    parser.add_argument(
+        "--tags",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Filter cases by tags (OR logic: return cases with ANY of these tags)",
+    )
+    parser.add_argument(
+        "--metadata",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Filter cases by metadata (format: key=value, multiple allowed, AND logic)",
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to JSON config file for the evaluator",
+    )
+    parser.add_argument(
+        "--git-sha",
+        type=str,
+        default=None,
+        help="Git commit SHA (auto-detected if not provided)",
+    )
+    parser.add_argument(
+        "--text-report",
+        type=str,
+        default=None,
+        help="Path to save text report (optional)",
+    )
+
+    args = parser.parse_args()
+
+    # Load dataset
+    print(f"Loading dataset from {args.dataset}...")
+    cases = load_cases(args.dataset)
+    print(f"Loaded {len(cases)} cases")
+
+    # Filter by tags
+    if args.tags:
+        cases = filter_cases_by_tag(cases, args.tags)
+        print(f"Filtered to {len(cases)} cases by tags: {args.tags}")
+
+    # Filter by metadata
+    if args.metadata:
+        metadata_filter: dict[str, Any] = {}
+        for item in args.metadata:
+            if "=" in item:
+                key, value = item.split("=", 1)
+                try:
+                    metadata_filter[key] = json.loads(value)
+                except json.JSONDecodeError:
+                    metadata_filter[key] = value
+
+        cases = filter_cases_by_metadata(cases, metadata_filter)
+        print(f"Filtered to {len(cases)} cases by metadata: {metadata_filter}")
+
+    if not cases:
+        print("No cases remaining after filtering")
+        return
+
+    # Load config if provided
+    config: dict[str, Any] = {}
+    if args.config:
+        with open(args.config, "r", encoding="utf-8") as f:
+            config = json.load(f)
+
+    # Get git SHA
+    git_sha = args.git_sha
+    if git_sha is None:
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            git_sha = result.stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            git_sha = ""
+
+    # Get evaluator
+    evaluator = _get_evaluator(args.component, config)
+
+    # Run benchmark
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    output_path = args.output or f"{args.component}_benchmark_{timestamp}.json"
+
+    print(f"Running {args.component} benchmark with {len(cases)} cases, {args.runs} runs each...")
+    summary = evaluator.run_benchmark(cases, component_name=args.component, runs=args.runs)
+
+    # Add metadata
+    summary.metadata["git_sha"] = git_sha
+    summary.metadata["config"] = config
+    summary.metadata["dataset_path"] = args.dataset
+    summary.metadata["tags_filter"] = args.tags
+    summary.metadata["metadata_filter"] = args.metadata
+    summary.metadata["runs"] = args.runs
+
+    # Save results
+    result_json = summary.to_json()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(result_json)
+    print(f"Results saved to: {output_path}")
+
+    # Print summary
+    print(f"\n--- {args.component.upper()} BENCHMARK SUMMARY ---")
+    for metric, value in summary.metrics.items():
+        print(f"  {metric}: {value:.4f}")
+    print(f"Total cases: {summary.total_cases}, Passed: {summary.passed_cases}")
+
+    # Print text report if requested
+    if args.text_report:
+        text_path = Path(args.text_report)
+        text_report = format_regression_report(summary.to_json())
+        with open(text_path, "w", encoding="utf-8") as f:
+            f.write(text_report)
+        print(f"Text report saved to: {text_path}")
+    else:
+        print("\n" + format_regression_report(summary.to_json()))

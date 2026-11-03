@@ -139,15 +139,24 @@ def _error_chars() -> int:
 
 def run_planner(
     executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
+    session_enabled: bool = False,
 ) -> dict[str, Any]:
     """
     One planner trajectory. `answerer(AgentOutcome) -> Answer` (compose_answer bound to the LLM and mode) adds the final answer;
     it runs after the agent's own timing (wall_seconds keeps its old meaning) and never touches recommended / usage.
+    If session_enabled=True, a fresh Session is created for this request (multi-turn conversations share a session
+    across turns by reusing the same executor; single-turn requests with session_enabled get isolated sessions).
     """
     traj = empty_trajectory(request, agent, sorted(executor.tools))
     error_chars = _error_chars()
     started = time.perf_counter()
     results: list[dict[str, Any]] = []
+    
+    # For multi-turn evaluation with --enable-session, create a fresh session per request
+    # to prevent cross-request contamination. The executor's session is replaced temporarily.
+    original_session = executor.session
+    if session_enabled:
+        executor.session = Session()
     try:
         results = executor.run(request.text)
         traj["steps"] = [
@@ -168,6 +177,9 @@ def run_planner(
     if executor.session is not None:
         traj["session_enabled"] = True
         traj["session_state"] = executor.session.to_dict()
+
+    # Restore original session (which is None for single-turn evaluation)
+    executor.session = original_session
 
     if answerer is not None:
         outcome = outcome_from_plan_results(request.text, results, question=executor.last_question, plan_error=traj["error"])
@@ -313,10 +325,11 @@ def main() -> None:
             raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY "
                              "(or run with --agents baseline,type1 --inference-mode template)")
     if any(a in PLANNER_AGENTS for a in agents):
-        # Create session if enabled (currently single-turn, but infrastructure wired)
-        session = Session() if args.enable_session else None
-        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=session)
-        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=session)
+        # Single-turn evaluation: no session (session=None).
+        # Multi-turn evaluation (--enable-session): a fresh Session is created per request inside run_planner.
+        # This prevents cross-request contamination of shown_items/candidates/constraints.
+        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=None)
+        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=None)
 
     # Build provenance (hashes of prompts, tool schemas, git state, limits)
     provenance = build_run_provenance(
@@ -392,7 +405,7 @@ def main() -> None:
                     trajectories.append(done[key])
                     continue
                 if agent in PLANNER_AGENTS:
-                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode)
+                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=args.enable_session)
                 elif agent == "type1":
                     traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
                 else:

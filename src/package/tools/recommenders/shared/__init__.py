@@ -14,7 +14,7 @@ All components are pure functions or protocols with no tool dependencies.
 from .recommender import Recommender
 from .build_model import ALL_MODELS, build_model
 from .build_interaction_matrix import build_interaction_matrix
-from .provenance import fit_provenance
+from .fit_provenance import fit_provenance
 from .model_metadata import file_hash, mapping_hash, fit_split_names, item_knn_data_hash
 
 __all__ = [

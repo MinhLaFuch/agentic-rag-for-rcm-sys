@@ -90,7 +90,10 @@ example_comparison = {
 }
 
 # Generate reports
-output_dir = Path("experiments/agent_eval/example_report")
+from package.config import get_data_paths
+
+data_paths = get_data_paths()
+output_dir = data_paths.experiments_dir / "agent_eval" / "example_report"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 # Markdown report

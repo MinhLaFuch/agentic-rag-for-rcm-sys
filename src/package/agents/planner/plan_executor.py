@@ -77,12 +77,7 @@ class PlanExecutor:
             raise ValueError("reflect_rounds must be >= 0")
         if not (0.0 <= self.reflect_quality_threshold <= 1.0):
             raise ValueError("reflect_quality_threshold must be between 0.0 and 1.0")
-        self.session = session or Session(
-            max_turns=10,
-            max_shown_items=50,
-            max_candidates=100,
-            max_turn_chars=500,
-        )
+        self.session = session
         self.last_response = None
         self.last_reflections = 0
         self.last_first_attempt_ok = True
@@ -108,15 +103,14 @@ class PlanExecutor:
         return resp
 
     def plan(self, user_request: str) -> list[dict[str, Any]]:
-        # Inject session state into the system prompt only when session has actual content
+        # Inject session state into the system prompt only when session is provided and has actual content
         # (i.e., this is a multi-turn conversation with prior turns)
-        session_state = ""
         if self.session and (self.session.turns or self.session.shown_items or self.session.constraints or self.session.feedback):
             session_state = json.dumps(self.session.to_dict(), ensure_ascii=False)
         else:
-            # No session state to inject - use empty string to avoid "Session state: {}" in prompt
+            # No session or no session state to inject - use empty object placeholder
             session_state = "{}"
-        
+
         system = SYSTEM_PROMPT.format(
             tools=build_tool_prompt(list(self.tools.values())),
             session_state=session_state
@@ -190,8 +184,9 @@ class PlanExecutor:
             problem = _reflect_problem(results, question, self.reflect_quality_threshold)
             messages = [*messages, LLMMessage(role="assistant", content=resp.text)]
 
-        # Update session state after successful execution
-        self._update_session(user_request, results)
+        # Update session state after successful execution (only if session is provided)
+        if self.session:
+            self._update_session(user_request, results)
 
         return results
 
@@ -250,7 +245,8 @@ class PlanExecutor:
             else:
                 # Resolve session references first (for invented ID check)
                 args_for_check = _resolve_session_refs_only(raw_args, self.session)
-                if invented := _invented_ids(args_for_check, user_request, self.session.get_valid_ids()):
+                session_valid_ids = self.session.get_valid_ids() if self.session else set()
+                if invented := _invented_ids(args_for_check, user_request, session_valid_ids):
                     entry["error"] = f"id(s) not found in the request or session (invented?): {invented}"
                     entry["invented_ids"] = invented  # the tool is NOT executed with an id the user never gave
                     entry["error_kind"] = "invented_id"

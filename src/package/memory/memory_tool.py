@@ -13,7 +13,7 @@ from typing import Any
 
 import pandas as pd
 
-from .limits import get_memory_limits
+from .get_memory_limits import get_memory_limits
 from package.data.leakage import check_profile_snapshot
 from ..tools.base import Tool, validate_int
 from ..tools.corpus import ItemCorpus

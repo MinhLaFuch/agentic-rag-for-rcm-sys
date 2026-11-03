@@ -1,6 +1,6 @@
 from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
-from .jev_product_evaluator import evaluate_product_reply_with_jev
-from .product_reply_evaluator import evaluate_product_reply
+from .evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
+from .evaluate_product_reply import evaluate_product_reply
 from .requests import (
     AgentRequest,
     build_requests,
