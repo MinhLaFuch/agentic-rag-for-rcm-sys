@@ -2,4 +2,4 @@
 # Tên một lần chạy multi-domain. Stage 2/3 ghi vào <filtered|mapped|splits>_dir/<run_tag>/.
 # Thử ít domain hơn? Chạy với TAG=vg_toys để không ghi đè bản chạy đủ.
 
-tag: "multi_domain"
+tag: "multi_domain_v2_audit_20261030"

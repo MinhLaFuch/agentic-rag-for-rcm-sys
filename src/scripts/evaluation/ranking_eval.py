@@ -39,6 +39,7 @@ from package.tools.score import BaselineScorer
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
 from package.tools.evaluation.cohort_policy_for_tag import cohort_policy_for_tag
+from package.tools.evaluation.build_core_model import build_core_model
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
 from package.tools.recommenders.mapping_hash import mapping_hash
@@ -137,7 +138,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tag")
     ap.add_argument("--eval-on", choices=("validation", "test"), default="validation")
-    ap.add_argument("--per-segment", type=int, default=1000)
+    population = ap.add_mutually_exclusive_group()
+    population.add_argument("--per-segment", type=int, default=1000)
+    population.add_argument("--all-users", action="store_true", help="Evaluate every target-bearing user; no segment cap")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--candidate-budget", type=int, default=100)
     ap.add_argument("--seed-items", type=int, default=5)
@@ -257,8 +260,9 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     excluded = confirmation_cohort(getattr(args, "exclude_users_from", []), tag=paths.tag,
                               split=args.eval_on, user_hash=mapping_hash(user2id), item_hash=mapping_hash(item2id))
     segments_by_user = {u: s for u, s in segments_by_user.items() if u not in excluded}
-    sampled = sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed))
-    if excluded and any(len(group) != args.per_segment for group in sampled.values()):
+    sampled = ({segment: sorted(u for u, s in segments_by_user.items() if s == segment) for segment in SEGMENTS}
+               if args.all_users else sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed)))
+    if excluded and not args.all_users and any(len(group) != args.per_segment for group in sampled.values()):
         raise ValueError("insufficient untouched users for requested per-segment sample")
     users = {u for group in sampled.values() for u in group}
     sampled_fit = fit_df[fit_df["user_idx"].isin(users)]
@@ -287,12 +291,18 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
         sampled=sampled, metadata_policy=metadata_policy, cohort_policy=cohort_policy_for_tag(paths.tag))
 
     protocol_manifest["query_normalization"] = args.query_normalization
+    protocol_manifest["sampling"] = ("all target-bearing users after declared exclusions; no segment cap" if args.all_users else protocol_manifest["sampling"])
 
     neighbors = args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
     knn_started = time.perf_counter()
     local_knn = store.path / "fit_item_knn.npz"
     context = dict(user2id=user2id, item2id=item2id, eval_on=args.eval_on, tag=paths.tag)
-    if local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
+    knn = build_core_model(paths, args.eval_on, neighbors, fit_df, user2id, item2id)
+    if knn is not None:
+        knn_hash = knn._fit_data_hash
+        protocol_manifest["item_knn"] = knn._evaluation_fit_provenance
+        protocol_manifest["cf_history"] = "all pre-target history; similarity and popularity frozen on train_core"
+    elif local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
         print("[ItemKNN] validating local checkpoint model", flush=True)
         knn = load_item_knn(local_knn, neighbors, fit_df[["user_idx", "item_idx"]], **context)
         knn_hash = knn._fit_data_hash
@@ -308,7 +318,9 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     semantic = SemanticSearchTool(corpus, logger=ToolCallLogger())
     query_tool = QueryTool(corpus, logger=ToolCallLogger())
     get_text = item_text_tables(corpus, namespaced)
-    popular_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable")
+    popularity = (knn.scores if hasattr(knn, "_evaluation_fit_provenance")
+                  else np.asarray(fit_matrix.sum(axis=0)).ravel())
+    popular_order = np.argsort(-popularity, kind="stable")
     max_candidates = int(load_config("agent/tools")["tools"]["max_candidates"])
 
     max_sampled_user = max(users) if users else 0

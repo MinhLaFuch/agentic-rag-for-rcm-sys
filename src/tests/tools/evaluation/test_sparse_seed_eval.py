@@ -62,7 +62,7 @@ def test_runner_json_only_same_sample_budget_and_resume(environment,monkeypatch,
     base,paths,items=environment
     source=launch(monkeypatch,base,"seed_reference")
     paths=replace(paths,experiments_dir=base/"seed_results")
-    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,"title":["keyboard"]*7})
+    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,"first_seen_ts":[1]*7,"title":["keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))

@@ -11,20 +11,20 @@ def test_get_domains_follows_data_yaml_order():
 
 def test_data_paths_layout_is_under_resource():
     paths = get_data_paths()
-    assert paths.tag == "multi_domain"
+    assert paths.tag == "multi_domain_v2_audit_20261030"
     assert paths.raw_dir == PROJECT_ROOT / "resource" / "raw"
     assert paths.review_path("Video_Games").is_relative_to(paths.raw_dir)
     assert paths.meta_path("Video_Games") == PROJECT_ROOT / "resource" / "metadata" / "meta_Video_Games.jsonl"
     assert paths.cleaned_path("Electronics") == PROJECT_ROOT / "resource/cleaned/Electronics/interactions.parquet"
-    assert paths.filtered_path == PROJECT_ROOT / "resource/filtered/multi_domain/interactions.parquet"
-    assert paths.mapped_dir == PROJECT_ROOT / "resource/mapped/multi_domain"
-    assert paths.splits_dir == PROJECT_ROOT / "resource/splits/multi_domain"
-    assert paths.split_path("train") == PROJECT_ROOT / "resource/splits/multi_domain/train.parquet"
+    assert paths.filtered_path == PROJECT_ROOT / "resource/filtered/multi_domain_v2_audit_20261030/interactions.parquet"
+    assert paths.mapped_dir == PROJECT_ROOT / "resource/mapped/multi_domain_v2_audit_20261030"
+    assert paths.splits_dir == PROJECT_ROOT / "resource/splits/multi_domain_v2_audit_20261030"
+    assert paths.split_path("train") == PROJECT_ROOT / "resource/splits/multi_domain_v2_audit_20261030/train.parquet"
 
 
 def test_logs_and_experiments_are_separate_semantic_dirs():
     paths = get_data_paths()
-    assert paths.log_dir == PROJECT_ROOT / "experiments/logs/multi_domain"  # pipeline/tool logs
+    assert paths.log_dir == PROJECT_ROOT / "experiments/logs/multi_domain_v2_audit_20261030"  # pipeline/tool logs
     assert paths.experiments_dir == PROJECT_ROOT / "experiments"  # experiment artifacts
     assert paths.log_dir != paths.experiments_dir
     assert PROJECT_ROOT / "tests" / "logs" not in (paths.log_dir, paths.experiments_dir)  # test logs are not configured here
@@ -60,7 +60,7 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
         return out.returncode, out.stdout.split()
 
     assert run("path:raw_dir") == (0, ["resource/raw"])
-    assert run("path:filtered_path") == (0, ["resource/filtered/multi_domain/interactions.parquet"])
+    assert run("path:filtered_path") == (0, ["resource/filtered/multi_domain_v2_audit_20261030/interactions.parquet"])
     assert run("--tag", "vg_toys", "path:splits_dir") == (0, ["resource/splits/vg_toys"])
     assert run("--tag", "vg_toys", "path:log_dir") == (0, ["experiments/logs/vg_toys"])
     assert run("path:experiments_dir") == (0, ["experiments"])

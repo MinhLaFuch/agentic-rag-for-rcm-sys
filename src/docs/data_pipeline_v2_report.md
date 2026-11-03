@@ -1,3 +1,5 @@
+> Historical report from 2026-10-30. The October 31 `multi_domain_v2_audit_20261030` artifacts supersede the missing-artifact findings below. See [current full evaluation protocol](full_evaluation.md).
+
 # Data pipeline v2: leakage comparison preflight
 
 **Status: blocked before validation evaluation.** No validation baseline or test evaluation was run. The requested tag manifests are not valid, and the new multi-domain tag artifacts are not present in this workspace. The test split was not opened for evaluation or model selection; `verify_tag.py` only hashed listed artifact bytes.

@@ -1,0 +1,171 @@
+[load] train/validation and mappings; no test rows loaded
+[eval:item_knn] users=0/9,000 batch=1024 ETA=warming up
+[eval:item_knn] users=1,024/9,000 (11.38%) rate=367.2 users/s elapsed=3s ETA=22s (this model)
+[eval:item_knn] users=2,048/9,000 (22.76%) rate=497.3 users/s elapsed=4s ETA=14s (this model)
+[eval:item_knn] users=3,072/9,000 (34.13%) rate=567.9 users/s elapsed=5s ETA=10s (this model)
+[eval:item_knn] users=4,096/9,000 (45.51%) rate=611.8 users/s elapsed=7s ETA=8s (this model)
+[eval:item_knn] users=5,120/9,000 (56.89%) rate=640.1 users/s elapsed=8s ETA=6s (this model)
+[eval:item_knn] users=6,144/9,000 (68.27%) rate=658.1 users/s elapsed=9s ETA=4s (this model)
+[eval:item_knn] users=7,168/9,000 (79.64%) rate=671.7 users/s elapsed=11s ETA=3s (this model)
+[eval:item_knn] users=8,192/9,000 (91.02%) rate=687.1 users/s elapsed=12s ETA=1s (this model)
+[eval:item_knn] users=9,000/9,000 (100.00%) rate=683.8 users/s elapsed=13s ETA=0s (this model)
+[eval:item_knn] aggregating metrics
+[tuning] original_item_knn: recall@10=0.004080 ndcg@10=0.001901
+[eval:popularity] users=0/9,000 batch=1024 ETA=warming up
+[eval:popularity] users=1,024/9,000 (11.38%) rate=656.6 users/s elapsed=2s ETA=12s (this model)
+[eval:popularity] users=2,048/9,000 (22.76%) rate=1273.2 users/s elapsed=2s ETA=5s (this model)
+[eval:popularity] users=3,072/9,000 (34.13%) rate=1858.7 users/s elapsed=2s ETA=3s (this model)
+[eval:popularity] users=4,096/9,000 (45.51%) rate=2411.3 users/s elapsed=2s ETA=2s (this model)
+[eval:popularity] users=5,120/9,000 (56.89%) rate=2928.5 users/s elapsed=2s ETA=1s (this model)
+[eval:popularity] users=6,144/9,000 (68.27%) rate=3404.5 users/s elapsed=2s ETA=1s (this model)
+[eval:popularity] users=7,168/9,000 (79.64%) rate=3874.2 users/s elapsed=2s ETA=0s (this model)
+[eval:popularity] users=8,192/9,000 (91.02%) rate=4327.1 users/s elapsed=2s ETA=0s (this model)
+[eval:popularity] users=9,000/9,000 (100.00%) rate=4671.6 users/s elapsed=2s ETA=0s (this model)
+[eval:popularity] aggregating metrics
+[tuning] core_popularity: recall@10=0.006738 ndcg@10=0.002765
+[eval:history_popularity] users=0/9,000 batch=1024 ETA=warming up
+[eval:history_popularity] users=1,024/9,000 (11.38%) rate=868.7 users/s elapsed=1s ETA=9s (this model)
+[eval:history_popularity] users=2,048/9,000 (22.76%) rate=1670.6 users/s elapsed=1s ETA=4s (this model)
+[eval:history_popularity] users=3,072/9,000 (34.13%) rate=2411.3 users/s elapsed=1s ETA=2s (this model)
+[eval:history_popularity] users=4,096/9,000 (45.51%) rate=3104.5 users/s elapsed=1s ETA=2s (this model)
+[eval:history_popularity] users=5,120/9,000 (56.89%) rate=3755.2 users/s elapsed=1s ETA=1s (this model)
+[eval:history_popularity] users=6,144/9,000 (68.27%) rate=4352.5 users/s elapsed=1s ETA=1s (this model)
+[eval:history_popularity] users=7,168/9,000 (79.64%) rate=4887.0 users/s elapsed=1s ETA=0s (this model)
+[eval:history_popularity] users=8,192/9,000 (91.02%) rate=5406.4 users/s elapsed=2s ETA=0s (this model)
+[eval:history_popularity] users=9,000/9,000 (100.00%) rate=5789.5 users/s elapsed=2s ETA=0s (this model)
+[eval:history_popularity] aggregating metrics
+[tuning] history_popularity: recall@10=0.008170 ndcg@10=0.003589
+[eval:hybrid_item_knn_w0] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w0] users=1,024/9,000 (11.38%) rate=373.7 users/s elapsed=3s ETA=21s (this model)
+[eval:hybrid_item_knn_w0] users=2,048/9,000 (22.76%) rate=469.9 users/s elapsed=4s ETA=15s (this model)
+[eval:hybrid_item_knn_w0] users=3,072/9,000 (34.13%) rate=524.7 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w0] users=4,096/9,000 (45.51%) rate=553.1 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w0] users=5,120/9,000 (56.89%) rate=576.2 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w0] users=6,144/9,000 (68.27%) rate=593.1 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w0] users=7,168/9,000 (79.64%) rate=604.7 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w0] users=8,192/9,000 (91.02%) rate=614.6 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w0] users=9,000/9,000 (100.00%) rate=607.8 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w0] aggregating metrics
+[tuning] hybrid_item_knn_w0: recall@10=0.004214 ndcg@10=0.002063
+[eval:hybrid_item_knn_w0.25] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w0.25] users=1,024/9,000 (11.38%) rate=379.3 users/s elapsed=3s ETA=21s (this model)
+[eval:hybrid_item_knn_w0.25] users=2,048/9,000 (22.76%) rate=475.3 users/s elapsed=4s ETA=15s (this model)
+[eval:hybrid_item_knn_w0.25] users=3,072/9,000 (34.13%) rate=525.6 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w0.25] users=4,096/9,000 (45.51%) rate=557.4 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w0.25] users=5,120/9,000 (56.89%) rate=578.6 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w0.25] users=6,144/9,000 (68.27%) rate=592.8 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w0.25] users=7,168/9,000 (79.64%) rate=605.1 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w0.25] users=8,192/9,000 (91.02%) rate=614.9 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w0.25] users=9,000/9,000 (100.00%) rate=611.5 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w0.25] aggregating metrics
+[tuning] hybrid_item_knn_w0.25: recall@10=0.004437 ndcg@10=0.002197
+[eval:hybrid_item_knn_w0.5] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w0.5] users=1,024/9,000 (11.38%) rate=331.1 users/s elapsed=3s ETA=24s (this model)
+[eval:hybrid_item_knn_w0.5] users=2,048/9,000 (22.76%) rate=433.1 users/s elapsed=5s ETA=16s (this model)
+[eval:hybrid_item_knn_w0.5] users=3,072/9,000 (34.13%) rate=484.8 users/s elapsed=6s ETA=12s (this model)
+[eval:hybrid_item_knn_w0.5] users=4,096/9,000 (45.51%) rate=520.1 users/s elapsed=8s ETA=9s (this model)
+[eval:hybrid_item_knn_w0.5] users=5,120/9,000 (56.89%) rate=542.6 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w0.5] users=6,144/9,000 (68.27%) rate=560.9 users/s elapsed=11s ETA=5s (this model)
+[eval:hybrid_item_knn_w0.5] users=7,168/9,000 (79.64%) rate=577.9 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w0.5] users=8,192/9,000 (91.02%) rate=588.4 users/s elapsed=14s ETA=1s (this model)
+[eval:hybrid_item_knn_w0.5] users=9,000/9,000 (100.00%) rate=586.9 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w0.5] aggregating metrics
+[tuning] hybrid_item_knn_w0.5: recall@10=0.004715 ndcg@10=0.002390
+[eval:hybrid_item_knn_w1] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w1] users=1,024/9,000 (11.38%) rate=377.4 users/s elapsed=3s ETA=21s (this model)
+[eval:hybrid_item_knn_w1] users=2,048/9,000 (22.76%) rate=469.6 users/s elapsed=4s ETA=15s (this model)
+[eval:hybrid_item_knn_w1] users=3,072/9,000 (34.13%) rate=522.5 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w1] users=4,096/9,000 (45.51%) rate=554.8 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w1] users=5,120/9,000 (56.89%) rate=574.7 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w1] users=6,144/9,000 (68.27%) rate=592.7 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w1] users=7,168/9,000 (79.64%) rate=605.7 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w1] users=8,192/9,000 (91.02%) rate=610.2 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w1] users=9,000/9,000 (100.00%) rate=604.2 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w1] aggregating metrics
+[tuning] hybrid_item_knn_w1: recall@10=0.005230 ndcg@10=0.002522
+[eval:hybrid_item_knn_w2] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w2] users=1,024/9,000 (11.38%) rate=369.0 users/s elapsed=3s ETA=22s (this model)
+[eval:hybrid_item_knn_w2] users=2,048/9,000 (22.76%) rate=461.5 users/s elapsed=4s ETA=15s (this model)
+[eval:hybrid_item_knn_w2] users=3,072/9,000 (34.13%) rate=519.7 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w2] users=4,096/9,000 (45.51%) rate=551.2 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w2] users=5,120/9,000 (56.89%) rate=573.8 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w2] users=6,144/9,000 (68.27%) rate=590.6 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w2] users=7,168/9,000 (79.64%) rate=602.9 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w2] users=8,192/9,000 (91.02%) rate=613.4 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w2] users=9,000/9,000 (100.00%) rate=609.1 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w2] aggregating metrics
+[tuning] hybrid_item_knn_w2: recall@10=0.006822 ndcg@10=0.003195
+[eval:hybrid_item_knn_w4] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w4] users=1,024/9,000 (11.38%) rate=381.7 users/s elapsed=3s ETA=21s (this model)
+[eval:hybrid_item_knn_w4] users=2,048/9,000 (22.76%) rate=484.0 users/s elapsed=4s ETA=14s (this model)
+[eval:hybrid_item_knn_w4] users=3,072/9,000 (34.13%) rate=533.5 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w4] users=4,096/9,000 (45.51%) rate=564.1 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w4] users=5,120/9,000 (56.89%) rate=592.6 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w4] users=6,144/9,000 (68.27%) rate=605.2 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w4] users=7,168/9,000 (79.64%) rate=618.6 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w4] users=8,192/9,000 (91.02%) rate=666.4 users/s elapsed=12s ETA=1s (this model)
+[eval:hybrid_item_knn_w4] users=9,000/9,000 (100.00%) rate=667.8 users/s elapsed=13s ETA=0s (this model)
+[eval:hybrid_item_knn_w4] aggregating metrics
+[tuning] hybrid_item_knn_w4: recall@10=0.008506 ndcg@10=0.003806
+[eval:hybrid_item_knn_w8] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w8] users=1,024/9,000 (11.38%) rate=394.9 users/s elapsed=3s ETA=20s (this model)
+[eval:hybrid_item_knn_w8] users=2,048/9,000 (22.76%) rate=491.8 users/s elapsed=4s ETA=14s (this model)
+[eval:hybrid_item_knn_w8] users=3,072/9,000 (34.13%) rate=536.0 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w8] users=4,096/9,000 (45.51%) rate=567.8 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w8] users=5,120/9,000 (56.89%) rate=583.4 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w8] users=6,144/9,000 (68.27%) rate=596.1 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w8] users=7,168/9,000 (79.64%) rate=609.7 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w8] users=8,192/9,000 (91.02%) rate=616.4 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w8] users=9,000/9,000 (100.00%) rate=608.7 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w8] aggregating metrics
+[tuning] hybrid_item_knn_w8: recall@10=0.008224 ndcg@10=0.003691
+[selected on tuning only] hybrid_item_knn_w4
+[eval:item_knn] users=0/9,000 batch=1024 ETA=warming up
+[eval:item_knn] users=1,024/9,000 (11.38%) rate=394.0 users/s elapsed=3s ETA=20s (this model)
+[eval:item_knn] users=2,048/9,000 (22.76%) rate=507.9 users/s elapsed=4s ETA=14s (this model)
+[eval:item_knn] users=3,072/9,000 (34.13%) rate=568.1 users/s elapsed=5s ETA=10s (this model)
+[eval:item_knn] users=4,096/9,000 (45.51%) rate=609.3 users/s elapsed=7s ETA=8s (this model)
+[eval:item_knn] users=5,120/9,000 (56.89%) rate=635.5 users/s elapsed=8s ETA=6s (this model)
+[eval:item_knn] users=6,144/9,000 (68.27%) rate=655.9 users/s elapsed=9s ETA=4s (this model)
+[eval:item_knn] users=7,168/9,000 (79.64%) rate=670.4 users/s elapsed=11s ETA=3s (this model)
+[eval:item_knn] users=8,192/9,000 (91.02%) rate=682.9 users/s elapsed=12s ETA=1s (this model)
+[eval:item_knn] users=9,000/9,000 (100.00%) rate=682.3 users/s elapsed=13s ETA=0s (this model)
+[eval:item_knn] aggregating metrics
+[confirmation] original_item_knn: recall@10=0.004272 ndcg@10=0.001997
+[eval:popularity] users=0/9,000 batch=1024 ETA=warming up
+[eval:popularity] users=1,024/9,000 (11.38%) rate=914.0 users/s elapsed=1s ETA=9s (this model)
+[eval:popularity] users=2,048/9,000 (22.76%) rate=1756.8 users/s elapsed=1s ETA=4s (this model)
+[eval:popularity] users=3,072/9,000 (34.13%) rate=2541.9 users/s elapsed=1s ETA=2s (this model)
+[eval:popularity] users=4,096/9,000 (45.51%) rate=3259.5 users/s elapsed=1s ETA=2s (this model)
+[eval:popularity] users=5,120/9,000 (56.89%) rate=3926.8 users/s elapsed=1s ETA=1s (this model)
+[eval:popularity] users=6,144/9,000 (68.27%) rate=4540.5 users/s elapsed=1s ETA=1s (this model)
+[eval:popularity] users=7,168/9,000 (79.64%) rate=5111.8 users/s elapsed=1s ETA=0s (this model)
+[eval:popularity] users=8,192/9,000 (91.02%) rate=5625.9 users/s elapsed=1s ETA=0s (this model)
+[eval:popularity] users=9,000/9,000 (100.00%) rate=6018.0 users/s elapsed=1s ETA=0s (this model)
+[eval:popularity] aggregating metrics
+[confirmation] core_popularity: recall@10=0.007222 ndcg@10=0.003005
+[eval:history_popularity] users=0/9,000 batch=1024 ETA=warming up
+[eval:history_popularity] users=1,024/9,000 (11.38%) rate=930.0 users/s elapsed=1s ETA=9s (this model)
+[eval:history_popularity] users=2,048/9,000 (22.76%) rate=1782.7 users/s elapsed=1s ETA=4s (this model)
+[eval:history_popularity] users=3,072/9,000 (34.13%) rate=2589.8 users/s elapsed=1s ETA=2s (this model)
+[eval:history_popularity] users=4,096/9,000 (45.51%) rate=3343.5 users/s elapsed=1s ETA=1s (this model)
+[eval:history_popularity] users=5,120/9,000 (56.89%) rate=4039.9 users/s elapsed=1s ETA=1s (this model)
+[eval:history_popularity] users=6,144/9,000 (68.27%) rate=4716.8 users/s elapsed=1s ETA=1s (this model)
+[eval:history_popularity] users=7,168/9,000 (79.64%) rate=5357.4 users/s elapsed=1s ETA=0s (this model)
+[eval:history_popularity] users=8,192/9,000 (91.02%) rate=5910.2 users/s elapsed=1s ETA=0s (this model)
+[eval:history_popularity] users=9,000/9,000 (100.00%) rate=6312.5 users/s elapsed=1s ETA=0s (this model)
+[eval:history_popularity] aggregating metrics
+[confirmation] history_popularity: recall@10=0.008494 ndcg@10=0.003804
+[eval:hybrid_item_knn_w4] users=0/9,000 batch=1024 ETA=warming up
+[eval:hybrid_item_knn_w4] users=1,024/9,000 (11.38%) rate=383.0 users/s elapsed=3s ETA=21s (this model)
+[eval:hybrid_item_knn_w4] users=2,048/9,000 (22.76%) rate=468.9 users/s elapsed=4s ETA=15s (this model)
+[eval:hybrid_item_knn_w4] users=3,072/9,000 (34.13%) rate=524.5 users/s elapsed=6s ETA=11s (this model)
+[eval:hybrid_item_knn_w4] users=4,096/9,000 (45.51%) rate=555.6 users/s elapsed=7s ETA=9s (this model)
+[eval:hybrid_item_knn_w4] users=5,120/9,000 (56.89%) rate=575.4 users/s elapsed=9s ETA=7s (this model)
+[eval:hybrid_item_knn_w4] users=6,144/9,000 (68.27%) rate=594.2 users/s elapsed=10s ETA=5s (this model)
+[eval:hybrid_item_knn_w4] users=7,168/9,000 (79.64%) rate=605.3 users/s elapsed=12s ETA=3s (this model)
+[eval:hybrid_item_knn_w4] users=8,192/9,000 (91.02%) rate=614.2 users/s elapsed=13s ETA=1s (this model)
+[eval:hybrid_item_knn_w4] users=9,000/9,000 (100.00%) rate=609.6 users/s elapsed=15s ETA=0s (this model)
+[eval:hybrid_item_knn_w4] aggregating metrics
+[confirmation] hybrid_item_knn_w4: recall@10=0.008291 ndcg@10=0.003747
+saved experiment -> D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\item_knn_hybrid\exp_001

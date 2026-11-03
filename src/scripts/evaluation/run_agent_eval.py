@@ -75,6 +75,7 @@ from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
 from package.tools.evaluation.cohort_policy_for_tag import cohort_policy_for_tag
+from package.tools.evaluation.build_core_model import build_core_model
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.recommenders.mapping_hash import mapping_hash
 
@@ -188,7 +189,9 @@ def main() -> None:
     ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     ap.add_argument("--agents", help="Danh sách agent, cách nhau dấu phẩy (mặc định: agent_eval.agents)")
-    ap.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
+    population = ap.add_mutually_exclusive_group()
+    population.add_argument("--all-users", action="store_true", help="Generate requests for all eligible users per kind; no segment cap")
+    population.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
     ap.add_argument("--reflect-rounds", type=int, help="Số lượt plan-reflect của planner (mặc định: agent.reflect_rounds; 0 = tắt)")
     ap.add_argument("--inference-mode", choices=list(MODES),
                     help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
@@ -216,7 +219,9 @@ def main() -> None:
     agents = [a.strip() for a in (args.agents or ",".join(cfg["agents"])).split(",") if a.strip()]
     if set(agents) - set(AGENTS):
         raise SystemExit(f"Unknown agent(s) {sorted(set(agents) - set(AGENTS))}; choose from {list(AGENTS)}")
-    per_segment = args.per_segment or int(cfg["per_segment"])
+    per_segment = args.per_segment if args.per_segment is not None else int(cfg["per_segment"])
+    if per_segment < 1:
+        ap.error("--per-segment must be positive")
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     data_paths = get_data_paths(args.tag)
     tag_manifest = verify_tag_manifest(data_paths, domains=get_domains())
@@ -244,6 +249,8 @@ def main() -> None:
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.bincount(fit_df.drop_duplicates(["user_idx", "item_idx"])["user_idx"].to_numpy(), minlength=num_users)
     seg_of = segment_users_by_history(target_by_user, hist_size, sparse_max)
+    if args.all_users:
+        per_segment = max(1, len(seg_of))
     latest = fit_df[fit_df["user_idx"].isin(list(target_by_user))].sort_values("timestamp").drop_duplicates("user_idx", keep="last")
     last_item_of = dict(zip(latest["user_idx"].tolist(), latest["item_idx"].tolist()))
 
@@ -291,9 +298,17 @@ def main() -> None:
     if cache_meta_path.exists():
         knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
     knn_artifact_status = "fit_fresh_cache_ignored"
-    print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
+    print("Prepare ItemKNN using the tag training protocol")
     t0 = time.perf_counter()
-    knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+    knn = build_core_model(data_paths, args.eval_on, knn_k, fit_df, user2id, item2id)
+    if knn is None:
+        knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+    else:
+        knn_artifact_status = knn._evaluation_artifact_status
+        knn_fit_data_hash = knn._fit_data_hash
+        protocol_manifest["item_knn"] = knn._evaluation_fit_provenance
+        protocol_manifest["cf_history"] = "all pre-target history; similarity and popularity frozen on train_core"
+    protocol_manifest["sampling"] = ("all eligible users per request kind; no segment cap" if args.all_users else "seeded per-kind/segment cap; eligible request population only")
     fit_time = time.perf_counter() - t0
     knn._fit_time = fit_time
     print(f"ItemKNN: fitted in {fit_time:.1f}s")

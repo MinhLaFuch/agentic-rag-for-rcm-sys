@@ -47,6 +47,8 @@ class Recommender(ABC):
             num_users = int(train_matrix["user_idx"].max()) + 1 if not train_matrix.empty else 0
             num_items = int(train_matrix["item_idx"].max()) + 1 if not train_matrix.empty else 0
             train_matrix = build_interaction_matrix(train_matrix, num_users, num_items)
+        self.__dict__.pop("history_matrix", None)
+        self.__dict__.pop("_popularity_order", None)
         self.train_matrix = _prepare_train_matrix(train_matrix)
         self.num_users, self.num_items = self.train_matrix.shape
         self._fit(self.train_matrix)
@@ -64,7 +66,7 @@ class Recommender(ABC):
     def history_sizes(self, user_idxs: np.ndarray) -> np.ndarray:
         """Số tương tác trong dữ liệu fit của từng user (dùng cho phân đoạn cold/sparse/warm)."""
         assert self.train_matrix is not None, "call fit() first"
-        return np.diff(self.train_matrix.indptr)[user_idxs]
+        return np.diff(getattr(self, "history_matrix", self.train_matrix).indptr)[user_idxs]
 
     def recommend(
         self,
@@ -128,6 +130,10 @@ class Recommender(ABC):
                 )
             exclude = exclude.tocsr()
 
+        fast = self._recommend_sparse(user_idxs, k, exclude)
+        if fast is not None:
+            return fast[0].tolist() if scalar else fast
+
         scores = np.array(self.score_batch(user_idxs), dtype=np.float32, copy=True)
         if scores.shape != (len(user_idxs), self.num_items):
             raise ValueError(
@@ -148,35 +154,30 @@ class Recommender(ABC):
             rows = np.where(all_zero_valid)[0]
             scores[rows] = np.where(valid[rows], popularity[None, :], -np.inf)
 
-        n = scores.shape[1]
-        # Create mask for valid (non -inf) items
-        valid_mask = scores > -np.inf
-        # Fill -inf with very negative value so they sort to the end when inverted
-        scores_safe = np.where(valid_mask, scores, -1e30)
-
-        # Use lexsort to break ties by score (descending) then item_idx (ascending)
-        # This ensures determinism without relying on epsilon addition
-        # Create inverted scores for descending order
-        inv_scores = -scores_safe
-        # lexsort sorts by last key first, so item_idx first, then score
-        # Use item_idx as secondary key (smaller index = higher priority)
-        item_indices = np.arange(n)
-
-        # Use lexsort on each row - this is still a loop but lexsort is efficient
-        ranked = np.zeros((len(user_idxs), k), dtype=np.int64)
-        for i in range(len(user_idxs)):
-            # Get indices sorted by (score descending, item_idx ascending)
-            sorted_indices = np.lexsort((item_indices, inv_scores[i]))
-            # Take top k
-            ranked[i] = sorted_indices[:k]
-
-        # Filter out -inf items (excluded or invalid)
-        valid_mask_result = scores[np.arange(len(user_idxs))[:, None], ranked] > -np.inf
         result = np.full((len(user_idxs), k), -1, dtype=np.int64)
-        for i in range(len(user_idxs)):
-            valid_items = ranked[i][valid_mask_result[i]]
-            result[i, :len(valid_items)] = valid_items
+        for i, row in enumerate(scores):
+            valid_ids = np.flatnonzero(row > -np.inf)
+            count = min(k, len(valid_ids))
+            if count == 0:
+                continue
+            values = row[valid_ids]
+            if len(valid_ids) > count:
+                boundary = np.partition(values, len(values) - count)[len(values) - count]
+                higher = valid_ids[values > boundary]
+                tied = valid_ids[values == boundary][:count - len(higher)]
+                valid_ids = np.concatenate((higher, tied))
+            chosen = valid_ids[np.lexsort((valid_ids, -row[valid_ids]))]
+            result[i, :count] = chosen
 
         if scalar:
             return result[0].tolist()
         return result
+
+    def _recommend_sparse(self, user_idxs, k, exclude):
+        return None
+
+    def _get_popularity_order(self):
+        if not hasattr(self, "_popularity_order"):
+            counts = np.asarray(self.train_matrix.sum(axis=0)).ravel().astype(np.float32)
+            self._popularity_order = np.argsort(-counts, kind="stable")
+        return self._popularity_order

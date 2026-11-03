@@ -15,7 +15,7 @@ def test_data_config_has_domains_and_resource_paths():
     data_paths_config = load_config("path/data_paths")
     cleaning_config = load_config("data/cleaning")
     assert [d["name"] for d in domains_config["domains"]] == ["Video_Games", "Toys_and_Games", "Electronics"]
-    assert run_tag_config["tag"] == "multi_domain"
+    assert run_tag_config["tag"] == "multi_domain_v2_audit_20261030"
     assert data_paths_config["paths"]["raw_dir"] == "resource/raw"
     assert cleaning_config["cleaning"]["chunk_size"] > 0
 

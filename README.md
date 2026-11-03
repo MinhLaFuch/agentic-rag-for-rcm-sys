@@ -1,3 +1,5 @@
+> Trạng thái hiện tại (02/11/2026): đã có dữ liệu multi-domain temporal train-core và artifact Stage 4. Xem [hướng dẫn full evaluation](src/docs/full_evaluation.md) cho protocol, lệnh chạy validation và checkpoint/resume. Các mô tả phase bên dưới là lịch sử.
+
 # Dự án Công nghệ Thông tin - Học kỳ 1 (2026 - 2027)
 
 # Nhóm

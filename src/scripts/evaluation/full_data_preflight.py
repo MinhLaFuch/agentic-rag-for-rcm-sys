@@ -171,7 +171,7 @@ def _expected_itemknn_mapping_hashes(data_paths, default_item_hash: str,
         return default_item_hash, default_user_hash, "full"
     records = {record.get("path", "").replace("\\", "/"): record
                for record in manifest.get("outputs", [])}
-    tag_prefix = f"resource/mapped/{data_paths.tag}/fit_core/"
+    tag_prefix = (data_paths.mapped_dir / "fit_core").relative_to(ROOT).as_posix() + "/"
     item_record = records.get(tag_prefix + "item2id.json", {})
     user_record = records.get(tag_prefix + "user2id.json", {})
     item_hash = item_record.get("mapping_hash")
@@ -230,7 +230,7 @@ def _artifact_check(path: Path | None, kind: str, item_hash: str, user_hash: str
 
 
 def run(args) -> dict:
-    tag = args.tag
+    tag = get_data_paths(args.tag).tag
     paths = get_data_paths(tag)
     mapped = paths.mapped_dir
     splits = paths.splits_dir
@@ -361,7 +361,7 @@ def run(args) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--tag", default="multi_domain")
+    ap.add_argument("--tag", help="Default: configs/path/run_tag.yaml")
     ap.add_argument("--eval-on", choices=("validation",), default="validation")
     ap.add_argument("--output", type=Path, required=True)
     args = ap.parse_args()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections import Counter
 from collections.abc import Mapping
 
 import numpy as np
@@ -35,13 +36,15 @@ def build_requests(
         raise ValueError(f"language must be one of {sorted(TEMPLATES)}, got {language!r}")
     templates = TEMPLATES[language]
     requests: list[AgentRequest] = []
+    counts = Counter()
 
     def users_in(segment: str) -> list[int]:
         pool = sorted(u for u, s in seg_of.items() if s == segment)
         return [int(u) for u in rng.permutation(pool)]
 
     def add(kind: str, segment: str, **fields) -> None:
-        index = sum(1 for r in requests if r.kind == kind and r.segment == segment)
+        index = counts[kind, segment]
+        counts[kind, segment] += 1
         requests.append(
             AgentRequest(
                 request_id=f"{kind}-{segment}-{index}", kind=kind, segment=segment, oracle=kind in ORACLE_KINDS, **fields
@@ -50,7 +53,7 @@ def build_requests(
 
     for segment in KIND_SEGMENTS["similar"]:
         for u in users_in(segment):
-            if sum(1 for r in requests if r.kind == "similar" and r.segment == segment) >= per_segment:
+            if counts["similar", segment] >= per_segment:
                 break
             if u not in last_item_of:
                 continue
@@ -61,14 +64,14 @@ def build_requests(
 
     for segment in KIND_SEGMENTS["personalized"]:
         for u in users_in(segment):
-            if sum(1 for r in requests if r.kind == "personalized" and r.segment == segment) >= per_segment:
+            if counts["personalized", segment] >= per_segment:
                 break
             add("personalized", segment, user_id=id2user[u], user_idx=u, targets=sorted(target_by_user[u]),
                 text=templates["personalized"].format(user_id=id2user[u], k=k))
 
     for segment in KIND_SEGMENTS["constrained"]:
         for u in users_in(segment):
-            if sum(1 for r in requests if r.kind == "constrained" and r.segment == segment) >= per_segment:
+            if counts["constrained", segment] >= per_segment:
                 break
             held_out = [id2item[i] for i in sorted(target_by_user[u])]
             picked = next(  # first held-out item with a known price and a category
@@ -87,7 +90,7 @@ def build_requests(
 
     for segment in KIND_SEGMENTS["cold_text"]:
         for u in users_in(segment):
-            if sum(1 for r in requests if r.kind == "cold_text" and r.segment == segment) >= per_segment:
+            if counts["cold_text", segment] >= per_segment:
                 break
             held_out = [id2item[i] for i in sorted(target_by_user[u])]
             category = next((c for item in held_out if (c := _deepest_category(corpus, item))), None)

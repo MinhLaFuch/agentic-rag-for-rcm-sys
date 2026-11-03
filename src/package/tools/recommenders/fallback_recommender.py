@@ -23,3 +23,10 @@ class FallbackRecommender(Recommender):
         if cold.any():
             scores[cold] = self.fallback.score_batch(user_idxs[cold])
         return scores
+
+    def _recommend_sparse(self, user_idxs, k, exclude):
+        from .item_knn_matrix_recommender import ItemKNNMatrixRecommender
+        from .popularity_matrix_recommender import PopularityMatrixRecommender
+        if type(self.primary) is ItemKNNMatrixRecommender and type(self.fallback) is PopularityMatrixRecommender:
+            return self.primary._recommend_sparse(user_idxs, k, exclude)
+        return None

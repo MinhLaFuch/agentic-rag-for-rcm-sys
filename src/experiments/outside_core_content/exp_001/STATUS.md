@@ -1,0 +1,1 @@
+Failed engineering attempt: JSON serialization rejected a NumPy int32 before the first record was written. No quality metrics were produced. The serialization fix and CLI integration test were added; exp_002 is the completed original-SQL run, exp_003 the completed rank-streaming rerun.

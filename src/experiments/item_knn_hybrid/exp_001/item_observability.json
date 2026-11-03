@@ -1,0 +1,6 @@
+{
+  "validation_unique_pairs": 7779830,
+  "outside_core_pairs": 2756500,
+  "outside_core_but_observed_train_pairs": 1100517,
+  "unobserved_in_full_train_pairs": 1655983
+}

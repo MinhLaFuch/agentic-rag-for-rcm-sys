@@ -1,0 +1,37 @@
+[load] train/validation only
+[catalog] build TEMP FTS with visible outside-core items only
+[catalog] 1,516,453 visible items outside core
+[probe:cold] 1/100 elapsed=135s statuses={'no_query': 1}
+[probe:cold] 10/100 elapsed=135s statuses={'no_query': 10}
+[probe:cold] 20/100 elapsed=135s statuses={'no_query': 20}
+[probe:cold] 30/100 elapsed=135s statuses={'no_query': 30}
+[probe:cold] 40/100 elapsed=135s statuses={'no_query': 40}
+[probe:cold] 50/100 elapsed=135s statuses={'no_query': 50}
+[probe:cold] 60/100 elapsed=135s statuses={'no_query': 60}
+[probe:cold] 70/100 elapsed=135s statuses={'no_query': 70}
+[probe:cold] 80/100 elapsed=135s statuses={'no_query': 80}
+[probe:cold] 90/100 elapsed=135s statuses={'no_query': 90}
+[probe:cold] 100/100 elapsed=135s statuses={'no_query': 100}
+[probe:sparse] 1/100 elapsed=137s statuses={'no_query': 100, 'ok': 1}
+[probe:sparse] 10/100 elapsed=148s statuses={'no_query': 100, 'ok': 9, 'error': 1}
+[probe:sparse] 20/100 elapsed=160s statuses={'no_query': 100, 'ok': 19, 'error': 1}
+[probe:sparse] 30/100 elapsed=175s statuses={'no_query': 100, 'ok': 28, 'error': 2}
+[probe:sparse] 40/100 elapsed=191s statuses={'no_query': 100, 'ok': 34, 'error': 6}
+[probe:sparse] 50/100 elapsed=206s statuses={'no_query': 100, 'ok': 40, 'error': 10}
+[probe:sparse] 60/100 elapsed=219s statuses={'no_query': 100, 'ok': 48, 'error': 12}
+[probe:sparse] 70/100 elapsed=233s statuses={'no_query': 100, 'ok': 53, 'error': 17}
+[probe:sparse] 80/100 elapsed=246s statuses={'no_query': 100, 'ok': 60, 'error': 20}
+[probe:sparse] 90/100 elapsed=262s statuses={'no_query': 100, 'ok': 67, 'error': 23}
+[probe:sparse] 100/100 elapsed=278s statuses={'no_query': 100, 'ok': 75, 'error': 25}
+[probe:warm] 1/100 elapsed=280s statuses={'no_query': 100, 'ok': 75, 'error': 26}
+[probe:warm] 10/100 elapsed=296s statuses={'no_query': 100, 'ok': 80, 'error': 30}
+[probe:warm] 20/100 elapsed=312s statuses={'no_query': 100, 'ok': 86, 'error': 34}
+[probe:warm] 30/100 elapsed=330s statuses={'no_query': 100, 'ok': 91, 'error': 39}
+[probe:warm] 40/100 elapsed=347s statuses={'no_query': 100, 'ok': 97, 'error': 43}
+[probe:warm] 50/100 elapsed=365s statuses={'no_query': 100, 'ok': 104, 'error': 46}
+[probe:warm] 60/100 elapsed=380s statuses={'no_query': 100, 'ok': 111, 'error': 49}
+[probe:warm] 70/100 elapsed=394s statuses={'no_query': 100, 'ok': 120, 'error': 50}
+[probe:warm] 80/100 elapsed=408s statuses={'no_query': 100, 'ok': 127, 'error': 53}
+[probe:warm] 90/100 elapsed=428s statuses={'no_query': 100, 'ok': 130, 'error': 60}
+[probe:warm] 100/100 elapsed=445s statuses={'no_query': 100, 'ok': 135, 'error': 65}
+saved records -> D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\outside_core_content\exp_003; summary -> D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\outside_core_content\exp_003\summary

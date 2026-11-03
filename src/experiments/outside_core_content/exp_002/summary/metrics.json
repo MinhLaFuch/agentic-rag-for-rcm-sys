@@ -1,0 +1,170 @@
+{
+  "all:history_popularity": {
+    "users": 300,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.002648148148148148,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.002648148148148148,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0054971509971509964
+    }
+  },
+  "cold:history_popularity": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0018333333333333335,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0018333333333333335,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0018333333333333335
+    }
+  },
+  "all:outside_core_bm25": {
+    "users": 300,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "cold:outside_core_bm25": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "all:rrf60_popularity_content": {
+    "users": 300,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.002648148148148148,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.002648148148148148,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.005126780626780627
+    }
+  },
+  "cold:rrf60_popularity_content": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0018333333333333335,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0018333333333333335,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0018333333333333335
+    }
+  },
+  "sparse:history_popularity": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "sparse:outside_core_bm25": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "sparse:rrf60_popularity_content": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "warm:history_popularity": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.006111111111111111,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.006111111111111111,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.014658119658119657
+    }
+  },
+  "warm:outside_core_bm25": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.0,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.0,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.0
+    }
+  },
+  "warm:rrf60_popularity_content": {
+    "users": 100,
+    "metrics": {
+      "outside_core_recall@10": 0.0,
+      "outside_core_hit_rate@10": 0.0,
+      "all_target_recall@10": 0.006111111111111111,
+      "outside_core_recall@20": 0.0,
+      "outside_core_hit_rate@20": 0.0,
+      "all_target_recall@20": 0.006111111111111111,
+      "outside_core_recall@100": 0.0,
+      "outside_core_hit_rate@100": 0.0,
+      "all_target_recall@100": 0.013547008547008545
+    }
+  }
+}

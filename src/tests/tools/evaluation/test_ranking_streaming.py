@@ -18,8 +18,10 @@ from scripts.evaluation import ranking_eval as script
 @pytest.fixture
 def environment(tmp_path, monkeypatch):
     paths = replace(get_data_paths("toy"), raw_dir=tmp_path/"raw", mapped_dir=tmp_path/"mapped",
-                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus")
+                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus", cleaned_dir=tmp_path/"cleaned")
     paths.raw_dir.mkdir()
+    (paths.cleaned_dir / "D").mkdir(parents=True)
+    pd.DataFrame({"parent_asin": [f"i{i}" for i in range(7)], "timestamp": [1]*7}).to_parquet(paths.cleaned_path("D"))
     paths.mapped_dir.mkdir()
     paths.splits_dir.mkdir()
     (paths.raw_dir/"meta_D.jsonl.gz").write_text("fixture metadata")
@@ -43,12 +45,15 @@ def environment(tmp_path, monkeypatch):
     return tmp_path,paths,item2id
 
 
-def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"):
+def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6", all_users=False):
     args = ["ranking_eval", "--tag","toy","--per-segment","2","--candidate-budget","3",
             "--ks","1,3","--neighbors","2","--popularity-weights",weights,
             "--query-normalization","ascii_fold","--no-prebuilt-corpus",
             "--work-dir",str(base/name),"--experiments-dir",str(base/(name+"_output")),
             "--batch-size","1","--progress-every","1"]
+    if all_users:
+        index = args.index("--per-segment")
+        args[index:index + 2] = ["--all-users"]
     if resume:
         args += ["--resume"]
     if frozen:
@@ -56,6 +61,16 @@ def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"
     monkeypatch.setattr(sys,"argv",args)
     script.main()
     return base/(name+"_output")/"exp_001"
+
+
+def test_all_users_records_uncapped_population(environment, monkeypatch):
+    base, paths, items = environment
+    result = launch(monkeypatch, base, "all_users", all_users=True)
+    import yaml
+    config = yaml.safe_load((result / "config.yaml").read_text(encoding="utf-8"))["config"]
+    assert "no segment cap" in config["protocol"]["sampling"]
+    rows = [json.loads(line) for line in (result / "candidate_lists.jsonl").read_text().splitlines()]
+    assert {row["user_idx"] for row in rows} == {0, 1, 2}
 
 
 @pytest.mark.parametrize("interrupt_stage", ["candidates", "scored:"])
