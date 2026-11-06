@@ -24,14 +24,14 @@ from package.tools.evaluation import select_fit_target
 from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.tools.recommenders.shared.load_item_knn import load_item_knn
 from package.tools.recommenders.shared.provenance import fit_provenance
-from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
-from .._consumed_by import detect_consumed_by
-from .._memory_snapshot import take_memory_snapshot
+from package.tools.recommenders.shared import item_knn_data_hash
 from .._profile_builder import build_profiles
 from ..adapter import adapt_from_inference, adapt_from_plan_executor, adapt_from_plan_executor_error
 from ..samples import IDENTITY_INJECTION_EN, IDENTITY_INJECTION_VI
 from ..view import DemoItem, DemoProfile, MemoryView, DemoRequest, DemoResult, DemoTrace
 from .._limits import get_demo_limits
+from .._consumed_by import detect_consumed_by
+from .._memory_snapshot import take_memory_snapshot
 
 
 class LiveBackend:
@@ -103,7 +103,7 @@ class LiveBackend:
                 raise RuntimeError(
                     f"Corpus file not found: {corpus_path}\n"
                     f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
-                    f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small tags)"
                 )
             print(f"Load corpus from {corpus_path}")
             corpus, coverage = load_corpus(
@@ -113,7 +113,7 @@ class LiveBackend:
             file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
             print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
         else:
-            print("Build corpus in RAM (--no-prebuilt)")
+            print("Build corpus in RAM (use_prebuilt_corpus=false)")
             corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]), timing=True)
             print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
@@ -139,8 +139,8 @@ class LiveBackend:
             if not item_knn_path.exists():
                 raise RuntimeError(
                     f"ItemKNN file not found: {item_knn_path}\n"
-                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {self._eval_on}\n"
-                    f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4\n"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small tags)"
                 )
             print(f"Load ItemKNN from {item_knn_path}")
             try:
@@ -158,7 +158,7 @@ class LiveBackend:
                 print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
         else:
             self._knn_provenance = {"status": "refit_requested"}
-            print("Fit ItemKNN on fit data (--no-prebuilt)")
+            print("Fit ItemKNN on fit data (use_prebuilt_corpus=false)")
             t0 = time.perf_counter()
             knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
             knn._fit_time = time.perf_counter() - t0

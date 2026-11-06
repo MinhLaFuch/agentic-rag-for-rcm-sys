@@ -39,12 +39,9 @@ from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import split_path
 from package.tools.corpus import ItemCorpus
-from package.tools.ranking.item_cf_tool import SimilarTool
-from package.tools.ranking.reco_model_tool import RankTool
+from package.tools import SimilarTool, RankTool, LookupTool, FilterTool
 from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools.score import BaselineScorer
-from package.tools.sql_query.query_tool import LookupTool
-from package.tools.sql_query.sql_tool import FilterTool
 
 
 class _Tee:
@@ -96,14 +93,14 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append",
                     help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml).")
-    ap.add_argument("--model", choices=["knn", "popularity"], default="knn",
-                    help="knn needs a lot of RAM on big data; popularity is a light fallback")
-    ap.add_argument("--neighbors", type=int, help="mặc định: baselines.item_knn.k trong baselines.yaml")
-    ap.add_argument("--eval-users", type=int, default=200)
-    ap.add_argument("--negatives", type=int, default=99)
-    ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
-    args.neighbors = args.neighbors or load_config("eval/baselines")["baselines"]["item_knn"]["k"]
+    # Tham số kiểm chứng đọc từ configs/eval/tool_validation.yaml + baselines.item_knn.k
+    cfg = load_config("eval/tool_validation")["tool_validation"]
+    args.model = str(cfg["model"])
+    args.eval_users = int(cfg["eval_users"])
+    args.negatives = int(cfg["negatives"])
+    args.seed = int(cfg["seed"])
+    args.neighbors = int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
     return args
 
 
@@ -204,7 +201,7 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
         r = cf(items=seeds, top_k=5)
         show_result("SimilarTool: neighbours of the user's first 3 items", r, "candidates")
     else:
-        print("  (skipped SimilarTool: needs --model knn)")
+        print("  (skipped SimilarTool: needs tool_validation.model = knn)")
 
     pool = sql(filters={"exclude_item_ids": [id2item[i] for i in hist]}, limit=200)
     r = reco(user_id=demo_user, candidates=pool.data["candidates"], top_k=5)

@@ -357,7 +357,7 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     from package.demo.backend import live_backend as module
     from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
     from package.tools.recommenders.shared.provenance import fit_provenance
-    from package.tools.recommenders.shared.model_metadata import item_knn_data_hash
+    from package.tools.recommenders.shared._model_metadata import item_knn_data_hash
     interactions, user2id, item2id = cf_setup
     fit = interactions.assign(timestamp=1)
     empty = fit.iloc[:0]

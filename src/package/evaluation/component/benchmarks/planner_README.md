@@ -9,8 +9,7 @@ Planner benchmark evaluates the PlanExecutor component in isolation using mock t
 ```bash
 python -m package.evaluation.component.run \
     --component planner \
-    --dataset package/evaluation/component/benchmarks/planner_dataset.jsonl \
-    --runs 1
+    --dataset package/evaluation/component/benchmarks/planner_dataset.jsonl
 ```
 
 ## Adding New Test Cases
@@ -51,8 +50,7 @@ return MockLLMProvider({
 ```bash
 python -m package.evaluation.component.run \
     --component planner \
-    --dataset package/evaluation/component/benchmarks/planner_dataset.jsonl \
-    --runs 1
+    --dataset package/evaluation/component/benchmarks/planner_dataset.jsonl
 ```
 
 ## Tags

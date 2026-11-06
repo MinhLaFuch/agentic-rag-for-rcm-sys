@@ -7,11 +7,12 @@ import json
 import subprocess
 from typing import Any
 
-from ..agents._limits import get_agent_limits
-from ..agents.planner._prompt import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
+from ..agents import get_agent_limits
+from ..config import get_overlay_info
+from ..agents.planner import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
 from ..agents.toolkit.build_tool_prompt import build_tool_prompt
-from ..inference._limits import get_inference_limits
-from ..inference.compose._prompt import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
+from ..inference import get_inference_limits
+from ..inference.compose import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
 from ..tools.base import Tool
 
 
@@ -58,13 +59,20 @@ def build_run_provenance(
         - agent_limits: planner limits (temperature, max_tokens, max_steps, plan_retries, reflect_rounds, llm_retries)
         - inference_limits: inference limits (temperature, max_tokens, llm_retries, check_numbers, price_tolerance)
     """
-    # Hash planner prompts (formatted with tools)
-    planner_prompt = PLANNER_SYSTEM_PROMPT.format(tools=build_tool_prompt(planner_tools))
+    # Hash planner prompts (formatted with tools and session_state)
+    session_state = "{}"  # Empty session state for provenance hash
+    planner_prompt = PLANNER_SYSTEM_PROMPT.format(
+        tools=build_tool_prompt(planner_tools),
+        session_state=session_state
+    )
     planner_prompt_sha256 = _sha256(planner_prompt)
 
     planner_memory_prompt_sha256 = None
     if memory_tools is not None and memory_tools != planner_tools:
-        memory_prompt = PLANNER_SYSTEM_PROMPT.format(tools=build_tool_prompt(memory_tools))
+        memory_prompt = PLANNER_SYSTEM_PROMPT.format(
+            tools=build_tool_prompt(memory_tools),
+            session_state=session_state
+        )
         planner_memory_prompt_sha256 = _sha256(memory_prompt)
 
     # Hash inference prompt
@@ -115,4 +123,5 @@ def build_run_provenance(
         "git_dirty": git_dirty,
         "agent_limits": agent_limits_dict,
         "inference_limits": inference_limits_dict,
+        "config_overlay": get_overlay_info(),
     }

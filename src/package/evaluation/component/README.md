@@ -37,8 +37,7 @@ package/evaluation/component/
 cd src
 python -m package.evaluation.component.run \
     --component memory \
-    --dataset package/evaluation/component/benchmarks/dummy_memory_dataset.jsonl \
-    --runs 1
+    --dataset package/evaluation/component/benchmarks/dummy_memory_dataset.jsonl
 ```
 
 This will:
@@ -52,8 +51,7 @@ This will:
 ```bash
 python -m package.evaluation.component.run regress \
     --baseline memory_benchmark_20261026_173532.json \
-    --current memory_benchmark_current.json \
-    --text-report regression_report.txt
+    --candidate memory_benchmark_current.json
 ```
 
 This will:
@@ -157,8 +155,7 @@ Create a JSONL file with test cases for your component.
 ```bash
 python -m package.evaluation.component.run \
     --component my_component \
-    --dataset path/to/dataset.jsonl \
-    --runs 1
+    --dataset path/to/dataset.jsonl
 ```
 
 ## CLI Reference
@@ -169,43 +166,35 @@ python -m package.evaluation.component.run \
 python -m package.evaluation.component.run \
     --component <name> \
     --dataset <path> \
-    [--runs <n>] \
-    [--output <path>] \
     [--tags <tag1> <tag2> ...] \
     [--metadata <key=value> ...] \
-    [--config <path>] \
     [--git-sha <sha>]
 ```
 
 Arguments:
 - `--component`: Component name (required)
 - `--dataset`: Path to dataset file (required)
-- `--runs`: Number of times to run each case (default: 1)
-- `--output`: Path to save results (default: auto-generated)
 - `--tags`: Filter cases by tags (OR logic)
 - `--metadata`: Filter cases by metadata (format: key=value, AND logic)
-- `--config`: Path to JSON config file
 - `--git-sha`: Git commit SHA (auto-detected if not provided)
+
+Run count and per-component evaluator config live in `configs/eval/component_benchmarks.yaml`
+(`runs`, `configs.<component>`); results are written under `data_paths.outputs.component_benchmarks`.
 
 ### Regression analysis
 
 ```bash
 python -m package.evaluation.component.run regress \
     --baseline <path> \
-    --current <path> \
-    [--output <path>] \
-    [--metric-threshold <float>] \
-    [--latency-threshold <float>] \
-    [--text-report <path>]
+    --candidate <path>
 ```
 
 Arguments:
 - `--baseline`: Path to baseline results (required)
-- `--current`: Path to current results (required)
-- `--output`: Path to save JSON report (default: auto-generated)
-- `--metric-threshold`: Threshold for significant metric change (default: 0.05 = 5%)
-- `--latency-threshold`: Threshold for significant latency change (default: 0.1 = 10%)
-- `--text-report`: Path to save human-readable text report
+- `--candidate`: Path to current results (required)
+
+The JSON report is written under `data_paths.outputs.component_benchmarks` and the
+text report is printed to stdout.
 
 ## Result Schema
 

@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-import time
+import json
+import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 from datetime import datetime, timezone
 
 from ._schema import CampaignConfig, CampaignResult, ExperimentRun
+from package.config import get_data_paths
+
+import yaml
 
 
 class CampaignRunner:
@@ -25,21 +30,44 @@ class CampaignRunner:
             CampaignResult with all experiment runs and comparisons
         """
         campaign_hash = self.config.compute_hash()
+
+        # Expand parameter grid if provided
+        experiments = self.config.expand_parameter_grid()
+
+        if not experiments:
+            raise ValueError("No experiments to run. Either provide 'experiments' list or 'parameter_grid' in campaign config.")
+
+        print(f"\n=== Campaign Summary ===")
+        print(f"Total experiments: {len(experiments)}")
+        for exp in experiments:
+            print(f"  - {exp.name}: {exp.description}")
+
+        # Auto-generate comparison pairs if empty and using parameter grid
+        comparison_pairs = self.config.comparison_pairs
+        if not comparison_pairs and self.config.parameter_grid:
+            # Compare all experiments against the first one (baseline)
+            baseline_exp = experiments[0]
+            comparison_pairs = [(baseline_exp.name, exp.name) for exp in experiments[1:]]
+            print(f"\nAuto-generated {len(comparison_pairs)} comparison pairs (vs baseline)")
+
         runs: list[ExperimentRun] = []
 
-        # Create output directory
+        # Create output directory. Relative paths resolve against experiments_dir
+        # (experiments/), never the process CWD — see configs/path/data_paths.yaml.
         output_dir = Path(self.config.output_dir)
+        if not output_dir.is_absolute():
+            output_dir = get_data_paths().experiments_dir / output_dir
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Execute each experiment
-        for experiment in self.config.experiments:
+        for experiment in experiments:
             for run_num in range(1, experiment.repetition_count + 1):
                 run = self._run_experiment(experiment, run_num, output_dir)
                 runs.append(run)
 
         # Perform comparisons if configured
         comparisons = {}
-        if self.config.comparison_pairs:
+        if comparison_pairs:
             comparisons = self._run_comparisons(runs, output_dir)
 
         # Generate summary
@@ -68,7 +96,7 @@ class CampaignRunner:
         run_number: int,
         output_dir: Path,
     ) -> ExperimentRun:
-        """Run a single experiment.
+        """Run a single experiment by calling run_agent_eval.py.
 
         Args:
             experiment: ExperimentConfig
@@ -81,20 +109,75 @@ class CampaignRunner:
         exp_output_dir = output_dir / experiment.name / f"run_{run_number}"
         exp_output_dir.mkdir(parents=True, exist_ok=True)
 
-        start_time = time.perf_counter()
+        start_time = datetime.now(timezone.utc)
         success = True
         error = None
         metrics = {}
 
         try:
-            # In a real implementation, this would invoke the actual experiment runner
-            # For now, simulate execution
-            metrics = self._simulate_experiment_run(experiment, exp_output_dir)
+            # Per-experiment tunables go through a CONFIG_OVERLAY_PATH YAML (merged over
+            # configs/ by load_config) — run_agent_eval.py itself only takes runtime selectors.
+            overlay = self._build_config_overlay(experiment, run_number)
+            overlay_path = exp_output_dir / "config_overlay.yaml"
+            overlay_path.write_text(
+                yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
+            )
+
+            tag = self.config.dataset.get("tag", "default")
+            cmd = [
+                sys.executable,
+                "scripts/evaluation/run_agent_eval.py",
+                "--tag", tag,
+                "--eval-on", self.config.dataset.get("split", "validation"),
+            ]
+
+            # Add domain filters if specified
+            domains = self.config.dataset.get("filters", {}).get("domains", [])
+            for domain in domains:
+                cmd.extend(["--domain", domain])
+
+            # Re-running a campaign reuses the same trajectory file name; resume it
+            # (run_agent_eval validates the protocol hash and refuses mismatched logs).
+            trajectory_file = overlay["agent/agent_eval"]["agent_eval"]["trajectory_file"]
+            traj_path = get_data_paths(tag).log_dir / trajectory_file
+            if traj_path.exists():
+                cmd.append("--resume")
+
+            # Set environment variables
+            env = dict(subprocess.os.environ)
+            env["PYTHONPATH"] = str(Path(__file__).parent.parent.parent.parent)
+            env["CONFIG_OVERLAY_PATH"] = str(overlay_path)
+
+            # Run the script
+            print(f"\n=== Running {experiment.name} (run {run_number}) ===")
+            print(f"Command: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                cwd=str(Path(__file__).parent.parent.parent.parent),
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=self.config.experiment_timeout_seconds,
+            )
+
+            # Check output
+            if result.returncode != 0:
+                success = False
+                error = f"Script failed with return code {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+                print(error)
+            else:
+                print(result.stdout)
+                # run_agent_eval prints "saved -> <exp_dir>"; that is the deterministic handoff
+                metrics = self._load_experiment_metrics(result.stdout)
+
+        except subprocess.TimeoutExpired:
+            success = False
+            error = f"Experiment timed out after {self.config.experiment_timeout_seconds} seconds"
         except Exception as e:
             success = False
             error = str(e)
 
-        duration = time.perf_counter() - start_time
+        duration = (datetime.now(timezone.utc) - start_time).total_seconds()
 
         return ExperimentRun(
             experiment_name=experiment.name,
@@ -106,26 +189,99 @@ class CampaignRunner:
             metrics=metrics,
         )
 
-    def _simulate_experiment_run(
-        self,
-        experiment: Any,
-        output_dir: Path,
-    ) -> dict[str, Any]:
-        """Simulate an experiment run (placeholder for real implementation).
+    # agent_config keys the overlay builder knows how to map; anything else is a config error
+    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds"}
+    _EVALUATION_CONFIG_KEYS = {"per_segment"}
 
-        In a real implementation, this would:
-        1. Load the agent configuration
-        2. Load the dataset
-        3. Run the evaluation
-        4. Save results to output_dir
+    def _build_config_overlay(self, experiment: Any, run_number: int) -> dict[str, Any]:
+        """Build a CONFIG_OVERLAY_PATH YAML fragment for one experiment run.
+
+        Shape mirrors configs/: top-level keys are config names, values are the
+        file's own content (e.g. ``agent/agent_eval`` → ``{agent_eval: {...}}``).
+        Raises ValueError on agent_config/evaluation_config keys that have no
+        mapping — silently dropping them would run the wrong experiment.
         """
-        # Placeholder: simulate metrics
-        return {
-            "task_success_rate": 0.85,
-            "grounded_answer_rate": 0.90,
-            "constraint_satisfaction": 0.80,
-            "avg_latency": 1.5,
+        unknown_agent = set(experiment.agent_config) - self._AGENT_CONFIG_KEYS
+        unknown_eval = set(experiment.evaluation_config) - self._EVALUATION_CONFIG_KEYS
+        if unknown_agent or unknown_eval:
+            raise ValueError(
+                f"Experiment '{experiment.name}' has unmapped config keys: "
+                f"agent_config={sorted(unknown_agent)}, evaluation_config={sorted(unknown_eval)}. "
+                f"Supported: agent_config={sorted(self._AGENT_CONFIG_KEYS)}, "
+                f"evaluation_config={sorted(self._EVALUATION_CONFIG_KEYS)}"
+            )
+
+        agent_eval: dict[str, Any] = {
+            "agents": experiment.agent_config.get("agents", list(self.config.default_agents)),
+            "allow_missing_corpus_sources": self.config.allow_missing_corpus_sources,
+            "trajectory_file": f"{self.config.campaign_id}_{experiment.name}_run{run_number}_trajectories.jsonl",
         }
+        per_segment = experiment.evaluation_config.get("per_segment")
+        if per_segment is not None:
+            agent_eval["per_segment"] = per_segment
+
+        overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
+
+        inference_mode = experiment.agent_config.get("inference_mode")
+        if inference_mode is not None:
+            overlay["agent/inference"] = {"inference": {"mode": inference_mode}}
+
+        reflect_rounds = experiment.agent_config.get("reflect_rounds")
+        if reflect_rounds is not None:
+            overlay["agent/agent"] = {"agent": {"reflect_rounds": reflect_rounds}}
+
+        # experiment.random_seed drives request sampling via eval/baselines.baselines.seed
+        overlay["eval/baselines"] = {"baselines": {"seed": experiment.random_seed}}
+
+        return overlay
+
+    @staticmethod
+    def _experiment_dir_from_stdout(stdout: str) -> Path | None:
+        """Parse the ``saved -> <exp_dir>`` line run_agent_eval.py prints at the end."""
+        matches = re.findall(r"saved -> (.+)", stdout)
+        if not matches:
+            return None
+        path = Path(matches[-1].strip())
+        if not path.is_absolute():
+            path = Path(__file__).parent.parent.parent.parent / path
+        return path
+
+    def _load_experiment_metrics(self, stdout: str) -> dict[str, Any]:
+        """Load metrics from the experiment dir reported by run_agent_eval stdout.
+
+        Args:
+            stdout: Captured stdout of the run_agent_eval.py subprocess
+
+        Returns:
+            Dict with aggregated metrics from metrics.json
+        """
+        exp_dir = self._experiment_dir_from_stdout(stdout)
+        if exp_dir is None:
+            return {}
+
+        metrics_file = exp_dir / "metrics.json"
+        if not metrics_file.exists():
+            return {}
+
+        with open(metrics_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Extract summary metrics from the data
+        # metrics.json = save_experiment(metrics=...) = {"k": 10, "summary": {agent: {kind: {segment: {...}}}}}
+        summary = data.get("summary", data.get("metrics", {}).get("summary", {}))
+
+        # Flatten to get overall averages across all agents/kinds/segments
+        all_metrics = {}
+        for agent, kinds in summary.items():
+            for kind, segments in kinds.items():
+                for segment, metrics in segments.items():
+                    if segment == "all":  # Use the aggregated "all" segment
+                        for key, value in metrics.items():
+                            if isinstance(value, (int, float)):
+                                metric_key = f"{agent}_{kind}_{key}"
+                                all_metrics[metric_key] = value
+
+        return all_metrics
 
     def _run_comparisons(
         self,

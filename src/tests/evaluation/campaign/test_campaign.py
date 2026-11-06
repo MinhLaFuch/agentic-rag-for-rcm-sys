@@ -156,7 +156,7 @@ def test_campaign_result_serialization():
 
 
 def test_campaign_runner_simulation(tmp_path: Path):
-    """Test CampaignRunner with simulated experiment execution."""
+    """Test CampaignRunner orchestration with a stubbed _run_experiment (no subprocess)."""
     campaign = CampaignConfig(
         campaign_id="test_campaign",
         dataset={"path": "data/test.jsonl"},
@@ -176,8 +176,24 @@ def test_campaign_runner_simulation(tmp_path: Path):
         comparison_pairs=[("exp1", "exp2")],
     )
 
-    runner = CampaignRunner(campaign, git_sha="test_sha")
-    result = runner.run_campaign()
+    original_run = CampaignRunner._run_experiment
+
+    def fake_run(self, experiment, run_number, output_dir):
+        return ExperimentRun(
+            experiment_name=experiment.name,
+            run_number=run_number,
+            output_dir=str(output_dir / experiment.name / f"run_{run_number}"),
+            success=True,
+            metrics={"task_success_rate": 0.8},
+        )
+
+    CampaignRunner._run_experiment = fake_run
+
+    try:
+        runner = CampaignRunner(campaign, git_sha="test_sha")
+        result = runner.run_campaign()
+    finally:
+        CampaignRunner._run_experiment = original_run
 
     assert result.campaign_id == campaign.campaign_id
     assert len(result.runs) == 3  # 2 runs for exp1 + 1 run for exp2
@@ -206,15 +222,21 @@ def test_campaign_runner_with_failed_experiment(tmp_path: Path):
         output_dir=str(tmp_path / "campaign_output"),
     )
 
-    # Override simulation to fail exp_fail
-    original_simulate = CampaignRunner._simulate_experiment_run
+    # Override _run_experiment (the per-experiment unit) so no subprocess runs
+    original_run = CampaignRunner._run_experiment
 
-    def failing_simulate(self, experiment, output_dir):
-        if experiment.name == "exp_fail":
-            raise ValueError("Simulated failure")
-        return original_simulate(self, experiment, output_dir)
+    def fake_run(self, experiment, run_number, output_dir):
+        success = experiment.name != "exp_fail"
+        return ExperimentRun(
+            experiment_name=experiment.name,
+            run_number=run_number,
+            output_dir=str(output_dir / experiment.name / f"run_{run_number}"),
+            success=success,
+            error=None if success else "Simulated failure",
+            metrics={"task_success_rate": 0.9} if success else {},
+        )
 
-    CampaignRunner._simulate_experiment_run = failing_simulate
+    CampaignRunner._run_experiment = fake_run
 
     try:
         runner = CampaignRunner(campaign)
@@ -224,7 +246,7 @@ def test_campaign_runner_with_failed_experiment(tmp_path: Path):
         assert result.summary["successful_runs"] == 1
         assert result.summary["failed_runs"] == 1
     finally:
-        CampaignRunner._simulate_experiment_run = original_simulate
+        CampaignRunner._run_experiment = original_run
 
 
 def test_checkpoint_manager(tmp_path: Path):
@@ -334,3 +356,63 @@ def test_campaign_example_yaml_loads():
         assert len(campaign.experiments) == 4
         assert len(campaign.comparison_pairs) == 5
         assert campaign.statistical_settings["confidence_level"] == 0.95
+
+
+def test_build_config_overlay_maps_known_keys():
+    """_build_config_overlay maps agent_config/evaluation_config/random_seed into overlay shape."""
+    runner = CampaignRunner(CampaignConfig(campaign_id="camp_x"))
+    exp = ExperimentConfig(
+        name="exp_a",
+        agent_config={"agents": ["baseline"], "inference_mode": "template", "reflect_rounds": 2},
+        evaluation_config={"per_segment": 5},
+        random_seed=7,
+    )
+    ov = runner._build_config_overlay(exp, 3)
+
+    ae = ov["agent/agent_eval"]["agent_eval"]
+    assert ae["agents"] == ["baseline"]
+    assert ae["per_segment"] == 5
+    assert ae["trajectory_file"] == "camp_x_exp_a_run3_trajectories.jsonl"
+    assert ov["agent/inference"]["inference"]["mode"] == "template"
+    assert ov["agent/agent"]["agent"]["reflect_rounds"] == 2
+    assert ov["eval/baselines"]["baselines"]["seed"] == 7
+
+
+def test_build_config_overlay_uses_campaign_defaults():
+    """Defaults (agents, allow_missing_corpus_sources) come from CampaignConfig, not literals."""
+    runner = CampaignRunner(CampaignConfig(
+        campaign_id="c",
+        default_agents=["planner"],
+        allow_missing_corpus_sources=False,
+    ))
+    ov = runner._build_config_overlay(ExperimentConfig(name="e"), 1)
+    ae = ov["agent/agent_eval"]["agent_eval"]
+    assert ae["agents"] == ["planner"]
+    assert ae["allow_missing_corpus_sources"] is False
+
+
+def test_build_config_overlay_rejects_unmapped_keys():
+    """Unknown agent_config/evaluation_config keys raise instead of being dropped."""
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    with pytest.raises(ValueError, match="unmapped config keys"):
+        runner._build_config_overlay(ExperimentConfig(name="e", agent_config={"bogus": 1}), 1)
+    with pytest.raises(ValueError, match="unmapped config keys"):
+        runner._build_config_overlay(ExperimentConfig(name="e", evaluation_config={"bogus": 1}), 1)
+
+
+def test_load_experiment_metrics_from_stdout(tmp_path: Path):
+    """_load_experiment_metrics parses 'saved -> <dir>' and flattens metrics.json."""
+    exp_dir = tmp_path / "exp_042"
+    exp_dir.mkdir()
+    (exp_dir / "metrics.json").write_text(json.dumps({
+        "k": 10,
+        "summary": {"planner": {"similar": {"all": {"task_success": 0.9, "n": 20}}}},
+    }), encoding="utf-8")
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    metrics = runner._load_experiment_metrics(f"some output\nsaved -> {exp_dir}\n")
+    assert metrics["planner_similar_task_success"] == 0.9
+
+    # No 'saved ->' line or missing file -> empty dict, not an exception
+    assert runner._load_experiment_metrics("no save line") == {}
+    assert runner._load_experiment_metrics(f"saved -> {tmp_path / 'nope'}") == {}

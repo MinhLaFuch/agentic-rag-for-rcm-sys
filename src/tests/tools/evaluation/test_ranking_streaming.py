@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+import yaml
 
 from package.config import get_data_paths
 from package.tools.corpus import ItemCorpus
@@ -42,18 +43,29 @@ def environment(tmp_path, monkeypatch):
 
 
 def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"):
-    args = ["ranking_eval", "--tag","toy","--per-segment","2","--candidate-budget","3",
-            "--ks","1,3","--neighbors","2","--popularity-weights",weights,
-            "--query-normalization","ascii_fold","--no-prebuilt-corpus",
-            "--work-dir",str(base/name),"--experiments-dir",str(base/(name+"_output")),
-            "--batch-size","1","--progress-every","1"]
+    # Tunables go through CONFIG_OVERLAY_PATH (merged over configs/ by load_config);
+    # the CLI only keeps runtime selectors (--tag/--work-dir/--resume/--candidates-from).
+    overlay = {
+        "eval/ranking_eval": {"ranking_eval": {
+            "per_segment": 2, "candidate_budget": 3, "ks": [1, 3],
+            "popularity_weights": [float(w) for w in weights.split(",")],
+            "query_normalization": "ascii_fold", "use_prebuilt_corpus": False,
+            "batch_size": 1, "progress_every": 1}},
+        "eval/baselines": {"baselines": {"item_knn": {"k": 2}}},
+        "path/data_paths": {"outputs": {"ranking_eval": str(base / (name + "_output"))}},
+    }
+    overlay_path = base / f"overlay_{name}.yaml"
+    overlay_path.write_text(yaml.safe_dump(overlay, sort_keys=False), encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+    args = ["ranking_eval", "--tag", "toy",
+            "--work-dir", str(base / name)]
     if resume:
         args += ["--resume"]
     if frozen:
-        args += ["--candidates-from",str(frozen)]
-    monkeypatch.setattr(sys,"argv",args)
+        args += ["--candidates-from", str(frozen)]
+    monkeypatch.setattr(sys, "argv", args)
     script.main()
-    return base/(name+"_output")/"exp_001"
+    return base / (name + "_output") / "exp_001"
 
 
 @pytest.mark.parametrize("interrupt_stage", ["candidates", "scored:"])

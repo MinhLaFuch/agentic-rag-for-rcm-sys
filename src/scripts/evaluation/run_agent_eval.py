@@ -7,21 +7,22 @@ listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent
   constrained / cold_text  category (+ price ceiling) taken from held-out items = ORACLE scenario, an upper bound
   ambiguous                missing information; the right move is to ask back instead of inventing ids
 Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
-By default, target-informed oracle request kinds are excluded; use ``--request-scope oracle`` to run only those cases.
+By default, target-informed oracle request kinds are excluded (agent_eval.request_scope); set it to ``oracle``
+to run only those cases.  ALL tunables live in YAML — there are no override flags:
+configs/agent/agent_eval.yaml (agents, per_segment, request_scope, trajectory_file, ...),
+configs/agent/agent.yaml (reflect_rounds), configs/agent/inference.yaml (mode), configs/eval/baselines.yaml (seed).
 
 Inference (final answer, package/inference): after type1 / planner / planner_memory the agent's outcome is turned into a text answer.
 It only PRESENTS what the agent chose, so `recommended`, task_success, recall... are unchanged; the answer is judged by its own columns
 (answer_grounded, answer_fallback, answer_status_*, inference_* tokens/latency, kept apart from the planner's `usage`).
---inference-mode llm writes the answer with the LLM (checked against the tool data, template fallback; <= 1 + llm_retries extra calls
-per answered request), --inference-mode template is deterministic and calls no LLM. The baseline has no answer.
+inference.mode=llm writes the answer with the LLM (checked against the tool data, template fallback; <= 1 + llm_retries extra calls
+per answered request), inference.mode=template is deterministic and calls no LLM. The baseline has no answer.
 
 Reads splits/mappings from resource/ (data_paths.yaml) and meta_<Domain>.jsonl.gz from resource/raw/.
 Trajectories are appended to a file as they finish, so an interrupted run continues with --resume.
 Nothing here touches the test split unless you pass --eval-on test.
 
-    PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2          # tiny trial first
-    PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --agents baseline,type1 --inference-mode template   # no LLM calls at all
-    PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --inference-mode template   # LLM only for the planner, deterministic answers
+    PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
     PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --resume
 """
 
@@ -52,7 +53,7 @@ from package.evaluation import (
     score_trajectory,
     summarize,
 )
-from package.evaluation._schema import EVAL_SCHEMA_VERSION
+from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.build_run_provenance import build_run_provenance
 from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
@@ -64,15 +65,14 @@ from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
-from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
 from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from package.tools.recommenders.shared.model_metadata import item_knn_data_hash, mapping_hash
+from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
@@ -152,7 +152,7 @@ def run_planner(
     started = time.perf_counter()
     results: list[dict[str, Any]] = []
     
-    # For multi-turn evaluation with --enable-session, create a fresh session per request
+    # For multi-turn evaluation (agent_eval.enable_session), create a fresh session per request
     # to prevent cross-request contamination. The executor's session is replaced temporarily.
     original_session = executor.session
     if session_enabled:
@@ -210,38 +210,23 @@ def main() -> None:
     ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
-    ap.add_argument("--agents", help="Danh sách agent, cách nhau dấu phẩy (mặc định: agent_eval.agents)")
-    ap.add_argument("--per-segment", type=int, help="Số request mỗi (kind, segment) (mặc định: agent_eval.per_segment)")
-    ap.add_argument("--reflect-rounds", type=int, help="Số lượt plan-reflect của planner (mặc định: agent.reflect_rounds; 0 = tắt)")
-    ap.add_argument("--inference-mode", choices=list(MODES),
-                    help="Câu trả lời cuối: llm = LLM viết (kiểm grounding, lỗi thì dùng template), template = tất định, không gọi LLM (mặc định: inference.mode)")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
-    ap.add_argument("--trajectory-file", help="Tên file JSONL riêng trong log_dir (tránh ghi đè log của lần chạy khác)")
-    ap.add_argument("--request-scope", choices=("realistic", "oracle", "all"), default="realistic",
-                    help="realistic loại request dùng target metadata; oracle chỉ chạy các request đó; all gộp cả hai nhóm")
-    ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
-    ap.add_argument(
-        "--allow-missing-corpus-sources",
-        action="store_true",
-        help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
-    )
-    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
-                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
-    ap.add_argument("--enable-session", action="store_true",
-                    help="Enable multi-turn session state (currently single-turn evaluation with session infrastructure)")
     args = ap.parse_args()
-    if args.reflect_rounds is not None and args.reflect_rounds < 0:
-        ap.error("--reflect-rounds must be >= 0")
-    reflect_rounds = get_agent_limits().reflect_rounds if args.reflect_rounds is None else args.reflect_rounds
-    inference_mode = args.inference_mode or get_inference_limits().mode
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
     k, seed = int(cfg["k"]), int(baselines["seed"])
-    agents = [a.strip() for a in (args.agents or ",".join(cfg["agents"])).split(",") if a.strip()]
+    agents = [str(a) for a in cfg["agents"]]
     if set(agents) - set(AGENTS):
         raise SystemExit(f"Unknown agent(s) {sorted(set(agents) - set(AGENTS))}; choose from {list(AGENTS)}")
-    per_segment = args.per_segment or int(cfg["per_segment"])
+    per_segment = int(cfg["per_segment"])
+    reflect_rounds = get_agent_limits().reflect_rounds
+    inference_mode = get_inference_limits().mode
+    request_scope = str(cfg["request_scope"])
+    session_enabled = bool(cfg["enable_session"])
+    use_prebuilt = bool(cfg["use_prebuilt_corpus"])
+    allow_missing = bool(cfg["allow_missing_corpus_sources"])
+    metadata_policy_name = str(cfg["metadata_policy"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     data_paths = get_data_paths(args.tag)
     meta_files = build_meta_files(data_paths, args.domain)
@@ -269,8 +254,8 @@ def main() -> None:
 
     # ---- corpus + models + tools
     knn_artifact_status = "fit_fresh_no_prebuilt"
-    if args.no_prebuilt:
-        print("Build corpus in RAM (--no-prebuilt)")
+    if not use_prebuilt:
+        print("Build corpus in RAM (agent_eval.use_prebuilt_corpus: false)")
         corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:
@@ -279,17 +264,17 @@ def main() -> None:
             raise SystemExit(
                 f"Corpus file not found: {corpus_path}\n"
                 f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
-                f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
+                f"Or set agent_eval.use_prebuilt_corpus: false to build in RAM (slower, for debug or small tags)"
             )
         print(f"Load corpus from {corpus_path}")
         corpus, coverage = load_corpus(
             corpus_path, meta_files, item2id, float(cfg["min_metadata_coverage"]),
-            allow_missing_sources=args.allow_missing_corpus_sources,
+            allow_missing_sources=allow_missing,
         )
         file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
         print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
 
-    metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=as_of)
+    metadata_policy = apply_metadata_policy(corpus, metadata_policy_name, as_of_timestamp=as_of)
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
@@ -323,10 +308,10 @@ def main() -> None:
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
             raise SystemExit("LLM health check failed: check configs/agent/llm.yaml and LLM_API_KEY "
-                             "(or run with --agents baseline,type1 --inference-mode template)")
+                             "(or set agent_eval.agents to baseline,type1 and inference.mode to template in YAML)")
     if any(a in PLANNER_AGENTS for a in agents):
         # Single-turn evaluation: no session (session=None).
-        # Multi-turn evaluation (--enable-session): a fresh Session is created per request inside run_planner.
+        # Multi-turn evaluation (agent_eval.enable_session): a fresh Session is created per request inside run_planner.
         # This prevents cross-request contamination of shown_items/candidates/constraints.
         runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=None)
         runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=None)
@@ -347,9 +332,9 @@ def main() -> None:
         language=cfg["language"], k=k, price_slack=float(cfg["price_slack"]), price_round_to=float(cfg["price_round_to"]),
         rng=np.random.default_rng(seed),
     )
-    requests = filter_requests_by_scope(requests, args.request_scope)
+    requests = filter_requests_by_scope(requests, request_scope)
     protocol_manifest["request_ids"] = [r.request_id for r in requests]
-    protocol_manifest["request_scope"] = args.request_scope
+    protocol_manifest["request_scope"] = request_scope
     protocol_manifest["request_content_sha256"] = hashlib.sha256(
         json.dumps([r.to_dict() for r in requests], sort_keys=True, default=str).encode()).hexdigest()
     # Resume identity includes implementation, dataset, inputs and temporal policy.
@@ -368,20 +353,20 @@ def main() -> None:
     print("requests:", ", ".join(f"{name}={n}" for name, n in counts.items()), f"| agents: {agents}")
     text_of = {r.request_id: r.text for r in requests}
 
-    trajectory_name = args.trajectory_file or cfg["trajectory_file"]
+    trajectory_name = str(cfg["trajectory_file"])
     if Path(trajectory_name).name != trajectory_name or not trajectory_name.endswith(".jsonl"):
-        ap.error("--trajectory-file must be a simple .jsonl filename")
+        raise SystemExit("agent_eval.trajectory_file must be a simple .jsonl filename")
     traj_path = data_paths.log_dir / trajectory_name
     traj_path.parent.mkdir(parents=True, exist_ok=True)
     if traj_path.exists() and not args.resume:
-        raise SystemExit(f"Trajectory already exists: {traj_path}; choose a new --trajectory-file or use --resume with the identical protocol")
+        raise SystemExit(f"Trajectory already exists: {traj_path}; use --resume with the identical protocol or set a new agent_eval.trajectory_file")
     done: dict[tuple[str, str], dict[str, Any]] = {}
     if args.resume and traj_path.exists():
         for line in traj_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
             if rec.get("evaluation_protocol_hash") != protocol_hash:
-                raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; choose a new --trajectory-file")
-            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode, protocol_hash, session_enabled=args.enable_session):  # drop stale records (other text / agent / reflect_rounds / session)
+                raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; set a new agent_eval.trajectory_file")
+            if is_resumable(rec, text_of, agents, reflect_rounds, inference_mode, protocol_hash, session_enabled=session_enabled):  # drop stale records (other text / agent / reflect_rounds / session)
                 done[(rec["request_id"], rec["agent"])] = rec
     traj_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in done.values()), encoding="utf-8")
     print(f"resumed {len(done)} trajectories" if done else "starting from scratch")
@@ -405,7 +390,7 @@ def main() -> None:
                     trajectories.append(done[key])
                     continue
                 if agent in PLANNER_AGENTS:
-                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=args.enable_session)
+                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=session_enabled)
                 elif agent == "type1":
                     traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
                 else:
@@ -415,7 +400,7 @@ def main() -> None:
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
                 traj["evaluation_protocol_hash"] = protocol_hash
-                traj["metadata_policy"] = args.metadata_policy
+                traj["metadata_policy"] = metadata_policy_name
                 trajectories.append(traj)
                 sink.write(json.dumps(traj, ensure_ascii=False) + "\n")
                 sink.flush()
@@ -447,9 +432,9 @@ def main() -> None:
         for domain, path in meta_files
     }
     exp_dir = save_experiment(
-        next_experiment_dir(data_paths.experiments_dir / cfg["experiments_subdir"]),
+        next_experiment_dir(data_paths.output_dir("agent_eval")),
         config={"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
-                "request_scope": args.request_scope,
+                "request_scope": request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
                 "inference_mode": inference_mode if any(a in INFERENCE_AGENTS for a in agents) else None,
@@ -460,15 +445,15 @@ def main() -> None:
                 "eval_schema_version": EVAL_SCHEMA_VERSION,
                 "provenance": provenance,
                 "corpus_artifacts": {
-                    "mode": "built_from_metadata_in_memory" if args.no_prebuilt else "loaded_prebuilt",
+                    "mode": "built_from_metadata_in_memory" if not use_prebuilt else "loaded_prebuilt",
                     "metadata_sources": metadata_source_records,
-                    "sqlite_path": None if args.no_prebuilt else str(data_paths.corpus_path),
-                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt else None,
+                    "sqlite_path": None if not use_prebuilt else str(data_paths.corpus_path),
+                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and use_prebuilt else None,
                     "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
-                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt else None,
+                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and use_prebuilt else None,
                     "source_hash_semantics": getattr(corpus, "_source_provenance", {"source_hash_protocol": "built_from_current_sources"}),
                     "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
-                    "allow_missing_sources": bool(args.allow_missing_corpus_sources),
+                    "allow_missing_sources": allow_missing,
                 }},
         metrics={"k": k, "summary": summary},
         seed=seed,

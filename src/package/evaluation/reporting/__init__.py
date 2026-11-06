@@ -1,13 +1,13 @@
 """Reporting package."""
 
-from .generator import (
+from ._generator import (
     generate_markdown_report,
     generate_csv_export,
     generate_failure_report,
     generate_comparison_report,
 )
 
-from .visualizations import (
+from ._visualizations import (
     generate_layer_comparison_chart,
     generate_request_kind_heatmap,
     generate_retrieval_funnel_chart,

@@ -18,7 +18,7 @@ from package.config._constants import PROJECT_ROOT
 
 PACKAGE_ROOT = PROJECT_ROOT / "package"
 CHECKED_ROOTS = [PACKAGE_ROOT, PROJECT_ROOT / "scripts"]  # tests/ may import privates (white-box tests)
-SKIPPED_STEMS = {"__init__", "__main__"}
+SKIPPED_STEMS: set[str] = set()  # no exceptions: every public module is atomic and uniquely named
 
 
 def _py_files(root: Path):

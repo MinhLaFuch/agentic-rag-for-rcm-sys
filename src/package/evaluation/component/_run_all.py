@@ -13,13 +13,12 @@ from package.config import get_data_paths
 
 
 def run_all_benchmarks(
-    runs: int = 1,
     output_dir: Path | None = None,
 ) -> dict[str, Any]:
-    """Run all component benchmarks and collect results."""
+    """Run all component benchmarks and collect results. runs đọc từ component_benchmarks.yaml trong từng CLI con."""
     if output_dir is None:
-        output_dir = Path.cwd() / "benchmark_results"
-    output_dir.mkdir(exist_ok=True)
+        output_dir = get_data_paths().output_dir("component_benchmarks")
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     components = [
         ("memory", "package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl"),
@@ -42,16 +41,9 @@ def run_all_benchmarks(
                 sys.executable, "-m", "package.evaluation.component.run",
                 "--component", component,
                 "--dataset", dataset,
-                "--runs", str(runs),
             ]
             
-            # Add config files if they exist
-            if component == "planner":
-                cmd.extend(["--config", "planner_llm_config.json"])
-            elif component == "executor":
-                cmd.extend(["--config", "executor_reflection_config.json"])
-            elif component == "grounding":
-                cmd.extend(["--config", "grounding_jev_config.json"])
+            # Evaluator configs come from configs/eval/component_benchmarks.yaml (configs.<component>)
 
             # Run from src directory
             result = subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=str(Path(__file__).parent.parent.parent.parent))
@@ -259,25 +251,12 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
 
 
 def main():
-    """Main entry point."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Run all component benchmarks and generate unified report")
-    parser.add_argument("--runs", type=int, default=1, help="Number of runs per benchmark")
-    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
-    args = parser.parse_args()
-
-    # Default to experiments directory using config
-    if args.output_dir is None:
-        paths = get_data_paths()
-        output_dir = paths.experiments_dir / "agent_eval" / "component_benchmarks"
-    else:
-        output_dir = Path(args.output_dir)
-    
+    """Main entry point. runs đọc từ configs/eval/component_benchmarks.yaml; output từ data_paths.outputs.component_benchmarks."""
+    output_dir = get_data_paths().output_dir("component_benchmarks")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("Running all component benchmarks...")
-    result_files = run_all_benchmarks(runs=args.runs, output_dir=output_dir)
+    result_files = run_all_benchmarks(output_dir=output_dir)
 
     print("\nAggregating results...")
     aggregated = aggregate_results(result_files)

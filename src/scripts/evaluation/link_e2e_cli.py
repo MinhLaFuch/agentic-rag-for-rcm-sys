@@ -5,36 +5,23 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .create_traceback_tool import create_traceback_tool
-from .link_component_to_e2e import link_component_to_e2e
+from package.evaluation.component.create_traceback_tool import create_traceback_tool
+from package.evaluation.component.link_component_to_e2e import link_component_to_e2e
 
 
 def main() -> None:
     """Main entry point for demo."""
     parser = argparse.ArgumentParser(description="Link component results with end-to-end results")
-    parser.add_argument("--component-dir", type=str, default=None, help="Directory with component results (default: experiments/agent_eval/component_benchmarks)")
+    parser.add_argument("--component-dir", type=str, default=None, help="Directory with component results (default: get_data_paths().output_dir('component_benchmarks'))")
     parser.add_argument("--e2e-file", type=str, help="Path to end-to-end results JSON")
-    parser.add_argument("--output-dir", type=str, default=None, help="Output directory (default: experiments/agent_eval/component_benchmarks)")
     args = parser.parse_args()
 
-    # Default to experiments directory using config
     from package.config import get_data_paths
 
-    paths = get_data_paths()
-    default_exp_dir = paths.experiments_dir / "agent_eval" / "component_benchmarks"
-
-    if args.output_dir is None:
-        output_dir = default_exp_dir
-    else:
-        output_dir = Path(args.output_dir)
-
+    output_dir = get_data_paths().output_dir("component_benchmarks")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Default component dir
-    if args.component_dir is None:
-        component_dir = default_exp_dir
-    else:
-        component_dir = Path(args.component_dir)
+    component_dir = Path(args.component_dir) if args.component_dir else output_dir
 
     # Mock component results (in real usage, load from files)
     component_results = {

@@ -3,7 +3,7 @@
 import pytest
 
 from package.agents import PlanExecutor
-from package.agents import _limits
+from package.agents import _limits as _limits
 from package.config.load_config import ConfigError
 from package.tools import LookupTool, FilterTool
 from package.tools.base import Tool
@@ -164,12 +164,12 @@ def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
     cfg = load_config("agent/agent")
     cfg["agent"]["reflect_rounds"] = -1
     monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
-    _limits.get_agent_limits.cache_clear()
+    _limits._cached_agent_limits.cache_clear()
     try:
         with pytest.raises(ConfigError):
             _limits.get_agent_limits()
     finally:
-        _limits.get_agent_limits.cache_clear()
+        _limits._cached_agent_limits.cache_clear()
 
 
 def test_reflect_error_chars_comes_from_yaml_and_must_be_positive(monkeypatch):
@@ -179,12 +179,12 @@ def test_reflect_error_chars_comes_from_yaml_and_must_be_positive(monkeypatch):
     cfg = load_config("agent/agent")
     cfg["agent"]["reflect_error_chars"] = 0
     monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
-    _limits.get_agent_limits.cache_clear()
+    _limits._cached_agent_limits.cache_clear()
     try:
         with pytest.raises(ConfigError):
             _limits.get_agent_limits()
     finally:
-        _limits.get_agent_limits.cache_clear()
+        _limits._cached_agent_limits.cache_clear()
 
 
 def test_provider_error_during_reflect_keeps_the_previous_result(corpus):

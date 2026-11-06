@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
+from itertools import product
 
 
 CAMPAIGN_VERSION = "1.0.0"
@@ -100,7 +101,9 @@ class CampaignConfig:
         campaign_id: Unique campaign identifier
         description: Campaign description
         dataset: Shared dataset configuration
-        experiments: List of experiment configurations (the matrix)
+        parameter_grid: Parameter grid for auto-generating experiments (e.g., agents, inference_mode)
+        experiments: List of experiment configurations (can be empty if using parameter_grid)
+        evaluation_config: Shared evaluation config (applied to all experiments from parameter_grid)
         output_dir: Directory for campaign output
         comparison_pairs: List of (experiment_a, experiment_b) pairs to compare
         statistical_settings: Statistical comparison settings
@@ -109,22 +112,35 @@ class CampaignConfig:
     campaign_id: str
     description: str = ""
     dataset: dict[str, Any] = field(default_factory=dict)
+    parameter_grid: dict[str, Any] = field(default_factory=dict)
     experiments: list[ExperimentConfig] = field(default_factory=list)
+    evaluation_config: dict[str, Any] = field(default_factory=dict)
     output_dir: str = ""
     comparison_pairs: list[tuple[str, str]] = field(default_factory=list)
     statistical_settings: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
+    # Runtime defaults applied to every experiment overlay (were hard-coded in CampaignRunner)
+    default_agents: list[str] = field(
+        default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
+    )
+    allow_missing_corpus_sources: bool = True
+    experiment_timeout_seconds: int = 3600
 
     def to_dict(self) -> dict[str, Any]:
         return {
             _campaign_id_key(): self.campaign_id,
             _description_key(): self.description,
             _dataset_key(): self.dataset,
+            "parameter_grid": self.parameter_grid,
             _experiments_key(): [e.to_dict() for e in self.experiments],
+            "evaluation_config": self.evaluation_config,
             _output_dir_key(): self.output_dir,
             _comparison_pairs_key(): self.comparison_pairs,
             _statistical_settings_key(): self.statistical_settings,
             _metadata_key(): self.metadata,
+            "default_agents": self.default_agents,
+            "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
+            "experiment_timeout_seconds": self.experiment_timeout_seconds,
         }
 
     @classmethod
@@ -133,11 +149,16 @@ class CampaignConfig:
             campaign_id=data[_campaign_id_key()],
             description=data.get(_description_key(), ""),
             dataset=data.get(_dataset_key(), {}),
+            parameter_grid=data.get("parameter_grid", {}),
             experiments=[ExperimentConfig.from_dict(e) for e in data.get(_experiments_key(), [])],
+            evaluation_config=data.get("evaluation_config", {}),
             output_dir=data.get(_output_dir_key(), ""),
             comparison_pairs=data.get(_comparison_pairs_key(), []),
-            statistical_settings=data.get(_statistical_settings_key(), {}),
+            statistical_settings=data.get(_statistical_settings_key(), ""),
             metadata=data.get(_metadata_key(), {}),
+            default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
+            allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
+            experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
         )
 
     @classmethod
@@ -157,10 +178,85 @@ class CampaignConfig:
         hash_input = {
             _campaign_id_key(): self.campaign_id,
             _dataset_key(): self.dataset,
+            "parameter_grid": self.parameter_grid,
             _experiments_key(): [e.to_dict() for e in self.experiments],
             _statistical_settings_key(): self.statistical_settings,
         }
         return hashlib.sha256(json.dumps(hash_input, sort_keys=True).encode()).hexdigest()[:16]
+
+    def expand_parameter_grid(self) -> list[ExperimentConfig]:
+        """Expand parameter_grid into experiment configurations.
+
+        If parameter_grid is provided, generates all combinations of parameters.
+        If experiments list is already provided, returns that list instead.
+
+        Returns:
+            List of ExperimentConfig objects
+        """
+        # If explicit experiments are provided, use them
+        if self.experiments:
+            return self.experiments
+
+        # If no parameter_grid, return empty
+        if not self.parameter_grid:
+            return []
+
+        # Extract parameter names and their values
+        param_names = list(self.parameter_grid.keys())
+        param_values = list(self.parameter_grid.values())
+
+        # Handle the case where parameter values might be lists or single values
+        # Normalize to always be lists
+        param_values_normalized = []
+        for values in param_values:
+            if isinstance(values, list):
+                param_values_normalized.append(values)
+            else:
+                param_values_normalized.append([values])
+
+        # Generate all combinations
+        combinations = product(*param_values_normalized)
+
+        # Create ExperimentConfig for each combination
+        experiments = []
+        for idx, combo in enumerate(combinations, start=1):
+            # Build agent_config and evaluation_config from the combination
+            agent_config = {}
+            evaluation_config = dict(self.evaluation_config)  # Start with shared config
+
+            for param_name, param_value in zip(param_names, combo):
+                # Map parameter names to their correct location
+                if param_name in ["agents", "inference_mode", "reflect_rounds"]:
+                    agent_config[param_name] = param_value
+                elif param_name in ["per_segment"]:
+                    evaluation_config[param_name] = param_value
+                else:
+                    # Unknown parameter, put in agent_config by default
+                    agent_config[param_name] = param_value
+
+            # Generate experiment name from parameters
+            name_parts = []
+            for param_name, param_value in zip(param_names, combo):
+                if isinstance(param_value, list):
+                    value_str = "_".join(str(v) for v in param_value)
+                else:
+                    value_str = str(param_value)
+                name_parts.append(f"{param_name}_{value_str}")
+            exp_name = f"exp_{idx}_{'_'.join(name_parts)}"
+
+            experiments.append(
+                ExperimentConfig(
+                    name=exp_name,
+                    description=f"Auto-generated from parameter grid: {dict(zip(param_names, combo))}",
+                    agent_config=agent_config,
+                    evaluation_config=evaluation_config,
+                    repetition_count=1,  # Default to 1 for grid search
+                    random_seed=42,
+                    tags=["grid_search"],
+                )
+            )
+
+        return experiments
 
 
 @dataclass

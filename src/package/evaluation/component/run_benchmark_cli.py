@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 from datetime import datetime, timezone
 
-from package.config import get_data_paths
+from package.config import get_data_paths, load_config
 
 from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
 from ._schema import BenchmarkSummary
@@ -93,18 +93,6 @@ def run_benchmark_cli() -> None:
         help="Path to the benchmark dataset file (JSON or JSONL)",
     )
     parser.add_argument(
-        "--runs",
-        type=int,
-        default=1,
-        help="Number of times to run each case (for averaging)",
-    )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default=None,
-        help="Path to save the benchmark results JSON (default: <component>_benchmark_<timestamp>.json)",
-    )
-    parser.add_argument(
         "--tags",
         type=str,
         nargs="*",
@@ -119,25 +107,18 @@ def run_benchmark_cli() -> None:
         help="Filter cases by metadata (format: key=value, multiple allowed, AND logic)",
     )
     parser.add_argument(
-        "--config",
-        type=str,
-        default=None,
-        help="Path to JSON config file for the evaluator",
-    )
-    parser.add_argument(
         "--git-sha",
         type=str,
         default=None,
         help="Git commit SHA (auto-detected if not provided)",
     )
-    parser.add_argument(
-        "--text-report",
-        type=str,
-        default=None,
-        help="Path to save text report (optional)",
-    )
 
     args = parser.parse_args()
+
+    # Số lần lặp + config evaluator đọc từ configs/eval/component_benchmarks.yaml
+    bench_cfg = load_config("eval/component_benchmarks")["component_benchmarks"]
+    runs = int(bench_cfg["runs"])
+    config: dict[str, Any] = dict(bench_cfg.get("configs", {}).get(args.component, {}))
 
     # Load dataset
     print(f"Loading dataset from {args.dataset}...")
@@ -167,12 +148,6 @@ def run_benchmark_cli() -> None:
         print("No cases remaining after filtering")
         return
 
-    # Load config if provided
-    config: dict[str, Any] = {}
-    if args.config:
-        with open(args.config, "r", encoding="utf-8") as f:
-            config = json.load(f)
-
     # Get git SHA
     git_sha = args.git_sha
     if git_sha is None:
@@ -190,12 +165,14 @@ def run_benchmark_cli() -> None:
     # Get evaluator
     evaluator = _get_evaluator(args.component, config)
 
-    # Run benchmark
+    # Run benchmark — output dir comes from data_paths.outputs.component_benchmarks
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    output_path = args.output or f"{args.component}_benchmark_{timestamp}.json"
+    output_path = str(
+        get_data_paths().output_dir("component_benchmarks") / f"{args.component}_benchmark_{timestamp}.json"
+    )
 
-    print(f"Running {args.component} benchmark with {len(cases)} cases, {args.runs} runs each...")
-    summary = evaluator.run_benchmark(cases, component_name=args.component, runs=args.runs)
+    print(f"Running {args.component} benchmark with {len(cases)} cases, {runs} runs each...")
+    summary = evaluator.run_benchmark(cases, component_name=args.component, runs=runs)
 
     # Add metadata
     summary.metadata["git_sha"] = git_sha
@@ -203,7 +180,7 @@ def run_benchmark_cli() -> None:
     summary.metadata["dataset_path"] = args.dataset
     summary.metadata["tags_filter"] = args.tags
     summary.metadata["metadata_filter"] = args.metadata
-    summary.metadata["runs"] = args.runs
+    summary.metadata["runs"] = runs
 
     # Save results
     result_json = summary.to_json()
@@ -217,12 +194,4 @@ def run_benchmark_cli() -> None:
         print(f"  {metric}: {value:.4f}")
     print(f"Total cases: {summary.total_cases}, Passed: {summary.passed_cases}")
 
-    # Print text report if requested
-    if args.text_report:
-        text_path = Path(args.text_report)
-        text_report = format_regression_report(summary.to_json())
-        with open(text_path, "w", encoding="utf-8") as f:
-            f.write(text_report)
-        print(f"Text report saved to: {text_path}")
-    else:
-        print("\n" + format_regression_report(summary.to_json()))
+    print("\n" + format_regression_report(summary.to_json()))

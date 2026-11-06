@@ -35,10 +35,10 @@ from package.tools.evaluation import next_experiment_dir, save_experiment, segme
 from package.tools.evaluation.metrics import ranking_metrics_at_k
 from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.tools.recommenders.shared.build_interaction_matrix import build_interaction_matrix
-from package.tools.recommenders.shared.model_metadata import item_knn_data_hash, mapping_hash, file_hash
+from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash, file_hash
 from package.tools.score import BaselineScorer
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
+from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
 from package.tools.evaluation.evaluation_protocol import evaluation_protocol
 from package.tools.evaluation.normalize_query_text import normalize_query_text
 
@@ -112,50 +112,51 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tag")
     ap.add_argument("--eval-on", choices=("validation", "test"), default="validation")
-    ap.add_argument("--per-segment", type=int, default=1000)
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--candidate-budget", type=int, default=100)
-    ap.add_argument("--seed-items", type=int, default=5)
-    ap.add_argument("--query-items", type=int, default=3)
-    ap.add_argument("--neighbors", type=int, default=None)
-    ap.add_argument("--ks", default="5,10,20")
-    ap.add_argument("--popularity-weights", default="0,1e-6,1e-4,1e-3,1e-2")
-    ap.add_argument("--allow-missing-corpus-sources", action="store_true")
-    ap.add_argument("--no-prebuilt-corpus", action="store_true")
-    ap.add_argument("--experiments-dir", type=Path)
-    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
-                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
-    ap.add_argument("--query-normalization", choices=("raw", "ascii_fold"), default="raw",
-                    help="Metadata query preprocessing; ascii_fold is explicit and must get its own baseline.")
     ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
     ap.add_argument("--resume", action="store_true")
-    ap.add_argument("--batch-size", type=int, default=50)
-    ap.add_argument("--progress-every", type=int, default=100)
     ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
     args = ap.parse_args()
 
+    # Mọi tham số đánh giá đọc từ configs/eval/ranking_eval.yaml (+ baselines/segment_thresholds/tools).
+    cfg = load_config("eval/ranking_eval")["ranking_eval"]
+    baselines = load_config("eval/baselines")["baselines"]
+    args.per_segment = int(cfg["per_segment"])
+    args.seed = int(baselines["seed"])  # single seed source: eval/baselines.baselines.seed
+    args.candidate_budget = int(cfg["candidate_budget"])
+    args.seed_items = int(cfg["seed_items"])
+    args.query_items = int(cfg["query_items"])
+    args.neighbors = int(baselines["item_knn"]["k"])  # baselines.item_knn.k
+    args.ks = ",".join(str(k) for k in cfg["ks"])
+    args.popularity_weights = ",".join(repr(float(w)) for w in cfg["popularity_weights"])
+    args.metadata_policy = str(cfg["metadata_policy"])
+    args.query_normalization = str(cfg["query_normalization"])
+    args.use_prebuilt_corpus = bool(cfg["use_prebuilt_corpus"])
+    args.allow_missing_corpus_sources = bool(cfg["allow_missing_corpus_sources"])
+    args.batch_size = int(cfg["batch_size"])
+    args.progress_every = int(cfg["progress_every"])
+
     if args.per_segment < 1 or args.candidate_budget < 1:
-        ap.error("--per-segment and --candidate-budget must be positive")
+        raise SystemExit("ranking_eval.per_segment and ranking_eval.candidate_budget must be positive")
     ks = sorted({int(x) for x in args.ks.split(",") if x.strip()})
     weights = [float(x) for x in args.popularity_weights.split(",") if x.strip()]
     if not ks or min(ks) < 1 or max(ks) > args.candidate_budget * 3:
-        ap.error("--ks must contain positive cutoffs no greater than 3*candidate-budget")
+        raise SystemExit("ranking_eval.ks must contain positive cutoffs no greater than 3*candidate_budget")
     if not weights or any(not np.isfinite(w) or w < 0 for w in weights):
-        ap.error("--popularity-weights must be finite and non-negative")
+        raise SystemExit("ranking_eval.popularity_weights must be finite and non-negative")
     if len(set(weights)) != len(weights):
-        ap.error("--popularity-weights must be unique")
+        raise SystemExit("ranking_eval.popularity_weights must be unique")
 
     if args.batch_size < 1 or args.progress_every < 1 or args.seed_items < 1 or args.query_items < 1:
-        ap.error("batch-size, progress-every, seed-items and query-items must be positive")
-    if args.neighbors is not None and args.neighbors < 1:
-        ap.error("neighbors must be positive")
+        raise SystemExit("ranking_eval.batch_size/progress_every/seed_items/query_items must be positive")
+    if args.neighbors < 1:
+        raise SystemExit("baselines.item_knn.k must be positive")
     if args.resume and args.work_dir is None:
         ap.error("--resume requires --work-dir")
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
-        ap.error("candidate-budget exceeds tools.max_candidates")
+        raise SystemExit("candidate-budget exceeds tools.max_candidates")
     paths = get_data_paths(args.tag)
     meta_files = [(d, str(paths.meta_path(d))) for d in get_domains()]
-    exp_root = args.experiments_dir or (paths.experiments_dir / "ranking_eval")
+    exp_root = paths.output_dir("ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
     print(f"[checkpoint] {work.resolve()} (resume with --work-dir and --resume)", flush=True)
     provenance_started = time.perf_counter()
@@ -164,7 +165,7 @@ def main() -> None:
         "format": 1, "source_fingerprint": _source_fingerprint(), "environment": _environment_versions(),
         "parameters": {k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()
                        if k not in {"resume", "work_dir", "batch_size", "progress_every", "experiments_dir"}},
-        "effective_neighbors": args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"]),
+        "effective_neighbors": args.neighbors,
         "split_files": {name:{"path":str(paths.split_path(name)), "sha256":file_hash(paths.split_path(name))} for name in ("train","validation","test")},
         "mapping_files": {str(f.resolve()):file_hash(f) for f in sorted(paths.mapped_dir.glob("*.json"))},
         "metadata_files": {d:{"path":str(Path(f).resolve()), "sha256":file_hash(f) if Path(f).exists() else None} for d,f in meta_files},
@@ -226,7 +227,7 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     seen_of = {u: set(recent.get(u, [])) for u in users}
 
     print("[corpus] start; ETA unknown", flush=True)
-    if paths.corpus_path.exists() and not args.no_prebuilt_corpus:
+    if paths.corpus_path.exists() and args.use_prebuilt_corpus:
         corpus, coverage = load_corpus(
             paths.corpus_path, meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
@@ -245,7 +246,7 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
 
     protocol_manifest["query_normalization"] = args.query_normalization
 
-    neighbors = args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
+    neighbors = args.neighbors
     knn_started = time.perf_counter()
     local_knn = store.path / "fit_item_knn.npz"
     context = dict(user2id=user2id, item2id=item2id, eval_on=args.eval_on, tag=paths.tag)
@@ -293,11 +294,11 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
                     "baseline_weight": 1e-6, "same_saved_candidate_lists": True},
         "ks": ks,
         "target_protocol": f"{args.eval_on} interactions; ranking uses novel targets; candidate recall retains all targets",
-        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
+        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and args.use_prebuilt_corpus else None,
                    "metadata_coverage": coverage,
                    "missing_sources": [p for _, p in meta_files if not Path(p).exists()],
                    "allow_missing_sources": args.allow_missing_corpus_sources,
-                   "mode": "in_memory_build" if args.no_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
+                   "mode": "in_memory_build" if not args.use_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
         "max_sampled_user_idx": max_sampled_user,
     }
     config["persistence"] = {"work_dir":str(store.path.resolve()), "batch_size":args.batch_size,

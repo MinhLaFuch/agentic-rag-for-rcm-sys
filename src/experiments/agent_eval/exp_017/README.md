@@ -1,0 +1,9 @@
+# exp_017
+
+- timestamp: 2026-11-03T11:35:55.605858+00:00
+- seed: 42
+- git_commit: 5406e66ac08a1d1684896f23e5f468da58279c3f
+- runtime_seconds: 731.83
+- dataset: {"tag": "default", "splits_dir": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\default", "eval_on": "validation", "num_users": 2757103, "num_items": 678281, "metadata_coverage": 1.0, "n_requests": 132, "profile_as_of_timestamp": 1617737606549, "mapping_hash": "1160c09b2971afd2507f791a3802e356627f895a2cd0b7b111d58ce581e7ff90", "user_mapping_hash": "9646bb6148e580f6abdd0e519ceca1f2c8cde01b15a2397fc759477d42fcf27a", "mapping_hash_protocol": "sorted_key_index_json_v1", "split_files": {"train": {"path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\default\\train.parquet", "size_bytes": 2131392901, "mtime_ns": 1793701893907237800, "sha256": "3f47fb43cbb17a6ee820b5add26339f8c4d5a1af2c61be2f04603c485f38c0f7"}, "validation": {"path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\default\\validation.parquet", "size_bytes": 298562345, "mtime_ns": 1793701897924599200, "sha256": "b981e4b84b8817d63817794c3d104eb2cb98fca21cdbbaa69a9165a6d0697334"}, "test": {"path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\default\\test.parquet", "size_bytes": 296008351, "mtime_ns": 1793701902310503200, "sha256": "8b315d03afdd82e8159563e2e832b6f7ce2fdeef5335384ab420194511e90a1f"}}}
+
+Kinds ['constrained', 'cold_text'] take their category/price constraints from held-out items: an ORACLE upper bound, never report them as real-query results. 'similar' and 'personalized' use fit history only. Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting.

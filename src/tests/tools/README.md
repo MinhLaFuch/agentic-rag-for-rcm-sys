@@ -7,7 +7,7 @@ Run from the repository root with the project's virtual-environment interpreter 
     python -m pytest tests/evaluation -q                 # agent evaluation + ablation tests
     python -m pytest tests -q                            # everything
 
-or `tests/tools/run_tests.sh` / `run_tests.bat` (log + per-test input/output file in `tests/logs/`, like the other folders).
+or `tests/tools/run_tests.sh` / `run_tests.bat` (log + per-test input/output file in `experiments/test_logs/`, like the other folders).
 
 Layout: `conftest.py` holds the shared deterministic "tiny world" fixture (read its docstring first: every expected
 number in these tests is hand-derived from it). One `test_contract_*.py` per module, plus

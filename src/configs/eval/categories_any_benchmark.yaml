@@ -1,0 +1,13 @@
+# Benchmark categories_any + FTS — benchmarks/benchmark_categories_any.py.
+# So sánh EXPLAIN QUERY PLAN / latency của SemanticSearchTool trước/sau composite index.
+
+categories_any_benchmark:
+  iterations: 5    # số lần chạy mỗi query để lấy median latency (>= 1)
+  limit: 100       # limit truyền vào tool khi benchmark
+  queries:         # tập query dùng cho benchmark
+    - query: keyboard
+      category: Keyboards
+    - query: mouse
+      category: Mice
+    - query: game
+      category: Video_Games

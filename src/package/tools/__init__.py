@@ -1,4 +1,4 @@
-from ._limits import get_tool_limits
+from ._limits import get_tool_limits, clear_tool_limits_cache
 from ._schema import ITEM_COLUMNS, FILTER_KEYS, ORDER_COLUMNS, SCHEMA_HINT
 from .base import ToolCallLogger
 from .corpus import ItemCorpus
@@ -9,6 +9,7 @@ from .sql_query import FilterTool, LookupTool
 
 __all__ = [
     "get_tool_limits",
+    "clear_tool_limits_cache",
     "ITEM_COLUMNS", "FILTER_KEYS", "ORDER_COLUMNS", "SCHEMA_HINT",
     "ToolCallLogger",
     "ItemCorpus", "SearchTool",

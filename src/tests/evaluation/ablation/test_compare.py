@@ -7,13 +7,7 @@ from typing import Any
 
 import pytest
 
-from package.evaluation.ablation._compare import (
-    average_across_runs,
-    compute_binary_disagreement,
-    compute_metric_diff,
-    find_disagreements,
-    pair_by_request_id,
-)
+from package.evaluation.ablation._compare import average_across_runs, compute_binary_disagreement, compute_metric_diff, find_disagreements, pair_by_request_id
 from package.evaluation.ablation._limits import AblationLimits
 
 

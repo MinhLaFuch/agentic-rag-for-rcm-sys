@@ -3,7 +3,7 @@
 
 baselines:
   seed: 42
-  models: [random, popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
+  models: [random, popularity, item_knn, bpr_mf]   # danh sách model baseline mặc định
   popularity_fallback: true
   item_knn:
     k: 20

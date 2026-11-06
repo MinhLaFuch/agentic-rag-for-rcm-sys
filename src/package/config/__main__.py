@@ -48,10 +48,21 @@ def _lookup(key: str):
             "recommendation_metrics": "eval",
             "segment_thresholds": "eval",
             "candidate_recall": "eval",
+            "ranking_eval": "eval",
+            "ranking_diagnostics": "eval",
+            "tool_validation": "eval",
+            "memory_utility": "eval",
+            "categories_any_benchmark": "eval",
+            "component_benchmarks": "eval",
             "tools": "agent",
             "agent": "agent",
             "agent_eval": "agent",
             "llm": "agent",
+            "inference": "agent",
+            "memory": "agent",
+            "demo": "agent",
+            "ablation": "agent",
+            "reference_plans": "agent",
         }
         if name in folder_map:
             name = f"{folder_map[name]}/{name}"

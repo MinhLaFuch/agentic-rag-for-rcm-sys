@@ -1,0 +1,12 @@
+# Component benchmarks config — package/evaluation/component CLIs
+# (_run_all.py, run_benchmark_cli.py): số lần lặp mỗi benchmark case.
+
+component_benchmarks:
+  runs: 1   # số lần chạy mỗi case để lấy trung bình (tăng khi cần ổn định số đo)
+  # Config từng evaluator (truyền cho ComponentEvaluator). Component không có entry → config rỗng.
+  # LLM của planner benchmark tự đọc configs/agent/llm.yaml — không lặp lại ở đây.
+  configs:
+    executor:
+      reflect_rounds: 2
+    grounding:
+      use_jev: false

@@ -7,13 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from package.evaluation.ablation._loader import (
-    check_compatibility,
-    load_config_data,
-    load_group_data,
-    load_scored_data,
-    validate_contrast_config,
-)
+from package.evaluation.ablation._loader import check_compatibility, load_config_data, load_group_data, load_scored_data, validate_contrast_config
 from package.config.load_config import ConfigError
 
 

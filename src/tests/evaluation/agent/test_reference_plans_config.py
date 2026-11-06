@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from package.evaluation._schema import get_reference_plans, REFERENCE_PLANS
+from package.evaluation._schema import get_reference_plans, REFERENCE_PLANS, _cached_reference_plans
 from package.config.load_config import _file_mtime_cache
 
 
@@ -47,7 +47,7 @@ def test_reference_plans_cache_invalidation(tmp_path):
     """
     # Clear cache to avoid interference
     _file_mtime_cache.clear()
-    get_reference_plans.cache_clear()
+    _cached_reference_plans.cache_clear()
 
     agent_dir = tmp_path / "configs" / "agent"
     agent_dir.mkdir(parents=True)

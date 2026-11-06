@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from package.config import get_data_paths
 
-from .evaluator import MultiTurnEvaluator
+from .multi_turn_evaluator import MultiTurnEvaluator
 from ._schema import Conversation
 
 
@@ -43,18 +43,6 @@ def run_multi_turn_cli() -> None:
         help="Path to the conversation dataset file (JSON or JSONL)",
     )
     parser.add_argument(
-        "--agent-config",
-        type=str,
-        default=None,
-        help="Path to agent configuration JSON",
-    )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default=None,
-        help="Path to save results (default: experiments/agent_eval/multi_turn/conversation_results.json)",
-    )
-    parser.add_argument(
         "--git-sha",
         type=str,
         default=None,
@@ -72,12 +60,8 @@ def run_multi_turn_cli() -> None:
         print("No conversations to evaluate")
         return
 
-    # Load agent config
+    # Agent config will come from YAML when the real runner replaces the mock
     config: dict[str, Any] = {}
-    if args.agent_config:
-        with open(args.agent_config, "r", encoding="utf-8") as f:
-            config = json.load(f)
-        print(f"Loaded agent config from {args.agent_config}")
 
     # Get git SHA
     git_sha = args.git_sha if args.git_sha else get_git_sha()
@@ -98,15 +82,11 @@ def run_multi_turn_cli() -> None:
         git_sha=git_sha,
     )
 
-    # Determine output path
-    if args.output:
-        output_path = Path(args.output)
-    else:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        paths = get_data_paths()
-        experiments_dir = paths.experiments_dir / "agent_eval" / "multi_turn"
-        experiments_dir.mkdir(parents=True, exist_ok=True)
-        output_path = experiments_dir / f"conversation_results_{timestamp}.json"
+    # Output path comes from data_paths.outputs.multi_turn
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    experiments_dir = get_data_paths().output_dir("multi_turn")
+    experiments_dir.mkdir(parents=True, exist_ok=True)
+    output_path = experiments_dir / f"conversation_results_{timestamp}.json"
 
     # Save results
     output_path.parent.mkdir(parents=True, exist_ok=True)

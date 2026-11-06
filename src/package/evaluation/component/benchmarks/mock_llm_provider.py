@@ -5,8 +5,7 @@ Returns deterministic responses based on request for testing.
 
 from typing import Any
 
-from package.api import LLMMessage, LLMProvider
-from package.api._dataclass import LLMResponse
+from package.api import LLMMessage, LLMProvider, LLMResponse
 
 
 class MockLLMProvider(LLMProvider):

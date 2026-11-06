@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 from datetime import datetime, timezone
 
 from ._regression import compare_benchmarks, format_regression_report
@@ -28,18 +27,6 @@ def run_regression_cli() -> None:
         required=True,
         help="Path to candidate benchmark results JSON",
     )
-    parser.add_argument(
-        "--output",
-        type=str,
-        default=None,
-        help="Path to save comparison JSON (default: regression_<timestamp>.json)",
-    )
-    parser.add_argument(
-        "--text-report",
-        type=str,
-        default=None,
-        help="Path to save text report (optional)",
-    )
 
     args = parser.parse_args()
 
@@ -52,20 +39,15 @@ def run_regression_cli() -> None:
     # Run comparison
     report = compare_benchmarks([baseline, candidate])
 
-    # Save JSON report
+    # Save JSON report under the configured component_benchmarks output dir
+    from package.config import get_data_paths
+
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    output_path = args.output or f"regression_{timestamp}.json"
+    out_dir = get_data_paths().output_dir("component_benchmarks")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_path = out_dir / f"regression_{timestamp}.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     print(f"Regression report saved to: {output_path}")
 
-    # Save text report if requested
-    if args.text_report:
-        text_path = Path(args.text_report)
-        text_report = format_regression_report(report)
-        with open(text_path, "w", encoding="utf-8") as f:
-            f.write(text_report)
-        print(f"Text report saved to: {text_path}")
-    else:
-        # Print to console
-        print("\n" + format_regression_report(report))
+    print("\n" + format_regression_report(report))

@@ -18,3 +18,8 @@ demo:
 
   # Số lượng hàng tối đa trong turn history
   max_turn_history_rows: 50
+
+  # LiveBackend data loading (run_demo.py không --mock)
+  eval_on: "validation"              # split nạp dữ liệu: validation | test
+  use_prebuilt_corpus: true          # false = build corpus/ItemKNN trong RAM
+  allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô

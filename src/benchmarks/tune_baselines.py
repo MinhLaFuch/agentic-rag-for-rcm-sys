@@ -2,7 +2,11 @@
 
 Example:
     PYTHONPATH=. python scripts/evaluation/tune_baselines.py
-    PYTHONPATH=. python scripts/evaluation/tune_baselines.py --tag vg_toys --run-final-test
+    PYTHONPATH=. python scripts/evaluation/tune_baselines.py --tag vg_toys
+
+Mọi tham số đọc từ configs/eval/tuning.yaml, baselines.yaml, recommendation_metrics.yaml
+và output dir từ data_paths.yaml — không có override flag. Đánh giá test một lần
+chỉ chạy khi tuning.run_final_test: true trong YAML.
 """
 
 from __future__ import annotations
@@ -26,31 +30,25 @@ def main() -> None:
     ensure_utf8_stdout()
     parser = argparse.ArgumentParser()
     parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
-    parser.add_argument("--splits-dir", help="Mặc định: <splits_dir>/<tag> trong data_paths.yaml.")
-    parser.add_argument("--models", help="Mặc định: tuning.models trong tuning.yaml.")
-    parser.add_argument("--ks", default=None)
-    parser.add_argument("--selection-metric", default=None, help="Mặc định lấy tuning.selection_metric")
-    parser.add_argument("--run-final-test", action="store_true", help="Refit cấu hình thắng với train+validation rồi đánh giá test một lần.")
-    parser.add_argument("--experiments-dir", help="Mặc định: experiments_dir trong data_paths.yaml.")
     args = parser.parse_args()
 
     base_config = load_config("eval/baselines")["baselines"]
     tuning_config = load_config("eval/tuning")["tuning"]
     recommendation_metrics = load_config("eval/recommendation_metrics")
-    ks = [int(value) for value in args.ks.split(",")] if args.ks else recommendation_metrics["recommendation_metrics"]["k_values"]
-    metric = args.selection_metric or tuning_config["selection_metric"]
+    ks = recommendation_metrics["recommendation_metrics"]["k_values"]
+    metric = tuning_config["selection_metric"]
     if metric not in {f"{name}@{k}" for name in ("precision", "recall", "hit_rate", "ndcg", "mrr", "map") for k in ks}:
         raise ValueError(f"selection metric '{metric}' is not available for ks={ks}")
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
-    model_names = args.models.split(",") if args.models else tuning_config["models"]
-    model_names = [name.strip() for name in model_names if name.strip()]
+    model_names = [str(name).strip() for name in tuning_config["models"] if str(name).strip()]
     allowed = {"popularity", "item_knn", "bpr_mf"}
     unknown = set(model_names) - allowed
     if unknown:
         raise ValueError(f"Tuning supports only {sorted(allowed)}, got {sorted(unknown)}")
 
     paths = get_data_paths(args.tag)
-    splits_dir = args.splits_dir or str(paths.splits_dir)
+    splits_dir = str(paths.splits_dir)
+    run_final_test = bool(tuning_config.get("run_final_test", False))
     train, validation, test = load_splits(splits_dir)
     num_users, num_items = infer_matrix_shape(train, validation, test)
     train_matrix = build_interaction_matrix(train, num_users, num_items)
@@ -85,7 +83,7 @@ def main() -> None:
         "num_items": num_items,
         "train_interactions": int(train_matrix.nnz),
         "validation_interactions": int(validation_matrix.nnz),
-        "final_test_ran": args.run_final_test,
+        "final_test_ran": run_final_test,
         "split_files": {
             name: {"path": str(Path(splits_dir) / f"{name}.parquet"),
                    "size_bytes": (Path(splits_dir) / f"{name}.parquet").stat().st_size,
@@ -94,7 +92,11 @@ def main() -> None:
         },
     }
 
-    if args.run_final_test:
+    if run_final_test:
+        print("=" * 70)
+        print("WARNING: tuning.run_final_test is TRUE — the test split will be")
+        print("evaluated ONCE for the selected model. Do not tune against it again.")
+        print("=" * 70)
         fit_frame = pd.concat([train, validation], ignore_index=True)
         fit_matrix = build_interaction_matrix(fit_frame, num_users, num_items)
         test_matrix = build_interaction_matrix(test, num_users, num_items)
@@ -112,16 +114,16 @@ def main() -> None:
         dataset_info["test_interactions"] = int(test_matrix.nnz)
         print(f"FINAL model={final_model.name} {metric}={final_result.overall[metric]:.6f}")
     else:
-        print("Validation tuning done. Re-run with --run-final-test only after reviewing the selected model.")
+        print("Validation tuning done. Set tuning.run_final_test: true in configs/eval/tuning.yaml to evaluate test once.")
 
     output = save_experiment(
-        next_experiment_dir(args.experiments_dir or paths.experiments_dir),
+        next_experiment_dir(paths.output_dir("baselines")),
         config={"ks": ks, "sparse_max": sparse_max, "baselines": base_config, "tuning": tuning_config},
         metrics=metrics,
         seed=base_config["seed"],
         dataset_info=dataset_info,
         runtime_seconds=time.time() - start,
-        notes="Hyperparameters were selected exclusively on validation. Test is present only when --run-final-test was explicitly requested.",
+        notes="Hyperparameters were selected exclusively on validation. Test is present only when tuning.run_final_test was enabled in YAML.",
     )
     print(f"saved experiment -> {output}")
 

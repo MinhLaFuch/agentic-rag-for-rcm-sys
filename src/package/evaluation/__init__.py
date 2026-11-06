@@ -1,4 +1,7 @@
-from ._schema import AGENTS, INFERENCE_AGENTS, KINDS, ORACLE_KINDS, PLANNER_AGENTS
+from ._schema import (
+    AGENTS, ANSWER_STATUSES, EVAL_SCHEMA_VERSION, INFERENCE_AGENTS, KIND_SEGMENTS, KINDS,
+    ORACLE_KINDS, PLANNER_AGENTS, REFERENCE_PLANS, clear_reference_plans_cache,
+)
 from .evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
 from .evaluate_product_reply import evaluate_product_reply
 from .requests import (
@@ -14,10 +17,15 @@ from .summarize import summarize
 
 __all__ = [
     "AGENTS",
+    "ANSWER_STATUSES",
+    "EVAL_SCHEMA_VERSION",
     "INFERENCE_AGENTS",
+    "KIND_SEGMENTS",
     "KINDS",
     "ORACLE_KINDS",
     "PLANNER_AGENTS",
+    "REFERENCE_PLANS",
+    "clear_reference_plans_cache",
     "AgentRequest",
     "build_requests",
     "filter_requests_by_scope",

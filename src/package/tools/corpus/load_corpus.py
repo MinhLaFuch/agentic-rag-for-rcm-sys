@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ._sql import get_corpus_schema_fingerprint, CORPUS_LOGIC_VERSION
 from .item_corpus import ItemCorpus
-from ..recommenders.shared.model_metadata import file_hash, mapping_hash
+from ..recommenders.shared import file_hash, mapping_hash
 
 
 def load_corpus(
@@ -84,7 +84,7 @@ def load_corpus(
     if version == 2 and (metadata.get("source_hash_protocol") != "sha256_file_bytes_v1"
                          or metadata.get("mapping_hash_protocol") != "sorted_key_index_json_v1"):
         raise ValueError("Corpus provenance hash protocol mismatch")
-    if version == 2 and metadata.get("source_domains") != [d for d, _ in meta_files]:
+    if version == 2 and not allow_missing_sources and metadata.get("source_domains") != [d for d, _ in meta_files]:
         raise ValueError("Source metadata domain/order mismatch")
 
     # Validate source hashes
@@ -104,16 +104,22 @@ def load_corpus(
 
     saved_hashes = metadata["source_hashes"]
     if len(saved_hashes) != len(current_hashes):
-        raise ValueError("Source metadata list mismatch: rebuild corpus with the current domain set.")
+        if not allow_missing_sources:
+            raise ValueError("Source metadata list mismatch: rebuild corpus with the current domain set.")
+        else:
+            print("  Corpus source hash validation skipped (allow_missing_sources=True)")
     mismatched_sources = [
         index for index, current in enumerate(current_hashes)
         if current is not None and current != saved_hashes[index]
     ]
     if mismatched_sources:
-        raise ValueError(
-            f"Source file metadata mismatch at indexes {mismatched_sources}: meta files have changed since corpus was saved. "
-            "Re-build with --save-corpus."
-        )
+        if not allow_missing_sources:
+            raise ValueError(
+                f"Source file metadata mismatch at indexes {mismatched_sources}: meta files have changed since corpus was saved. "
+                "Re-build with --save-corpus."
+            )
+        else:
+            print(f"  Corpus source hash validation skipped for indexes {mismatched_sources} (allow_missing_sources=True)")
     if missing_sources:
         print("  Corpus source validation skipped for missing metadata files: " + ", ".join(missing_sources))
 

@@ -1,107 +1,60 @@
-campaign_id: "campaign_001_baseline_vs_improved"
-description: "Compare baseline agent with improved planner and memory"
+campaign_id: "campaign_001_parameter_grid"
+description: "Parameter grid search: agents x inference_mode x reflect_rounds"
 
 dataset:
-  path: "data/evaluation/test_set.jsonl"
-  version: "v1.0"
-  split: "test"
+  tag: "default"  # Data tag for resource paths
+  split: "validation"  # validation or test
   filters:
     domains: ["Video_Games"]
 
-experiments:
-  - name: "baseline"
-    description: "Baseline agent with default planner and memory"
-    agent_config:
-      model: "gpt-4"
-      provider: "openai"
-      temperature: 0.0
-      planner_type: "default"
-      memory_enabled: true
-    evaluation_config:
-      layers: [1, 2, 3, 4, 5]
-      request_kinds: ["similar", "personalized", "constrained", "cold_text", "ambiguous"]
-      metrics:
-        - task_success_rate
-        - grounded_answer_rate
-        - constraint_satisfaction
-    repetition_count: 3
-    random_seed: 42
-    tags: ["baseline"]
+# Parameter grid: auto-generate all combinations
+# This will create 3 agents x 2 inference_modes x 2 reflect_rounds = 12 experiments
+parameter_grid:
+  agents:
+    - ["baseline", "type1"]  # Baseline agents
+    - ["planner"]            # Planner only
+    - ["planner_memory"]     # Planner with memory
+  inference_mode:
+    - "template"  # No LLM for answer (deterministic)
+    - "llm"       # LLM for answer (slower)
+  reflect_rounds:
+    - 0  # No reflection
+    - 2  # 2 reflection rounds
 
-  - name: "improved_planner"
-    description: "Agent with improved planner (better tool selection)"
-    agent_config:
-      model: "gpt-4"
-      provider: "openai"
-      temperature: 0.0
-      planner_type: "improved_v1"
-      memory_enabled: true
-    evaluation_config:
-      layers: [1, 2, 3, 4, 5]
-      request_kinds: ["similar", "personalized", "constrained", "cold_text", "ambiguous"]
-      metrics:
-        - task_success_rate
-        - grounded_answer_rate
-        - constraint_satisfaction
-    repetition_count: 3
-    random_seed: 42
-    tags: ["planner_ablation"]
+# Alternative: Explicit experiments (comment out parameter_grid to use this instead)
+# experiments:
+#   - name: "baseline_template"
+#     agent_config:
+#       agents: ["baseline", "type1"]
+#       inference_mode: "template"
+#       reflect_rounds: 0
+#     evaluation_config:
+#       per_segment: 20
+#     repetition_count: 1
+#   - name: "planner_llm_reflect2"
+#     agent_config:
+#       agents: ["planner"]
+#       inference_mode: "llm"
+#       reflect_rounds: 2
+#     evaluation_config:
+#       per_segment: 20
+#     repetition_count: 1
 
-  - name: "improved_memory"
-    description: "Agent with improved memory (better profile usage)"
-    agent_config:
-      model: "gpt-4"
-      provider: "openai"
-      temperature: 0.0
-      planner_type: "default"
-      memory_enabled: true
-      memory_type: "improved_v1"
-    evaluation_config:
-      layers: [1, 2, 3, 4, 5]
-      request_kinds: ["similar", "personalized", "constrained", "cold_text", "ambiguous"]
-      metrics:
-        - task_success_rate
-        - grounded_answer_rate
-        - constraint_satisfaction
-    repetition_count: 3
-    random_seed: 42
-    tags: ["memory_ablation"]
-
-  - name: "full_improved"
-    description: "Agent with both improved planner and memory"
-    agent_config:
-      model: "gpt-4"
-      provider: "openai"
-      temperature: 0.0
-      planner_type: "improved_v1"
-      memory_enabled: true
-      memory_type: "improved_v1"
-    evaluation_config:
-      layers: [1, 2, 3, 4, 5]
-      request_kinds: ["similar", "personalized", "constrained", "cold_text", "ambiguous"]
-      metrics:
-        - task_success_rate
-        - grounded_answer_rate
-        - constraint_satisfaction
-    repetition_count: 3
-    random_seed: 42
-    tags: ["full_improved"]
-
-comparison_pairs:
-  - ["baseline", "improved_planner"]
-  - ["baseline", "improved_memory"]
-  - ["baseline", "full_improved"]
-  - ["improved_planner", "full_improved"]
-  - ["improved_memory", "full_improved"]
+# Auto-generate comparison pairs for all vs baseline
+# For parameter grid, this is auto-generated based on first experiment
+comparison_pairs: []
+# If you want specific comparisons, uncomment and fill:
+# - ["exp_1_agents_[baseline, type1]_inference_mode_template_reflect_rounds_0", "exp_2_agents_[planner]_inference_mode_template_reflect_rounds_0"]
 
 statistical_settings:
   confidence_level: 0.95
   bootstrap_samples: 1000
   paired_comparison: true
 
-output_dir: "experiments/agent_eval/campaigns/campaign_001"
+# Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
+output_dir: "agent_eval/campaigns/campaign_001"
 
 metadata:
   author: "evaluation team"
-  created: "2026-11-02"
-  purpose: "Validate improvements to planner and memory components"
+  created: "2026-11-03"
+  purpose: "Parameter grid search for agents, inference modes, and reflection rounds"

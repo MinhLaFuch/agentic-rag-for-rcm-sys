@@ -1,0 +1,17 @@
+# Ranking evaluation config — mọi tham số của scripts/evaluation/ranking_eval.py.
+# neighbors (ItemKNN k) và seed lấy từ eval/baselines.yaml (baselines.item_knn.k, baselines.seed);
+# seed experiment lưu vào metrics.
+
+ranking_eval:
+  per_segment: 1000               # số user tối đa lấy mẫu mỗi segment
+  candidate_budget: 100           # candidate tối đa mỗi nguồn (<= tools.max_candidates)
+  seed_items: 5                   # số item fit gần nhất làm seed cho ItemCF
+  query_items: 3                  # số title gần nhất ghép thành semantic query
+  ks: [5, 10, 20]                 # cutoff metric; phải <= 3 * candidate_budget
+  popularity_weights: [0, 1.0e-6, 1.0e-4, 1.0e-3, 1.0e-2]  # trọng số popularity của BaselineScorer variants (baseline = 1e-6)
+  metadata_policy: "historical_static_catalog"  # historical_static_catalog | snapshot
+  query_normalization: "raw"                  # raw | ascii_fold — phải có baseline riêng khi đổi
+  use_prebuilt_corpus: true                   # false = build corpus trong RAM
+  allow_missing_corpus_sources: false         # true = chấp nhận corpus prebuilt khi thiếu file meta thô
+  batch_size: 50                  # kích thước batch ghi checkpoint (không ảnh hưởng kết quả)
+  progress_every: 100             # chu kỳ in tiến độ (không ảnh hưởng kết quả)

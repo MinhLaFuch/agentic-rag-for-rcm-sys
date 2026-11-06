@@ -46,8 +46,7 @@ def main():
     )
     parser.add_argument(
         "--tag",
-        required=True,
-        help="Data tag (e.g., exp_002, exp_003)"
+        help="Data tag (default: tag from run_tag.yaml)"
     )
     parser.add_argument(
         "--out",

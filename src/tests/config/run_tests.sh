@@ -3,16 +3,16 @@
 
 set -e
 
-# Run from this folder regardless of where the script is invoked from (logs go to tests/logs/)
+# Run from this folder regardless of where the script is invoked from (logs go to experiments/test_logs/)
 cd "$(dirname "$0")"
 
 # Create logs directory if it doesn't exist
-mkdir -p ../logs
+mkdir -p ../../experiments/test_logs
 
 # Get current timestamp for log filename
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOG_FILE="../logs/config_tests_${TIMESTAMP}.log"
-RESULTS_FILE="../logs/config_tests_results_${TIMESTAMP}.md"  # input/output of every test (see tests/results_report.py)
+LOG_FILE="../../experiments/test_logs/config_tests_${TIMESTAMP}.log"
+RESULTS_FILE="../../experiments/test_logs/config_tests_results_${TIMESTAMP}.md"  # input/output of every test (see tests/results_report.py)
 
 echo "==========================================" | tee -a "$LOG_FILE"
 echo "Running Config Tests - $TIMESTAMP" | tee -a "$LOG_FILE"

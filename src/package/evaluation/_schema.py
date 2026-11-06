@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from ..config import config_signature
 from ..config.load_config import load_config
 
 EVAL_SCHEMA_VERSION = 2
@@ -31,7 +32,7 @@ ORACLE_KINDS = ("constrained", "cold_text")  # built from held-out items: an upp
 
 
 @lru_cache(maxsize=1)
-def get_reference_plans() -> dict[str, tuple[tuple[str, ...], ...]]:
+def _cached_reference_plans() -> dict[str, tuple[tuple[str, ...], ...]]:
     """
     Load reference plans from configs/agent/reference_plans.yaml.
 
@@ -44,6 +45,19 @@ def get_reference_plans() -> dict[str, tuple[tuple[str, ...], ...]]:
     cfg = load_config("agent/reference_plans")["reference_plans"]
     # Convert list of lists to tuple of tuples for immutability
     return {kind: tuple(tuple(group) for group in groups) for kind, groups in cfg.items()}
+
+
+_plans_signature: tuple | None = None
+
+
+def get_reference_plans() -> dict[str, tuple[tuple[str, ...], ...]]:
+    """Reference plans, refreshed when configs/agent/reference_plans.yaml or the config overlay changes."""
+    global _plans_signature
+    signature = config_signature("agent/reference_plans")
+    if signature != _plans_signature:
+        _plans_signature = signature
+        _cached_reference_plans.cache_clear()
+    return _cached_reference_plans()
 
 
 # Backward compatibility: expose REFERENCE_PLANS as a property that loads from config
@@ -74,3 +88,8 @@ class _ReferencePlans:
 
 
 REFERENCE_PLANS = _ReferencePlans()
+
+
+def clear_reference_plans_cache() -> None:
+    """Clear the reference-plans cache when config files change."""
+    _cached_reference_plans.cache_clear()

@@ -33,21 +33,20 @@ from package.utils import ensure_utf8_stdout
 
 
 def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description="Compare ablation experiments")
-    ap.add_argument("--config", default="agent/ablation", help="Config file path (default: agent/ablation)")
-    return ap.parse_args()
+    # Config is fixed to configs/agent/ablation.yaml; per-run variation goes through CONFIG_OVERLAY_PATH.
+    return argparse.ArgumentParser(description="Compare ablation experiments").parse_args()
 
 
 def main() -> None:
     ensure_utf8_stdout()
-    args = parse_args()
+    parse_args()
     
     print("=" * 60)
     print("Ablation Comparison Tool")
     print("=" * 60)
     
     # Load limits
-    print(f"Loading config from configs/{args.config}.yaml...")
+    print("Loading config from configs/agent/ablation.yaml...")
     try:
         limits = get_ablation_limits()
     except ConfigError as e:

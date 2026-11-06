@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..config import config_signature
 from ..config.load_config import ConfigError, load_config
 
 
@@ -28,7 +29,7 @@ class ToolLimits:
 
 
 @lru_cache(maxsize=1)
-def get_tool_limits() -> ToolLimits:
+def _cached_tool_limits() -> ToolLimits:
     cfg = load_config("agent/tools")["tools"]
     defaults, search = cfg["defaults"], cfg["semantic_search"]
     limits = ToolLimits(
@@ -56,9 +57,22 @@ def get_tool_limits() -> ToolLimits:
     return limits
 
 
+_limits_signature: tuple | None = None
+
+
+def get_tool_limits() -> ToolLimits:
+    """Tool limits, refreshed when configs/agent/tools.yaml or the config overlay changes."""
+    global _limits_signature
+    signature = config_signature("agent/tools")
+    if signature != _limits_signature:
+        _limits_signature = signature
+        _cached_tool_limits.cache_clear()
+    return _cached_tool_limits()
+
+
 def clear_tool_limits_cache() -> None:
     """Clear the tool limits cache when config files change."""
-    get_tool_limits.cache_clear()
+    _cached_tool_limits.cache_clear()
 
 
 _LIMITS = get_tool_limits()

@@ -27,6 +27,15 @@ class DataPaths:
     def corpus_path(self) -> Path:
         return self.corpus_dir / f"corpus_{self.tag}.sqlite"
 
+    def output_dir(self, key: str) -> Path:
+        """Experiment/log output dir from ``outputs:`` in data_paths.yaml (relative to experiments_dir)."""
+        from .load_config import load_config  # lazy: keep config import-light and cycle-free
+
+        outputs = load_config("path/data_paths").get("outputs", {})
+        if key not in outputs:
+            raise KeyError(f"unknown output dir {key!r}; known: {sorted(outputs)}")
+        return self.experiments_dir / outputs[key]
+
     def item_knn_path(self, eval_on: str) -> Path:
         return self.item_knn_dir / f"item_knn_{self.tag}_{eval_on}.npz"
 

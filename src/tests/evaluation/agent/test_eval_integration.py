@@ -183,16 +183,23 @@ def test_resume_keeps_old_records_and_drops_other_inference_modes():
     assert keep(rec, text_of, ["planner"], 0)  # the old call signature still works
 
 
-def test_inference_mode_is_a_cli_flag(monkeypatch, capsys):
+def test_inference_mode_comes_from_yaml_not_cli(monkeypatch, capsys, tmp_path):
+    """inference.mode sống trong configs/agent/inference.yaml (hoặc CONFIG_OVERLAY_PATH), không còn là CLI flag."""
+    from package.config.load_config import ConfigError, load_config
+
     script = _load_run_agent_eval()
     monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--help"])
     with pytest.raises(SystemExit) as helped:
         script.main()
-    assert helped.value.code == 0 and "--inference-mode" in capsys.readouterr().out
-    monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--inference-mode", "gpt"])
-    with pytest.raises(SystemExit) as bad:
-        script.main()
-    assert bad.value.code == 2
+    assert helped.value.code == 0 and "--inference-mode" not in capsys.readouterr().out
+
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text("agent/inference:\n  inference:\n    mode: gpt\n", encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+    with pytest.raises(ConfigError):
+        load_config("agent/inference")
+    monkeypatch.delenv("CONFIG_OVERLAY_PATH")
+    assert load_config("agent/inference")["inference"]["mode"] in ("llm", "template")
 
 
 # ---------------------------------------------------------------- end to end: request -> planner -> Inference -> trajectory -> score -> summary

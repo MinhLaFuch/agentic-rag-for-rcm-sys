@@ -13,13 +13,13 @@ elif [ -f "../../.venv/Scripts/activate" ]; then
     source "../../.venv/Scripts/activate"
 fi
 
-# Create logs directory if it doesn't exist
-mkdir -p logs
+# Create logs directory if it doesn't exist (experiments/test_logs — see configs/path/data_paths.yaml)
+mkdir -p ../experiments/test_logs
 
 # Get current timestamp for log filename
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-MAIN_LOG="$PWD/logs/test_run_${TIMESTAMP}.log"  # absolute: survives the `cd ..` below; test logs live in tests/logs/
-RESULTS_FILE="$PWD/logs/test_results_${TIMESTAMP}.md"  # input/output of EVERY test in one file (see tests/results_report.py)
+MAIN_LOG="$PWD/../experiments/test_logs/test_run_${TIMESTAMP}.log"  # absolute: survives the `cd ..` below
+RESULTS_FILE="$PWD/../experiments/test_logs/test_results_${TIMESTAMP}.md"  # input/output of EVERY test in one file (see tests/results_report.py)
 
 cd ..
 

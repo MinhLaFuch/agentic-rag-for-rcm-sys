@@ -22,13 +22,13 @@ def render_markdown(result: dict[str, dict[str, Any]], meta: dict[str, Any]) -> 
         L.append("|---|---:|---:|---:|---:|---:|---|---:|---:|---|")
         for label in sorted(groups.keys()):
             g = groups[label]
-            if g["verdict"] == "insufficient_n":
-                L.append(f"| {label} | 0 | {g['n_unscored_baseline']}/{g['n_unscored_memory']} | - | - | - | - | - | {g['verdict']} |")
+            if g["verdict"] in ("insufficient_n", "no_pairs", "inconclusive") and g["mean_baseline"] is None:
+                L.append(f"| {label} | {g['n_paired']} | {g['n_unscored_baseline']}/{g['n_unscored_memory']} | - | - | - | - | - | {g['verdict']} |")
                 continue
             f = lambda x: "n/a" if x is None else f"{x:.3f}"
             L.append(f"| {label} | {g['n_paired']} | {g['n_unscored_baseline']}/{g['n_unscored_memory']} | "
-                     f"{g['mean_baseline']:.3f} | {g['mean_memory']:.3f} | {g['diff']:+.3f} "
-                     f"[{g['ci_lower']:+.3f}, {g['ci_upper']:+.3f}] | {f(g['run_std_baseline'])}/{f(g['run_std_memory'])} | "
+                     f"{f(g['mean_baseline'])} | {f(g['mean_memory'])} | {f(g['diff'])} "
+                     f"[{f(g['ci_lower'])}, {f(g['ci_upper'])}] | {f(g['run_std_baseline'])}/{f(g['run_std_memory'])} | "
                      f"{g['wins']}/{g['losses']}/{g['ties']} | {g['verdict']} |")
         warns = sorted({w for g in groups.values() for w in g["warnings"]})
         if warns:

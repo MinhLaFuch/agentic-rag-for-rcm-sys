@@ -1,0 +1,49 @@
+campaign_id: "campaign_001_parameter_grid"
+description: "Parameter grid search: agents x inference_mode x reflect_rounds"
+
+dataset:
+  tag: "default"  # Data tag for resource paths (matches resource/splits/default/)
+  split: "validation"  # validation or test
+  filters:
+    domains: ["Video_Games", "Electronics", "Toys_and_Games"]  # All 3 domains
+
+# Parameter grid: auto-generate all combinations
+# This will create 3 agents x 2 inference_modes x 2 reflect_rounds = 12 experiments
+parameter_grid:
+  agents:
+    - ["baseline", "type1"]  # Baseline agents
+    - ["planner"]            # Planner only
+    - ["planner_memory"]     # Planner with memory
+  inference_mode:
+    - "template"  # No LLM for answer (deterministic)
+    - "llm"       # LLM for answer (slower)
+  reflect_rounds:
+    - 0  # No reflection
+    - 1  # 1 reflection round
+    # - 2  # 2 reflection rounds
+
+# Optional: Add per_segment (applies to all experiments)
+evaluation_config:
+  per_segment: 20  # Requests per (kind, segment)
+
+# Runtime defaults applied to every experiment's config overlay
+# (per-experiment overrides still go in each experiment's agent_config/evaluation_config)
+default_agents: [baseline, type1, planner, planner_memory]  # used when agent_config.agents is absent
+allow_missing_corpus_sources: true   # campaign runs accept prebuilt corpus without raw meta files
+experiment_timeout_seconds: 3600     # per-run subprocess timeout
+
+# Auto-generate comparison pairs: all vs first experiment (baseline)
+comparison_pairs: []
+
+statistical_settings:
+  confidence_level: 0.95
+  bootstrap_samples: 1000
+  paired_comparison: true
+
+# Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
+output_dir: "agent_eval/campaigns/campaign_001"
+
+metadata:
+  author: "evaluation team"
+  created: "2026-11-03"
+  purpose: "Parameter grid search for agents, inference modes, and reflection rounds"

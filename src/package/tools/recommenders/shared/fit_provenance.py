@@ -1,7 +1,7 @@
 """Versioned artifact provenance."""
 from __future__ import annotations
 
-from .model_metadata import mapping_hash, fit_split_names
+from ._model_metadata import mapping_hash, fit_split_names
 
 
 def fit_provenance(fit_pairs, *, user2id=None, item2id=None, eval_on=None, tag=None) -> dict:

@@ -5,10 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..config import config_signature
 from ..config.load_config import ConfigError, load_config
 
 # Re-export from package.memory for backward compatibility
-from ..memory.get_memory_limits import get_memory_limits, MemoryLimits
+from ..memory import get_memory_limits, clear_memory_limits_cache, MemoryLimits
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,7 @@ class AgentLimits:
 
 
 @lru_cache(maxsize=1)
-def get_agent_limits() -> AgentLimits:
+def _cached_agent_limits() -> AgentLimits:
     cfg = load_config("agent/agent")["agent"]
     limits = AgentLimits(
         max_steps=int(cfg["max_steps"]),
@@ -50,12 +51,20 @@ def get_agent_limits() -> AgentLimits:
     return limits
 
 
+_limits_signature: tuple | None = None
+
+
+def get_agent_limits() -> AgentLimits:
+    """Agent limits, refreshed when configs/agent/agent.yaml or the config overlay changes."""
+    global _limits_signature
+    signature = config_signature("agent/agent")
+    if signature != _limits_signature:
+        _limits_signature = signature
+        _cached_agent_limits.cache_clear()
+    return _cached_agent_limits()
+
+
 def clear_agent_limits_cache() -> None:
     """Clear the agent limits cache when config files change."""
-    get_agent_limits.cache_clear()
-
-
-def clear_memory_limits_cache() -> None:
-    """Clear the memory limits cache when config files change."""
-    get_memory_limits.cache_clear()
+    _cached_agent_limits.cache_clear()
 

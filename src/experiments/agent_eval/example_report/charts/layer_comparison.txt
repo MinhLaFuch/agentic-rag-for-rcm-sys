@@ -1,0 +1,8 @@
+# Layer Comparison Chart (Placeholder)
+
+This would render a bar chart comparing metrics across evaluation layers.
+
+Example structure:
+- X-axis: Evaluation layers (L1-L5)
+- Y-axis: Metric values
+- Grouped bars for different metrics per layer

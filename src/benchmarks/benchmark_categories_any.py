@@ -6,17 +6,18 @@ Measures query performance and EXPLAIN QUERY PLAN before and after adding
 the composite index idx_cat_item_cat on item_categories(item_id, category).
 
 Usage:
-    python scripts/evaluation/benchmark_categories_any.py --tag <tag> [--queries-file queries.jsonl]
+    python scripts/evaluation/benchmark_categories_any.py --tag <tag>
+
+Iterations, limit and the default query set live in configs/eval/categories_any_benchmark.yaml.
 """
 
 import argparse
-import json
 import time
 from typing import Any
 
 import pandas as pd
 
-from package.config import get_data_paths, get_domains
+from package.config import get_data_paths, get_domains, load_config
 from package.data.loader import load_item_metadata
 from package.tools import ItemCorpus, SemanticSearchTool
 from package.tools import get_tool_limits
@@ -140,33 +141,21 @@ def main():
     )
     parser.add_argument(
         "--tag",
-        required=True,
-        help="Data tag (e.g., exp_002, exp_003)"
-    )
-    parser.add_argument(
-        "--queries-file",
-        help="Path to JSONL file with queries (one per line: {\"query\": \"...\", \"category\": \"...\"})"
-    )
-    parser.add_argument(
-        "--iterations",
-        type=int,
-        default=5,
-        help="Number of iterations for timing (default: 5)"
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=100,
-        help="Result limit for queries (default: 100)"
+        help="Data tag (default: tag from run_tag.yaml)"
     )
     args = parser.parse_args()
+
+    # iterations/limit/default queries đọc từ configs/eval/categories_any_benchmark.yaml
+    cfg = load_config("eval/categories_any_benchmark")["categories_any_benchmark"]
+    args.iterations = int(cfg["iterations"])
+    args.limit = int(cfg["limit"])
     if args.iterations < 1:
-        parser.error("--iterations must be at least 1")
+        raise SystemExit("categories_any_benchmark.iterations must be at least 1")
 
     print("="*80)
     print("Benchmark: SemanticSearchTool categories_any + FTS")
     print("="*80)
-    print(f"Tag: {args.tag}")
+    print(f"Tag: {args.tag or '(default)'}")
 
     # Load data paths
     paths = get_data_paths(args.tag)
@@ -187,22 +176,9 @@ def main():
     meta = load_item_metadata(meta_files)
     print(f"Loaded {len(meta)} items")
 
-    # Define queries
-    if args.queries_file:
-        print(f"\nLoading queries from {args.queries_file}...")
-        queries = []
-        with open(args.queries_file, 'r') as f:
-            for line in f:
-                if line.strip():
-                    queries.append(json.loads(line))
-    else:
-        # Default queries
-        queries = [
-            {"query": "keyboard", "category": "Keyboards"},
-            {"query": "mouse", "category": "Mice"},
-            {"query": "game", "category": "Video_Games"},
-        ]
-        print(f"\nUsing default queries: {len(queries)}")
+    # Queries from configs/eval/categories_any_benchmark.yaml
+    queries = [dict(q) for q in cfg["queries"]]
+    print(f"\nUsing configured queries: {len(queries)}")
 
     for i, q in enumerate(queries, 1):
         query_text = q["query"]

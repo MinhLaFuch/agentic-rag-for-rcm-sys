@@ -17,12 +17,12 @@ import time
 import numpy as np
 import yaml
 
-from package.config import get_data_paths
+from package.config import get_data_paths, load_config
 from package.data.mapping import load_mappings
 from package.tools.evaluation import next_experiment_dir, save_experiment
 from package.tools.evaluation.metrics import ranking_metrics_at_k
 from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.recommenders.shared.model_metadata import file_hash, mapping_hash
+from package.tools.recommenders.shared import file_hash, mapping_hash
 
 SOURCES = ("popularity", "item_cf", "semantic")
 POLICIES = ("baseline", "popularity_first", "semantic_first", "cf_first", "rrf_60")
@@ -73,12 +73,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--experiment", type=Path, required=True)
     ap.add_argument("--selection-pilot", type=Path, required=True)
-    ap.add_argument("--output-root",type=Path)
-    ap.add_argument("--seed",type=int,default=42)
-    ap.add_argument("--bootstrap-samples",type=int,default=5000)
     args = ap.parse_args()
+    # seed/bootstrap-samples/output dir đọc từ configs/eval/ranking_diagnostics.yaml + data_paths.yaml
+    diag = load_config("eval/ranking_diagnostics")["ranking_diagnostics"]
+    args.seed = int(diag["seed"])
+    args.bootstrap_samples = int(diag["bootstrap_samples"])
     if args.bootstrap_samples < 1:
-        ap.error("bootstrap-samples must be positive")
+        raise SystemExit("ranking_diagnostics.bootstrap_samples must be positive")
     started = time.perf_counter()
     config = yaml.safe_load((args.experiment/"config.yaml").read_text(encoding="utf-8"))
     original = json.loads((args.experiment/"metrics.json").read_text())
@@ -192,7 +193,7 @@ def main():
                     raise ValueError("baseline metric recomputation mismatch")
     if len(seen_users) != sum(map(len,config["config"]["sampled_user_ids"].values())):
         raise ValueError("candidate sample count mismatch")
-    output = save_experiment(next_experiment_dir(args.output_root or paths.experiments_dir/"ranking_diagnostics"),
+    output = save_experiment(next_experiment_dir(paths.output_dir("ranking_diagnostics")),
         config={"source_experiment":str(args.experiment.resolve()),"source_sha256":source_hashes,
                 "selection_pilot":str(args.selection_pilot.resolve()),"selection_pilot_config_sha256":file_hash(args.selection_pilot/"config.yaml"),
                 "protocol":config["config"]["protocol"],"policies":list(POLICIES),"rrf_offset":60,"ks":ks,

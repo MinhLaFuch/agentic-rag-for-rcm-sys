@@ -6,12 +6,7 @@ from pathlib import Path
 import pytest
 
 from package.evaluation.ablation._limits import AblationLimits
-from package.evaluation.ablation._report import (
-    render_markdown_report,
-    write_csv,
-    write_disagreements,
-    write_json,
-)
+from package.evaluation.ablation._report import render_markdown_report, write_csv, write_disagreements, write_json
 
 
 def test_render_markdown_report_basic():

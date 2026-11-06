@@ -21,6 +21,7 @@ except ImportError:
     sys.exit(1)
 
 from package.config import get_data_paths, get_domains, load_config
+from package.inference import get_inference_limits
 from package.demo import (
     DemoProfile,
     DemoRequest,
@@ -39,18 +40,17 @@ def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Demo UI for LLM agent recommender system")
     ap.add_argument("--mock", action="store_true", help="Run in mock mode (no data/LLM/network needed)")
     ap.add_argument("--tag", help="Data tag (default: tag from run_tag.yaml)")
-    ap.add_argument("--eval-on", choices=["validation", "test"], default="validation", help="Split to load data from")
     ap.add_argument("--domain", action="append", help="Domain to load (repeatable; default: all)")
-    ap.add_argument("--no-prebuilt", action="store_true", help="Build corpus and ItemKNN in RAM instead of loading from prebuilt files (for debug or small tags)")
-    ap.add_argument(
-        "--allow-missing-corpus-sources",
-        action="store_true",
-        help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
-    )
     ap.add_argument("--host", default="127.0.0.1", help="Host to run server (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=7860, help="Port to run server (default: 7860)")
-    ap.add_argument("--inference-mode", choices=["llm", "template"], default="llm", help="Inference mode: llm (LLM writes answer) or template (deterministic, no LLM)")
-    return ap.parse_args()
+    args = ap.parse_args()
+    # eval_on / corpus flags / inference mode đọc từ configs/agent/demo.yaml + inference.yaml
+    demo_cfg = load_config("agent/demo")["demo"]
+    args.eval_on = str(demo_cfg["eval_on"])
+    args.use_prebuilt = bool(demo_cfg["use_prebuilt_corpus"])
+    args.allow_missing_corpus_sources = bool(demo_cfg["allow_missing_corpus_sources"])
+    args.inference_mode = get_inference_limits().mode
+    return args
 
 
 def build_ui(
@@ -312,7 +312,7 @@ def main() -> None:
             tag=args.tag,
             domain=args.domain,
             eval_on=args.eval_on,
-            use_prebuilt=not args.no_prebuilt,
+            use_prebuilt=args.use_prebuilt,
             allow_missing_corpus_sources=args.allow_missing_corpus_sources,
         )
         try:

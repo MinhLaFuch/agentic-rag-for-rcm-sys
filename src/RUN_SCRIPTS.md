@@ -31,16 +31,13 @@ PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --force
 
 # Stage 1 options
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 1 --domain Video_Games \
-    --review-path /path/to/review_Video_Games.jsonl.gz \
-    --output-dir /path/to/output \
-    --chunk-size 100000
+    --review-path /path/to/review_Video_Games.jsonl.gz
 
 # Stage 2 options
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 2 --cold-start-report
 
 # Stage 4 options
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 4 \
-    --eval-on validation \
     --skip-corpus \
     --skip-item-knn
 ```
@@ -91,18 +88,15 @@ Gradio UI demo.
 PYTHONPATH=. python scripts/demo/run_demo.py --mock
 
 # Live mode with real data
-PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games --eval-on validation
+PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games
 
-# Live mode options
+# Live mode options (inference mode, corpus flags, eval split come from
+# configs/agent/demo.yaml and configs/agent/inference.yaml — not CLI)
 PYTHONPATH=. python scripts/demo/run_demo.py \
     --tag v1 \
     --domain Video_Games \
-    --eval-on validation \
-    --no-prebuilt \
-    --allow-missing-corpus-sources \
     --host 0.0.0.0 \
-    --port 7860 \
-    --inference-mode llm  # or template
+    --port 7860
 ```
 
 **Arguments**:
@@ -110,13 +104,13 @@ PYTHONPATH=. python scripts/demo/run_demo.py \
 |-----|---------|-------------|
 | `--mock` | false | Mock mode (no data/LLM) |
 | `--tag` | from run_tag.yaml | Data tag |
-| `--eval-on` | validation | validation/test split |
 | `--domain` | all | Domain filter (repeatable) |
-| `--no-prebuilt` | false | Build corpus/ItemKNN in RAM |
-| `--allow-missing-corpus-sources` | false | Allow missing metadata sources |
 | `--host` | 127.0.0.1 | Server host |
 | `--port` | 7860 | Server port |
-| `--inference-mode` | llm | llm / template |
+
+Corpus behavior (`use_prebuilt_corpus`, `allow_missing_corpus_sources`,
+`eval_on`) and inference mode are set in `configs/agent/demo.yaml` /
+`configs/agent/inference.yaml`.
 
 ### `scripts/demo/demo_full_agent.py`
 Reference wiring of all 5 tools for PlanExecutor (not runnable directly).
@@ -146,12 +140,6 @@ PYTHONPATH=. python scripts/tools/run_tools.py
 
 # Custom tag + domains
 PYTHONPATH=. python scripts/tools/run_tools.py --tag vg_toys --domain Video_Games
-
-# Model selection
-PYTHONPATH=. python scripts/tools/run_tools.py --model knn  # or bpr
-
-# Evaluation options
-PYTHONPATH=. python scripts/tools/run_tools.py --eval-users 100 --negatives 100 --top-k 10
 ```
 
 **Arguments**:
@@ -159,10 +147,9 @@ PYTHONPATH=. python scripts/tools/run_tools.py --eval-users 100 --negatives 100 
 |-----|---------|-------------|
 | `--tag` | from run_tag.yaml | Data tag |
 | `--domain` | all | Domain filter (repeatable) |
-| `--model` | knn | knn / bpr |
-| `--eval-users` | 100 | Sample users for evaluation |
-| `--negatives` | 100 | Negatives per user for ranking eval |
-| `--top-k` | 10 | K for Hit Rate / NDCG |
+
+Model, `eval_users`, `negatives`, `seed` are set in
+`configs/eval/tool_validation.yaml`.
 
 ---
 
@@ -174,28 +161,17 @@ Run baseline models (popularity, ItemKNN, BPR-MF).
 ```bash
 # Default
 PYTHONPATH=. python scripts/evaluation/run_baselines.py --eval-on validation
-
-# Custom tag + models
-PYTHONPATH=. python scripts/evaluation/run_baselines.py --tag vg_toys --models popularity,item_knn
-
-# Custom K values
-PYTHONPATH=. python scripts/evaluation/run_baselines.py --ks 5,10,20
-
-# Custom directories
-PYTHONPATH=. python scripts/evaluation/run_baselines.py \
-    --splits-dir /path/to/splits \
-    --experiments-dir /path/to/experiments
 ```
 
 **Arguments**:
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `--tag` | from run_tag.yaml | Data tag |
-| `--splits-dir` | from data_paths.yaml | Splits directory |
 | `--eval-on` | validation | validation / test |
-| `--models` | from baselines.yaml | Comma-separated: popularity,item_knn,bpr_mf |
-| `--ks` | from recommendation_metrics.yaml | K values (e.g., 5,10,20) |
-| `--experiments-dir` | from data_paths.yaml | Output directory |
+
+Models (`baselines.yaml`), K values (`recommendation_metrics.yaml`), output
+dir (`data_paths.outputs.baselines`) and all split paths (`data_paths.yaml`)
+are configured in YAML — there are no CLI overrides.
 
 ### `scripts/evaluation/tune_baselines.py`
 Hyperparameter tuning on validation.
@@ -204,23 +180,17 @@ Hyperparameter tuning on validation.
 # Validation tuning only
 PYTHONPATH=. python scripts/evaluation/tune_baselines.py
 
-# With final test run (one-time)
-PYTHONPATH=. python scripts/evaluation/tune_baselines.py --tag vg_toys --run-final-test
-
-# Custom models + selection metric
-PYTHONPATH=. python scripts/evaluation/tune_baselines.py --models item_knn,bpr_mf --selection-metric recall@10
+# With tag
+PYTHONPATH=. python scripts/evaluation/tune_baselines.py --tag vg_toys
 ```
 
 **Arguments**:
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `--tag` | from run_tag.yaml | Data tag |
-| `--splits-dir` | from data_paths.yaml | Splits directory |
-| `--models` | from tuning.yaml | popularity,item_knn,bpr_mf |
-| `--ks` | from recommendation_metrics.yaml | K values |
-| `--selection-metric` | from tuning.yaml | e.g., recall@10 |
-| `--run-final-test` | false | Refit on train+val, eval test |
-| `--experiments-dir` | from data_paths.yaml | Output directory |
+
+Model grids (`eval/tuning.yaml` `models`), `selection_metric`, K values, and
+`run_final_test` are all configured in YAML — there are no CLI overrides.
 
 ---
 
@@ -233,14 +203,8 @@ Measure candidate source coverage (popularity, ItemCF, SemanticSearch).
 # Default
 PYTHONPATH=. python scripts/evaluation/candidate_recall.py --eval-on validation
 
-# Oracle queries (target-informed, upper bound)
-PYTHONPATH=. python scripts/evaluation/candidate_recall.py --eval-on validation --query-modes category_oracle
-
 # Custom tag + domains
 PYTHONPATH=. python scripts/evaluation/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
-
-# Custom budgets / sample sizes
-PYTHONPATH=. python scripts/evaluation/candidate_recall.py --per-segment 50 --seed-items 3 --query-items 5 --neighbors 10
 ```
 
 **Arguments**:
@@ -249,14 +213,10 @@ PYTHONPATH=. python scripts/evaluation/candidate_recall.py --per-segment 50 --se
 | `--tag` | from run_tag.yaml | Data tag |
 | `--domain` | all | Domain filter (repeatable) |
 | `--eval-on` | validation | validation / test |
-| `--splits-dir` | from data_paths.yaml | Splits directory |
-| `--per-segment` | from candidate_recall.yaml | Users per segment |
-| `--seed-items` | from candidate_recall.yaml | Items for ItemCF seed |
-| `--query-items` | from candidate_recall.yaml | Items for semantic query |
-| `--neighbors` | from candidate_recall.yaml | ItemCF neighbors |
-| `--query-modes` | history | history / category_oracle |
-| `--no-prebuilt-corpus` | false | Build corpus in RAM |
-| `--allow-missing-corpus-sources` | false | Allow missing metadata |
+
+Budgets, sample sizes, query modes, seeds, neighbors, metadata/query policy
+and corpus behavior are all set in `configs/eval/candidate_recall.yaml` (and
+`configs/eval/baselines.yaml`) — there are no CLI overrides.
 
 ---
 
@@ -266,44 +226,27 @@ PYTHONPATH=. python scripts/evaluation/candidate_recall.py --per-segment 50 --se
 Full agent evaluation with LLM planner.
 
 ```bash
-# Tiny trial (2 per segment, no LLM)
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2 --inference-mode template
-
-# Baseline + Type1 (no LLM)
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --agents baseline,type1 --inference-mode template
-
-# LLM planner, template answers
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --inference-mode template
+# Default
+PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
 
 # Resume interrupted run
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --resume
-
-# Full run with LLM
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py \
-    --per-segment 50 \
-    --agents baseline,type1,planner,planner_memory \
-    --inference-mode llm \
-    --llm-retries 1
-
-# Oracle scope (constrained/cold_text only)
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --request-scope oracle
 ```
 
 **Arguments**:
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `--tag` | from run_tag.yaml | Data tag |
+| `--domain` | all | Domain filter (repeatable) |
 | `--eval-on` | validation | validation / test |
-| `--per-segment` | from agent_eval.yaml | Users per segment |
-| `--agents` | all | baseline,type1,planner,planner_memory |
-| `--request-scope` | realistic | realistic / oracle |
-| `--inference-mode` | template | llm / template |
-| `--llm-retries` | 1 | Max LLM retries for answer |
-| `--seed` | 42 | Random seed |
 | `--resume` | false | Resume from trajectory log |
-| `--no-prebuilt` | false | Build corpus in RAM |
-| `--allow-missing-corpus-sources` | false | Allow missing metadata |
-| `--experiments-dir` | from data_paths.yaml | Output directory |
+
+Agents, per-segment counts, request scope, trajectory file, inference mode,
+reflect rounds, metadata/query policy, corpus behavior and seeds are all set
+in YAML (`configs/agent/agent_eval.yaml`, `agent/agent.yaml`,
+`agent/inference.yaml`, `eval/candidate_recall.yaml`) — there are no CLI
+overrides. For per-experiment variation use a config overlay
+(`CONFIG_OVERLAY_PATH`, see `package/evaluation/campaign/`).
 
 ### `scripts/evaluation/ranking_eval.py`
 Fixed-candidate deterministic ranking evaluation.
@@ -312,14 +255,11 @@ Fixed-candidate deterministic ranking evaluation.
 # Default
 PYTHONPATH=. python scripts/evaluation/ranking_eval.py --eval-on validation
 
-# Custom tag + domains
-PYTHONPATH=. python scripts/evaluation/ranking_eval.py --tag vg_toys --domain Video_Games
-
 # Resume from checkpoint
 PYTHONPATH=. python scripts/evaluation/ranking_eval.py --resume
 
-# Fast mode (no retrieval replay)
-PYTHONPATH=. python scripts/evaluation/ranking_eval.py --no-retrieval-replay
+# Freeze candidates from a compatible completed experiment
+PYTHONPATH=. python scripts/evaluation/ranking_eval.py --candidates-from experiments/ranking_eval/exp_003
 ```
 
 ---
@@ -356,10 +296,10 @@ Compare ablation experiments per configs/agent/ablation.yaml.
 
 ```bash
 PYTHONPATH=. python scripts/experiments/compare_experiments.py
-
-# Custom config
-PYTHONPATH=. python scripts/experiments/compare_experiments.py --config agent/ablation
 ```
+
+Config is fixed to `configs/agent/ablation.yaml`; per-run variation goes through
+`CONFIG_OVERLAY_PATH` (see §17).
 
 ---
 
@@ -382,11 +322,10 @@ Bottleneck analysis from saved candidate/score artifacts.
 ```bash
 PYTHONPATH=. python scripts/evaluation/analyze_ranking_bottlenecks.py \
     --experiment path/to/exp_NNN \
-    --selection-pilot path/to/selection_pilot \
-    --output-root path/to/output \
-    --seed 42 \
-    --bootstrap-samples 5000
+    --selection-pilot path/to/selection_pilot
 ```
+
+Seed and bootstrap sample count come from `configs/eval/ranking_diagnostics.yaml`; output goes to `data_paths.outputs.ranking_diagnostics`.
 
 ---
 
@@ -457,6 +396,12 @@ export PYTHONPATH=.
 | `eval/baselines` | `configs/eval/baselines.yaml` | Baseline model configs |
 | `eval/tuning` | `configs/eval/tuning.yaml` | Hyperparameter grids |
 | `eval/candidate_recall` | `configs/eval/candidate_recall.yaml` | Recall budgets |
+| `eval/ranking_eval` | `configs/eval/ranking_eval.yaml` | Ranking eval settings |
+| `eval/ranking_diagnostics` | `configs/eval/ranking_diagnostics.yaml` | Bottleneck analysis settings |
+| `eval/tool_validation` | `configs/eval/tool_validation.yaml` | run_tools.py settings |
+| `eval/memory_utility` | `configs/eval/memory_utility.yaml` | Memory utility analysis settings |
+| `eval/categories_any_benchmark` | `configs/eval/categories_any_benchmark.yaml` | categories_any benchmark settings |
+| `eval/component_benchmarks` | `configs/eval/component_benchmarks.yaml` | Component benchmark runs |
 | `eval/recommendation_metrics` | `configs/eval/recommendation_metrics.yaml` | K values, metrics |
 | `path/data_paths` | `configs/path/data_paths.yaml` | All filesystem paths |
 | `path/run_tag` | `configs/path/run_tag.yaml` | Current run tag |
@@ -470,11 +415,18 @@ export PYTHONPATH=.
 |--------|----------|
 | Pipeline logs | `experiments/logs/<tag>/run_pipeline.log` |
 | Tool validation log | `experiments/logs/<tag>/run_tools.log` |
-| Baseline experiments | `experiments/exp_NNN/` |
+| Baseline experiments | `experiments/baselines/exp_NNN/` |
 | Agent eval experiments | `experiments/agent_eval/exp_NNN/` |
 | Candidate recall experiments | `experiments/candidate_recall/exp_NNN/` |
 | Ranking eval experiments | `experiments/ranking_eval/exp_NNN/` |
+| Ranking diagnostics | `experiments/ranking_diagnostics/exp_NNN/` |
 | Ablation comparisons | `experiments/agent_eval/ablation/` |
+| Component benchmarks | `experiments/agent_eval/component_benchmarks/` |
+| Memory utility analysis | `experiments/agent_eval/memory_utility_analysis/` |
+| Multi-turn evaluation | `experiments/agent_eval/multi_turn/` |
+| Test logs / results | `experiments/test_logs/` |
+
+All of the above are configured in `outputs:` in `configs/path/data_paths.yaml` (relative to `experiments_dir`).
 
 ---
 
@@ -492,3 +444,33 @@ python scripts/...
 # Set domain for config interpolation
 DOMAIN=Video_Games PYTHONPATH=. python scripts/...
 ```
+
+## 17. Config Overlay (per-experiment overrides)
+
+All tunables live in YAML; CLI flags are only operational selectors
+(`--tag`, `--domain`, `--eval-on`, `--resume`, `--work-dir`,
+`--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
+
+To run an experiment with different hyperparameters, write a YAML overlay
+shaped like the config tree and point `CONFIG_OVERLAY_PATH` at it:
+
+```yaml
+# overlay.yaml
+agent/agent_eval:
+  agent_eval:
+    agents: [baseline, type1]
+    per_segment: 2
+agent/inference:
+  inference:
+    mode: template
+```
+
+```bash
+CONFIG_OVERLAY_PATH=/path/to/overlay.yaml PYTHONPATH=. \
+    python scripts/evaluation/run_agent_eval.py --eval-on validation
+```
+
+The campaign runner (`package/evaluation/campaign/`) writes one overlay per
+experiment automatically. Overlay fragments are deep-merged over the base
+configs before Pydantic validation, and changing the overlay invalidates
+cached limits.

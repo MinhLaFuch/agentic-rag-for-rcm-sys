@@ -1,7 +1,7 @@
 import pytest
 
 from package.config.load_config import ConfigError, load_config
-from package.tools import _limits
+from package.tools import _limits as _limits
 from package.tools.base import check_top_k
 from package.tools._limits import MAX_CANDIDATES
 from package.tools.base import ToolInputError
@@ -9,9 +9,9 @@ from package.tools.base import ToolInputError
 
 @pytest.fixture
 def fresh_limits():
-    _limits.get_tool_limits.cache_clear()
+    _limits._cached_tool_limits.cache_clear()
     yield
-    _limits.get_tool_limits.cache_clear()
+    _limits._cached_tool_limits.cache_clear()
 
 
 def test_limits_come_from_tools_yaml():

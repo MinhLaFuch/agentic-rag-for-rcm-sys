@@ -1,0 +1,17 @@
+# Memory utility analysis config — so sánh paired planner vs planner_memory
+# (scripts/evaluation/memory_utility_analysis.py và package component benchmark CLI).
+
+memory_utility:
+  baseline_agent: planner          # agent phía baseline trong scored.jsonl
+  memory_agent: planner_memory     # agent phía memory trong scored.jsonl
+  k: 10                            # cutoff cho default_metrics (recall@k, ndcg@k)
+  resamples: 5000                  # số bootstrap resample cho khoảng tin cậy
+  confidence: 0.95                 # mức độ tin cậy (0.95 = 95%)
+  min_n: 20                        # số cặp tối thiểu để kết luận; dưới mức này verdict = insufficient
+  seed: 42                         # seed bootstrap (tái lập kết quả)
+  # Input experiments — đường dẫn TƯƠNG ĐỐI so với experiments_dir (experiments/).
+  # dirs: mỗi thư mục chứa CẢ HAI agent (một run mỗi dir). Để trống thì dùng cặp baseline/memory bên dưới.
+  dirs: []
+  baseline_dirs: []                # override: chỉ các dir của baseline agent
+  memory_dirs: []                  # override: chỉ các dir của memory agent
+  metrics: []                      # [] = default_metrics(k); điền tên metric để chọn tập con

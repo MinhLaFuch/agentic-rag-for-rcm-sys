@@ -101,7 +101,7 @@ All scripts should be run from the project root with `PYTHONPATH=.python`:
 PYTHONPATH=. python scripts/demo/run_demo.py --mock
 
 # Example: Run agent evaluation
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2
+PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
 
 # Example: Run data pipeline (all stages)
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all

@@ -150,7 +150,7 @@ PYTHONPATH=. python scripts/evaluation/run_baselines.py --eval-on validation
 
 ### Agent Evaluation
 ```bash
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --per-segment 2
+PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
 # Results appear in experiments/agent_eval/exp_NNN/
 ```
 

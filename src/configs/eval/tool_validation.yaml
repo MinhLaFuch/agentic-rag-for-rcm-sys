@@ -1,0 +1,8 @@
+# Tool validation config — scripts/tools/run_tools.py (kiểm chứng tool trên data thật).
+# neighbors lấy từ baselines.item_knn.k.
+
+tool_validation:
+  model: knn          # knn | popularity — popularity là fallback nhẹ khi knn tốn RAM
+  eval_users: 200     # số validation user lấy mẫu cho sanity check ranking
+  negatives: 99       # số item ngẫu nhiên làm negative mỗi user
+  seed: 0             # seed cho sampling

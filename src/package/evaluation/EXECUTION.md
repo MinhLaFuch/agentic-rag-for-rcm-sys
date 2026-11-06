@@ -8,30 +8,25 @@ This document explains how to execute evaluations, resume interrupted runs, comp
 
 #### Component Benchmarks
 ```bash
-# Run a specific component benchmark
+# Run a specific component benchmark (run count + evaluator config from
+# configs/eval/component_benchmarks.yaml; output from data_paths.outputs.component_benchmarks)
 python -m package.evaluation.component.run \
     --component planner \
-    --output experiments/agent_eval/component_benchmarks/planner
+    --dataset <path-to-dataset.jsonl>
 
 # Run all component benchmarks
-python -m package.evaluation.component.run_all \
-    --runs 3 \
-    --output experiments/agent_eval/component_benchmarks
+python -m package.evaluation.component._run_all
 ```
 
 #### End-to-End Evaluation
-```bash
-# Run end-to-end evaluation
-python -m package.evaluation.run \
-    --config path/to/config.yaml \
-    --output experiments/agent_eval/e2e
-```
+End-to-end agent evaluation runs via `scripts/evaluation/run_agent_eval.py`
+(operational selectors only; all tunables in `configs/agent/*.yaml` — see RUN_SCRIPTS.md).
 
 ### Multi-turn Evaluation
 ```bash
-python -m package.evaluation.multi_turn.run \
-    --dataset package/evaluation/multi_turn/conversations.jsonl \
-    --output experiments/agent_eval/multi_turn/results.json
+python -m package.evaluation.multi_turn._run \
+    --dataset package/evaluation/multi_turn/conversations.jsonl
+# results -> data_paths.outputs.multi_turn/conversation_results_<ts>.json
 ```
 
 ### Campaign Execution

@@ -45,8 +45,7 @@ def load_group_data(group_name: str, exp_names: list[str]) -> dict[str, Any]:
     - scored: list[list[dict]] - scored data của từng exp
     - exp_dirs: list[Path] - đường dẫn các exp directories
     """
-    data_paths = get_data_paths()
-    base_dir = data_paths.experiments_dir / "agent_eval"
+    base_dir = get_data_paths().output_dir("agent_eval")
     
     configs = []
     scored_list = []

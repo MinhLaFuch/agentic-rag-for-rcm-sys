@@ -14,15 +14,21 @@ positives regardless of stars; label-policy experiments require a new baseline.
 
 ## Metadata policy
 
-Candidate, ranking and agent evaluation accept:
+Candidate, ranking and agent evaluation accept the `metadata_policy` key in
+their YAML configs (`configs/eval/candidate_recall.yaml`,
+`configs/eval/ranking_eval.yaml`, `configs/agent/agent_eval.yaml`):
 
-* `--metadata-policy historical_static_catalog` (default): mask `price`,
+* `historical_static_catalog` (default): mask `price`,
   `average_rating`, and `rating_number`. Their observation time is unknown.
   A temporary SQLite view supplies NULLs; an authorizer also rejects direct
   reads of these fields through `main.items`. Sources and persistent corpus
   tables are unchanged. Reload the corpus to switch policy or cutoff.
-* `--metadata-policy snapshot`: retain these values for an explicitly non-causal
+* `snapshot`: retain these values for an explicitly non-causal
   snapshot comparison. Never merge these results with historical-policy runs.
+
+To change the policy for a single run without editing the base YAML, use a
+config overlay (`CONFIG_OVERLAY_PATH`) that sets `metadata_policy` under the
+relevant config section.
 
 Masked price/rating constraints cannot certify matches. SQL results may be empty;
 FTS ties and default SQL ordering fall back to deterministic item IDs. Memory and
@@ -57,9 +63,10 @@ New corpus files use content SHA256, ordered source domains, assignment-sensitiv
 mapping hash and artifact checksum. Moving/touching unchanged metadata is valid;
 changing bytes at the same size/mtime is not. Legacy v1 corpus loading retains
 its strict original checks and records weaker provenance. A mismatch is not
-silently skipped or converted to v2. Use `--no-prebuilt-corpus` for candidate and
-ranking evaluation, or `--no-prebuilt` for agent evaluation, to build from current
-sources in memory when an old corpus fails validation. This does not rewrite it.
+silently skipped or converted to v2. Set `use_prebuilt_corpus: false` in the
+relevant YAML config (`eval/candidate_recall`, `eval/ranking_eval`,
+`agent/agent_eval`, `agent/demo`) to build from current sources in memory when
+an old corpus fails validation. This does not rewrite it.
 
 ## Diagnostic and metric definitions
 
@@ -112,10 +119,17 @@ not reduce model fit cost. They create **new** experiment directories. Run only
 after choosing resource limits and fixing the sample; no test tuning.
 
 ```powershell
-& .\src\.venv\Scripts\python.exe src/scripts/evaluation/candidate_recall.py --tag multi_domain --eval-on validation --seed 42 --per-segment 100 --query-modes history --metadata-policy historical_static_catalog --no-prebuilt-corpus
-& .\src\.venv\Scripts\python.exe src/scripts/evaluation/ranking_eval.py --tag multi_domain --eval-on validation --seed 42 --per-segment 100 --popularity-weights 1e-6 --metadata-policy historical_static_catalog --no-prebuilt-corpus
-& .\src\.venv\Scripts\python.exe src/scripts/evaluation/run_agent_eval.py --tag multi_domain --eval-on validation --agents baseline,type1 --inference-mode template --request-scope realistic --metadata-policy historical_static_catalog --no-prebuilt --trajectory-file agent_protocol_v2_seed42.jsonl
+& .\src\.venv\Scripts\python.exe src/scripts/evaluation/candidate_recall.py --tag multi_domain --eval-on validation
+& .\src\.venv\Scripts\python.exe src/scripts/evaluation/ranking_eval.py --tag multi_domain --eval-on validation
+& .\src\.venv\Scripts\python.exe src/scripts/evaluation/run_agent_eval.py --tag multi_domain --eval-on validation
 ```
+
+All hyperparameters for these commands (seed, per-segment, query modes,
+metadata policy, corpus flags, agents, inference mode, trajectory file) are
+set in YAML — see `configs/eval/candidate_recall.yaml`,
+`configs/eval/ranking_eval.yaml` and `configs/agent/agent_eval.yaml`. For a
+one-off parameter set, use a `CONFIG_OVERLAY_PATH` overlay instead of CLI
+flags.
 
 Do not interpret correctness tests or diagnostic coverage as recommendation
 quality improvement. A new policy baseline must be measured before tuning.
@@ -152,8 +166,9 @@ experiment writer and included in resume identity.
 See [RANKING_PILOT_REVIEW.md](RANKING_PILOT_REVIEW.md) for the exp_005 artifact
 verification and next command. That pilot completed, but 385 metadata-derived
 queries were rejected by the existing ASCII-only tool contract. Candidate and
-ranking scripts support an explicit `--query-normalization ascii_fold`
-intervention; default `raw` preserves the previous baseline. Normalization is
+ranking scripts support the `query_normalization: ascii_fold` YAML setting
+(`eval/candidate_recall`, `eval/ranking_eval`); default `raw` preserves the
+previous baseline. Normalization is
 persisted in the protocol, and ranking records include raw/sent text and tool
 health. Rebaseline with identical users before weight tuning. Folding is not
 translation and does not establish historical validity of metadata.
