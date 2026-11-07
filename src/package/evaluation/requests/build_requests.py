@@ -31,7 +31,10 @@ def build_requests(
     price_slack: float,  # budget = held-out price * price_slack, rounded UP to a multiple of price_round_to
     price_round_to: float,
     rng: np.random.Generator,
+    request_scope: str = "all",
 ) -> list[AgentRequest]:
+    if request_scope not in ("realistic", "oracle", "all"):
+        raise ValueError("request_scope must be realistic, oracle or all")
     if language not in TEMPLATES:
         raise ValueError(f"language must be one of {sorted(TEMPLATES)}, got {language!r}")
     templates = TEMPLATES[language]
@@ -51,7 +54,7 @@ def build_requests(
             )
         )
 
-    for segment in KIND_SEGMENTS["similar"]:
+    for segment in (KIND_SEGMENTS["similar"] if request_scope != "oracle" else ()):
         for u in users_in(segment):
             if counts["similar", segment] >= per_segment:
                 break
@@ -62,14 +65,14 @@ def build_requests(
                 targets=sorted(target_by_user[u]),
                 text=templates["similar"].format(user_id=id2user[u], item_id=seed, k=k))
 
-    for segment in KIND_SEGMENTS["personalized"]:
+    for segment in (KIND_SEGMENTS["personalized"] if request_scope != "oracle" else ()):
         for u in users_in(segment):
             if counts["personalized", segment] >= per_segment:
                 break
             add("personalized", segment, user_id=id2user[u], user_idx=u, targets=sorted(target_by_user[u]),
                 text=templates["personalized"].format(user_id=id2user[u], k=k))
 
-    for segment in KIND_SEGMENTS["constrained"]:
+    for segment in (KIND_SEGMENTS["constrained"] if request_scope != "realistic" else ()):
         for u in users_in(segment):
             if counts["constrained", segment] >= per_segment:
                 break
@@ -88,7 +91,7 @@ def build_requests(
                 targets=sorted(item2id[i] for i in relevant),
                 text=templates["constrained"].format(user_id=id2user[u], k=k, category=category, price_max=f"{price_max:g}"))
 
-    for segment in KIND_SEGMENTS["cold_text"]:
+    for segment in (KIND_SEGMENTS["cold_text"] if request_scope != "realistic" else ()):
         for u in users_in(segment):
             if counts["cold_text", segment] >= per_segment:
                 break
@@ -102,7 +105,7 @@ def build_requests(
                 text=templates["cold_text"].format(user_id=id2user[u], k=k, category=category))
 
     phrasings = templates["ambiguous"]
-    for i in range(n_ambiguous):
+    for i in range(n_ambiguous if request_scope != "oracle" else 0):
         add("ambiguous", "none", text=phrasings[i % len(phrasings)])
 
     return requests

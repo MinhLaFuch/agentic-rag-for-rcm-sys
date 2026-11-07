@@ -93,6 +93,27 @@ def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
         _requests(corpus, language="xx")
 
 
+def test_realistic_scope_skips_oracle_metadata_queries(corpus, monkeypatch):
+    import importlib
+    module = importlib.import_module("package.evaluation.requests.build_requests")
+    def reject(*args, **kwargs):
+        pytest.fail("oracle metadata must not be queried for realistic scope")
+    monkeypatch.setattr(module, "_price_of", reject)
+    monkeypatch.setattr(module, "_deepest_category", reject)
+    requests = _requests(corpus, request_scope="realistic")
+    assert {r.kind for r in requests.values()} == {"similar", "personalized", "ambiguous"}
+
+
+def test_request_construction_scope_matches_post_filter(corpus):
+    all_requests = list(_requests(corpus).values())
+    for scope in ("realistic", "oracle"):
+        actual = list(_requests(corpus, request_scope=scope).values())
+        expected = filter_requests_by_scope(all_requests, scope)
+        assert {r.request_id for r in actual} == {r.request_id for r in expected}
+    with pytest.raises(ValueError, match="scope"):
+        _requests(corpus, request_scope="invalid")
+
+
 def test_extract_recommendations_prefers_ranking_then_retrieval_then_query():
     ranked = {"tool": "RecoModelTool", "ok": True, "data": {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}}
     cands = {"tool": "SemanticSearchTool", "ok": True, "data": {"candidates": [{"item_id": "x"}, {"item_id": "y"}]}}

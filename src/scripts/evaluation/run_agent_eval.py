@@ -344,7 +344,7 @@ def main() -> None:
         seg_of=seg_of, target_by_user=target_by_user, last_item_of=last_item_of, id2user=id2user, id2item=id2item,
         item2id=item2id, corpus=corpus, per_segment=per_segment, n_ambiguous=int(cfg["n_ambiguous"]),
         language=cfg["language"], k=k, price_slack=float(cfg["price_slack"]), price_round_to=float(cfg["price_round_to"]),
-        rng=np.random.default_rng(seed),
+        rng=np.random.default_rng(seed), request_scope=args.request_scope,
     )
     requests = filter_requests_by_scope(requests, args.request_scope)
     protocol_manifest["request_ids"] = [r.request_id for r in requests]
