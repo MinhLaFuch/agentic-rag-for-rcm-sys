@@ -58,6 +58,8 @@ def test_pipeline_byte_level_equivalence():
             _create_synthetic_review_data(tmp_root / "resource" / "raw", domain)
 
         paths = get_data_paths(config={"paths": {
+            "src_root": ".",
+            "config_dir": "configs",
             "raw_dir": "resource/raw",
             "cleaned_dir": "resource/cleaned",
             "filtered_dir": "resource/filtered",
@@ -139,6 +141,8 @@ def test_pipeline_stages_independent():
             _create_synthetic_review_data(tmp_root / "resource" / "raw", domain)
 
         paths = get_data_paths(config={"paths": {
+            "src_root": ".",
+            "config_dir": "configs",
             "raw_dir": "resource/raw",
             "cleaned_dir": "resource/cleaned",
             "filtered_dir": "resource/filtered",
@@ -188,6 +192,8 @@ def test_pipeline_fail_fast():
         (tmp_root / "resource" / "splits" / "test_tag").mkdir(parents=True)
 
         paths = get_data_paths(config={"paths": {
+            "src_root": ".",
+            "config_dir": "configs",
             "raw_dir": "resource/raw",
             "cleaned_dir": "resource/cleaned",
             "filtered_dir": "resource/filtered",
@@ -223,6 +229,8 @@ def test_pipeline_custom_path_args():
         _create_synthetic_review_data(tmp_root / "custom_raw", domain)
 
         paths = get_data_paths(config={"paths": {
+            "src_root": ".",
+            "config_dir": "configs",
             "raw_dir": "resource/raw",
             "cleaned_dir": "resource/cleaned",
             "filtered_dir": "resource/filtered",
@@ -271,6 +279,8 @@ def test_pipeline_k_core_blocked():
                 }) + "\n")
 
         paths = get_data_paths(config={"paths": {
+            "src_root": ".",
+            "config_dir": "configs",
             "raw_dir": "resource/raw",
             "cleaned_dir": "resource/cleaned",
             "filtered_dir": "resource/filtered",

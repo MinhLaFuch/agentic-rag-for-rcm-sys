@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 
-from package.evaluation.statistics import (
+from package.evaluation.statistics._bootstrap import (
     bootstrap_confidence_interval,
     paired_bootstrap_difference,
     aggregate_metrics,
