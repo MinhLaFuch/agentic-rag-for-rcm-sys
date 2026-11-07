@@ -34,8 +34,22 @@ class GroundingBenchmark(ComponentEvaluator):
                 }
                 for e in evidence
             ]
-            # Simulate an answer for testing
-            answer = f"Based on your request '{user_request}', here are some options."
+            # Generate a realistic answer for testing faithfulness evaluation
+            # Use item titles and fields from evidence to produce actual claims
+            if evidence:
+                item = evidence[0]
+                answer_parts = []
+                if item.get("title"):
+                    answer_parts.append(f"{item['title']} is a good choice.")
+                if item.get("main_category"):
+                    answer_parts.append(f"It belongs to the {item['main_category']} category.")
+                if item.get("price") is not None:
+                    answer_parts.append(f"The price is ${item['price']}.")
+                if item.get("average_rating") is not None:
+                    answer_parts.append(f"It has a rating of {item['average_rating']}.")
+                answer = " ".join(answer_parts)
+            else:
+                answer = "No products match your request."
             
             try:
                 result = evaluate_product_reply_with_jev(request=user_request, items=items, answer=answer)

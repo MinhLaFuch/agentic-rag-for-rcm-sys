@@ -50,12 +50,13 @@ def _deep_merge(base: dict, overlay: dict) -> dict:
 
 def _overlay_path() -> Path | None:
     """Resolved overlay file path, or None when CONFIG_OVERLAY_PATH is unset."""
+    from .get_data_paths import get_data_paths
     path = os.environ.get(OVERLAY_ENV_VAR)
     if not path:
         return None
     overlay_path = Path(path)
     if not overlay_path.is_absolute():
-        overlay_path = PROJECT_ROOT / overlay_path
+        overlay_path = get_data_paths().src_root / overlay_path
     return overlay_path
 
 

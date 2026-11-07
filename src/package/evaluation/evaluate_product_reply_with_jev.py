@@ -15,9 +15,8 @@ import re
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from package.api import JevProvider
+from package.config import load_config
 
 
 def evaluate_product_reply_with_jev(
@@ -45,13 +44,10 @@ def evaluate_product_reply_with_jev(
         - communication: scores from Jev Score questions
         - summary: brief summary of main strength and flaw
         - usage: Jev API token usage
+        - evaluation_state: "success" or "provider_error"
     """
-    # Load config
-    if config_path is None:
-        config_path = Path(__file__).parent.parent.parent / "configs" / "eval" / "judge.yaml"
-
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = yaml.safe_load(f)
+    # Load config using project loader (env var expansion, overlay support)
+    config = load_config("eval/judge")
 
     # Initialize Jev provider
     jev = JevProvider(
@@ -101,6 +97,19 @@ def evaluate_product_reply_with_jev(
             "communication": communication,
             "summary": summary,
             "usage": total_usage,
+            "evaluation_state": "success",
+        }
+    except Exception as e:
+        # Provider error: return explicit state instead of mid-range fallback scores
+        return {
+            "claims": [],
+            "unsupported_count": 0,
+            "total_claims": 0,
+            "lists_all_items_in_order": False,
+            "communication": None,
+            "summary": f"Evaluation failed: {str(e)}",
+            "usage": {"input_tokens": 0, "output_tokens": 0},
+            "evaluation_state": "provider_error",
         }
     finally:
         jev.close()
@@ -349,14 +358,9 @@ def _evaluate_communication_with_jev(
 
         return communication, usage
     except Exception as e:
-        # Fallback to simple scoring if Jev fails
+        # Propagate error to top-level handler instead of returning mid-range fallback scores
         print(f"Jev communication evaluation failed: {e}")
-        return {
-            "relevance": 3,
-            "clarity": 3,
-            "language": 3,
-            "honesty_about_gaps": 3,
-        }, {"input_tokens": 0, "output_tokens": 0}
+        raise
 
 
 def _check_items_in_order(answer: str, items: list[dict[str, Any]]) -> bool:

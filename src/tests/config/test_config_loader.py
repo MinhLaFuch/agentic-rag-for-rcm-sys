@@ -70,11 +70,17 @@ def test_every_data_paths_key_is_a_datapaths_field_and_vice_versa():
     assert yaml_keys == fields
 
 
-def test_every_data_paths_dir_is_distinct_and_under_project():
+def test_every_data_paths_dir_is_distinct_and_project():
     paths = get_data_paths()
     dirs = [getattr(paths, f.name) for f in dataclasses.fields(paths) if f.name != "tag"]
     assert len(set(dirs)) == len(dirs)
-    assert all(CONFIG_DIR.parent in d.parents for d in dirs)
+    # All directories should be under the project root (or be the project root itself)
+    # src_root is the project root ("."); other dirs should have it as ancestor
+    for d in dirs:
+        if d == paths.src_root:
+            # src_root IS the project root
+            continue
+        assert paths.src_root in d.parents or paths.src_root == d
 
 
 def test_config_cache_invalidation_on_file_change(tmp_path, monkeypatch):

@@ -1,8 +1,0 @@
-# Request Kind Heatmap (Placeholder)
-
-This would render a heatmap showing performance across request kinds.
-
-Example structure:
-- Y-axis: Request kinds (similar, personalized, constrained, etc.)
-- X-axis: Metrics (task_success, grounded_answer, etc.)
-- Color intensity: Metric value

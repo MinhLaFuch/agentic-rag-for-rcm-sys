@@ -33,6 +33,8 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
 
     return DataPaths(
         tag=tag,
+        src_root=root("src_root"),
+        config_dir=root("config_dir"),
         raw_dir=root("raw_dir"),
         cleaned_dir=root("cleaned_dir"),
         filtered_dir=root("filtered_dir") / tag,

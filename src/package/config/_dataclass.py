@@ -13,6 +13,8 @@ class DataPaths:
     """Every project directory, resolved from configs/path/data_paths.yaml (+ run tag). The one source of truth."""
 
     tag: str
+    src_root: Path  # Source root directory (repository root)
+    config_dir: Path  # Configuration directory
     raw_dir: Path
     cleaned_dir: Path
     filtered_dir: Path

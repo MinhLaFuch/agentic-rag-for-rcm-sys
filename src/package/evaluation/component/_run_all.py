@@ -42,23 +42,35 @@ def run_all_benchmarks(
                 "--component", component,
                 "--dataset", dataset,
             ]
-            
+
             # Evaluator configs come from configs/eval/component_benchmarks.yaml (configs.<component>)
 
             # Run from src directory
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=str(Path(__file__).parent.parent.parent.parent))
+            from package.config import get_data_paths
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=str(get_data_paths().src_root))
             print(result.stdout)
+
+            if result.returncode != 0:
+                print(f"Error running {component}: exit code {result.returncode}")
+                print(f"stderr: {result.stderr}")
+                results[component] = None
+                continue
 
             # Extract result file path from output
             for line in result.stdout.split('\n'):
                 if "Results saved to:" in line:
                     result_file = line.split("Results saved to:")[-1].strip()
-                    results[component] = str(Path(__file__).parent.parent.parent.parent / result_file)
+                    results[component] = str(get_data_paths().src_root / result_file)
                     break
 
-        except subprocess.CalledProcessError as e:
-            print(f"Error running {component}: {e}")
-            print(f"stderr: {e.stderr}")
+            if component not in results:
+                print(f"Warning: {component} completed but no 'Results saved to:' line found in stdout")
+                results[component] = None
+
+        except Exception as e:
+            print(f"Unexpected error running {component}: {e}")
+            import traceback
+            traceback.print_exc()
             results[component] = None
 
     return results
