@@ -580,3 +580,44 @@ def test_campaign_config_overlay_is_honored(tmp_path, monkeypatch):
     campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
 
     assert campaign.output_dir == "agent_eval/campaigns/overlaid_test"
+
+
+def test_run_experiment_builds_domain_cmd_and_runs_subprocess(tmp_path, monkeypatch):
+    """_run_experiment (non-dry-run) must reach subprocess.run: cmd carries --domain
+    (no --tag) and traj-path resolution works — regression for the UnboundLocalError
+    caused by a stray function-local 'from package.config import get_data_paths'."""
+    import subprocess as sp
+
+    exp_dir = tmp_path / "exp_out"
+    exp_dir.mkdir()
+    (exp_dir / "metrics.json").write_text(json.dumps({"summary": {}}), encoding="utf-8")
+
+    campaign = CampaignConfig(
+        campaign_id="c",
+        dataset={"split": "validation", "filters": {"domains": ["Video_Games", "Electronics", "Toys_and_Games"]}},
+        experiments=[ExperimentConfig(name="exp1")],
+        output_dir=str(tmp_path / "campaign_output"),
+    )
+    runner = CampaignRunner(campaign, git_sha="test_sha")
+
+    captured = {}
+
+    class _Result:
+        returncode = 0
+        stdout = f"noise\nsaved -> {exp_dir}\n"
+        stderr = ""
+
+    def fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        return _Result()
+
+    monkeypatch.setattr(sp, "run", fake_run)
+
+    run = runner._run_experiment(campaign.experiments[0], 1, tmp_path / "out")
+
+    assert run.success is True
+    assert run.error is None
+    cmd = captured["cmd"]
+    assert "--tag" not in cmd
+    assert cmd.count("--domain") == 3
+    assert "scripts/evaluation/run_agent_eval.py" in " ".join(cmd)
