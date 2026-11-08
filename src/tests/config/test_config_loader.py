@@ -12,11 +12,10 @@ from package.config.load_config import ConfigError, load_config
 
 def test_data_config_has_domains_and_resource_paths():
     domains_config = load_config("path/domains")
-    run_tag_config = load_config("path/run_tag")
     data_paths_config = load_config("path/data_paths")
     cleaning_config = load_config("data/cleaning")
     assert [d["name"] for d in domains_config["domains"]] == ["Video_Games", "Toys_and_Games", "Electronics"]
-    assert run_tag_config["tag"] == "multi_domain"
+    assert domains_config["merged_name"] == "multi_domain"
     assert data_paths_config["paths"]["raw_dir"] == "resource/raw"
     assert cleaning_config["cleaning"]["chunk_size"] > 0
 

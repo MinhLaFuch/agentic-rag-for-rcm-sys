@@ -73,7 +73,7 @@ src/
 │   ├── data/                             # cleaning.yaml, filtering.yaml, split.yaml
 │   ├── eval/                             # component_benchmarks.yaml, judge.yaml, baselines.yaml, ...
 │   ├── evaluation/                       # campaign.yaml
-│   └── path/                             # data_paths.yaml (centralized paths), domains.yaml, run_tag.yaml
+│   └── path/                             # data_paths.yaml (centralized paths), domains.yaml (incl. merged_name)
 ├── package/                              # Main application package
 │   ├── agents/                           # PlanExecutor (LLM planner), Type1Agent (fixed plan), toolkit, session
 │   ├── api/                              # LLMProvider (abstract), JevProvider, build_llm_provider
@@ -522,7 +522,7 @@ outputs:  # Relative to experiments_dir
 | `configs/eval/component_benchmarks.yaml` | Component benchmark runs, per-component configs |
 | `configs/eval/judge.yaml` | Jev provider config (api_key, model, timeout, evaluation criteria) |
 | `configs/evaluation/campaign.yaml` | Campaign orchestration (parameter_grid, comparison_pairs, repetition_count) |
-| `configs/path/run_tag.yaml` | Run tag for artifact directories (default: `multi_domain`) |
+| `configs/path/domains.yaml` | Domain list + `merged_name` (artifact tag for the all-domain merge, `multi_domain`) |
 
 ---
 
@@ -545,7 +545,7 @@ outputs:  # Relative to experiments_dir
 
 - **All scripts require `PYTHONPATH=.`** (pytest sets via `pyproject.toml`; direct runs need explicit)
 - **No CLI override flags** — all tunables in YAML (enforced by refactor)
-- **Tag-based runs**: `run_tag.yaml` controls `filtered_dir`, `mapped_dir`, `splits_dir`, `corpus_dir`, `item_knn_dir`
+- **Dataset tag derived from `--domain`**: `resolve_dataset_tag()` maps the domain selection to the artifact tag — one domain -> its name, all/none -> `merged_name` (`multi_domain`); other subsets are rejected. The tag controls `filtered_dir`, `mapped_dir`, `splits_dir`, `corpus_dir`, `item_knn_dir`, `log_dir`
 - **Resume support**: `run_agent_eval.py --resume` continues from existing trajectory file
 - **Mock mode**: `--mock` flag on `run_agent_eval.py`, `run_demo.py`, `run_campaign.py`, component CLI
 
@@ -566,12 +566,12 @@ PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 1
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 1,2
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 2,3,4
 
-# Run for specific domains (default: all domains in domains.yaml)
+# Run for specific domains — exactly one domain or all (default); other subsets are rejected
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --domain Video_Games
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --domain Video_Games --domain Toys_and_Games
+# (all domains -> merged bundle 'multi_domain'; pass no --domain)
 
-# Override run tag (default: tag from configs/path/run_tag.yaml)
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --tag my_run_v1
+# Dataset tag derives from --domain: all domains -> 'multi_domain', one domain -> its name;
+# other subsets are rejected (no --tag flag anymore)
 
 # Force overwrite existing outputs
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --force
@@ -613,7 +613,7 @@ PYTHONPATH=. python scripts/eda_diagnostic/run_eda.py --path /path/to/review_Vid
 **`scripts/eda_diagnostic/diagnose_splits.py`** — Check split quality (leakage, temporal order, user coverage).
 
 ```bash
-PYTHONPATH=. python scripts/eda_diagnostic/diagnose_splits.py --tag v1 --domain Video_Games
+PYTHONPATH=. python scripts/eda_diagnostic/diagnose_splits.py --domain Video_Games
 ```
 
 ### 11.3 Demo Scripts
@@ -625,19 +625,18 @@ PYTHONPATH=. python scripts/eda_diagnostic/diagnose_splits.py --tag v1 --domain 
 PYTHONPATH=. python scripts/demo/run_demo.py --mock
 
 # Live mode with real data
-PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games
+PYTHONPATH=. python scripts/demo/run_demo.py --domain Video_Games
 
 # Live mode options (inference mode, corpus flags, eval split come from
 # configs/agent/demo.yaml and configs/agent/inference.yaml — not CLI)
-PYTHONPATH=. python scripts/demo/run_demo.py     --tag v1     --domain Video_Games     --host 0.0.0.0     --port 7860
+PYTHONPATH=. python scripts/demo/run_demo.py     --domain Video_Games     --host 0.0.0.0     --port 7860
 ```
 
 **Arguments**:
 | Arg | Default | Description |
 |-----|---------|-------------|
 | `--mock` | false | Mock mode (no data/LLM needed) |
-| `--tag` | from run_tag.yaml | Run tag for data |
-| `--domain` | required in live | Domain name |
+| `--domain` | all -> `multi_domain` | Domain(s) selecting the data bundle (repeatable; one domain or all only) |
 | `--host` | 127.0.0.1 | Gradio host |
 | `--port` | 7860 | Gradio port |
 
@@ -715,7 +714,7 @@ TYPESAFE_API_KEY=your_key PYTHONPATH=. python scripts/evaluation/jev_smoke_test.
 
 ### 11.7 Config Reference
 
-All tunable parameters live in YAML. CLI flags are only operational selectors (`--tag`, `--domain`, `--eval-on`, `--resume`, `--work-dir`, `--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
+All tunable parameters live in YAML. CLI flags are only operational selectors (`--domain`, `--eval-on`, `--resume`, `--work-dir`, `--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
 
 Key config files and their purposes:
 
@@ -735,8 +734,7 @@ Key config files and their purposes:
 | `eval/component_benchmarks` | `configs/eval/component_benchmarks.yaml` | Component benchmark runs |
 | `eval/recommendation_metrics` | `configs/eval/recommendation_metrics.yaml` | K values, metrics |
 | `path/data_paths` | `configs/path/data_paths.yaml` | All filesystem paths |
-| `path/run_tag` | `configs/path/run_tag.yaml` | Current run tag |
-| `path/domains` | `configs/path/domains.yaml` | Domain list |
+| `path/domains` | `configs/path/domains.yaml` | Domain list + `merged_name` (derived artifact tag for all-domain runs) |
 
 ### 11.8 Output Locations
 
@@ -774,7 +772,7 @@ DOMAIN=Video_Games PYTHONPATH=. python scripts/...
 
 ### 11.10 Config Overlay (per-experiment overrides)
 
-All tunables live in YAML; CLI flags are only operational selectors (`--tag`, `--domain`, `--eval-on`, `--resume`, `--work-dir`, `--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
+All tunables live in YAML; CLI flags are only operational selectors (`--domain`, `--eval-on`, `--resume`, `--work-dir`, `--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
 
 To run an experiment with different hyperparameters, write a YAML overlay shaped like the config tree and point `CONFIG_OVERLAY_PATH` at it:
 
@@ -908,7 +906,7 @@ PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation --
 
 ### 15.4 Data Pipeline (requires raw data)
 ```bash
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games --tag my_run --force
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games --force
 ```
 
 ### 15.5 Configuration Override (for experiments)
@@ -964,7 +962,7 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 | **Retrieval Funnel** | S0(target in pool)→S1(candidate gen)→S2(retrieval)→S3(filtering)→S4(ranking)→S5(final inclusion). |
 | **Oracle Request Kinds** | `constrained`, `cold_text` — use held-out target categories/prices. Upper bound, not real queries. |
 | **CONFIG_OVERLAY_PATH** | Env var for per-experiment config overrides (used by campaign runner). |
-| **Run Tag** | Identifier for artifact directories (from `run_tag.yaml`, default `multi_domain`). |
+| **Dataset Tag** | Artifact-directory identifier derived from `--domain` via `resolve_dataset_tag()` (one domain -> its name, all -> `merged_name` = `multi_domain`); stored as `tag` in provenance/manifests. |
 | **Provenance** | Artifact tracking: file_hash, mapping_hash, fit_provenance, git_sha, config hash. |
 | **ScriptedLLM** | Test double in `package/evaluation/doubles/`: returns pre-scripted responses for testing. |
 | **ScriptedJudge** | Test double in `package/evaluation/doubles/`: returns pre-scripted Jev-like judgments. |

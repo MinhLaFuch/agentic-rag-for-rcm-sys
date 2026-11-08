@@ -38,7 +38,6 @@ def _lookup(key: str):
         # Map old config names to new folder structure
         folder_map = {
             "domains": "path",
-            "run_tag": "path",
             "data_paths": "path",
             "cleaning": "data",
             "filtering": "data",

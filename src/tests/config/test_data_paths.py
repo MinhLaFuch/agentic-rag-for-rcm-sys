@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from package.config import get_data_paths, get_domains, load_config
+from package.config import get_data_paths, get_domains
 from package.config._constants import PROJECT_ROOT
 
 
@@ -49,7 +49,7 @@ def test_config_cli_prints_values_for_shell_scripts():
         return out.returncode, out.stdout.split()
 
     assert run("domains.domains") == (0, get_domains())
-    assert run("run_tag.tag") == (0, [load_config("path/run_tag")["tag"]])
+    assert run("domains.merged_name") == (0, ["multi_domain"])
     assert run("data_paths.paths.raw_dir") == (0, ["resource/raw"])
     assert run("data_paths.does_not_exist")[0] != 0
 
