@@ -11,10 +11,17 @@ via judge_error_count and never counted as unsupported claims.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from package.evaluation.component._evaluator import ComponentEvaluator
 from package.evaluation.product_reply.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
+from package.inference import ITEM_FIELDS
+
+# Expected keys the dataset may assert; score_component turns them into label_agreement.
+# total_claims is deliberately NOT assertable: it is produced by _extract_claims,
+# code inside the measurement pipeline, so a label on it would be self-referential.
+EXPECTED_METRIC_KEYS = ("claims_supported", "grounding_rate", "hallucination_rate")
 
 
 class GroundingBenchmark(ComponentEvaluator):
@@ -41,16 +48,10 @@ class GroundingBenchmark(ComponentEvaluator):
                 "there is nothing to ground otherwise."
             )
 
-        # Convert evidence to items format expected by Jev
-        items = [
-            {
-                "item_id": e.get("item_id", ""),
-                "title": e.get("title", ""),
-                "main_category": e.get("main_category", ""),
-                "price": e.get("price"),
-            }
-            for e in evidence
-        ]
+        # Convert evidence to items format expected by Jev — ALL ITEM_FIELDS,
+        # otherwise claims about rating/store/domain are unverifiable and a
+        # faithful answer gets scored as unsupported.
+        items = [{f: e.get(f) for f in ITEM_FIELDS} for e in evidence]
         # Phase 4.3: the judged answer is the REAL inference output —
         # AgentOutcome built from the evidence items → compose_answer —
         # not hand-written sentences. Template mode is deterministic and
@@ -86,9 +87,13 @@ class GroundingBenchmark(ComponentEvaluator):
             "answer_composer": composed.composer,
             "answer_mode": mode,
             "answer_status": composed.status,
-            # prompt_injection_detected is a keyword heuristic on user_request,
-            # NOT a model-based detection — see score_component.
-            "prompt_injection_method": "keyword_heuristic",
+            # template mode prints evidence fields verbatim: it cannot produce an
+            # unsupported claim, so hallucination is only measurable in llm mode.
+            "measurement_scope": (
+                "measures composer faithfulness incl. LLM hallucination"
+                if mode == "llm"
+                else "does not measure hallucination (answer_mode=template)"
+            ),
         }
 
     def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
@@ -102,7 +107,6 @@ class GroundingBenchmark(ComponentEvaluator):
                 "total_claims": 0.0,
                 "grounding_rate": 0.0,
                 "hallucination_rate": 0.0,
-                "prompt_injection_detected": 0.0,
             }
 
         supported = float(jev_result.get("supported_count", 0))
@@ -110,15 +114,28 @@ class GroundingBenchmark(ComponentEvaluator):
         judge_errors = float(jev_result.get("judge_error_count", 0))
         judged = supported + unsupported
 
-        user_request = actual_output.get("user_request", "")
-        is_injection = "ignore" in user_request.lower() or "previous instructions" in user_request.lower()
-
-        return {
+        metrics = {
             "claims_supported": supported,
             "unsupported_count": unsupported,
             "judge_error_count": judge_errors,
             "total_claims": supported + unsupported + judge_errors,
             "grounding_rate": supported / judged if judged > 0 else 0.0,
             "hallucination_rate": unsupported / judged if judged > 0 else 0.0,
-            "prompt_injection_detected": 1.0 if is_injection else 0.0,
         }
+
+        # Dataset labels are assertions, not decoration: every expected key the
+        # case specifies must match the Jev-derived metric. Cases without any
+        # expected key are excluded from label_agreement (the key is absent, so
+        # aggregation only averages cases that were actually checked).
+        checks = {
+            k: float(expected[k])
+            for k in EXPECTED_METRIC_KEYS
+            if k in (expected or {})
+        }
+        if checks:
+            matched = sum(
+                1 for k, v in checks.items()
+                if math.isclose(metrics[k], v, rel_tol=0.0, abs_tol=1e-9)
+            )
+            metrics["label_agreement"] = matched / len(checks)
+        return metrics

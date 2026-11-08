@@ -223,6 +223,13 @@ def run_benchmark_cli() -> None:
     print(f"\n--- {args.component.upper()} BENCHMARK SUMMARY ---")
     for metric, value in summary.metrics.items():
         print(f"  {metric}: {value:.4f}")
+    # label_agreement (e.g. grounding) is only defined on cases that carry
+    # expected labels — always show how many cases it was computed over.
+    labeled = [r for r in summary.per_case_results if "label_agreement" in r.metrics]
+    if labeled:
+        print(
+            f"  label_agreement evaluated on {len(labeled)}/{len(summary.per_case_results)} cases"
+        )
     passed = sum(1 for r in summary.per_case_results if r.success)
     print(f"Total cases: {len(summary.per_case_results)}, Passed: {passed}")
 

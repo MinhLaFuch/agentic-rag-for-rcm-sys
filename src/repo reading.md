@@ -1085,6 +1085,26 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
 
 ---
 
+## 19b. Benchmark audit notes (Phase 6, branch `audit/benchmark-quality`)
+
+- **Grounding / Jev evidence fields**: `evaluate_product_reply_with_jev` now receives
+  all `ITEM_FIELDS` (previously only `item_id`, `title`, `main_category`, `price`).
+  Claims about `store`, `average_rating`, `rating_number`, `domain` are now
+  judge-verifiable. The earlier real-Jev run (`grounding_rate_mean=0.906`,
+  artifact `grounding_benchmark_20261108_165543.json`) is **not comparable** to
+  post-change runs — the judge saw strictly less evidence before.
+- **Template mode is a smoke test only**: `compose_answer(mode="template")`
+  prints evidence fields verbatim and cannot hallucinate; benchmark output
+  reports `measurement_scope = "does not measure hallucination
+  (answer_mode=template)"`. Hallucination requires `mode="llm"`.
+- `label_agreement` compares Jev-derived metrics against hand-authored
+  `expected` labels; `total_claims` is reported but intentionally not
+  assertable (produced by `_extract_claims` inside the measured pipeline).
+- Judge-level negative control:
+  `src/scripts/evaluation/jev_negative_control.py` (manual, needs `TYPESAFE_API_KEY`).
+
+---
+
 ## 19. Document Provenance
 
 | Field | Value |
