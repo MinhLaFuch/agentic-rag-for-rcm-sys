@@ -87,7 +87,7 @@ def test_partial_judge_error_counted_separately(monkeypatch):
         bench = GroundingBenchmark(config=_config())
         out = bench.run_component(_case_input())
 
-    assert out["evidence_kind"] == "synthetic_answer_judge_only"
+    assert out["evidence_kind"] == "real_inference_output"  # Phase 4.3: real compose_answer output
     jev_result = out["jev_result"]
     assert jev_result["evaluation_state"] == "partial_error"
     assert jev_result["judge_error_count"] == 1

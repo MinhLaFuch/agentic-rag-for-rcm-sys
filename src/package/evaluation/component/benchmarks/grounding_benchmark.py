@@ -1,9 +1,10 @@
 """Grounding benchmark: test claim-level correctness with Jev LLM-as-judge.
 
-IMPORTANT — evidence_kind: the "answer" evaluated here is SYNTHETIC, generated
-from the evidence fields themselves (see run_component). This benchmark measures
-whether Jev judges evidence-derived claims as supported; it does NOT run the real
-inference/grounding component. Real-output evaluation is planned for a later phase.
+Evidence comes from the case dataset (synthetic fixture data); the judged
+answer is the REAL inference output — AgentOutcome → compose_answer (template
+mode by default, "llm" via config when provider credentials exist). The
+pipeline upstream of the answer (planner/tools) is NOT exercised here — that
+boundary is covered by the integration benchmark.
 Judge failures (provider_error) fail the case; partial judge errors are reported
 via judge_error_count and never counted as unsupported claims.
 """
@@ -50,19 +51,26 @@ class GroundingBenchmark(ComponentEvaluator):
             }
             for e in evidence
         ]
-        # Generate a realistic answer for testing faithfulness evaluation
-        # Use item titles and fields from evidence to produce actual claims
-        item = evidence[0]
-        answer_parts = []
-        if item.get("title"):
-            answer_parts.append(f"{item['title']} is a good choice.")
-        if item.get("main_category"):
-            answer_parts.append(f"It belongs to the {item['main_category']} category.")
-        if item.get("price") is not None:
-            answer_parts.append(f"The price is ${item['price']}.")
-        if item.get("average_rating") is not None:
-            answer_parts.append(f"It has a rating of {item['average_rating']}.")
-        answer = " ".join(answer_parts)
+        # Phase 4.3: the judged answer is the REAL inference output —
+        # AgentOutcome built from the evidence items → compose_answer —
+        # not hand-written sentences. Template mode is deterministic and
+        # needs no LLM; config mode="llm" uses the real provider when
+        # credentials exist (compose_answer falls back to template otherwise).
+        from package.inference import AgentOutcome, compose_answer
+
+        mode = self.config.get("mode", "template")
+        llm = None
+        if mode == "llm":
+            from package.api import build_llm_provider
+            from package.config import load_config
+
+            llm = build_llm_provider(load_config("agent/llm"))
+
+        outcome = AgentOutcome(request_text=user_request, items=[dict(e) for e in evidence])
+        composed = compose_answer(outcome, llm, mode=mode)
+        answer = composed.text
+        if not answer.strip():
+            raise RuntimeError(f"compose_answer produced empty text (status={composed.status})")
 
         result = evaluate_product_reply_with_jev(request=user_request, items=items, answer=answer)
 
@@ -74,7 +82,10 @@ class GroundingBenchmark(ComponentEvaluator):
             "evidence": evidence,
             "jev_result": result,
             "has_evidence": True,
-            "evidence_kind": "synthetic_answer_judge_only",
+            "evidence_kind": "real_inference_output",
+            "answer_composer": composed.composer,
+            "answer_mode": mode,
+            "answer_status": composed.status,
             # prompt_injection_detected is a keyword heuristic on user_request,
             # NOT a model-based detection — see score_component.
             "prompt_injection_method": "keyword_heuristic",
