@@ -37,6 +37,9 @@ def _get_evaluator(component: str, config: dict[str, Any]):
     elif component == "planner":
         from .benchmarks.planner_benchmark import PlannerBenchmark
         return PlannerBenchmark(config)
+    elif component == "executor":
+        from .benchmarks.executor_benchmark import ExecutorBenchmark
+        return ExecutorBenchmark(config)
     elif component == "grounding":
         from .benchmarks.grounding_benchmark import GroundingBenchmark
         return GroundingBenchmark(config)

@@ -174,7 +174,7 @@ def _is_bad_reference(error: Any) -> bool:
     """Check if an error indicates a bad reference (step not run/failed/path not found)."""
     if not isinstance(error, str):
         return False
-    return "step" in error and ("has not run yet" in error or "failed" in error or "not found" in error)
+    return "step" in error.lower() and ("has not run yet" in error or "failed" in error or "not found" in error)
 
 
 def check_time_budget_error(error: Any) -> bool:

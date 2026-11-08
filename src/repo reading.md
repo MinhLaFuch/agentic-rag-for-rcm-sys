@@ -20,7 +20,7 @@ commit: 0ce2ea8
 | **HEAD commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
 | **Working tree** | Clean except untracked `experiments/` artifacts |
 | **GitNexus index** | Re-indexed after Phase 2 (5,454 nodes / 13,038 edges) |
-| **Test baseline** | 1359 passed, 0 skipped, 2 xfailed (Week 46 remediation Phases 1–2.1) |
+| **Test baseline** | 1388 passed, 0 skipped, 2 xfailed (Week 46 remediation through Phase 4.7) |
 
 ### Week 46 Audit Remediation Status (Phases 1–2.1 complete)
 
@@ -30,7 +30,7 @@ commit: 0ce2ea8
 | Grounding benchmark | Fixed — no rule-based fallback; missing `TYPESAFE_API_KEY`/Jev failure = case FAIL; answers labeled `evidence_kind: "synthetic_answer_judge_only"` |
 | Campaign runner | Fixed — auto `comparison_pairs` actually used; `campaign_id` persisted per experiment; non-metric keys (`n`) excluded |
 | `_run_all.py` aggregation | Fixed — `success_rate` read from nested metrics; missing result = failed; exit code non-zero on failure; fail counts shown beside means |
-| Executor benchmark | Removed (commit `89116e8`) — was ScriptedLLM + fault-injection; real-case rebuild pending D1 decision |
+| Executor benchmark | Rebuilt (Phase 4.7, D1 option 1) — real tools over fixture corpus, `_execute` scope only; infra-fault cases moved to `tests/agents/test_executor_error_taxonomy.py` |
 | Component quality gates | Added — `thresholds` per component in `component_benchmarks.yaml`; `pass` separate from `success`; unconfigured = `not_evaluated` (only memory has thresholds) |
 | Skipped tests | All 8 restored and passing (SQL hardening ×4, memory leakage ×2, stage4 ×2) |
 
@@ -425,7 +425,7 @@ Final Response + Trajectory (saved to JSONL)
 |-----------|------------------|-------------|--------|
 | **Memory** | `memory_correctness_dataset.jsonl` (30 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0) |
 | **Planner** | `planner_dataset.jsonl` (32 cases) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
-| **Executor** | — | — | ❌ `not_implemented` — `executor_benchmark.py` removed in `89116e8` (was ScriptedLLM + fault injection); rebuild pending D1 |
+| **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
 | **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required; answers are `synthetic_answer_judge_only` until Phase 4.3; no thresholds yet |
 | **Integration** | `integration_dataset.jsonl` (35 cases) via `integration_benchmark.py` | contract_valid, no_mismatch | ⚠️ Currently validates dict inputs, not real planner→executor→inference boundary; no thresholds yet |
 
@@ -807,10 +807,10 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 | **Scoring tests** | `pytest tests/scoring/ -v` | BaselineScorer, CandidateScorer protocol |
 | **Tool tests** | `pytest tests/tools/ -v` | All 6 tools, corpus, recommenders, scoring |
 | **Evaluation tests** | `pytest tests/evaluation/ -v` | Component benchmarks, trajectory scoring, campaign |
-| **Full suite** | `pytest tests/ -q` | 1359 passed, 0 skipped, 2 xfailed |
+| **Full suite** | `pytest tests/ -q` | 1388 passed, 0 skipped, 2 xfailed |
 
 **Mock vs. Real Provider**:
-- Component benchmarks: mixed — memory runs the **real** MemoryTool against an independent oracle; planner uses real LLM + fixture tools; grounding uses real Jev (`TYPESAFE_API_KEY`); executor not implemented; integration validates dict contracts only
+- Component benchmarks: mixed — memory runs the **real** MemoryTool against an independent oracle; planner uses real LLM + fixture tools; grounding uses real Jev (`TYPESAFE_API_KEY`); executor runs real tools over the fixture corpus (`_execute` scope only); integration validates dict contracts only
 - Agent evaluation: Can run with real LLM (requires `LLM_BASE_URL`, `LLM_API_KEY`)
 - Jev smoke test: `scripts/evaluation/jev_smoke_test.py` for manual real-provider testing
 
@@ -1097,7 +1097,7 @@ Note: `campaign.yaml` is loaded directly by `campaign/_schema.py`, **not** throu
 | **Commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
 | **Working tree** | Clean except untracked `experiments/` artifacts |
 | **Key evidence sources** | Week 46 audit (`docs/audit_week46_report.md`), phase reports (`docs/phase1_report.md`, `docs/phase2_report.md`), source code inspection, GitNexus index |
-| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), executor benchmark (pending D1), multi-turn runner (Phase 4.4) |
+| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), multi-turn runner (Phase 4.4) |
 
 ---
 

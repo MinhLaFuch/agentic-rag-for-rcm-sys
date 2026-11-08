@@ -267,7 +267,7 @@ class PlanExecutor:
                     except ValueError as exc:
                         # Distinguish reference errors from other ValueErrors
                         error_msg = str(exc)
-                        if "step" in error_msg and ("has not run yet" in error_msg or "failed" in error_msg or "not found" in error_msg):
+                        if "step" in error_msg.lower() and ("has not run yet" in error_msg or "failed" in error_msg or "not found" in error_msg):
                             entry["error"] = error_msg
                             entry["error_kind"] = "bad_reference"
                         else:
