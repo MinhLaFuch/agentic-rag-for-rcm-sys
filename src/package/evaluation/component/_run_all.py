@@ -112,6 +112,7 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
         if info.get("not_implemented"):
             aggregated["components"][component] = {
                 "status": "not_implemented",
+                "quality_gate": "not_evaluated",
                 "error": info.get("error") or "Evaluator not implemented",
             }
             aggregated["summary"]["failed_components"] += 1
@@ -120,6 +121,7 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
         if result_file is None:
             aggregated["components"][component] = {
                 "status": "failed",
+                "quality_gate": "not_evaluated",
                 "error": info.get("error") or "Benchmark did not run",
             }
             aggregated["summary"]["failed_components"] += 1
@@ -166,8 +168,21 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
             # a missing key means unknown — report None, never default to a PASS.
             success_rate = result.get("metrics", {}).get("success_rate", result.get("success_rate"))
 
+            # Quality gate: thresholds_result comes from the evaluator config
+            # (configs/eval/component_benchmarks.yaml). None → not_evaluated.
+            thresholds_result = result.get("thresholds_result")
+            passed = thresholds_result.get("passed") if isinstance(thresholds_result, dict) else None
+            if passed is True:
+                quality_gate = "pass"
+            elif passed is False:
+                quality_gate = "fail"
+            else:
+                quality_gate = "not_evaluated"
+
             aggregated["components"][component] = {
                 "status": "success",
+                "quality_gate": quality_gate,
+                "thresholds_result": thresholds_result,
                 "metrics": metrics_summary,
                 "latency": {
                     "mean": mean_latency,
@@ -180,7 +195,11 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
             }
             aggregated["summary"]["successful_components"] += 1
         except Exception as e:
-            aggregated["components"][component] = {"status": "error", "error": str(e)}
+            aggregated["components"][component] = {
+                "status": "error",
+                "quality_gate": "not_evaluated",
+                "error": str(e),
+            }
             aggregated["summary"]["failed_components"] += 1
 
     return aggregated
@@ -212,6 +231,12 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
             failed = data.get("failed_cases", 0)
             cases_note = f" ({failed} failed)" if failed else ""
             lines.append(f"- Cases run: {data['cases_run']}{cases_note}")
+            gate = data.get("quality_gate", "not_evaluated")
+            gate_icon = {"pass": "✅ PASS", "fail": "❌ FAIL", "not_evaluated": "⚪ NOT_EVALUATED"}[gate]
+            lines.append(f"- Quality gate (thresholds): {gate_icon}")
+            checks = (data.get("thresholds_result") or {}).get("checks") or {}
+            for check, verdict in checks.items():
+                lines.append(f"  - {check}: {verdict}")
             lines.append("")
             lines.append("**Execution Reliability**:")
             sr = data.get("success_rate")

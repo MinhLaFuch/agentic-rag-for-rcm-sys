@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-
 import pytest
 
 from package.evaluation.component._loader import load_cases
@@ -92,26 +90,13 @@ def test_oracle_does_not_depend_on_tool_or_corpus():
     assert not any(isinstance(n, ast.Attribute) and n.attr == "select" for n in ast.walk(tree))
 
 
-def _normalized_case(case: dict) -> dict:
-    """ loved_items/hated_items order depends on set iteration order (hash seed)
-    for tied ratings, so compare those lists as sets; everything else is exact."""
-    case = json.loads(json.dumps(case))
-    expected = case.get("expected", {})
-    for key in ("loved_items", "hated_items"):
-        if isinstance(expected.get(key), list):
-            expected[key] = sorted(expected[key])
-    return case
-
-
 def test_committed_dataset_matches_oracle():
-    committed = [
-        json.loads(line)
-        for line in builder.DATASET_PATH.read_text(encoding="utf-8").splitlines()
-    ]
-    built = builder.build_cases()
-    assert [_normalized_case(c) for c in committed] == [
-        _normalized_case(c) for c in built
-    ], "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
+    # loved_items/hated_items order IS part of the contract ("highest/lowest-rated
+    # items" — ranking order), and the oracle/tool sort is now deterministic
+    # (rating, then item_id tie-break), so strict equality must hold.
+    committed = builder.DATASET_PATH.read_text(encoding="utf-8")
+    assert committed == builder.render(), \
+        "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
 
 
 def _evaluator(world, **kw):

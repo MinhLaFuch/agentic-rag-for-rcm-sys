@@ -75,6 +75,9 @@ class GroundingBenchmark(ComponentEvaluator):
             "jev_result": result,
             "has_evidence": True,
             "evidence_kind": "synthetic_answer_judge_only",
+            # prompt_injection_detected is a keyword heuristic on user_request,
+            # NOT a model-based detection — see score_component.
+            "prompt_injection_method": "keyword_heuristic",
         }
 
     def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
