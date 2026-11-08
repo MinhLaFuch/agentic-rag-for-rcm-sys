@@ -37,9 +37,6 @@ def _get_evaluator(component: str, config: dict[str, Any]):
     elif component == "planner":
         from .benchmarks.planner_benchmark import PlannerBenchmark
         return PlannerBenchmark(config)
-    elif component == "executor":
-        from .benchmarks.executor_benchmark import ExecutorBenchmark
-        return ExecutorBenchmark(config)
     elif component == "grounding":
         from .benchmarks.grounding_benchmark import GroundingBenchmark
         return GroundingBenchmark(config)
@@ -62,7 +59,7 @@ def run_benchmark_cli() -> None:
         "--component",
         type=str,
         required=True,
-        help="Name of the component to benchmark (e.g., memory, planner, executor, reflection, inference, grounding)",
+        help="Name of the component to benchmark (e.g., memory, planner, grounding, integration)",
     )
     parser.add_argument(
         "--dataset",
