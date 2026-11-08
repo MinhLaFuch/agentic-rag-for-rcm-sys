@@ -1,9 +1,9 @@
 ---
 created: 2026-09-27-15:07
-updated: 2026-11-08-17:30
-viewed: 2026-11-08-17:30
-branch: refactor-phase-0
-commit: 7c755a0
+updated: 2026-11-09
+viewed: 2026-11-09
+branch: tools-building
+commit: 0ce2ea8
 ---
 # Project Repository Reading — agentic-rag-for-rcm-sys
 
@@ -11,18 +11,30 @@ commit: 7c755a0
 
 > **Architectural principle:** The LLM only decides *what to do*; tools provide controlled operations; ItemCorpus provides item knowledge; recommenders provide recommendation signals; the agent layer combines results; the inference layer writes the final response using only items the agent selected.
 
-## 1. Repository State (as of 2026-11-08)
+## 1. Repository State (as of 2026-11-09)
 
 | Item | Value |
 |------|-------|
 | **Repository root** | `C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys` |
-| **Current branch** | `refactor-phase-0` |
-| **HEAD commit** | `7c755a0` ("Phase 10.1: record execution log - all 7 steps complete, Baseline B maintained") |
-| **Working tree** | Modified (1 modified file, 6 untracked test log files) |
-| **GitNexus index** | Updated with refactored structure |
-| **Test baseline** | 368 passed, 4 skipped, 6 warnings (refactored structure)
+| **Current branch** | `tools-building` |
+| **HEAD commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
+| **Working tree** | Clean except untracked `experiments/` artifacts |
+| **GitNexus index** | Re-indexed after Phase 2 (5,454 nodes / 13,038 edges) |
+| **Test baseline** | 1359 passed, 0 skipped, 2 xfailed (Week 46 remediation Phases 1–2.1) |
 
-### Key Changes from Previous Version (tools-building branch)
+### Week 46 Audit Remediation Status (Phases 1–2.1 complete)
+
+| Area | Status |
+|------|--------|
+| Jev evaluator error handling | Fixed — `judge_error`/`provider_error` states, no longer counted as unsupported claims |
+| Grounding benchmark | Fixed — no rule-based fallback; missing `TYPESAFE_API_KEY`/Jev failure = case FAIL; answers labeled `evidence_kind: "synthetic_answer_judge_only"` |
+| Campaign runner | Fixed — auto `comparison_pairs` actually used; `campaign_id` persisted per experiment; non-metric keys (`n`) excluded |
+| `_run_all.py` aggregation | Fixed — `success_rate` read from nested metrics; missing result = failed; exit code non-zero on failure; fail counts shown beside means |
+| Executor benchmark | Removed (commit `89116e8`) — was ScriptedLLM + fault-injection; real-case rebuild pending D1 decision |
+| Component quality gates | Added — `thresholds` per component in `component_benchmarks.yaml`; `pass` separate from `success`; unconfigured = `not_evaluated` (only memory has thresholds) |
+| Skipped tests | All 8 restored and passing (SQL hardening ×4, memory leakage ×2, stage4 ×2) |
+
+### Historical: Refactor-phase-0 Changes (already merged into tools-building)
 
 | Change Area | Before (tools-building) | After (refactor-phase-0) |
 |-------------|------------------------|-------------------------|
@@ -343,7 +355,7 @@ Used for `similar`/`personalized` request kinds in agent evaluation.
 
 ### 6.6 Multi-turn
 
-**Status**: `package/evaluation/multi_turn/_run.py` exists with 11 conversations, but `mock: true` — **not real-LLM evaluation**. Framework exists but real provider verification pending. MockAgentRunner still exists (Phase E skipped).
+**Status**: `package/evaluation/multi_turn/` has schemas, `conversations.jsonl` (11 scenarios M1–M7 + edge cases), evaluator, runner, and reporting — but **no real runner is wired**: `reference_correctness`, `context_retention`, and several conversation metrics still return placeholder/default values (e.g. 1.0). Per D3 decision, multi-turn is treated as **not implemented** for reporting purposes until Phase 4.4 builds a real runner.
 
 ---
 
@@ -407,22 +419,24 @@ Final Response + Trajectory (saved to JSONL)
 
 ### 8.2 Component Benchmarks (package/evaluation/component/)
 
-**5 isolated component evaluators** with JSONL datasets:
+**Component benchmarks** (`package/evaluation/component/benchmarks/`) — real tools where possible; quality gate (`pass`) is separate from execution `success`:
 
-| Component | Dataset | Key Metrics | Status |
-|-----------|---------|-------------|--------|
-| **Memory** | `dummy_memory_dataset.jsonl` (3 cases) | known_correct, n_interactions_correct, top_categories_exact, loved_items_exact (0.5), all_fields_match (0.933), future_leakage (0) | ✅ Works (mock tools) |
-| **Planner** | `planner_benchmark.py` (fixtures) | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ✅ Implemented (requires LLM) |
-| **Executor** | `executor_benchmark.py` (fixtures) | all_steps_ok, reflection_rescued, reflection_triggered | ✅ Implemented (mock LLM + controlled tools) |
-| **Grounding** | `grounding_benchmark.py` (fixtures) | claims_supported, grounding_rate, hallucination_rate, prompt_injection_detected | ✅ Implemented (ScriptedJudge) |
-| **Integration** | `integration_benchmark.py` (fixtures) | contract_valid, no_mismatch | ✅ Implemented |
+| Component | Dataset / Runner | Key Metrics | Status |
+|-----------|------------------|-------------|--------|
+| **Memory** | `memory_correctness_dataset.jsonl` (30 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0) |
+| **Planner** | `planner_dataset.jsonl` (32 cases) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
+| **Executor** | — | — | ❌ `not_implemented` — `executor_benchmark.py` removed in `89116e8` (was ScriptedLLM + fault injection); rebuild pending D1 |
+| **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required; answers are `synthetic_answer_judge_only` until Phase 4.3; no thresholds yet |
+| **Integration** | `integration_dataset.jsonl` (35 cases) via `integration_benchmark.py` | contract_valid, no_mismatch | ⚠️ Currently validates dict inputs, not real planner→executor→inference boundary; no thresholds yet |
 
-**Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`
+**Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`; exits non-zero if any component fails; shows per-component `pass`/`fail`/`not_evaluated` quality-gate status.
 
 ### 8.3 Campaign Runner (package/evaluation/campaign/campaign_runner.py)
 
 - Orchestrates multiple `run_agent_eval.py` experiments via subprocess
-- Parameter grid expansion, comparison pairs, repetition
+- Parameter grid expansion, comparison pairs (auto-generated pairs are actually consumed), repetition
+- `campaign_id` is written into each experiment's `config.yaml` for provenance; non-metric keys (`n`, counts) excluded from comparison
+- `statistical_settings` in campaign.yaml is currently **dead config** — bootstrap/CI not wired into campaign comparisons (Phase 4.1)
 - **Supports `--mock` flag** for testing without real data/LLM
 
 ### 8.4 Opik Integration Assessment
@@ -793,10 +807,10 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 | **Scoring tests** | `pytest tests/scoring/ -v` | BaselineScorer, CandidateScorer protocol |
 | **Tool tests** | `pytest tests/tools/ -v` | All 6 tools, corpus, recommenders, scoring |
 | **Evaluation tests** | `pytest tests/evaluation/ -v` | Component benchmarks, trajectory scoring, campaign |
-| **Full suite** | `pytest tests/ -q` | 368 passed, 4 skipped, 6 warnings |
+| **Full suite** | `pytest tests/ -q` | 1359 passed, 0 skipped, 2 xfailed |
 
 **Mock vs. Real Provider**:
-- Component benchmarks: **all mocked** (ScriptedLLM, ScriptedJudge, controlled tools)
+- Component benchmarks: mixed — memory runs the **real** MemoryTool against an independent oracle; planner uses real LLM + fixture tools; grounding uses real Jev (`TYPESAFE_API_KEY`); executor not implemented; integration validates dict contracts only
 - Agent evaluation: Can run with real LLM (requires `LLM_BASE_URL`, `LLM_API_KEY`)
 - Jev smoke test: `scripts/evaluation/jev_smoke_test.py` for manual real-provider testing
 
@@ -822,9 +836,9 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 |-------|----------|--------|
 | **Planner LLM produces invalid tool calls** | Low `tool_selection_accuracy` in component benchmark | Requires better prompt / few-shot / model |
 | **Reflection doesn't rescue failures** | `reflection_rescued=0.0` in component benchmark | Quality threshold reflection (configurable) untested |
-| **Grounding rate zero** | `grounding_rate=0.0` in component benchmark | Dummy answer limitation; real answer generation untested |
+| **Grounding rate zero (old)** | Fixed in Phase 1 — missing Jev/key now FAILs instead of fake 1.0 | Real-answer grounding still pending Phase 4.3 |
 | **Integration latency anomaly** | Low mean latency in component benchmark | Likely contract-only measurement |
-| **Multi-turn not real-LLM evaluated** | `mock: true` in multi-turn framework | Phase E (MockAgentRunner) skipped |
+| **Multi-turn not real-LLM evaluated** | Schemas/dataset exist; runner is placeholder, metrics default to 1.0 | Phase 4.4 (D3) |
 
 ### 13.3 Evaluation Framework Gaps
 
@@ -876,8 +890,8 @@ cd src && PYTHONPATH=. python -m pytest tests/evaluation/component/ -v
 
 ### 15.2 Running Component Benchmarks
 ```bash
-# Single component (from src/)
-python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/dummy_memory_dataset.jsonl
+# Single component (memory example; run count + config from configs/eval/component_benchmarks.yaml)
+python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl
 
 # All components + unified report
 python -m package.evaluation.component._run_all
@@ -956,17 +970,134 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 
 ---
 
-## 18. Document Provenance
+## 18. Evaluation Framework Reference (consolidated)
+
+> This section merges the still-valid content of the former per-topic docs
+> (`package/evaluation/{ARCHITECTURE,CAMPAIGN,EXECUTION,METRICS,MULTI_TURN,REQUEST_KINDS,FINAL_SUMMARY}.md`,
+> `campaign/README.md`, `component/README.md`, `benchmarks/planner_README.md`,
+> `benchmarks/README.md`, `scripts/README.md`, `tests/README.md`, `tests/tools/README.md`),
+> which were removed in Phase 3 repository hygiene. Corrections applied:
+> `run_all.py` → `_run_all.py`; multi-turn marked not-implemented; executor status updated.
+
+### 18.1 Package Layout (`package/evaluation/`)
+
+```
+package/evaluation/
+├── _schema.py / _loader.py / _evaluator.py / _regression.py   # core trajectory eval
+├── trajectory/        # score_trajectory.py orchestrates L1–L5 per trajectory
+├── layer1_outcome/ … layer5_deployment/                       # the five layers (§8.1)
+├── recommender/       # recommender (ranking) evaluation: core, metrics, experiment, config
+├── component/         # component benchmarks (§8.2)
+│   ├── _schema.py / _evaluator.py / _loader.py / _regression.py / run.py / _run_all.py / run_benchmark_cli.py
+│   └── benchmarks/    # planner/grounding/integration/memory datasets + evaluators, fixtures/
+├── campaign/          # CampaignConfig, CampaignRunner, CheckpointManager, example_campaign.yaml
+├── multi_turn/        # schemas + conversations.jsonl (11 scenarios) — NOT IMPLEMENTED runner (§6.6)
+├── statistics/        # bootstrap.py: CIs, paired bootstrap, Wilcoxon, Mann-Whitney
+├── reporting/         # generator.py (Markdown/CSV/failure reports); visualizations.py = placeholders
+├── ablation/          # ablation experiment loading/statistics
+├── product_reply/     # evaluate_product_reply_with_jev.py (Jev faithfulness + communication)
+├── doubles/           # test doubles: Fake*Tool, ScriptedLLM, ScriptedJudge (tests/benchmarks only)
+└── provenance/        # build_run_provenance.py
+```
+
+### 18.2 Seven Request Kinds
+
+`similar`, `personalized`, `constrained`, `cold_text`, `ambiguous`, `exclusion`, `unanswerable`.
+Each has kind-specific success criteria — do not force identical scoring:
+- **similar**: leverage seed items via similarity search (ItemCF/semantic)
+- **personalized**: use MemoryTool profile; respect loved/hated items and price range
+- **constrained**: every filter correctly applied; no violating items
+- **cold_text**: semantic/lexical match to text; no hallucinated items
+- **ambiguous**: ask clarification rather than guess; process clarified request after
+- **exclusion**: excluded items/categories absent; persist across turns
+- **unanswerable**: recognize impossibility/out-of-domain; explain, don't fabricate
+
+### 18.3 Metrics Summary (L1–L5)
+
+- **L1 Recommendation quality**: precision@k, recall@k, hit_rate@k, ndcg@k, mrr@k, map@k, seen_item_rate, seed_in_result, distinct_domains, category_coverage; retrieval funnel (candidate_generation → retrieved → filtered → ranked → target_in_pool/reachable/stage_lost)
+- **L2 Task success**: task_success (kind-specific v2), constraint_satisfaction, price_unknown_rate, asked_clarification, grounded-answer condition, love_alignment, hate_violation_rate, exclusion_compliance
+- **L3 Retrieval & grounding**: target availability, retrieved-by-stage S0–S5, query-hit tokens, rank_in_pool, answer_grounded
+- **L4 Planning & execution**: plan_validity, planning_attempts, truncation, step_count, step_success_rate, reflection_count, first_attempt_ok, tool_selection, argument_validity, ranker_usage
+- **L5 Efficiency & cost**: prompt/completion tokens, llm/tool/wall latency, cost per request & per successful request, provider_error_rate
+
+Component-level: execution reliability (ran without error) is tracked separately from functional correctness metrics. Quality gates: `thresholds` per component in `configs/eval/component_benchmarks.yaml` → `pass`/`fail`/`missing` per metric; overall `pass: true|false|null` (`null` = `not_evaluated`).
+
+Metric formulas (from former METRICS.md):
+
+- **L1**: precision@k = |rec ∩ rel| / |rec|; recall@k = |rec ∩ rel| / |rel|; hit_rate@k = 1 if any relevant in top-k; ndcg@k = DCG/IDCG with DCG = Σ(2^rel − 1)/log2(i+1); mrr@k = 1/rank(first relevant); map@k = mean AP@k; seen_item_rate = |rec ∩ history| / |rec|; seed_in_result = binary; distinct_domains = count
+- **L2**: task_success = binary all-constraints; constraint_satisfaction = |satisfied| / |required|; price_unknown_rate = |unknown price| / |total|; love_alignment = |rec ∩ loved| / |rec|; hate_violation_rate = |rec ∩ hated| / |rec|; exclusion_compliance = binary
+- **L3**: target_in_pool / retrieved_by_stage_Si = binary per stage; query_hit_any_title_token = binary; rank_in_pool = position
+- **L4**: plan_validity / truncation / first_attempt_ok = binary; planning_attempts / step_count / reflection_count = counts; step_success_rate = |ok steps| / |steps|; tool_selection = |correct| / |total|; argument_validity = |valid| / |total|
+- **L5**: prompt/completion tokens, llm/tool/wall latency = sums; cost_per_request = token_cost / requests; cost_per_successful_request = token_cost / successes; provider_error_rate = errors / calls
+- **Component**: execution_reliability = |successful executions| / |total executions|
+- **Multi-turn** (schema only, runner not implemented): turn_success_rate = |ok turns| / |turns|; conversation_success = all turns ok; item_match_rate = |expected ∩ actual| / |expected|; context_retention = shown_items grows monotonically; reference_accuracy = mean reference_correctness
+
+Multi-turn metrics (schema exists, runner not implemented): turn_success, item_match_rate, exclusion_compliance, reference_correctness; conversation-level turn_success_rate, conversation_success, avg_item_match_rate, context_retention, reference_accuracy. Conversation succeeds only if all turns succeed.
+
+### 18.4 Component Benchmark Framework
+
+- Datasets: JSON/JSONL `BenchmarkCase` (`case_id`, `input`, `expected`, `tags`, `metadata` with `difficulty`/`tier`)
+- `ComponentEvaluator` base: `run_component()` + `score_component()`; `success` = execution reliability, `metrics` = correctness; `thresholds_result` added Phase 2.1
+- Run count + per-component config in `configs/eval/component_benchmarks.yaml`; outputs under `data_paths.outputs.component_benchmarks`
+- CLI: `python -m package.evaluation.component.run --component <name> --dataset <path> [--tags …] [--metadata k=v …] [--git-sha …]`; regression: `… run regress --baseline … --candidate …`
+- Unified: `python -m package.evaluation.component._run_all` → `unified_report_*.json/.md`, non-zero exit on any failure
+- Memory correctness is verified against an **independent oracle** (`memory_oracle.py`), not the implementation under test; committed dataset must match oracle output (sync test)
+- Planner benchmark uses real LLM + fixture corpus (`fixtures/create_test_*`); fails fast without LLM credentials; real LLM output is non-deterministic
+
+### 18.5 Campaign Framework
+
+Two config styles (both supported by `CampaignConfig`):
+- **`parameter_grid`**: Cartesian product auto-generates experiments; `agents`/`inference_mode`/`reflect_rounds` → `agent_config`, `per_segment` → `evaluation_config`; empty `comparison_pairs` auto-fills as all-vs-first (baseline)
+- **`experiments`**: explicit list with `agent_config`, `evaluation_config`, `repetition_count`, `random_seed`, `tags`
+
+Runtime: `scripts/evaluation/run_campaign.py --campaign-config <yaml> [--dry-run] [--git-sha …]`. Each experiment writes `config_overlay.yaml` (applied via `CONFIG_OVERLAY_PATH` to `run_agent_eval.py`); overlay path/sha256 recorded in provenance. Unknown keys in `agent_config`/`evaluation_config` are **rejected**.
+
+Result: `campaign_result.json` with `runs[]` (metrics, duration, success), `comparisons{}` (deltas: a, b, delta, relative_delta), `summary{}` (success rate, per-experiment stats), timestamp + git_sha. Checkpoint/resume via `campaign_checkpoint.json`. Comparisons currently compute plain deltas only — `statistical_settings` (confidence_level, bootstrap_samples, paired_comparison) is defined but **not yet consumed** (Phase 4.1).
+
+Note: `campaign.yaml` is loaded directly by `campaign/_schema.py`, **not** through `load_config` — no `extra="forbid"`, no overlay/env expansion (see Phase 3.7 config audit).
+
+### 18.6 Execution, Resume, Compare, Export
+
+- Component benchmarks: re-run with same config; results in timestamped JSON; regression via `compare_benchmarks`
+- Campaigns: `CheckpointManager.save_checkpoint/load_checkpoint`; completed experiments skipped on resume
+- Reports (`package/evaluation/reporting/`): `generate_markdown_report`, `generate_csv_export`, `generate_failure_report`, `generate_comparison_report`, `generate_all_charts` — **charts are text placeholders only** (no matplotlib/plotly)
+- Statistics (`package/evaluation/statistics/`): bootstrap CI (mean/CI via percentile), `paired_bootstrap_difference` (mean diff, CI, p-value), `significance_test` (Wilcoxon signed-rank paired / Mann-Whitney U independent, alpha=0.05), aggregation (mean/std/min/max/P50/P95/P99)
+- Provenance per run: git SHA, source fingerprint, env versions, hardware, timestamp, seed, dataset version
+
+### 18.7 Scripts & Tests Layout (condensed)
+
+- `scripts/data_pipeline/run_pipeline.py` — stages 1–4 (clean → merge/filter → map/split → corpus+ItemKNN)
+- `scripts/eda_diagnostic/` — `run_eda.py`, `diagnose_splits.py`
+- `scripts/demo/` — `run_demo.py` (Gradio; `--mock`), `demo_full_agent.py`
+- `scripts/evaluation/` — `run_agent_eval.py`, `run_baselines.py`, `tune_baselines.py`, `candidate_recall.py`, `benchmark_categories_any.py`, `run_campaign.py`, `opik_poc.py`, `jev_smoke_test.py`, `evaluate_product_reply.py`
+- `scripts/tools/` — `run_tools.py`, `check_llm_provider.py`
+- `scripts/llm_agent/smoke_real_llm.py`, `scripts/experiments/compare_experiments.py`
+- `benchmarks/` — `benchmark_categories_any.py`, `run_baselines.py`, `tune_baselines.py`
+- Tests: unit (mocked deps), integration (`@pytest.mark.integration`), real smoke tests are scripts not pytest; `tests/tools/` uses the "tiny world" fixture from its `conftest.py`; `tests/tools_helpers.py` provides `corpus`/`cf_setup` fixtures for hardening/regression tests
+
+### 18.8 Known Framework Limitations (carried forward)
+
+- Charts/visualizations are placeholders; `generate_example_report.py` uses synthetic data and is not wired into any pipeline
+- Multi-turn runner not implemented (metrics default to 1.0) — Phase 4.4
+- Campaign `statistical_settings` dead config — Phase 4.1
+- Integration benchmark validates dict contracts, not the real planner→executor→inference boundary — Phase 4.2
+- Grounding benchmark uses synthetic answers judged by real Jev — Phase 4.3
+- Bootstrap with 1000 samples may be slow on large datasets
+- Non-parametric tests assume non-normal data; no automatic normality check
+
+---
+
+## 19. Document Provenance
 
 | Field | Value |
 |-------|-------|
-| **Document** | `src/Project repository reading 29.10.md` (updated in place) |
-| **Update date** | 2026-11-08 |
-| **Branch** | `refactor-phase-0` |
-| **Commit** | `7c755a0` ("Phase 10.1: record execution log - all 7 steps complete, Baseline B maintained") |
-| **Working tree** | Modified (1 modified file, 6 untracked test log files) |
-| **Key evidence sources** | Phase status report, refactor plans, mock/real list, component README, source code inspection |
-| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), campaign artifacts (empty) |
+| **Document** | `src/repo reading.md` (renamed from `Project repository reading 29.10.md` per D2; consolidated evaluation docs in §18) |
+| **Update date** | 2026-11-09 |
+| **Branch** | `tools-building` |
+| **Commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
+| **Working tree** | Clean except untracked `experiments/` artifacts |
+| **Key evidence sources** | Week 46 audit (`docs/audit_week46_report.md`), phase reports (`docs/phase1_report.md`, `docs/phase2_report.md`), source code inspection, GitNexus index |
+| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), executor benchmark (pending D1), multi-turn runner (Phase 4.4) |
 
 ---
 

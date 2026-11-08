@@ -1,4 +1,9 @@
-"""Create traceback tool to attribute trajectory failures to specific components."""
+"""Create traceback tool to attribute trajectory failures to specific components.
+
+PLACEHOLDER: attribution uses a keyword heuristic on error_type strings only
+("planner"/"executor"/"memory" substrings → confidence 0.5). It does not use
+per-request component scores and must not be treated as real failure attribution.
+"""
 
 from __future__ import annotations
 
@@ -31,6 +36,8 @@ def create_traceback_tool(
     traceback = {
         "total_failures": len(e2e_failures),
         "attributions": [],
+        "method": "keyword_heuristic_placeholder",
+        "status": "placeholder_not_real_attribution",
     }
 
     # Ensure all components have an entry in attributions summary

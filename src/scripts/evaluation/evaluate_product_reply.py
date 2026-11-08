@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-from package.evaluation.evaluate_product_reply import evaluate_product_reply
+from package.evaluation.product_reply import evaluate_product_reply
 
 
 def load_jsonl(file_path: Path) -> list[dict]:

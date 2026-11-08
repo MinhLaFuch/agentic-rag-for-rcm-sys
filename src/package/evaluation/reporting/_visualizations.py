@@ -1,7 +1,9 @@
 """Visualization generation for evaluation results.
 
-Generates charts for layer comparison, request-kind performance,
-retrieval funnel, latency distribution, and multi-turn performance.
+PLACEHOLDER IMPLEMENTATIONS — none of these functions render real charts.
+Each generator writes a Markdown stub describing what a chart would show;
+no plotting library (matplotlib/plotly) is integrated. Do not interpret the
+output files as data visualizations.
 """
 
 from __future__ import annotations
@@ -23,7 +25,7 @@ def generate_layer_comparison_chart(
     """
     # For this implementation, generate a placeholder
     # In a real implementation, this would use matplotlib or plotly
-    placeholder = """# Layer Comparison Chart (Placeholder)
+    placeholder = """# Layer Comparison Chart (PLACEHOLDER — chart not implemented)
 
 This would render a bar chart comparing metrics across evaluation layers.
 
@@ -47,7 +49,7 @@ def generate_request_kind_heatmap(
         results: Evaluation results with request kind data
         output_path: Path to save the chart
     """
-    placeholder = """# Request Kind Heatmap (Placeholder)
+    placeholder = """# Request Kind Heatmap (PLACEHOLDER — chart not implemented)
 
 This would render a heatmap showing performance across request kinds.
 
@@ -71,7 +73,7 @@ def generate_retrieval_funnel_chart(
         results: Evaluation results with retrieval funnel data
         output_path: Path to save the chart
     """
-    placeholder = """# Retrieval Funnel Chart (Placeholder)
+    placeholder = """# Retrieval Funnel Chart (PLACEHOLDER — chart not implemented)
 
 This would render a funnel chart showing candidate reduction through stages.
 
@@ -94,7 +96,7 @@ def generate_latency_distribution_chart(
         results: Evaluation results with latency data
         output_path: Path to save the chart
     """
-    placeholder = """# Latency Distribution Chart (Placeholder)
+    placeholder = """# Latency Distribution Chart (PLACEHOLDER — chart not implemented)
 
 This would render a histogram or box plot of latency values.
 
@@ -118,7 +120,7 @@ def generate_multi_turn_performance_chart(
         results: Evaluation results with multi-turn data
         output_path: Path to save the chart
     """
-    placeholder = """# Multi-turn Performance Chart (Placeholder)
+    placeholder = """# Multi-turn Performance Chart (PLACEHOLDER — chart not implemented)
 
 This would render a line chart showing performance by turn position.
 
