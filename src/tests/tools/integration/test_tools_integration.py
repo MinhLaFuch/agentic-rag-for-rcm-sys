@@ -17,8 +17,9 @@ import pytest
 pytestmark = pytest.mark.integration
 
 from package.tools import (
-    BaselineScorer, SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool,
+    BaselineScorer, SimilarTool, LookupTool, RankTool, SearchTool, FilterTool,
 )
+from package.corpus import ItemCorpus
 from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.config import merge_model_params
 from package.recommenders import (

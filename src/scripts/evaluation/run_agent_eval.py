@@ -352,7 +352,7 @@ def main() -> None:
     protocol_manifest["request_content_sha256"] = hashlib.sha256(
         json.dumps([r.to_dict() for r in requests], sort_keys=True, default=str).encode()).hexdigest()
     # Resume identity includes implementation, dataset, inputs and temporal policy.
-    from package.tools.evaluation.save_experiment import _source_fingerprint
+    from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint
     resume_identity = {
         "protocol": protocol_manifest, "fit_data_hash": knn_fit_data_hash,
         "source_fingerprint": _source_fingerprint(), "seed": seed, "neighbors": knn_k,

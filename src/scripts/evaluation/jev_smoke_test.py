@@ -12,7 +12,7 @@ import os
 import sys
 
 from package.api import JevProvider
-from package.evaluation.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
+from package.evaluation.product_reply.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
 
 
 def main() -> int:

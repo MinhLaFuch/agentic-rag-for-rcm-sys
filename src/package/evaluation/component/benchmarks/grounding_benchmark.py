@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from package.evaluation.component._evaluator import ComponentEvaluator
-from package.evaluation.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
+from package.evaluation.product_reply.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
 
 
 class GroundingBenchmark(ComponentEvaluator):

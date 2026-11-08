@@ -4,14 +4,14 @@ import pytest
 
 gradio = pytest.importorskip("gradio")
 
-from package.demo import MockBackend, DemoRequest, DemoProfile
+from package.demo import OfflineDemoBackend, DemoRequest, DemoProfile
 
 
 def test_build_ui_with_mock_backend():
     """Dựng UI với MockBackend không được crash."""
     from scripts.demo.run_demo import build_ui
 
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     profiles = backend.get_profiles()
     demo = build_ui(backend, mock_mode=True, profiles=profiles, default_inference_mode="llm")
 
@@ -21,7 +21,7 @@ def test_build_ui_with_mock_backend():
 
 def test_submit_handler_with_mock_backend():
     """Test backend trực tiếp (UI handler được test qua Gradio riêng)."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
 
     request = DemoRequest(
         user_id="user123",
@@ -50,7 +50,7 @@ def test_build_ui_with_profiles():
     """Dựng UI với profiles không được crash."""
     from scripts.demo.run_demo import build_ui
 
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     profiles = backend.get_profiles()
     demo = build_ui(backend, mock_mode=True, profiles=profiles, default_inference_mode="template")
 
@@ -60,7 +60,7 @@ def test_build_ui_with_profiles():
 
 def test_mock_backend_get_profiles():
     """MockBackend.get_profiles phải trả về list DemoProfile."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     profiles = backend.get_profiles()
 
     assert isinstance(profiles, list)

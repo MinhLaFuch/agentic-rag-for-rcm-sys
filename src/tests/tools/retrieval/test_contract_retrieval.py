@@ -3,7 +3,8 @@
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, SearchTool
+from package.corpus import ItemCorpus
+from package.tools.retrieval import SearchTool
 from package.tools.retrieval._helper import _tokenize
 
 

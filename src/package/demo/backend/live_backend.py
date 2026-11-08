@@ -17,10 +17,12 @@ from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.inference import compose_answer, get_inference_limits, MODES, outcome_from_plan_results, outcome_from_type1
-from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
+from package.corpus import ItemCorpus
+from package.tools.base import ToolCallLogger
+from package.tools.scoring import BaselineScorer
 from package.corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
-from package.evaluation.recommender.config import select_fit_target
+from package.data._shared.select_fit_target import select_fit_target
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared.load_item_knn import load_item_knn
 from package.recommenders.shared.provenance import fit_provenance

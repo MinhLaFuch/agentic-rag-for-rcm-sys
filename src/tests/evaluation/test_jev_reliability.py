@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from package.api import JevProvider
-from package.evaluation.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
+from package.evaluation.product_reply.evaluate_product_reply_with_jev import evaluate_product_reply_with_jev
 
 
 class TestJevProviderFake:
@@ -124,7 +124,7 @@ class TestEvaluateProductReplyWithJev:
 
     def test_evaluate_with_mocked_jev_success(self):
         """Test successful evaluation with mocked Jev."""
-        with patch("package.evaluation.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
+        with patch("package.evaluation.product_reply.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
             mock_provider = Mock()
             mock_provider_class.return_value = mock_provider
 
@@ -151,7 +151,7 @@ class TestEvaluateProductReplyWithJev:
 
     def test_evaluate_with_provider_error(self):
         """Test that provider errors return evaluation_state: provider_error."""
-        with patch("package.evaluation.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
+        with patch("package.evaluation.product_reply.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
             mock_provider = Mock()
             mock_provider_class.return_value = mock_provider
 
@@ -172,7 +172,7 @@ class TestEvaluateProductReplyWithJev:
 
     def test_realistic_answer_produces_claims(self):
         """Test that a realistic answer produces actual claims for faithfulness evaluation."""
-        with patch("package.evaluation.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
+        with patch("package.evaluation.product_reply.evaluate_product_reply_with_jev.JevProvider") as mock_provider_class:
             mock_provider = Mock()
             mock_provider_class.return_value = mock_provider
 

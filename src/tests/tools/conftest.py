@@ -33,7 +33,7 @@ import pandas as pd
 import pytest
 import scipy.sparse as sp
 
-from package.tools import ItemCorpus
+from package.corpus import ItemCorpus
 
 ITEMS = ["Games::A1", "Games::B2", "Games::C3", "Games::D4", "Toys::A1", "Toys::E5"]
 HISTORY = {0: [], 1: [0], 2: [0, 1, 4, 5], 3: [0, 1, 2, 4, 5], 4: [0, 1, 4], 5: [0, 1, 2, 3, 4, 5]}
