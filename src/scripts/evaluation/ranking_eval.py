@@ -100,10 +100,10 @@ def _tie_stats(scores: np.ndarray, k: int) -> dict[str, float]:
     return {"tie_pair_rate": tie_pairs / pair_count, "top_k_boundary_tie": boundary}
 
 
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
-from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.utils import StageProgress
+from package.evaluation.recommender.experiment.ranking_stream_summary import RankingStreamSummary
+from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint, _environment_versions
 from package.tools.recommenders.shared.save_item_knn import save_item_knn
 from package.tools.recommenders.shared.load_item_knn import load_item_knn
 

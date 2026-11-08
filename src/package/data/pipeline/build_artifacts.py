@@ -7,7 +7,7 @@ import time
 from ...config import DataPaths, load_config
 from ...data.split import load_splits
 from ...data.mapping import load_mappings
-from ...tools.evaluation import select_fit_target
+from ...evaluation.recommender.config import select_fit_target
 from .build_meta_files import build_meta_files
 from ...tools.corpus import save_corpus
 from ...tools.corpus.build_corpus import build_corpus
