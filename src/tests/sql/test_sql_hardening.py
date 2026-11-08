@@ -36,43 +36,32 @@ def _corpus_is_intact(corpus):
 # ---------------------------------------------------------------------------------------------
 @pytest.fixture
 def tiny_time_budget(monkeypatch):
-    """Patch the config to return a tiny time budget."""
-    import package.config.load_config
+    """Patch the corpus limits to return a tiny time budget.
 
-    original_load = package.config.load_config.load_config
-
-    def patched_load(config_path):
-        cfg = original_load(config_path)
-        if config_path == "agent/tools":
-            cfg["tools"]["sql_time_budget_seconds"] = 0.05
-        return cfg
-
-    monkeypatch.setattr(package.config.load_config, "load_config", patched_load)
-    # Clear cache to ensure the patched value is used
+    ``ItemCorpus`` reads ``_get_corpus_limits()`` (lru_cached) which loads
+    ``agent/tools`` config itself, so patch the getter directly instead of
+    ``load_config`` — the corpus module binds ``load_config`` at import time.
+    """
     from package.corpus import item_corpus
-    if hasattr(item_corpus, "_get_corpus_limits"):
-        # Clear any lru_cache if it exists
-        try:
-            item_corpus._get_corpus_limits.cache_clear()
-        except AttributeError:
-            pass
+
+    real_limits = item_corpus._get_corpus_limits()
+    monkeypatch.setattr(
+        item_corpus, "_get_corpus_limits", lambda: (real_limits[0], 0.05)
+    )
 
 
-@pytest.mark.skip(reason="Config patching needs refactoring after corpus moved to package/corpus")
 def test_select_is_stopped_by_the_time_budget(corpus, tiny_time_budget):
     result = LookupTool(corpus)(query=SLOW_CTE)
     assert not result.ok
     assert "time budget" in result.error
 
 
-@pytest.mark.skip(reason="Config patching needs refactoring after corpus moved to package/corpus")
 def test_count_is_stopped_by_the_time_budget(corpus, tiny_time_budget):
     slow_where = f"item_id IN (WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM t WHERE n < 100000000) SELECT n FROM t)"
     with pytest.raises(Exception, match="time budget"):
         corpus.count(slow_where, ())
 
 
-@pytest.mark.skip(reason="Config patching needs refactoring after corpus moved to package/corpus")
 def test_corpus_is_usable_after_a_timeout(corpus, tiny_time_budget, monkeypatch):
     assert not LookupTool(corpus)(query=SLOW_CTE).ok
     monkeypatch.undo()  # normal budget again

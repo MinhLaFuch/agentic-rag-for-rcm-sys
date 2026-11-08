@@ -5,6 +5,8 @@ from pathlib import Path
 DATASET_PATH = Path(__file__).with_name("memory_correctness_dataset.jsonl")
 
 # (case_id, user_id, top_n, as_of, snapshot_mode, tags, description, difficulty, tier)
+# NOTE: keep in sync with memory_correctness_dataset.jsonl — the sync test
+# (test_committed_dataset_matches_oracle) verifies build_cases() reproduces it.
 SPECS = [
     ("correctness_001", "nonexistent_user", 2, None, None, ["negative", "user_not_exists"], "User not in user2id", "easy", "1"),
     ("correctness_002", "u_empty", 2, None, None, ["negative", "empty_history"], "User exists, zero interactions", "easy", "1"),
@@ -32,25 +34,27 @@ SPECS = [
      "All ratings >=4: love populated, hate empty", "medium", "2"),
     ("correctness_019", "u_all_hate", 5, None, None, ["love_hate", "all_hate"],
      "All ratings <=2: hate populated, love empty", "medium", "2"),
-    ("correctness_020", "u_no_rating", 5, None, None, ["love_hate", "no_rating_col"],
-     "Interactions have no rating column -> tool must default to neutral", "medium", "2"),
+    ("correctness_020", "u_no_rating", 5, None, None, ["love_hate", "no_rating_column"],
+     "Interactions without rating column: love/hate empty, legacy fields work", "medium", "2"),
     # Phase 4 expansion cases
-    ("correctness_021", "u_love_hate_mix", 5, None, None, ["love_hate", "boundary"],
+    ("correctness_021", "u_mixed_ratings", 5, None, None, ["love_hate", "mixed_ratings"],
+     "Mixed ratings (5,4,3,2,1): love=5, hate=1, neutral=2-4", "medium", "2"),
+    ("correctness_022", "u_boundary_love", 5, None, None, ["love_hate", "boundary"],
      "Boundary case: rating exactly 4.0 is love", "medium", "2"),
-    ("correctness_022", "u_love_hate_mix", 5, None, None, ["love_hate", "boundary"],
+    ("correctness_023", "u_boundary_hate", 5, None, None, ["love_hate", "boundary"],
      "Boundary case: rating exactly 2.0 is hate", "medium", "2"),
-    ("correctness_023", "u_large_recent", 5, None, None, ["edge_case", "large_history"],
+    ("correctness_024", "u_large_recent", 5, None, None, ["edge_case", "large_history"],
      "15 interactions, recent_items capped at 10", "hard", "3"),
-    ("correctness_024", "u_many_categories", 10, None, None, ["edge_case", "many_categories"],
+    ("correctness_025", "u_many_categories", 10, None, None, ["edge_case", "many_categories"],
      "User with 10 distinct categories", "hard", "3"),
-    ("correctness_025", "u_single_category", 5, None, None, ["edge_case", "single_category"],
+    ("correctness_026", "u_single_category", 5, None, None, ["edge_case", "single_category"],
      "User with only one category", "easy", "1"),
-    ("correctness_026", "u_leakage_test", 3, 2, "pretruncated", ["cutoff", "early"],
+    ("correctness_027", "u_leakage_test", 3, 2, "pretruncated", ["cutoff", "early"],
      "Cutoff early in history", "medium", "2"),
-    ("correctness_027", "u_leakage_test", 3, 5, "pretruncated", ["cutoff", "late"],
+    ("correctness_028", "u_leakage_test", 3, 5, "pretruncated", ["cutoff", "late"],
      "Cutoff late in history", "medium", "2"),
-    ("correctness_028", "u_leakage_test", 3, 3, "untruncated", ["leakage_guard", "negative"],
+    ("correctness_029", "u_leakage_test", 3, 3, "untruncated", ["leakage_guard", "negative"],
      "Untruncated with as_of in middle: guard must raise", "hard", "3"),
-    ("correctness_029", "u_leakage_test", 3, 14, "untruncated", ["leakage_guard", "control"],
+    ("correctness_030", "u_leakage_test", 3, 14, "untruncated", ["leakage_guard", "control"],
      "Untruncated with as_of past max: guard must NOT raise", "hard", "3"),
 ]

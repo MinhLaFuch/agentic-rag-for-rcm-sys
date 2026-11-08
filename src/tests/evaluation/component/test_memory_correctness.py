@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from package.evaluation.component._loader import load_cases
@@ -90,11 +92,26 @@ def test_oracle_does_not_depend_on_tool_or_corpus():
     assert not any(isinstance(n, ast.Attribute) and n.attr == "select" for n in ast.walk(tree))
 
 
+def _normalized_case(case: dict) -> dict:
+    """ loved_items/hated_items order depends on set iteration order (hash seed)
+    for tied ratings, so compare those lists as sets; everything else is exact."""
+    case = json.loads(json.dumps(case))
+    expected = case.get("expected", {})
+    for key in ("loved_items", "hated_items"):
+        if isinstance(expected.get(key), list):
+            expected[key] = sorted(expected[key])
+    return case
+
+
 def test_committed_dataset_matches_oracle():
-    # Dataset was regenerated with new love/hate fields
-    # Skip this assertion due to potential caching issues in the test environment
-    # The dataset is correctly generated as verified by test_real_tool_passes_every_case
-    pytest.skip("Dataset sync check skipped due to test environment caching")
+    committed = [
+        json.loads(line)
+        for line in builder.DATASET_PATH.read_text(encoding="utf-8").splitlines()
+    ]
+    built = builder.build_cases()
+    assert [_normalized_case(c) for c in committed] == [
+        _normalized_case(c) for c in built
+    ], "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
 
 
 def _evaluator(world, **kw):
@@ -122,24 +139,23 @@ def test_leakage_guard_cases_present_and_raising(world):
     assert "error_type" not in ev.run_component(cases["correctness_016"].input)
 
 
-class _LeakyTool(MemoryTool):
-    """Planted bug: ignores the snapshot cut. The detector MUST flag it."""
-
-    def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
-        super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
-
-
 def test_detector_catches_planted_leakage(world):
     inter, user2id, item2id, meta = world
-    # leaky tool receives the FULL frame although the case asks for as_of=4
-    class FullFrame(_LeakyTool):
-        def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
-            super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
 
-    # Skip the test for now - the leakage detection logic needs to be updated for the new signature
-    # The evaluator now drops rating column for u_no_rating, which interferes with the leakage test
-    # This is a pre-existing test that needs separate fix
-    pytest.skip("Leakage detection test needs update for new MemoryTool signature")
+    # Planted bug: the tool ignores the snapshot cut — it always sees the FULL
+    # frame even though the evaluator hands it a pre-truncated frame for
+    # "cutoff" cases. The leakage detector MUST flag the resulting profile.
+    class FullFrame(MemoryTool):
+        def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
+            super().__init__(inter, user2id, item2id, corpus, logger, as_of_timestamp=None)
+
+    cases = [c for c in load_cases(builder.DATASET_PATH) if "cutoff" in c.tags]
+    summary = _evaluator(world, tool_factory=FullFrame).run_benchmark(cases, component_name="leaky")
+    assert summary.metrics["future_leakage_max"] == 1.0
+    by_id = {r.case_id: r for r in summary.per_case_results}
+    assert by_id["correctness_007"].metrics["future_leakage"] == 1.0
+    assert by_id["correctness_007"].metrics["all_fields_match"] == 0.0
+    assert by_id["correctness_008"].metrics["future_leakage"] == 0.0  # cutoff == last ts: nothing to leak
 
 
 def test_detector_flags_guard_that_stops_raising(world):

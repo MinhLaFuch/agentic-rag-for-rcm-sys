@@ -153,13 +153,12 @@ class MemoryTool(Tool):
             # Sort loved/hated items by rating and limit
             item_ratings = hist.groupby("item_idx")["rating"].mean().to_dict()
             loved_items_sorted = sorted(
-                set(loved_items), 
-                key=lambda x: item_ratings.get(self.item2id.get(x, -1), 0), 
-                reverse=True
+                set(loved_items),
+                key=lambda x: (-item_ratings.get(self.item2id.get(x, -1), 0), x)
             )[:self.limits.top_n_loved_items]
             hated_items_sorted = sorted(
                 set(hated_items),
-                key=lambda x: item_ratings.get(self.item2id.get(x, -1), 5)
+                key=lambda x: (item_ratings.get(self.item2id.get(x, -1), 5), x)
             )[:self.limits.top_n_hated_items]
 
         return {

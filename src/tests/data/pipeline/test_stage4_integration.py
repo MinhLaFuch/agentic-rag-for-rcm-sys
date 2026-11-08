@@ -1,5 +1,6 @@
 """Integration tests for stage 4 (build artifacts)."""
 
+import json
 import tempfile
 from pathlib import Path
 
@@ -41,10 +42,52 @@ def test_stage4_fail_fast_when_output_exists(tmp_path):
         build_artifacts(paths, force=False)
 
 
+def _minimal_paths(tmp_path) -> DataPaths:
+    return DataPaths(
+        tag="test_tag",
+        src_root=tmp_path,
+        config_dir=tmp_path,
+        raw_dir=tmp_path / "raw",
+        cleaned_dir=tmp_path / "cleaned",
+        filtered_dir=tmp_path / "filtered" / "test_tag",
+        mapped_dir=tmp_path / "mapped" / "test_tag",
+        splits_dir=tmp_path / "splits" / "test_tag",
+        item_knn_dir=tmp_path / "item_knn" / "test_tag",
+        corpus_dir=tmp_path / "corpus" / "test_tag",
+        log_dir=tmp_path / "logs" / "test_tag",
+        experiments_dir=tmp_path / "experiments",
+    )
+
+
+def _prepare_mappings_and_splits(paths: DataPaths) -> None:
+    import pandas as pd
+    from package.data.split import save_splits
+
+    paths.mapped_dir.mkdir(parents=True)
+    (paths.mapped_dir / "user2id.json").write_text(
+        json.dumps({f"u{i}": i for i in range(4)}))
+    (paths.mapped_dir / "item2id.json").write_text(
+        json.dumps({f"i{i}": i for i in range(3)}))
+
+    frame = pd.DataFrame({
+        "user_idx": [0, 0, 1, 1, 2, 2, 3, 3],
+        "item_idx": [0, 1, 1, 2, 0, 2, 1, 0],
+        "timestamp": [1, 2, 1, 2, 1, 2, 1, 2],
+    })
+    save_splits(frame, frame.copy(), frame.copy(), paths.splits_dir)
+
+
 def test_stage4_eval_on_validation_creates_one_file(tmp_path):
-    """Stage 4 with --eval-on validation should only create one ItemKNN file."""
-    # This would require full splits setup - skip for now
-    pytest.skip("Requires full splits setup")
+    """Stage 4 with eval_on=["validation"] should only create the validation ItemKNN file."""
+    paths = _minimal_paths(tmp_path)
+    _prepare_mappings_and_splits(paths)
+
+    from package.data.pipeline import build_artifacts
+    report = build_artifacts(paths, eval_on=["validation"], skip_corpus=True, force=True)
+
+    assert set(report["item_knn"]) == {"validation"}
+    assert paths.item_knn_path("validation").exists()
+    assert not paths.item_knn_path("test").exists()
 
 
 def test_stage4_skip_corpus_skips_corpus_building(tmp_path):
@@ -85,8 +128,14 @@ def test_stage4_skip_corpus_skips_corpus_building(tmp_path):
 
 def test_stage4_skip_item_knn_skips_item_knn_building(tmp_path):
     """Stage 4 with --skip-item-knn should skip ItemKNN building."""
-    # Similar to skip_corpus test
-    pytest.skip("Requires full splits setup")
+    paths = _minimal_paths(tmp_path)
+    _prepare_mappings_and_splits(paths)
+
+    from package.data.pipeline import build_artifacts
+    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True)
+
+    assert report["item_knn"] == {}
+    assert not paths.item_knn_dir.exists() or not list(paths.item_knn_dir.glob("*.npz"))
 
 
 def test_datapaths_corpus_path_and_item_knn_path(tmp_path):

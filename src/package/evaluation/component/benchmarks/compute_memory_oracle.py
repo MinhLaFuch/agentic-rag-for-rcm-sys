@@ -149,12 +149,11 @@ def _compute_love_hate_fields(
         item_ratings = hist.groupby("item_idx")["rating"].mean().to_dict()
         loved_items_sorted = sorted(
             set(loved_items),
-            key=lambda x: item_ratings.get(item2id.get(x, -1), 0),
-            reverse=True
+            key=lambda x: (-item_ratings.get(item2id.get(x, -1), 0), x)
         )[:top_n_loved_items]
         hated_items_sorted = sorted(
             set(hated_items),
-            key=lambda x: item_ratings.get(item2id.get(x, -1), 5)
+            key=lambda x: (item_ratings.get(item2id.get(x, -1), 5), x)
         )[:top_n_hated_items]
     else:
         loved_items_sorted = []
