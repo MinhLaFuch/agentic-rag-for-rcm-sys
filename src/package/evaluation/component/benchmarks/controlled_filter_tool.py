@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from package.tools.base import Tool
+from package.tools.base import Tool, ToolInputError
 
 
 class ControlledFilterTool(Tool):
@@ -24,13 +24,10 @@ class ControlledFilterTool(Tool):
             import time
             time.sleep(10)  # Simulate timeout
         if self.should_fail:
-            return {"ok": False, "data": {}, "error": "Simulated tool failure"}
+            raise ToolInputError("Simulated tool failure")
         if self.should_return_empty:
-            return {"ok": True, "data": {"candidates": [], "total_matches": 0}}
+            return {"candidates": [], "total_matches": 0}
         return {
-            "ok": True,
-            "data": {
-                "candidates": [{"item_id": f"item_{i}", "domain": "Video_Games"} for i in range(min(limit, 5))],
-                "total_matches": 5,
-            },
+            "candidates": [{"item_id": f"item_{i}", "domain": "Video_Games"} for i in range(min(limit, 5))],
+            "total_matches": 5,
         }

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from package.tools.base import Tool
+from package.tools.base import Tool, ToolInputError
 
 
 class ControlledSimilarTool(Tool):
@@ -20,13 +20,10 @@ class ControlledSimilarTool(Tool):
 
     def execute(self, items: list[str], top_k: int = 10, **kwargs: Any) -> dict[str, Any]:
         if self.should_fail:
-            return {"ok": False, "data": {}, "error": "Simulated CF failure"}
+            raise ToolInputError("Simulated CF failure")
         if self.should_return_empty:
-            return {"ok": True, "data": {"candidates": [], "unknown_items": []}}
+            return {"candidates": [], "unknown_items": []}
         return {
-            "ok": True,
-            "data": {
-                "candidates": [{"item_id": f"similar_{i}", "similarity": 0.8} for i in range(min(top_k, 5))],
-                "unknown_items": [],
-            },
+            "candidates": [{"item_id": f"similar_{i}", "similarity": 0.8} for i in range(min(top_k, 5))],
+            "unknown_items": [],
         }
