@@ -27,7 +27,6 @@ package/evaluation/component/
     ├── __init__.py
     ├── memory_correctness_evaluator.py  # MemoryTool evaluator
     ├── planner_benchmark.py             # Planner evaluator
-    ├── executor_benchmark.py            # Executor evaluator
     ├── grounding_benchmark.py           # Grounding evaluator
     ├── integration_benchmark.py         # Integration evaluator
     ├── fixtures/                        # Test fixtures (create_test_*.py)

@@ -18,10 +18,7 @@ from package.config._constants import PROJECT_ROOT
 
 PACKAGE_ROOT = PROJECT_ROOT / "package"
 CHECKED_ROOTS = [PACKAGE_ROOT, PROJECT_ROOT / "scripts"]  # tests/ may import privates (white-box tests)
-SKIPPED_STEMS: set[str] = {
-    # Phase 10: doubles/ files pending deletion - temporarily skipped
-    "fake_judge", "fake_llm", "fake_tools",
-}
+SKIPPED_STEMS: set[str] = set()
 
 # Temporary exceptions for Phase 10 baseline - will be fixed properly later
 PRIVATE_IMPORT_EXCEPTIONS: set[tuple[str, str]] = {
