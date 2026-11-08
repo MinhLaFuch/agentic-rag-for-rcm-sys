@@ -144,7 +144,6 @@ class CampaignRunner:
                 cmd.append("--resume")
 
             # Set environment variables
-            from package.config import get_data_paths
             env = dict(subprocess.os.environ)
             env["PYTHONPATH"] = str(get_data_paths().src_root)
             env["CONFIG_OVERLAY_PATH"] = str(overlay_path)
