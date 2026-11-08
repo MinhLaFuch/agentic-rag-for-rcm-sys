@@ -38,10 +38,6 @@ def test_fixture_item_idx_consistent_with_item2id(world):
     """Regression: outlier row used item_idx=20 while item2id said 12 -> item silently dropped."""
     inter, _, item2id, _ = world
     for r in inter.itertuples():
-        # Skip u_large_recent and u_many_categories which were added in Phase 4 expansion
-        # These users have 15 interactions with items beyond the original 10-item fixture
-        if r.user_id in ["u_large_recent", "u_many_categories"]:
-            continue
         assert item2id[r.item_id] == r.item_idx
 
 

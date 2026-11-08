@@ -284,9 +284,11 @@ def test_memory_tool_love_hate_item_limits(corpus, user2id, item2id):
     
     interactions = pd.concat([loved_interactions, hated_interactions])
     
-    # Extend mappings
+    # Extend mappings: loved items are vg_0..vg_19 (item_idx 0..19), hated vg_20..vg_39
+    # (item_idx 20..39), so every vg_i needs an entry — starting at 5 left vg_0..vg_4
+    # resolving to the unrelated base items vg_a..vg_e.
     extended_item2id = {**item2id}
-    for i in range(5, 40):
+    for i in range(0, 40):
         extended_item2id[f"Video_Games::vg_{i}"] = i
     
     user2id_limits = {"u_limits": 0}
