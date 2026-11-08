@@ -150,15 +150,20 @@ class MultiTurnEvaluator:
             "turn_success": 1.0 if turn_output is not None else 0.0,
             "item_match_rate": 0.0,
             "exclusion_compliance": 0.0,
-            "reference_correctness": 0.0,
+            "reference_correctness": None,  # None = not measurable this turn
         }
 
         if turn_output is None:
             return metrics
 
-        # Check if expected items match actual items
-        expected_items = set(turn_input.expected_items)
-        actual_items = set(turn_output.get("items", []))
+        # Check if expected items match actual items. Dataset ids are bare
+        # ASINs ("vg_a"); the runtime uses namespaced ids ("Video_Games::vg_a")
+        # — compare on the last segment.
+        def _bare(item: Any) -> str:
+            return str(item).rsplit("::", 1)[-1]
+
+        expected_items = {_bare(i) for i in turn_input.expected_items}
+        actual_items = {_bare(i) for i in turn_output.get("items", [])}
         if expected_items:
             metrics["item_match_rate"] = len(expected_items & actual_items) / len(expected_items)
         else:
@@ -183,11 +188,24 @@ class MultiTurnEvaluator:
         else:
             metrics["exclusion_compliance"] = 1.0
 
-        # Check reference correctness (if turn uses references to previous turns)
-        if "$" in str(turn_output):
-            metrics["reference_correctness"] = 1.0  # Placeholder: assume correct if references used
-        else:
-            metrics["reference_correctness"] = 1.0
+        # Reference correctness — REAL check (was a placeholder 1.0):
+        # among executed steps whose args contain $N/$S references, the
+        # fraction that did NOT fail with bad_reference/invented_id errors.
+        # None when the turn used no references (not measurable).
+        steps = ((turn_output.get("trace") or {}).get("steps")) or []
+        ref_steps = [
+            s for s in steps
+            if any(
+                isinstance(v, str) and ("$" in v)
+                for v in ((s.get("args") or {}).values())
+            )
+        ]
+        if ref_steps:
+            bad = sum(
+                1 for s in ref_steps
+                if s.get("error_kind") in ("bad_reference", "invented_id")
+            )
+            metrics["reference_correctness"] = (len(ref_steps) - bad) / len(ref_steps)
 
         return metrics
 
@@ -255,27 +273,29 @@ class MultiTurnEvaluator:
         else:
             metrics["exclusion_compliance"] = 1.0
 
-        # Context retention: check if session state grows appropriately
-        if turn_results:
-            # Check if session.shown_items grows with each turn (for "more items" scenarios)
+        # Context retention: monotonic growth of session.shown_items across
+        # turns. None when there is a single turn (nothing to retain across).
+        if len(turn_results) > 1:
             shown_items_counts = [
                 len(tr.session_state.get("shown_items", [])) for tr in turn_results
             ]
-            if len(shown_items_counts) > 1:
-                # Check monotonic growth (non-decreasing for "more items")
-                monotonic = all(shown_items_counts[i] <= shown_items_counts[i+1] for i in range(len(shown_items_counts)-1))
-                metrics["context_retention"] = 1.0 if monotonic else 0.0
-            else:
-                metrics["context_retention"] = 1.0
+            monotonic = all(
+                shown_items_counts[i] <= shown_items_counts[i + 1]
+                for i in range(len(shown_items_counts) - 1)
+            )
+            metrics["context_retention"] = 1.0 if monotonic else 0.0
         else:
-            metrics["context_retention"] = 1.0
+            metrics["context_retention"] = None
 
-        # Reference resolution accuracy
-        reference_correctness = [tr.metrics.get("reference_correctness", 0.0) for tr in turn_results]
-        if reference_correctness:
-            metrics["reference_accuracy"] = sum(reference_correctness) / len(reference_correctness)
-        else:
-            metrics["reference_accuracy"] = 1.0
+        # Reference resolution accuracy — mean over turns where it was measurable
+        ref_scores = [
+            tr.metrics.get("reference_correctness")
+            for tr in turn_results
+            if tr.metrics.get("reference_correctness") is not None
+        ]
+        metrics["reference_accuracy"] = (
+            sum(ref_scores) / len(ref_scores) if ref_scores else None
+        )
 
         return metrics
 
@@ -331,10 +351,11 @@ class MultiTurnEvaluator:
 
         # Context retention metrics
         context_retention = [
-            r.metrics.get("context_retention", 0.0) for r in results
+            r.metrics["context_retention"] for r in results
+            if r.metrics.get("context_retention") is not None
         ]
         context_retention_metrics = {
-            "mean": sum(context_retention) / len(context_retention) if context_retention else 0.0,
+            "mean": sum(context_retention) / len(context_retention) if context_retention else None,
         }
 
         return ConversationSummary(
@@ -356,7 +377,10 @@ class MultiTurnEvaluator:
 
         aggregated = {}
         for key in sorted(metric_keys):
-            values = [r.metrics[key] for r in results if key in r.metrics]
+            values = [
+                r.metrics[key] for r in results
+                if key in r.metrics and r.metrics[key] is not None
+            ]
             if values:
                 aggregated[f"{key}_mean"] = sum(values) / len(values)
                 aggregated[f"{key}_std"] = (sum((v - aggregated[f"{key}_mean"])**2 for v in values) / len(values))**0.5 if len(values) > 1 else 0.0
