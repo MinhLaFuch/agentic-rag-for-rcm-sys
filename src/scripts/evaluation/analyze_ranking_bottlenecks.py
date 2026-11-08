@@ -19,10 +19,10 @@ import yaml
 
 from package.config import get_data_paths, load_config
 from package.data.mapping import load_mappings
-from package.tools.evaluation import next_experiment_dir, save_experiment
-from package.tools.evaluation.metrics import ranking_metrics_at_k
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.recommenders.shared import file_hash, mapping_hash
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
+from package.evaluation.recommender.utils import StageProgress
+from package.recommenders.shared import file_hash, mapping_hash
 
 SOURCES = ("popularity", "item_cf", "semantic")
 POLICIES = ("baseline", "popularity_first", "semantic_first", "cf_first", "rrf_60")

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from ._dataset_common import SPECS
-from .create_test_interactions import create_test_interactions
-from .create_test_mappings import create_test_mappings
-from .create_test_meta import create_test_meta
+from .fixtures.create_test_interactions import create_test_interactions
+from .fixtures.create_test_mappings import create_test_mappings
+from .fixtures.create_test_meta import create_test_meta
 from .get_interactions_without_rating import get_interactions_without_rating
 from .compute_memory_oracle import compute_memory_oracle
 from .leakage_probe import leakage_probe

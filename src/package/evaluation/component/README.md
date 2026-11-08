@@ -25,8 +25,16 @@ package/evaluation/component/
 ├── run.py              # CLI runner
 └── benchmarks/
     ├── __init__.py
-    ├── memory_benchmark.py       # MemoryTool evaluator
-    └── dummy_memory_dataset.jsonl  # Example dataset
+    ├── memory_correctness_evaluator.py  # MemoryTool evaluator
+    ├── planner_benchmark.py             # Planner evaluator
+    ├── grounding_benchmark.py           # Grounding evaluator
+    ├── integration_benchmark.py         # Integration evaluator
+    ├── fixtures/                        # Test fixtures (create_test_*.py)
+    │   ├── create_test_interactions.py
+    │   ├── create_test_corpus.py
+    │   ├── create_test_meta.py
+    │   └── create_test_mappings.py
+    └── dummy_memory_dataset.jsonl       # Example dataset
 ```
 
 ## Quick Start

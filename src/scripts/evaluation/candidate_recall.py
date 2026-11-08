@@ -47,25 +47,22 @@ from package.data.split import load_splits
 from package.tools import SimilarTool, SearchTool
 from package.tools import get_tool_limits
 from package.tools.base import ToolCallLogger
-from package.tools.corpus import build_corpus, load_corpus
-from package.tools.evaluation import (
+from package.corpus import build_corpus, load_corpus
+from package.evaluation.recommender.metrics.retrieval import (
     candidate_retrieval_metrics,
     item_familiarity_metrics,
-    latency_summary,
-    next_experiment_dir,
-    save_experiment,
-    sha256_file,
-    segment_users_by_history,
-    select_fit_target,
 )
-from package.tools.recommenders import build_interaction_matrix
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.shared import item_knn_data_hash
+from package.evaluation.recommender.utils import latency_summary, sha256_file
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.recommenders import build_interaction_matrix
+from package.recommenders import ItemKNNRecommender
+from package.recommenders.shared import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.shared import mapping_hash
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
+from package.recommenders.shared import mapping_hash
 
 MAX_CANDIDATES = get_tool_limits().max_candidates
 

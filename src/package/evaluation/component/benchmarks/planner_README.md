@@ -2,7 +2,9 @@
 
 ## Overview
 
-Planner benchmark evaluates the PlanExecutor component in isolation using mock tools and mock LLM.
+Planner benchmark evaluates the PlanExecutor component in isolation using a real LLM and real tools built over the synthetic fixture corpus (`fixtures/create_test_*`).
+
+Requires `LLM_BASE_URL` / LLM credentials (see `configs/agent/llm.yaml`); the benchmark fails fast if they are missing.
 
 ## Running the Benchmark
 
@@ -33,19 +35,9 @@ Edit `planner_dataset.jsonl` and add a new line:
 }
 ```
 
-### 2. Update mock LLM (if needed)
+`expected.steps` must use the real tool names (`SimilarTool`, `RankTool`, `LookupTool`, `SearchTool`, `FilterTool`) and the argument shapes those tools actually accept.
 
-Edit `planner_mock_llm.py` to add a pattern for the new request:
-
-```python
-return MockLLMProvider({
-    "your request pattern": {
-        "text": '{"steps": [{"tool": "ToolName", "args": {"key": "value"}}]}'
-    }
-})
-```
-
-### 3. Run benchmark
+### 2. Run benchmark
 
 ```bash
 python -m package.evaluation.component.run \
@@ -73,15 +65,13 @@ python -m package.evaluation.component.run \
 
 ## Limitations
 
-- Mock LLM only matches exact patterns
-- Small sample size (4 cases)
-- No real LLM support yet
-- No stability testing (N runs)
+- Real LLM output is non-deterministic; scores vary between runs
+- Small sample size
+- Fixture corpus is synthetic (memory-benchmark fixtures), not production data
 
 ## Future Work
 
 - Increase sample size
 - Add rule-based oracle
-- Support real LLM
-- Add stability testing
+- Add stability testing (N runs)
 - Deep reference resolution testing

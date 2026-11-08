@@ -144,8 +144,9 @@ class CampaignRunner:
                 cmd.append("--resume")
 
             # Set environment variables
+            from package.config import get_data_paths
             env = dict(subprocess.os.environ)
-            env["PYTHONPATH"] = str(Path(__file__).parent.parent.parent.parent)
+            env["PYTHONPATH"] = str(get_data_paths().src_root)
             env["CONFIG_OVERLAY_PATH"] = str(overlay_path)
 
             # Run the script
@@ -153,7 +154,7 @@ class CampaignRunner:
             print(f"Command: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
-                cwd=str(Path(__file__).parent.parent.parent.parent),
+                cwd=str(get_data_paths().src_root),
                 env=env,
                 capture_output=True,
                 text=True,

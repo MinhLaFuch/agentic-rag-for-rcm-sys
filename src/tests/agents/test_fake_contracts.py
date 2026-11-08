@@ -3,7 +3,7 @@
 import pytest
 
 from package.tools.ranking import SimilarTool, RankTool
-from package.tools.sql_query import LookupTool, FilterTool
+from package.tools.sql import LookupTool, FilterTool
 from package.tools.retrieval import SearchTool
 from package.memory.memory_tool import MemoryTool
 from tests.agents.fakes.fake_tools import (
@@ -41,7 +41,7 @@ def test_prompt_references_match_tool_output_schemas():
     only uses fields that exist in the corresponding tool's output_schema.
     """
     from package.tools.ranking import SimilarTool, RankTool
-    from package.tools.sql_query import LookupTool, FilterTool
+    from package.tools.sql import LookupTool, FilterTool
     from package.tools.retrieval import SearchTool
     from package.memory.memory_tool import MemoryTool
 

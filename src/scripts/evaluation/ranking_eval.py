@@ -30,17 +30,18 @@ from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
 from package.tools.base import ToolCallLogger
-from package.tools.corpus import build_corpus, load_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
-from package.tools.evaluation.metrics import ranking_metrics_at_k
-from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from package.tools.recommenders.shared.build_interaction_matrix import build_interaction_matrix
-from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash, file_hash
-from package.tools.score import BaselineScorer
+from package.corpus import build_corpus, load_corpus
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared.build_interaction_matrix import build_interaction_matrix
+from package.recommenders.shared import item_knn_data_hash, mapping_hash, file_hash
+from package.tools.scoring import BaselineScorer
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
-from package.tools.evaluation.normalize_query_text import normalize_query_text
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
@@ -99,12 +100,12 @@ def _tie_stats(scores: np.ndarray, k: int) -> dict[str, float]:
     return {"tie_pair_rate": tie_pairs / pair_count, "top_k_boundary_tie": boundary}
 
 
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
-from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
-from package.tools.recommenders.shared.save_item_knn import save_item_knn
-from package.tools.recommenders.shared.load_item_knn import load_item_knn
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.utils import StageProgress
+from package.evaluation.recommender.experiment.ranking_stream_summary import RankingStreamSummary
+from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint, _environment_versions
+from package.recommenders.shared.save_item_knn import save_item_knn
+from package.recommenders.shared.load_item_knn import load_item_knn
 
 
 def main() -> None:

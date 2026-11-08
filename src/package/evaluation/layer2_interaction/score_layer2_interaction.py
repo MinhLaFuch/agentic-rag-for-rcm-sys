@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from package.evaluation._schema import PLANNER_AGENTS
 from package.evaluation.requests import items_satisfying, items_without_price
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 
 
 def score_layer2_interaction(

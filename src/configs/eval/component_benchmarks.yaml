@@ -9,4 +9,4 @@ component_benchmarks:
     executor:
       reflect_rounds: 2
     grounding:
-      use_jev: false
+      use_jev: true

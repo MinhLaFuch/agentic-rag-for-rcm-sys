@@ -11,7 +11,7 @@ from typing import Any
 
 from ...tools.ranking.similar_tool import SimilarTool
 from ...tools.ranking.rank_tool import RankTool
-from ...tools.sql_query.lookup_tool import LookupTool
+from ...tools.sql.lookup_tool import LookupTool
 from .._limits import get_agent_limits
 
 

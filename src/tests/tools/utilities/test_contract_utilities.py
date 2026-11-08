@@ -6,10 +6,11 @@ import pandas as pd
 import pytest
 import yaml
 
-from package.tools.evaluation import (
-    merge_model_params, next_experiment_dir, parameter_grid, save_experiment, select_fit_target,
+from package.evaluation.recommender.config import (
+    merge_model_params, parameter_grid, select_fit_target,
 )
-from package.tools.evaluation.hardware_info import hardware_info
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.utils.hardware_info import hardware_info
 
 
 # ---------------------------------------------------------------- merge_model_params

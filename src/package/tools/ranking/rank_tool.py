@@ -7,8 +7,8 @@ from typing import Any, Sequence
 import numpy as np
 
 from ..base import Tool, ToolCallLogger, ToolInputError, candidate_ids, check_top_k
-from ..corpus import ItemCorpus
-from ..score import CandidateScorer
+from package.corpus import ItemCorpus
+from ..scoring import CandidateScorer
 
 
 class RankTool(Tool):

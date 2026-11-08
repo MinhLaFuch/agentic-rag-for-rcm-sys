@@ -21,7 +21,7 @@ class JevProvider(JudgmentProvider):
         api_key: str | None = None,
         model: str = "jev-latest",
         base_url: str = "https://api.typesafe.ai",
-        timeout: float = 30.0,
+        timeout: float | None = None,
     ) -> None:
         import os
         import httpx

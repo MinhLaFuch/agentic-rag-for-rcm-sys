@@ -5,18 +5,18 @@ import pytest
 from package.demo import (
     DemoRequest,
     DemoResult,
-    MockBackend,
     format_items,
     format_trace,
     format_memory,
     status_badge,
     sample_requests,
 )
+from tests.demo.fakes.offline_backend import OfflineDemoBackend
 
 
 def test_mock_backend_returns_all_statuses():
     """MockBackend phải trả đủ 4 trạng thái khi gọi lần lượt."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     request = DemoRequest(
         user_id="user123",
         text="test",
@@ -35,7 +35,7 @@ def test_mock_backend_returns_all_statuses():
 
 def test_mock_backend_result_structure():
     """Kết quả MockBackend phải có cấu trúc DemoResult hợp lệ."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     request = DemoRequest(
         user_id="user123",
         text="test",
@@ -242,7 +242,7 @@ def test_format_memory_with_metadata():
 
 def test_mock_backend_memory_view():
     """MockBackend phải trả về MemoryView khi memory on."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
 
     request_on = DemoRequest(
         user_id="mock_warm_user",

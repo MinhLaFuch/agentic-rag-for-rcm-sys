@@ -13,6 +13,8 @@ def test_stage4_fail_fast_when_output_exists(tmp_path):
     # Create minimal paths
     paths = DataPaths(
         tag="test_tag",
+        src_root=tmp_path,
+        config_dir=tmp_path,
         raw_dir=tmp_path / "raw",
         cleaned_dir=tmp_path / "cleaned",
         filtered_dir=tmp_path / "filtered" / "test_tag",
@@ -50,6 +52,8 @@ def test_stage4_skip_corpus_skips_corpus_building(tmp_path):
     # Create minimal paths
     paths = DataPaths(
         tag="test_tag",
+        src_root=tmp_path,
+        config_dir=tmp_path,
         raw_dir=tmp_path / "raw",
         cleaned_dir=tmp_path / "cleaned",
         filtered_dir=tmp_path / "filtered" / "test_tag",
@@ -89,6 +93,8 @@ def test_datapaths_corpus_path_and_item_knn_path(tmp_path):
     """Test DataPaths corpus_path and item_knn_path methods."""
     paths = DataPaths(
         tag="test_tag",
+        src_root=tmp_path,
+        config_dir=tmp_path,
         raw_dir=tmp_path / "raw",
         cleaned_dir=tmp_path / "cleaned",
         filtered_dir=tmp_path / "filtered" / "test_tag",

@@ -38,10 +38,10 @@ from package.data import ITEM_ID_SEPARATOR
 from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import split_path
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.tools import SimilarTool, RankTool, LookupTool, FilterTool
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
-from package.tools.score import BaselineScorer
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.tools.scoring import BaselineScorer
 
 
 class _Tee:

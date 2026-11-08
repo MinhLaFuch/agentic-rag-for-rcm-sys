@@ -9,7 +9,7 @@ where candidates order is [VG_B, EL_A].
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus
+from package.corpus import ItemCorpus
 
 # Sample item IDs with namespace prefix (domain::asin)
 VG_A = "Video_Games::vg_a"

@@ -1,9 +1,0 @@
-{
-  "llm": {
-    "provider": "openai_compatible",
-    "base_url": "${LLM_BASE_URL}",
-    "model": "${LLM_MODEL:-gpt-5.4}",
-    "api_key": "${LLM_API_KEY}",
-    "timeout_seconds": 180.0
-  }
-}

@@ -8,7 +8,7 @@ from collections.abc import Mapping
 import numpy as np
 
 from package.agents import TEMPLATES
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.evaluation._schema import KIND_SEGMENTS, ORACLE_KINDS
 from package.evaluation.requests._dataclass import AgentRequest
 from package.evaluation.requests._helper import _deepest_category, _price_of, items_satisfying

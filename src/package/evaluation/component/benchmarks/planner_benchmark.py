@@ -18,12 +18,16 @@ import os
 import time
 from typing import Any
 
-from package.agents.planner import PlanExecutor
+from package.agents import PlanExecutor, build_tools
 from package.api import build_llm_provider
 from package.evaluation.component._evaluator import ComponentEvaluator
 from package.evaluation.component._schema import BenchmarkCase, BenchmarkResult
+from package.recommenders import ItemKNNRecommender
+from package.tools import BaselineScorer
 
-from .get_mock_tools import get_mock_tools
+from .fixtures.create_test_corpus import create_test_corpus
+from .fixtures.create_test_interactions import create_test_interactions
+from .fixtures.create_test_mappings import create_test_mappings
 
 
 class PlannerBenchmark(ComponentEvaluator):
@@ -61,11 +65,18 @@ class PlannerBenchmark(ComponentEvaluator):
             )
         
         self.llm = build_llm_provider(llm_config)
-        self.tools = get_mock_tools()
+
+        # Real tools over the synthetic fixture corpus (same fixtures the memory benchmark uses)
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+        corpus = create_test_corpus()
+        knn = ItemKNNRecommender(10).fit(interactions[["user_idx", "item_idx"]])
+        agent_tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
+        self.tools = agent_tools.for_planner()
         self.executor = PlanExecutor(llm=self.llm, tools=self.tools, reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Run Planner with mock tools."""
+        """Run Planner with real tools."""
         user_request = case_input.get("user_request", "")
         started = time.perf_counter()
 

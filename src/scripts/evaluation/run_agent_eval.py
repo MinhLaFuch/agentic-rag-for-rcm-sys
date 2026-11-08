@@ -50,11 +50,10 @@ from package.evaluation import (
     AgentRequest,
     build_requests,
     filter_requests_by_scope,
-    score_trajectory,
-    summarize,
 )
 from package.evaluation import EVAL_SCHEMA_VERSION
-from package.evaluation.build_run_provenance import build_run_provenance
+from package.evaluation.trajectory import score_trajectory, summarize
+from package.evaluation.provenance import build_run_provenance
 from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR
@@ -66,14 +65,16 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, ToolCallLogger
-from package.tools.corpus.build_corpus import build_corpus
-from package.tools.corpus.load_corpus import load_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
-from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash
+from package.corpus.build_corpus import build_corpus
+from package.corpus.load_corpus import load_corpus
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.evaluation.recommender.utils import sha256_file
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -228,6 +229,7 @@ def main() -> None:
     allow_missing = bool(cfg["allow_missing_corpus_sources"])
     metadata_policy_name = str(cfg["metadata_policy"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
+
     data_paths = get_data_paths(args.tag)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
@@ -338,7 +340,7 @@ def main() -> None:
     protocol_manifest["request_content_sha256"] = hashlib.sha256(
         json.dumps([r.to_dict() for r in requests], sort_keys=True, default=str).encode()).hexdigest()
     # Resume identity includes implementation, dataset, inputs and temporal policy.
-    from package.tools.evaluation.save_experiment import _source_fingerprint
+    from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint
     resume_identity = {
         "protocol": protocol_manifest, "fit_data_hash": knn_fit_data_hash,
         "source_fingerprint": _source_fingerprint(), "seed": seed, "neighbors": knn_k,

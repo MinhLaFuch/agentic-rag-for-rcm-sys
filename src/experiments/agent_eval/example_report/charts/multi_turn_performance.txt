@@ -1,8 +1,0 @@
-# Multi-turn Performance Chart (Placeholder)
-
-This would render a line chart showing performance by turn position.
-
-Example structure:
-- X-axis: Turn position (1, 2, 3, ...)
-- Y-axis: Success rate or metric value
-- Multiple lines for different metrics

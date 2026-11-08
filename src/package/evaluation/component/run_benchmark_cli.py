@@ -19,35 +19,13 @@ from ._regression import compare_benchmarks, format_regression_report
 def _get_evaluator(component: str, config: dict[str, Any]):
     """Import and instantiate the appropriate evaluator for the component."""
     if component == "memory":
-        from .benchmarks.memory_benchmark import MemoryEvaluator
-        from package.tools.corpus import ItemCorpus
-        import pandas as pd
+        from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
+        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
 
-        meta = pd.DataFrame({
-            "parent_asin": ["vg_a", "vg_b", "vg_c"],
-            "domain": ["Video_Games"] * 3,
-            "title": ["Game A", "Game B", "Game C"],
-            "store": ["StoreA", "StoreB", "StoreC"],
-            "price": [300.0, 1.0, 150.0],
-            "average_rating": [4.5, 3.5, 4.0],
-            "rating_number": [100, 50, 75],
-            "main_category": ["Action", "Puzzle", "RPG"],
-            "categories": [["Action"], ["Puzzle"], ["RPG"]],
-        })
-        corpus = ItemCorpus.from_dataframe(meta)
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
 
-        interactions = pd.DataFrame({
-            "user_id": ["u1"] * 3,
-            "item_id": ["Video_Games::vg_a", "Video_Games::vg_b", "Video_Games::vg_c"],
-            "user_idx": [0] * 3,
-            "item_idx": [0, 1, 2],
-            "rating": [5, 4, 5],
-            "timestamp": [0, 1, 2],
-        })
-        user2id = {"u1": 0, "u0": 1, "unknown_user": 2}
-        item2id = {"Video_Games::vg_a": 0, "Video_Games::vg_b": 1, "Video_Games::vg_c": 2}
-
-        return MemoryEvaluator(interactions, user2id, item2id, corpus, config)
+        return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
     elif component == "memory_correctness":
         from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
         from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
@@ -59,9 +37,6 @@ def _get_evaluator(component: str, config: dict[str, Any]):
     elif component == "planner":
         from .benchmarks.planner_benchmark import PlannerBenchmark
         return PlannerBenchmark(config)
-    elif component == "executor":
-        from .benchmarks.executor_benchmark import ExecutorBenchmark
-        return ExecutorBenchmark(config)
     elif component == "grounding":
         from .benchmarks.grounding_benchmark import GroundingBenchmark
         return GroundingBenchmark(config)
@@ -84,7 +59,7 @@ def run_benchmark_cli() -> None:
         "--component",
         type=str,
         required=True,
-        help="Name of the component to benchmark (e.g., memory, planner, executor, reflection, inference, grounding)",
+        help="Name of the component to benchmark (e.g., memory, planner, grounding, integration)",
     )
     parser.add_argument(
         "--dataset",
@@ -112,7 +87,6 @@ def run_benchmark_cli() -> None:
         default=None,
         help="Git commit SHA (auto-detected if not provided)",
     )
-
     args = parser.parse_args()
 
     # Số lần lặp + config evaluator đọc từ configs/eval/component_benchmarks.yaml
@@ -192,6 +166,9 @@ def run_benchmark_cli() -> None:
     print(f"\n--- {args.component.upper()} BENCHMARK SUMMARY ---")
     for metric, value in summary.metrics.items():
         print(f"  {metric}: {value:.4f}")
-    print(f"Total cases: {summary.total_cases}, Passed: {summary.passed_cases}")
+    passed = sum(1 for r in summary.per_case_results if r.success)
+    print(f"Total cases: {len(summary.per_case_results)}, Passed: {passed}")
 
-    print("\n" + format_regression_report(summary.to_json()))
+    # Regression report only when comparing two runs (not for single runs)
+    # format_regression_report expects a RegressionReport object, not JSON
+    # Skip regression report for single-run benchmarks

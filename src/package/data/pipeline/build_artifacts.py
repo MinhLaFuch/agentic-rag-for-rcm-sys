@@ -7,12 +7,12 @@ import time
 from ...config import DataPaths, load_config
 from ...data.split import load_splits
 from ...data.mapping import load_mappings
-from ...tools.evaluation import select_fit_target
+from .._shared.select_fit_target import select_fit_target
 from .build_meta_files import build_meta_files
-from ...tools.corpus import save_corpus
-from ...tools.corpus.build_corpus import build_corpus
-from ...tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from ...tools.recommenders.shared.save_item_knn import save_item_knn
+from ...corpus import save_corpus
+from ...corpus.build_corpus import build_corpus
+from ...recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from ...recommenders.shared.save_item_knn import save_item_knn
 
 
 def build_artifacts(

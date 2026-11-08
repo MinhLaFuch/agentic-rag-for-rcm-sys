@@ -14,11 +14,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.tools import (
-    BaselineScorer, SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool,
+    BaselineScorer, SimilarTool, LookupTool, RankTool, SearchTool, FilterTool,
 )
-from package.tools.evaluation import evaluate_recommender, merge_model_params
-from package.tools.recommenders import (
+from package.corpus import ItemCorpus
+from package.evaluation.recommender.core import evaluate_recommender
+from package.evaluation.recommender.config import merge_model_params
+from package.recommenders import (
     FallbackRecommender, ItemKNNMatrixRecommender, ItemKNNRecommender, PopularityMatrixRecommender,
     PopularityRecommender, build_model,
 )
@@ -129,7 +133,7 @@ def test_fitted_recommender_to_evaluator_to_result(world):
 
 def test_evaluator_and_standalone_metrics_agree_with_the_legacy_evaluation(world):
     """Same model idea through the OTHER API family: legacy evaluate_ranking on user 0 (cold): recs [0,1,4], target {4}."""
-    from package.tools.evaluation import evaluate_ranking
+    from package.evaluation.recommender.core import evaluate_ranking
 
     legacy = PopularityRecommender().fit(world.interactions)
     out = evaluate_ranking(legacy, pd.DataFrame({"user_idx": [0], "item_idx": [4]}), [3])

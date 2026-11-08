@@ -4,7 +4,7 @@ from typing import Any
 
 from package.tools.base import Tool, ToolInputError, ToolResult
 from package.tools.ranking import SimilarTool, RankTool
-from package.tools.sql_query import LookupTool, FilterTool
+from package.tools.sql import LookupTool, FilterTool
 from package.tools.retrieval import SearchTool
 from package.memory.memory_tool import MemoryTool
 

@@ -63,7 +63,6 @@ def main() -> None:
         action="store_true",
         help="Print what would be run without actually executing",
     )
-
     args = ap.parse_args()
 
     # Load campaign configuration

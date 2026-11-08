@@ -115,6 +115,7 @@ class BenchmarkSummary:
         timestamp: ISO timestamp of when the benchmark was run
         git_sha: Git commit SHA at time of benchmark
         tags_summary: Metrics aggregated by tag
+        metadata: Additional metadata (dataset_path, tags_filter, etc.)
     """
     benchmark_version: str = COMPONENT_BENCHMARK_VERSION
     component: str = ""
@@ -128,6 +129,7 @@ class BenchmarkSummary:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
     tags_summary: dict[str, dict[str, float]] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dict for JSON serialization."""
@@ -144,7 +146,12 @@ class BenchmarkSummary:
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
             "tags_summary": self.tags_summary,
+            "metadata": self.metadata,
         }
+
+    def to_json(self) -> str:
+        """Convert to JSON string."""
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "BenchmarkSummary":
@@ -162,6 +169,7 @@ class BenchmarkSummary:
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
             tags_summary=data.get("tags_summary", {}),
+            metadata=data.get("metadata", {}),
         )
 
     def compute_hash(self) -> str:

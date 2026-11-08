@@ -16,6 +16,8 @@
 # outputs: bên dưới — code lấy qua DataPaths.output_dir(<key>).
 
 paths:
+  src_root: "."                   # Source root directory (repository root)
+  config_dir: "configs"           # Configuration directory
   raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
   cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
   filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)

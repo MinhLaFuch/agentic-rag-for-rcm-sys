@@ -16,6 +16,8 @@ def test_build_meta_files(tmp_path):
 
     paths = DataPaths(
         tag="test",
+        src_root=tmp_path,
+        config_dir=tmp_path,
         raw_dir=raw_dir,
         cleaned_dir=tmp_path / "cleaned",
         filtered_dir=tmp_path / "filtered" / "test",

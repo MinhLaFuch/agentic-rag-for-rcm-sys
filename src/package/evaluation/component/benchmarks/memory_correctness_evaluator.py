@@ -8,7 +8,7 @@ import pandas as pd
 
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from .._evaluator import ComponentEvaluator
 from .get_interactions_without_rating import get_interactions_without_rating
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 from scripts.evaluation.run_agent_eval import is_resumable
 
 

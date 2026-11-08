@@ -1,6 +1,6 @@
 import pytest
 
-from package.tools.evaluation.normalize_query_text import normalize_query_text
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 from package.tools.retrieval._helper import _tokenize
 
 

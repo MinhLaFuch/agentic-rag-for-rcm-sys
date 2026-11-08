@@ -29,7 +29,7 @@ Model evaluation and benchmarking scripts for baselines, agents, and retrieval t
 ### 📁 `demo/`
 Demo and UI scripts for showcasing the recommendation system.
 
-- **`run_demo.py`** - Launch Gradio demo UI (mock mode or real data mode)
+- **`run_demo.py`** - Launch Gradio demo UI (real data + LLM required)
   - Features profile-based user selection (blank, cold, sparse, warm)
   - Memory panel shows agent's memory tool usage and profile data
   - Turn history for comparing runs across profiles
@@ -98,7 +98,7 @@ All scripts should be run from the project root with `PYTHONPATH=.python`:
 
 ```bash
 # Example: Run demo
-PYTHONPATH=. python scripts/demo/run_demo.py --mock
+PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games
 
 # Example: Run agent evaluation
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
