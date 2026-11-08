@@ -4,9 +4,9 @@ import sqlite3
 import pandas as pd
 import pytest
 
-from package.corpus import FilterTool, SearchTool
 from package.corpus import ItemCorpus
 from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.tools import FilterTool, SearchTool
 
 
 def make_corpus():

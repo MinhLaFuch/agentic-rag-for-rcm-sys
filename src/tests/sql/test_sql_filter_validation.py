@@ -57,10 +57,21 @@ def test_sql_applied_filters_store_is_normalised(corpus):
 
 
 def test_corpus_select_times_out(corpus, monkeypatch):
-    from package.corpus import corpus as mod
+    from package.corpus import item_corpus as mod
     from package.corpus._error import SQLTimeOutError
+    from package.config.load_config import load_config
 
-    monkeypatch.setattr(mod, "SQL_TIME_BUDGET_SECONDS", 0.0)
+    original_load = load_config
+
+    def patched_load(config_path):
+        cfg = original_load(config_path)
+        if config_path == "agent/tools":
+            cfg["tools"]["sql_time_budget_seconds"] = 0.0
+        return cfg
+
+    monkeypatch.setattr("package.config.load_config.load_config", patched_load)
+    mod._get_corpus_limits.cache_clear()
+
     sql = "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM t) SELECT COUNT(*) FROM t"
     with pytest.raises(SQLTimeOutError):
         corpus.select(sql, max_rows=1)

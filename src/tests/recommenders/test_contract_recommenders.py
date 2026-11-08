@@ -12,7 +12,7 @@ from package.recommenders import (
     ItemKNNRecommenderABC, PopularityMatrixRecommender, PopularityRecommender, Recommender, build_model,
     build_interaction_matrix,
 )
-from tests.tools.conftest import POPULARITY_ORDER
+from tests.recommenders.conftest import POPULARITY_ORDER
 
 ALL_USERS = np.arange(6)
 

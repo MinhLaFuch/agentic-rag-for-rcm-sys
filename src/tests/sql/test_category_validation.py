@@ -3,7 +3,8 @@
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, FilterTool, SearchTool
+from package.corpus import ItemCorpus
+from package.tools import FilterTool, SearchTool
 
 
 def test_sqltool_rejects_invalid_category():

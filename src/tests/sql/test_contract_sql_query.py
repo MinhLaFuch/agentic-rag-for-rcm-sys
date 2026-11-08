@@ -55,7 +55,7 @@ def test_store_filter_is_case_insensitive_for_ascii(world):
 
 def test_store_filter_non_ascii_names_match_themselves():
     import pandas as pd
-    from package.tools import ItemCorpus
+    from package.corpus import ItemCorpus
 
     corpus = ItemCorpus.from_dataframe(pd.DataFrame({"parent_asin": ["a", "b"], "domain": "D", "store": ["Ünited Co", "acme"]}))
     assert ids(FilterTool(corpus)(filters={"store": "Ünited Co"})) == ["D::a"]  # used to match nothing (Python vs SQLite lower())

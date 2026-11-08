@@ -19,6 +19,7 @@ import sqlite3
 import time
 import warnings
 from collections.abc import Iterable
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -41,6 +42,7 @@ from ._sql import (
 )
 
 
+@lru_cache(maxsize=1)
 def _get_corpus_limits() -> tuple[int, float]:
     """Get max_query_rows and sql_time_budget_seconds from config (mirrors tools._limits)."""
     cfg = load_config("agent/tools")["tools"]

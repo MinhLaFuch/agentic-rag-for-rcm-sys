@@ -15,7 +15,7 @@ import pytest
 
 from package.tools import LookupTool, FilterTool
 from package.tools.base import ToolResult
-from package.corpus import corpus as corpus_module
+from package.corpus import item_corpus as corpus_module
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 ALL_IDS = {VG_A, VG_B, VG_C, EL_A, EL_D}
@@ -36,8 +36,26 @@ def _corpus_is_intact(corpus):
 # ---------------------------------------------------------------------------------------------
 @pytest.fixture
 def tiny_time_budget(monkeypatch):
-    """corpus.select()/count() read this module-level constant on every call."""
-    monkeypatch.setattr(corpus_module, "SQL_TIME_BUDGET_SECONDS", 0.05)
+    """Patch the config to return a tiny time budget."""
+    from package.config.load_config import load_config
+
+    original_load = load_config
+
+    def patched_load(config_path):
+        cfg = original_load(config_path)
+        if config_path == "agent/tools":
+            cfg["tools"]["sql_time_budget_seconds"] = 0.05
+        return cfg
+
+    monkeypatch.setattr("package.config.load_config.load_config", patched_load)
+    # Clear cache to ensure the patched value is used
+    from package.corpus import item_corpus
+    if hasattr(item_corpus, "_get_corpus_limits"):
+        # Clear any lru_cache if it exists
+        try:
+            item_corpus._get_corpus_limits.cache_clear()
+        except AttributeError:
+            pass
 
 
 def test_select_is_stopped_by_the_time_budget(corpus, tiny_time_budget):
