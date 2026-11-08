@@ -6,9 +6,10 @@ import pandas as pd
 
 from .agent_tools import AgentTools
 from ...memory.memory_tool import MemoryTool
-from ...tools import SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool
-from ...tools.score import CandidateScorer
-from ...tools.recommenders.shared.recommender import Recommender
+from ...corpus import ItemCorpus
+from ...tools import SimilarTool, LookupTool, RankTool, SearchTool, FilterTool
+from ...tools.scoring import CandidateScorer
+from ...recommenders.shared.recommender import Recommender
 
 
 def build_tools(
