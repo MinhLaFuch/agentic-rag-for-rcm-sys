@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ...memory.memory_tool import MemoryTool
-from ...tools import SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool
+from ...corpus import ItemCorpus
+from ...tools import SimilarTool, LookupTool, RankTool, SearchTool, FilterTool
 from ...tools.base import Tool
 
 

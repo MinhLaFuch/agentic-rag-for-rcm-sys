@@ -37,9 +37,9 @@ def _corpus_is_intact(corpus):
 @pytest.fixture
 def tiny_time_budget(monkeypatch):
     """Patch the config to return a tiny time budget."""
-    from package.config.load_config import load_config
+    import package.config.load_config as load_config_module
 
-    original_load = load_config
+    original_load = load_config_module.load_config
 
     def patched_load(config_path):
         cfg = original_load(config_path)
@@ -47,7 +47,7 @@ def tiny_time_budget(monkeypatch):
             cfg["tools"]["sql_time_budget_seconds"] = 0.05
         return cfg
 
-    monkeypatch.setattr("package.config.load_config.load_config", patched_load)
+    monkeypatch.setattr(load_config_module, "load_config", patched_load)
     # Clear cache to ensure the patched value is used
     from package.corpus import item_corpus
     if hasattr(item_corpus, "_get_corpus_limits"):
