@@ -4,6 +4,8 @@ import json
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.agents import PlanExecutor, build_tool_prompt
 from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse

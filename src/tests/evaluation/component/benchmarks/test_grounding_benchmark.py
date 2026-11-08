@@ -7,6 +7,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.evaluation.component.benchmarks.grounding_benchmark import GroundingBenchmark
 
 

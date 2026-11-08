@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.tools import (
     BaselineScorer, SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool,
 )

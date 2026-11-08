@@ -5,6 +5,8 @@ import sys
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.agents import PlanExecutor
 from package.evaluation import INFERENCE_AGENTS, AgentRequest, score_trajectory, summarize
 from package.evaluation._schema import ANSWER_STATUSES

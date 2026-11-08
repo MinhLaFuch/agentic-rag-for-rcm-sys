@@ -8,6 +8,8 @@ from typing import Any
 import pytest
 import yaml
 
+pytestmark = pytest.mark.integration
+
 from package.evaluation.ablation._compare import compare_two_groups
 from package.evaluation.ablation._limits import AblationLimits
 
