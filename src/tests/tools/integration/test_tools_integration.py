@@ -17,7 +17,8 @@ import pytest
 from package.tools import (
     BaselineScorer, SimilarTool, ItemCorpus, LookupTool, RankTool, SearchTool, FilterTool,
 )
-from package.tools.evaluation import evaluate_recommender, merge_model_params
+from package.evaluation.recommender.core import evaluate_recommender
+from package.evaluation.recommender.config import merge_model_params
 from package.tools.recommenders import (
     FallbackRecommender, ItemKNNMatrixRecommender, ItemKNNRecommender, PopularityMatrixRecommender,
     PopularityRecommender, build_model,

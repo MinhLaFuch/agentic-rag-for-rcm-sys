@@ -50,11 +50,10 @@ from package.evaluation import (
     AgentRequest,
     build_requests,
     filter_requests_by_scope,
-    score_trajectory,
-    summarize,
 )
 from package.evaluation import EVAL_SCHEMA_VERSION
-from package.evaluation.build_run_provenance import build_run_provenance
+from package.evaluation.trajectory import score_trajectory, summarize
+from package.evaluation.provenance import build_run_provenance
 from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR
@@ -68,12 +67,14 @@ from package.inference import compose_answer, get_inference_limits, outcome_from
 from package.tools import BaselineScorer, ToolCallLogger
 from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.evaluation.recommender.utils import sha256_file
 from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
 from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",

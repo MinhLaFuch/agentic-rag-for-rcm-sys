@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from package.tools.evaluation.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
 
 
 def test_resume_atomic_prefix_and_export(tmp_path):

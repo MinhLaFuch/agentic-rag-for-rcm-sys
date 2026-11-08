@@ -11,8 +11,8 @@ import yaml
 
 from package.config import get_data_paths
 from package.tools.corpus import ItemCorpus
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.experiment.ranking_stream_summary import RankingStreamSummary
 from scripts.evaluation import ranking_eval as script
 
 

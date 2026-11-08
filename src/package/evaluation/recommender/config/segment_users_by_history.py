@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._helper import assign_segments
+from ..core._helper import assign_segments
 
 
 def segment_users_by_history(users, history_sizes: np.ndarray, sparse_max: int) -> dict[int, str]:

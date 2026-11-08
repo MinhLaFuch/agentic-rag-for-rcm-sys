@@ -1,6 +1,6 @@
 import pandas as pd
 
-from package.tools.evaluation import evaluate_ranking
+from package.evaluation.recommender.core import evaluate_ranking
 from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
 
 

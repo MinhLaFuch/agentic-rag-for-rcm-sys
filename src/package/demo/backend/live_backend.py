@@ -20,7 +20,7 @@ from package.inference import compose_answer, get_inference_limits, MODES, outco
 from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
 from package.tools.corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
-from package.tools.evaluation import select_fit_target
+from package.evaluation.recommender.config import select_fit_target
 from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.tools.recommenders.shared.load_item_knn import load_item_knn
 from package.tools.recommenders.shared.provenance import fit_provenance

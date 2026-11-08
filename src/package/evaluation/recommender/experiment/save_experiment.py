@@ -10,13 +10,13 @@ from typing import Any
 
 import yaml
 
-from ._helper import _git_commit
-from .hardware_info import hardware_info
+from ..core._helper import _git_commit
+from ..utils.hardware_info import hardware_info
 
 
 def _source_fingerprint() -> str:
     """Hash implementation/config sources so runs remain identifiable without Git."""
-    project_root = Path(__file__).resolve().parents[3]
+    project_root = Path(__file__).resolve().parents[5]
     files = [project_root / "pyproject.toml"]
     for folder in ("package", "scripts", "configs"):
         base = project_root / folder

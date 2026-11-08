@@ -5,8 +5,7 @@ import pandas as pd
 import pytest
 import scipy.sparse as sp
 
-from package.tools.evaluation import evaluate_recommender
-from package.tools.evaluation import evaluate_ranking
+from package.evaluation.recommender.core import evaluate_recommender, evaluate_ranking
 from package.tools.recommenders import PopularityRecommender
 
 
