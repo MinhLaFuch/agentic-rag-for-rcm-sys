@@ -1,121 +1,122 @@
-"""Integration tests for component boundaries."""
+"""Integration benchmark: real planner-executor → inference boundary.
+
+Phase 4.2 rewrite. The old version validated dict fields already present in
+the case input (self-referential — it tested fixture data, not the boundary).
+This version runs the REAL chain on the fixture corpus:
+
+    case steps → PlanExecutor._execute (real tools)
+               → outcome_from_plan_results (AgentOutcome)
+               → compose_answer (template mode by default; "llm" mode needs
+                 LLM_BASE_URL/LLM_API_KEY and falls back to template otherwise)
+
+Metrics:
+- contract_valid: answer.status matches expected AND every presented item is
+  a well-formed dict with a string item_id.
+- no_mismatch: every item_id the answer presents was actually produced by an
+  executed step (the inference stage may not invent items).
+- grounded_rate: answer.grounded flag (template mode is grounded by
+  construction; kept as an explicit check).
+
+Cases provide {user_request, steps} executed with real tools — same fixture
+setup as the executor/planner benchmarks. evidence_kind=real_execution.
+"""
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
+from package.agents import PlanExecutor, build_tools
 from package.evaluation.component._evaluator import ComponentEvaluator
+from package.inference import compose_answer, outcome_from_plan_results
+from package.recommenders import ItemKNNRecommender
+from package.tools import BaselineScorer
+
+from .fixtures.create_test_corpus import create_test_corpus
+from .fixtures.create_test_interactions import create_test_interactions
+from .fixtures.create_test_mappings import create_test_mappings
+
+# Keys in step `data` that carry item rows with item_id
+_ITEM_ROW_KEYS = ("candidates", "items", "ranked")
 
 
 class IntegrationBenchmark(ComponentEvaluator):
-    """Evaluator for integration between components."""
+    """Evaluator for the executor → inference boundary (real execution)."""
 
     component_name = "integration"
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.boundary = self.config.get("boundary", "planner_executor")  # planner_executor, executor_inference, memory_planner
+        # "template" is deterministic and needs no LLM; "llm" requires provider
+        # credentials and compose_answer falls back to template without them.
+        self.mode = self.config.get("mode", "template")
+        self.llm = None
+        if self.mode == "llm":
+            from package.api import build_llm_provider
+            from package.config import load_config
+
+            self.llm = build_llm_provider(load_config("agent/llm"))
+
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+        corpus = create_test_corpus()
+        knn = ItemKNNRecommender(10).fit(interactions[["user_idx", "item_idx"]])
+        agent_tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
+        self.executor = PlanExecutor(llm=None, tools=agent_tools.for_planner(), reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Run integration test for specific boundary."""
-        boundary = case_input.get("boundary", self.boundary)
-        
-        if boundary == "planner_executor":
-            return self._test_planner_executor(case_input)
-        elif boundary == "executor_inference":
-            return self._test_executor_inference(case_input)
-        elif boundary == "memory_planner":
-            return self._test_memory_planner(case_input)
-        else:
-            return {"error": f"Unknown boundary: {boundary}"}
+        """Execute steps for real, then run outcome → compose_answer."""
+        steps = case_input.get("steps", [])
+        user_request = case_input.get("user_request", "")
 
-    def _test_planner_executor(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Test Planner → Executor boundary."""
-        plan = case_input.get("plan", [])
-        expected_tools = case_input.get("expected_tools", [])
-        
-        # Check if plan references are valid
-        valid_refs = True
-        for step in plan:
-            tool = step.get("tool")
-            args = step.get("args", {})
-            
-            # Check if tool exists
-            if tool not in expected_tools:
-                valid_refs = False
-                break
-            
-            # Check if references are valid
-            for arg_value in args.values():
-                if isinstance(arg_value, str) and arg_value.startswith("$"):
-                    # Simple reference validation: $N.path
-                    parts = arg_value.split(".")
-                    if not parts[0].startswith("$") or not parts[0][1:].isdigit():
-                        valid_refs = False
-                        break
-        
-        return {
-            "boundary": "planner_executor",
-            "plan_valid": valid_refs,
-            "plan": plan,
-            "expected_tools": expected_tools,
-        }
+        started = time.perf_counter()
+        results = self.executor._execute(steps, user_request)
+        outcome = outcome_from_plan_results(user_request, results)
+        answer = compose_answer(outcome, self.llm, mode=self.mode)
+        latency = time.perf_counter() - started
 
-    def _test_executor_inference(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Test Executor → Inference boundary."""
-        executor_output = case_input.get("executor_output", {})
-        expected_fields = case_input.get("expected_fields", [])
-        
-        # Check if executor output has expected fields
-        has_expected_fields = all(field in executor_output for field in expected_fields)
-        
-        return {
-            "boundary": "executor_inference",
-            "output_valid": has_expected_fields,
-            "executor_output": executor_output,
-            "expected_fields": expected_fields,
-        }
+        # Item ids actually produced by executed steps (ground truth for no_mismatch)
+        produced_ids: set[str] = set()
+        for r in results:
+            if not r.get("ok"):
+                continue
+            for key in _ITEM_ROW_KEYS:
+                for row in (r.get("data") or {}).get(key) or []:
+                    if isinstance(row, dict) and isinstance(row.get("item_id"), str):
+                        produced_ids.add(row["item_id"])
 
-    def _test_memory_planner(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Test Memory → Planner boundary."""
-        memory_profile = case_input.get("memory_profile", {})
-        planner_args = case_input.get("planner_args", {})
-        
-        # Check if planner args use memory profile correctly
-        uses_memory = False
-        for arg_value in planner_args.values():
-            if isinstance(arg_value, dict):
-                for key in memory_profile.keys():
-                    if key in arg_value:
-                        uses_memory = True
-                        break
-        
         return {
-            "boundary": "memory_planner",
-            "uses_memory": uses_memory,
-            "memory_profile": memory_profile,
-            "planner_args": planner_args,
+            "steps": results,
+            "outcome": {
+                "items": outcome.items,
+                "errors": outcome.errors,
+                "invented_ids": outcome.invented_ids,
+                "n_steps": outcome.n_steps,
+            },
+            "answer": answer.to_dict(),
+            "produced_item_ids": sorted(produced_ids),
+            "latency_seconds": latency,
+            "evidence_kind": "real_execution",
         }
 
     def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
-        """Score integration test."""
-        boundary = actual_output.get("boundary", self.boundary)
-        
+        answer = actual_output.get("answer") or {}
+        produced = set(actual_output.get("produced_item_ids") or [])
+        presented = [i for i in (answer.get("items") or []) if isinstance(i, dict)]
+        presented_ids = {i.get("item_id") for i in presented}
+
+        exp_status = expected.get("expected_status")
+        status_ok = answer.get("status") == exp_status if exp_status else True
+        well_formed = all(isinstance(i.get("item_id"), str) and i.get("item_id") for i in presented)
+        min_items = expected.get("min_items", 0)
+
         metrics = {
-            "contract_valid": 0.0,
-            "no_mismatch": 0.0,
+            # status matches expectation AND presented items are well-formed AND enough items
+            "contract_valid": 1.0
+            if status_ok and well_formed and len(presented) >= min_items
+            else 0.0,
+            # inference may only present items the executed steps actually produced
+            "no_mismatch": 1.0 if presented_ids <= produced else 0.0,
+            "grounded_rate": 1.0 if answer.get("grounded", False) else 0.0,
         }
-        
-        if boundary == "planner_executor":
-            metrics["contract_valid"] = 1.0 if actual_output.get("plan_valid") else 0.0
-            metrics["no_mismatch"] = 1.0 if actual_output.get("plan_valid") else 0.0
-        elif boundary == "executor_inference":
-            metrics["contract_valid"] = 1.0 if actual_output.get("output_valid") else 0.0
-            metrics["no_mismatch"] = 1.0 if actual_output.get("output_valid") else 0.0
-        elif boundary == "memory_planner":
-            expected_use = expected.get("expected_use", True)
-            actual_use = actual_output.get("uses_memory", False)
-            metrics["contract_valid"] = 1.0 if actual_use == expected_use else 0.0
-            metrics["no_mismatch"] = 1.0 if actual_use == expected_use else 0.0
-        
         return metrics
