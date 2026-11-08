@@ -73,6 +73,7 @@ class AgentEvalConfig(BaseModel):
     metadata_policy: str = Field(default="historical_static_catalog", description="Metadata masking policy")
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
+    campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
 
     @field_validator("agents")
     @classmethod

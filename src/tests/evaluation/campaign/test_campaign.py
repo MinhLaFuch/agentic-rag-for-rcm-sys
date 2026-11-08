@@ -416,3 +416,58 @@ def test_load_experiment_metrics_from_stdout(tmp_path: Path):
     # No 'saved ->' line or missing file -> empty dict, not an exception
     assert runner._load_experiment_metrics("no save line") == {}
     assert runner._load_experiment_metrics(f"saved -> {tmp_path / 'nope'}") == {}
+
+
+def test_auto_comparison_pairs_are_actually_used(tmp_path: Path):
+    """parameter_grid + empty comparison_pairs -> auto-generated pairs must reach _run_comparisons."""
+    campaign = CampaignConfig(
+        campaign_id="grid_campaign",
+        dataset={"path": "data/test.jsonl"},
+        parameter_grid={"inference_mode": ["template", "llm"]},
+        comparison_pairs=[],
+        output_dir=str(tmp_path / "out"),
+    )
+
+    original_run = CampaignRunner._run_experiment
+
+    def fake_run(self, experiment, run_number, output_dir):
+        return ExperimentRun(
+            experiment_name=experiment.name,
+            run_number=run_number,
+            output_dir=str(output_dir / experiment.name / f"run_{run_number}"),
+            success=True,
+            metrics={"task_success_rate": 0.8},
+        )
+
+    CampaignRunner._run_experiment = fake_run
+    try:
+        result = CampaignRunner(campaign).run_campaign()
+    finally:
+        CampaignRunner._run_experiment = original_run
+
+    assert result.comparisons, "auto-generated comparison pairs were dropped"
+    (pair_key,) = result.comparisons.keys()
+    assert pair_key.endswith("_vs_" + pair_key.split("_vs_")[-1])
+    assert result.comparisons[pair_key]["status"] == "success"
+
+
+def test_build_config_overlay_includes_campaign_id():
+    """campaign_id must reach the per-experiment config overlay for traceability."""
+    runner = CampaignRunner(CampaignConfig(campaign_id="camp_trace"))
+    ov = runner._build_config_overlay(ExperimentConfig(name="e"), 1)
+    assert ov["agent/agent_eval"]["agent_eval"]["campaign_id"] == "camp_trace"
+
+
+def test_load_experiment_metrics_excludes_sample_count(tmp_path: Path):
+    """'n' (sample count) must not leak into comparison metrics."""
+    exp_dir = tmp_path / "exp_n"
+    exp_dir.mkdir()
+    (exp_dir / "metrics.json").write_text(json.dumps({
+        "k": 10,
+        "summary": {"planner": {"similar": {"all": {"task_success": 0.9, "n": 20}}}},
+    }), encoding="utf-8")
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    metrics = runner._load_experiment_metrics(f"saved -> {exp_dir}")
+    assert metrics["planner_similar_task_success"] == 0.9
+    assert "planner_similar_n" not in metrics

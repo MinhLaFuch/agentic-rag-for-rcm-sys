@@ -68,7 +68,7 @@ class CampaignRunner:
         # Perform comparisons if configured
         comparisons = {}
         if comparison_pairs:
-            comparisons = self._run_comparisons(runs, output_dir)
+            comparisons = self._run_comparisons(runs, output_dir, comparison_pairs)
 
         # Generate summary
         summary = self._generate_summary(runs)
@@ -216,6 +216,7 @@ class CampaignRunner:
             "agents": experiment.agent_config.get("agents", list(self.config.default_agents)),
             "allow_missing_corpus_sources": self.config.allow_missing_corpus_sources,
             "trajectory_file": f"{self.config.campaign_id}_{experiment.name}_run{run_number}_trajectories.jsonl",
+            "campaign_id": self.config.campaign_id,
         }
         per_segment = experiment.evaluation_config.get("per_segment")
         if per_segment is not None:
@@ -271,13 +272,17 @@ class CampaignRunner:
         # metrics.json = save_experiment(metrics=...) = {"k": 10, "summary": {agent: {kind: {segment: {...}}}}}
         summary = data.get("summary", data.get("metrics", {}).get("summary", {}))
 
-        # Flatten to get overall averages across all agents/kinds/segments
+        # Flatten to get overall averages across all agents/kinds/segments.
+        # Skip bookkeeping keys that are not metrics (e.g. "n" = sample count).
+        _NON_METRIC_KEYS = {"n"}
         all_metrics = {}
         for agent, kinds in summary.items():
             for kind, segments in kinds.items():
                 for segment, metrics in segments.items():
                     if segment == "all":  # Use the aggregated "all" segment
                         for key, value in metrics.items():
+                            if key in _NON_METRIC_KEYS:
+                                continue
                             if isinstance(value, (int, float)):
                                 metric_key = f"{agent}_{kind}_{key}"
                                 all_metrics[metric_key] = value
@@ -288,19 +293,24 @@ class CampaignRunner:
         self,
         runs: list[ExperimentRun],
         output_dir: Path,
+        comparison_pairs: list[tuple[str, str]] | None = None,
     ) -> dict[str, Any]:
         """Run comparisons between experiment pairs.
 
         Args:
             runs: List of experiment runs
             output_dir: Output directory
+            comparison_pairs: Pairs to compare; defaults to config.comparison_pairs.
+                Callers that auto-generate pairs (parameter grid) MUST pass them here —
+                reading self.config.comparison_pairs would silently drop auto-generated pairs.
 
         Returns:
             Dict of comparison results
         """
         comparisons = {}
+        pairs = comparison_pairs if comparison_pairs is not None else self.config.comparison_pairs
 
-        for exp_a, exp_b in self.config.comparison_pairs:
+        for exp_a, exp_b in pairs:
             # Find runs for each experiment
             runs_a = [r for r in runs if r.experiment_name == exp_a and r.success]
             runs_b = [r for r in runs if r.experiment_name == exp_b and r.success]

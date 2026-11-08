@@ -433,9 +433,7 @@ def main() -> None:
         }
         for domain, path in meta_files
     }
-    exp_dir = save_experiment(
-        next_experiment_dir(data_paths.output_dir("agent_eval")),
-        config={"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+    exp_config = {"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
@@ -456,7 +454,12 @@ def main() -> None:
                     "source_hash_semantics": getattr(corpus, "_source_provenance", {"source_hash_protocol": "built_from_current_sources"}),
                     "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
                     "allow_missing_sources": allow_missing,
-                }},
+                }}
+    if cfg.get("campaign_id"):
+        exp_config["campaign_id"] = cfg["campaign_id"]
+    exp_dir = save_experiment(
+        next_experiment_dir(data_paths.output_dir("agent_eval")),
+        config=exp_config,
         metrics={"k": k, "summary": summary},
         seed=seed,
         dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
