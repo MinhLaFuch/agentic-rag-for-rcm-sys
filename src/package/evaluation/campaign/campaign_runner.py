@@ -125,23 +125,21 @@ class CampaignRunner:
                 yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
             )
 
-            tag = self.config.dataset.get("tag", "default")
+            # dataset.filters.domains selects the data bundle: run_agent_eval derives
+            # the artifact tag from it (one domain -> its name, all/none -> merged_name).
+            domains = self.config.dataset.get("filters", {}).get("domains", [])
             cmd = [
                 sys.executable,
                 "scripts/evaluation/run_agent_eval.py",
-                "--tag", tag,
                 "--eval-on", self.config.dataset.get("split", "validation"),
             ]
-
-            # Add domain filters if specified
-            domains = self.config.dataset.get("filters", {}).get("domains", [])
             for domain in domains:
                 cmd.extend(["--domain", domain])
 
             # Re-running a campaign reuses the same trajectory file name; resume it
             # (run_agent_eval validates the protocol hash and refuses mismatched logs).
             trajectory_file = overlay["agent/agent_eval"]["agent_eval"]["trajectory_file"]
-            traj_path = get_data_paths(tag).log_dir / trajectory_file
+            traj_path = get_data_paths(domains=domains or None).log_dir / trajectory_file
             if traj_path.exists():
                 cmd.append("--resume")
 
