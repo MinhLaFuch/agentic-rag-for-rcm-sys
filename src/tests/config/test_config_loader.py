@@ -142,3 +142,41 @@ def test_config_schema_validation_invalid_language(tmp_path):
     with pytest.raises(ConfigError, match="Config validation failed"):
         load_config("agent/agent_eval", config_dir=tmp_path)
 
+
+
+def test_judge_config_real_file_loads():
+    """The committed configs/eval/judge.yaml must pass its schema — guards the
+    Jev evaluation path (evaluate_product_reply_with_jev -> load_config('eval/judge'))."""
+    cfg = load_config("eval/judge")
+
+    assert cfg["provider"] == "jev"
+    assert cfg["model"] == "jev-latest"
+    assert cfg["timeout_seconds"] == 30.0
+    assert cfg["enable_long_context"] is False
+    assert 0.0 <= cfg["evaluation"]["faithfulness"]["support_threshold"] <= 1.0
+    criteria = cfg["evaluation"]["communication"]["criteria"]
+    assert set(criteria) == {"relevance", "clarity", "language", "honesty_about_gaps"}
+    for criterion in criteria.values():
+        assert criterion["instructions"]
+        assert len(criterion["rubric"]) == 5
+
+
+def test_judge_config_rejects_extra_and_missing_keys(tmp_path):
+    """extra=forbid: unknown keys fail loudly instead of being silently ignored."""
+    eval_dir = tmp_path / "eval"
+    eval_dir.mkdir()
+
+    base = (
+        "provider: jev\nmodel: jev-latest\nbase_url: https://api.typesafe.ai\n"
+        "timeout_seconds: 30.0\n"
+        "evaluation:\n  faithfulness:\n    support_threshold: 0.7\n    instructions: x\n"
+        "  communication:\n    criteria:\n      relevance:\n        instructions: x\n        rubric: [a, b, c, d, e]\n"
+    )
+    (eval_dir / "judge.yaml").write_text(base + "bogus_key: 1\n", encoding="utf-8")
+    with pytest.raises(ConfigError, match="Config validation failed"):
+        load_config("eval/judge", config_dir=tmp_path)
+
+    (eval_dir / "judge.yaml").write_text(base, encoding="utf-8")
+    cfg = load_config("eval/judge", config_dir=tmp_path)
+    assert cfg["evaluation"]["faithfulness"]["support_threshold"] == 0.7
+    assert "bogus_key" not in cfg

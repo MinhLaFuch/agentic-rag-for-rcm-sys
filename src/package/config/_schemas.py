@@ -520,6 +520,57 @@ class CampaignFileConfig(BaseModel):
     experiment_timeout_seconds: int = 3600
 
 
+class JudgeFaithfulnessConfig(BaseModel):
+    """Faithfulness axis of configs/eval/judge.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    support_threshold: float = Field(ge=0.0, le=1.0, description="noul probability >= this counts as supported")
+    instructions: str = Field(description="Jev question instructions for faithfulness")
+
+
+class JudgeCommunicationCriterionConfig(BaseModel):
+    """One communication criterion (relevance, clarity, language, honesty_about_gaps)."""
+
+    model_config = _BASE_CONFIG
+
+    instructions: str = Field(description="Jev Score question instructions")
+    rubric: list[str] = Field(min_length=1, description="5-point rubric, poor -> excellent")
+
+
+class JudgeCommunicationConfig(BaseModel):
+    """Communication axis: dynamic set of criteria."""
+
+    model_config = _BASE_CONFIG
+
+    criteria: dict[str, JudgeCommunicationCriterionConfig] = Field(
+        description="Criterion name -> instructions + rubric"
+    )
+
+
+class JudgeEvaluationConfig(BaseModel):
+    """Evaluation section of configs/eval/judge.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    faithfulness: JudgeFaithfulnessConfig
+    communication: JudgeCommunicationConfig
+
+
+class JudgeConfig(BaseModel):
+    """Jev judge config from configs/eval/judge.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    provider: str = Field(description="Judgment provider to use (jev)")
+    api_key: str = Field(default="", description="TypeSafe API key; filled by env interpolation")
+    model: str = Field(description="Jev model name")
+    base_url: str = Field(description="TypeSafe API base URL")
+    timeout_seconds: float = Field(gt=0, description="Per-request timeout")
+    enable_long_context: bool = Field(default=False, description="Long-context header for large states")
+    evaluation: JudgeEvaluationConfig
+
+
 def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
     """
     Validate a config dict against its Pydantic schema.
@@ -553,6 +604,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/memory_utility": ("memory_utility", MemoryUtilityConfig),
         "eval/tuning": ("tuning", TuningConfig),
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
+        "eval/judge": (None, JudgeConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),
         "evaluation/campaign": (None, CampaignFileConfig),  # No key wrapper
