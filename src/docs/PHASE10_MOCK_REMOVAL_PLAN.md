@@ -262,6 +262,22 @@ KEEP all four: they are synthetic data builders for the real MemoryCorrectness b
 
 ---
 
+## Phase 10.1 Execution Log
+
+| Step | Commit | Result |
+|---|---|---|
+| 1. Relocate fakes to tests/ | `fa6fc95` | Controlled*Tool → `tests/evaluation/component/benchmarks/fakes/`; OfflineDemoBackend → `tests/demo/fakes/`; 3 test files repointed. Suite: 1327 passed (Baseline B) |
+| 2. Remove --mock from scripts/CLIs | `f2b03e6` | Deleted `_mock_helper.py`, `_runtime_factory.py`; stripped --mock/mode/-mock suffix from run_agent_eval, run_campaign, link_e2e_cli, run_benchmark_cli, run_demo; `mode` field removed from provenance. link_e2e hard-coded results deleted here (intertwined with flag removal). Suite: 1327 passed |
+| 3. Demo backend deletion | `c5aee66` | Deleted `offline_backend.py`, `get_backend`, OfflineDemoBackend exports. Suite: 1327 passed |
+| 4. Multi-turn | `49b081b` | MockAgentRunner deleted; CLI exits 1 with "real runner not implemented yet" (verified). Suite: 1327 passed |
+| 5. Benchmarks | `89116e8` | planner_benchmark → real LLM + real tools over fixtures; executor_benchmark + controlled_* + get_controlled_tools DELETED (failure-injection moved to deferred tests work). Suite: 1327 passed |
+| 6. Delete doubles + docs | `6bdb0fd` | `package/evaluation/doubles/` deleted (0 importers); SKIPPED_STEMS emptied; README updates; `docs/TODO_TESTS_CLEANUP.md` created. Suite: 1327 passed |
+| 7. Grep proof | `fe62754` | `mock|Mock|fake|Fake|Controlled|Scripted|--mock`: **0 hits** in package//scripts/ .py files. planner_README.md updated. |
+
+**Final state:** every step matched Baseline B (1327 passed, 8 skipped, 2 xfailed, 0 failed). Test files touched: `test_demo_backend.py`, `test_gradio_ui.py`, `test_controlled_tools.py`, `test_package_layout.py` — all minimal import/kwarg fixes only.
+
+---
+
 ## STOP for Approval
 
 This plan is ready for review. No deletions will be made until approval.
