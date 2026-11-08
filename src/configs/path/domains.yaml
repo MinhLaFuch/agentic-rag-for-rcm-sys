@@ -1,11 +1,14 @@
 # Domains config (mục V, XX).
 # Danh sách domain bật trong hệ thống.
 # Thứ tự ở đây là thứ tự các script .sh lặp qua.
+# merged_name: tên artifact bundle khi merge TẤT CẢ domains (stage 2/3/4).
+#   - 1 domain  -> tag = tên domain đó
+#   - tất cả    -> tag = merged_name
+#   - tập con   -> lỗi (xem resolve_dataset_tag)
+
+merged_name: "multi_domain"
 
 domains:
   - name: "Video_Games"
-    role: "primary"
   - name: "Toys_and_Games"
-    role: "secondary"
   - name: "Electronics"
-    role: "secondary"
