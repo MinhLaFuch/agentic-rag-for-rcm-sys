@@ -23,7 +23,7 @@ from package.api import build_llm_provider
 from package.evaluation.component._evaluator import ComponentEvaluator
 from package.evaluation.component._schema import BenchmarkCase, BenchmarkResult
 
-from .get_mock_tools import get_mock_tools
+from package.evaluation.doubles import FakeFilterTool, FakeSearchTool, FakeRankTool, FakeSimilarTool
 
 
 class PlannerBenchmark(ComponentEvaluator):
@@ -61,7 +61,12 @@ class PlannerBenchmark(ComponentEvaluator):
             )
         
         self.llm = build_llm_provider(llm_config)
-        self.tools = get_mock_tools()
+        self.tools = [
+            FakeFilterTool(),
+            FakeSearchTool(),
+            FakeRankTool(),
+            FakeSimilarTool(),
+        ]
         self.executor = PlanExecutor(llm=self.llm, tools=self.tools, reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:

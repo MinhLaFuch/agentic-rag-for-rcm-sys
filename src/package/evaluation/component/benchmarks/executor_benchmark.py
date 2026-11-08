@@ -15,8 +15,9 @@ from typing import Any
 from package.agents.planner import PlanExecutor
 from package.evaluation.component._evaluator import ComponentEvaluator
 
-from .get_controlled_tools import get_controlled_tools
-from .get_mock_llm import get_mock_llm
+from package.evaluation.doubles import ScriptedLLM
+from .controlled_filter_tool import ControlledFilterTool
+from .controlled_similar_tool import ControlledSimilarTool
 
 
 class ExecutorBenchmark(ComponentEvaluator):
@@ -26,7 +27,7 @@ class ExecutorBenchmark(ComponentEvaluator):
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.llm = get_mock_llm()
+        self.llm = ScriptedLLM()
         self.reflect_rounds = self.config.get("reflect_rounds", 2)
         self.executor = PlanExecutor(llm=self.llm, tools=[], reflect_rounds=self.reflect_rounds)
 
@@ -37,7 +38,13 @@ class ExecutorBenchmark(ComponentEvaluator):
         user_request = case_input.get("user_request", "")
 
         # Set up controlled tools
-        self.executor.tools = {t.name: t for t in get_controlled_tools(tool_config)}
+        should_fail = tool_config.get("should_fail", False)
+        should_timeout = tool_config.get("should_timeout", False)
+        should_return_empty = tool_config.get("should_return_empty", False)
+        self.executor.tools = {
+            "FilterTool": ControlledFilterTool(should_fail=should_fail, should_timeout=should_timeout, should_return_empty=should_return_empty),
+            "SimilarTool": ControlledSimilarTool(should_fail=should_fail, should_return_empty=should_return_empty),
+        }
         self.executor.reflect_rounds = self.reflect_rounds
 
         started = time.perf_counter()

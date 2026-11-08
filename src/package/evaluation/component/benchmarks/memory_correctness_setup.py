@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from .create_test_interactions import create_test_interactions
-from .create_test_corpus import create_test_corpus
-from .create_test_meta import create_test_meta
-from .create_test_mappings import create_test_mappings
+from .fixtures.create_test_interactions import create_test_interactions
+from .fixtures.create_test_corpus import create_test_corpus
+from .fixtures.create_test_meta import create_test_meta
+from .fixtures.create_test_mappings import create_test_mappings
 from .get_interactions_without_rating import get_interactions_without_rating
 
 __all__ = [
