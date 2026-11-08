@@ -500,6 +500,43 @@ class DemoConfig(BaseModel):
         return v
 
 
+class CampaignExperimentFileConfig(BaseModel):
+    """One experiment entry inside configs/evaluation/campaign.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    name: str = Field(description="Unique experiment name")
+    description: str = ""
+    agent_config: dict[str, Any] = Field(default_factory=dict)
+    evaluation_config: dict[str, Any] = Field(default_factory=dict)
+    dataset: dict[str, Any] = Field(default_factory=dict)
+    repetition_count: int = 1
+    random_seed: int = 42
+    tags: list[str] = Field(default_factory=list)
+
+
+class CampaignFileConfig(BaseModel):
+    """configs/evaluation/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
+
+    model_config = _BASE_CONFIG
+
+    campaign_id: str = Field(description="Unique campaign identifier")
+    description: str = ""
+    dataset: dict[str, Any] = Field(default_factory=dict)
+    parameter_grid: dict[str, Any] = Field(default_factory=dict)
+    experiments: list[CampaignExperimentFileConfig] = Field(default_factory=list)
+    evaluation_config: dict[str, Any] = Field(default_factory=dict)
+    output_dir: str = ""
+    comparison_pairs: list[list[str]] = Field(default_factory=list)
+    statistical_settings: dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    default_agents: list[str] = Field(
+        default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
+    )
+    allow_missing_corpus_sources: bool = True
+    experiment_timeout_seconds: int = 3600
+
+
 def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
     """
     Validate a config dict against its Pydantic schema.
@@ -536,6 +573,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),
+        "evaluation/campaign": (None, CampaignFileConfig),  # No key wrapper
     }
 
     if name not in config_map:

@@ -541,3 +541,42 @@ def test_unpaired_or_disabled_statistics_skip_delta_ci():
     runner2 = CampaignRunner(cfg2)
     comparison2 = runner2._compare_experiments(runs_a, runs_b[:2])
     assert "delta_ci" not in comparison2["deltas"]["task_success_rate"]
+
+
+def test_repo_campaign_yaml_still_loads_via_config_system():
+    """Regression: configs/evaluation/campaign.yaml parses identically through load_config."""
+    from package.config import CONFIG_DIR
+
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+
+    assert campaign.campaign_id == "campaign_001_parameter_grid"
+    assert campaign.statistical_settings["confidence_level"] == 0.95
+    assert len(campaign.expand_parameter_grid()) == 12  # 3 agents x 2 modes x 2 reflect_rounds
+
+
+def test_campaign_config_rejects_unknown_keys(tmp_path):
+    """configs/-style campaign files are schema-validated with extra=forbid."""
+    from package.config.load_config import ConfigError, load_config
+
+    cfg_dir = tmp_path / "evaluation"
+    cfg_dir.mkdir()
+    (cfg_dir / "campaign.yaml").write_text('campaign_id: "x"\nbogus_key: 1\n', encoding="utf-8")
+
+    with pytest.raises(ConfigError):
+        load_config("evaluation/campaign", config_dir=tmp_path)
+
+
+def test_campaign_config_overlay_is_honored(tmp_path, monkeypatch):
+    """CampaignConfig.from_yaml routes configs/ paths through load_config (CONFIG_OVERLAY_PATH applies)."""
+    from package.config import CONFIG_DIR
+
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text(
+        'evaluation/campaign:\n  output_dir: "agent_eval/campaigns/overlaid_test"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+
+    assert campaign.output_dir == "agent_eval/campaigns/overlaid_test"

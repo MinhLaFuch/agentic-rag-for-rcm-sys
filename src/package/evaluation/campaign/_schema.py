@@ -163,7 +163,22 @@ class CampaignConfig:
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "CampaignConfig":
-        """Load campaign configuration from YAML file."""
+        """Load campaign configuration from YAML file.
+
+        Paths inside ``configs/`` go through ``load_config`` — env
+        interpolation, schema validation (extra="forbid") and the
+        CONFIG_OVERLAY_PATH overlay all apply. Paths outside ``configs/``
+        (tests, ad-hoc campaign files) are read raw.
+        """
+        from package.config import CONFIG_DIR, load_config
+
+        path = Path(path)
+        try:
+            rel = path.resolve().relative_to(CONFIG_DIR.resolve())
+        except ValueError:
+            rel = None
+        if rel is not None and rel.suffix == ".yaml":
+            return cls.from_dict(load_config(rel.with_suffix("").as_posix()))
         with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return cls.from_dict(data)
