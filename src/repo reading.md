@@ -27,7 +27,7 @@ commit: 0ce2ea8
 | Area | Status |
 |------|--------|
 | Jev evaluator error handling | Fixed — `judge_error`/`provider_error` states, no longer counted as unsupported claims |
-| Grounding benchmark | Fixed — no rule-based fallback; missing `TYPESAFE_API_KEY`/Jev failure = case FAIL; answers labeled `evidence_kind: "synthetic_answer_judge_only"` |
+| Grounding benchmark | Fixed — no rule-based fallback; missing `TYPESAFE_API_KEY`/Jev failure = case FAIL; judged answer is real `compose_answer` output (`evidence_kind: "real_inference_output"`) |
 | Campaign runner | Fixed — auto `comparison_pairs` actually used; `campaign_id` persisted per experiment; non-metric keys (`n`) excluded |
 | `_run_all.py` aggregation | Fixed — `success_rate` read from nested metrics; missing result = failed; exit code non-zero on failure; fail counts shown beside means |
 | Executor benchmark | Rebuilt (Phase 4.7, D1 option 1) — real tools over fixture corpus, `_execute` scope only; infra-fault cases moved to `tests/agents/test_executor_error_taxonomy.py` |
@@ -426,17 +426,19 @@ Final Response + Trajectory (saved to JSONL)
 | **Memory** | `memory_correctness_dataset.jsonl` (30 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0) |
 | **Planner** | `planner_dataset.jsonl` (32 cases) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
 | **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
-| **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required (`TYPESAFE_API_KEY`); judged answer is real `compose_answer` output (Phase 4.3, template mode default / llm via config); no thresholds yet |
-| **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, grounded_rate | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary (Phase 4.2, template mode); no thresholds yet |
+| **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required (`TYPESAFE_API_KEY`); judged answer is real `compose_answer` output — `answer_mode=template` default (deterministic), `"llm"` via config (Phase 4.3); no thresholds yet |
+| **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, grounded_rate | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary — `answer_mode=template` default, `"llm"` via config (Phase 4.2); no thresholds yet |
 
 **Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`; exits non-zero if any component fails; shows per-component `pass`/`fail`/`not_evaluated` quality-gate status.
+
+> **`no_mismatch` limitation (integration)**: the metric only compares `answer["items"]` ids against ids actually produced by executed tool steps. In both `template` and `llm` compose modes, `Answer.items` is copied from `outcome.items`, so the metric verifies the executor→adapter→composer provenance plumbing (it caught an injected foreign id in mutation testing) — it does **not** inspect ids mentioned in `answer["text"]`. Free-text hallucination checking belongs to `check_grounding`/Jev, not this metric. Similarly `grounded_rate` reflects the composer flag, which is `True` by construction in template mode.
 
 ### 8.3 Campaign Runner (package/evaluation/campaign/campaign_runner.py)
 
 - Orchestrates multiple `run_agent_eval.py` experiments via subprocess
 - Parameter grid expansion, comparison pairs (auto-generated pairs are actually consumed), repetition
 - `campaign_id` is written into each experiment's `config.yaml` for provenance; non-metric keys (`n`, counts) excluded from comparison
-- `statistical_settings` in campaign.yaml is currently **dead config** — bootstrap/CI not wired into campaign comparisons (Phase 4.1)
+- `statistical_settings` in campaign.yaml drives bootstrap CIs and paired delta CI/p-value in `_compare_experiments` (wired in Phase 4.1); `metadata` is still parsed but unused
 - **Supports `--mock` flag** for testing without real data/LLM
 
 ### 8.4 Opik Integration Assessment
@@ -836,7 +838,7 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 |-------|----------|--------|
 | **Planner LLM produces invalid tool calls** | Low `tool_selection_accuracy` in component benchmark | Requires better prompt / few-shot / model |
 | **Reflection doesn't rescue failures** | `reflection_rescued=0.0` in component benchmark | Quality threshold reflection (configurable) untested |
-| **Grounding rate zero (old)** | Fixed in Phase 1 — missing Jev/key now FAILs instead of fake 1.0 | Real-answer grounding still pending Phase 4.3 |
+| **Grounding rate zero (old)** | Fixed in Phase 1 — missing Jev/key now FAILs instead of fake 1.0; Phase 4.3 judges real `compose_answer` output | Needs `TYPESAFE_API_KEY` for a real run |
 | **Integration latency anomaly** | Low mean latency in component benchmark | Likely contract-only measurement |
 | **Multi-turn not real-LLM evaluated** | Real runner implemented (Phase 4.4); needs LLM creds for an actual run | Run with credentials |
 
