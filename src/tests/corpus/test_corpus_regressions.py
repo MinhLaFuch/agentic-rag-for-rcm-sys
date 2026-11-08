@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import sqlite3
 
-from package.tools import ItemCorpus
+from package.corpus import ItemCorpus
 
 
 def test_corpus_rejects_duplicate_item_ids():
@@ -45,7 +45,7 @@ def test_corpus_schema_matches_schema_hint():
 
 def test_query_tool_handles_trailing_comment_in_query(corpus):
     """SQL queries with trailing -- comments should not break the wrapper."""
-    from package.tools import LookupTool
+    from package.corpus import LookupTool
 
     # Query with trailing comment
     result = LookupTool(corpus)(query="SELECT item_id FROM items WHERE domain='Video_Games' -- test comment")

@@ -25,10 +25,10 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from ...data import ITEM_ID_SEPARATOR, namespaced_item_id
-from ..base import ToolInputError
-from .._limits import MAX_QUERY_ROWS, SQL_TIME_BUDGET_SECONDS
-from .._schema import ITEM_COLUMNS, SCHEMA_HINT
+from ..data import ITEM_ID_SEPARATOR, namespaced_item_id
+from package._error import ToolInputError
+from package.config.load_config import load_config
+from package.data._schema import ITEM_COLUMNS, SCHEMA_HINT
 from ._error import SQLTimeOutError
 from ._helper import _clean_row, normalize_categories, numeric_column, read_only_authorizer
 from ._schema import QUERY_CHUNK_SIZE
@@ -39,6 +39,12 @@ from ._sql import (
     FTS_TABLE_SCHEMA,
     ITEMS_INDEXES,
 )
+
+
+def _get_corpus_limits() -> tuple[int, float]:
+    """Get max_query_rows and sql_time_budget_seconds from config (mirrors tools._limits)."""
+    cfg = load_config("agent/tools")["tools"]
+    return int(cfg["max_query_rows"]), float(cfg["sql_time_budget_seconds"])
 
 
 
@@ -158,7 +164,7 @@ class ItemCorpus:
     # ---- reads ----------------------------------------------------------- #
 
     def select(
-        self, sql: str, params: Sequence[Any] = (), max_rows: int = MAX_QUERY_ROWS
+        self, sql: str, params: Sequence[Any] = (), max_rows: int = _get_corpus_limits()[0]
     ) -> tuple[list[dict[str, Any]], bool]:
         """Run one read-only SELECT. Returns (rows, truncated).
 
@@ -170,7 +176,7 @@ class ItemCorpus:
         if not sql.lower().startswith(("select", "with")):
             raise ToolInputError("only SELECT statements are allowed")
 
-        deadline = time.monotonic() + SQL_TIME_BUDGET_SECONDS
+        deadline = time.monotonic() + _get_corpus_limits()[1]
         self._conn.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
         try:
             # Add newline before closing paren to handle trailing -- comments
@@ -194,7 +200,7 @@ class ItemCorpus:
         return rows, truncated
 
     def count(self, where_sql: str, params: Sequence[Any]) -> int:
-        deadline = time.monotonic() + SQL_TIME_BUDGET_SECONDS
+        deadline = time.monotonic() + _get_corpus_limits()[1]
         self._conn.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
         try:
             cur = self._conn.execute(f"SELECT COUNT(*) FROM items WHERE {where_sql}", tuple(params))

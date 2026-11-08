@@ -1,6 +1,6 @@
 """Error classes for corpus module."""
 
-from ..base import ToolInputError
+from package._error import ToolInputError
 
 
 class SQLTimeOutError(ToolInputError):

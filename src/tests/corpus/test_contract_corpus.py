@@ -7,9 +7,9 @@ import warnings
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, LookupTool
+from package.corpus import ItemCorpus, build_corpus
+from package.tools import LookupTool
 from package.tools.base import ToolInputError
-from package.corpus import build_corpus
 
 
 def _df(**extra):

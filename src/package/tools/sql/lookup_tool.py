@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
-from ..corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from .._limits import MAX_QUERY_ROWS, QUERY_DEFAULT_MAX_ROWS
 from .._schema import ITEM_COLUMNS, SCHEMA_HINT
 

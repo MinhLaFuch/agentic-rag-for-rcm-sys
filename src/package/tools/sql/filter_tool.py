@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
-from ..corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
 from .compile_filters import compile_filters

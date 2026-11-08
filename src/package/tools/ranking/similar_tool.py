@@ -9,7 +9,7 @@ from scipy import sparse
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
 from .._limits import ITEM_CF_DEFAULT_TOP_K, MAX_CANDIDATES
-from ..corpus import ItemCorpus
+from package.corpus import ItemCorpus
 
 
 class SimilarTool(Tool):

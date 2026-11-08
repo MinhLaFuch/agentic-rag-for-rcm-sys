@@ -18,8 +18,8 @@ from __future__ import annotations
 from typing import Any
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
-from ..corpus import ItemCorpus
-from ..sql_query import compile_filters
+from package.corpus import ItemCorpus
+from ..sql import compile_filters
 from .._limits import MAX_CANDIDATES, SEMANTIC_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS
 from ._helper import _tokenize

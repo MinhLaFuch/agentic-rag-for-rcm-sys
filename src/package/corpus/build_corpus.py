@@ -12,7 +12,7 @@ from package.data import namespaced_item_id
 from package.data.loader import load_item_metadata
 
 from .item_corpus import ItemCorpus
-from .._schema import ITEM_COLUMNS
+from package.data._schema import ITEM_COLUMNS
 from ._helper import normalize_categories
 from ._schema import COVERAGE_SAMPLE
 from ._sql import (
