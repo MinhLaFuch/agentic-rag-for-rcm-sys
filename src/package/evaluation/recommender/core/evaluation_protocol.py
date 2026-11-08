@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ...tools.recommenders.shared.provenance import fit_provenance
+from package.tools.recommenders.shared.provenance import fit_provenance
 
 
 def evaluation_protocol(*, eval_on, tag, fit_df, target_df, user2id, item2id,
