@@ -404,22 +404,6 @@ class TuningConfig(BaseModel):
     bpr_mf: TuningBprMfGrid = Field(description="BPR-MF tuning grid")
 
 
-class BenchmarkQuery(BaseModel):
-    model_config = _BASE_CONFIG
-    query: str = Field(description="Search query text")
-    category: str = Field(description="Expected category")
-
-
-class CategoriesAnyBenchmarkConfig(BaseModel):
-    """Benchmark config from configs/eval/categories_any_benchmark.yaml."""
-
-    model_config = _BASE_CONFIG
-
-    iterations: int = Field(ge=1, description="Runs per query for median latency")
-    limit: int = Field(gt=0, description="limit passed to the tool")
-    queries: list[BenchmarkQuery] = Field(description="Benchmark query set")
-
-
 class ComponentBenchmarksConfig(BaseModel):
     """Component benchmarks config from configs/eval/component_benchmarks.yaml."""
 
@@ -568,7 +552,6 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/tool_validation": ("tool_validation", ToolValidationConfig),
         "eval/memory_utility": ("memory_utility", MemoryUtilityConfig),
         "eval/tuning": ("tuning", TuningConfig),
-        "eval/categories_any_benchmark": ("categories_any_benchmark", CategoriesAnyBenchmarkConfig),
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),

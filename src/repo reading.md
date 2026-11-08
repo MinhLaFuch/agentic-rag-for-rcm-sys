@@ -730,7 +730,6 @@ Key config files and their purposes:
 | `eval/ranking_diagnostics` | `configs/eval/ranking_diagnostics.yaml` | Bottleneck analysis settings |
 | `eval/tool_validation` | `configs/eval/tool_validation.yaml` | run_tools.py settings |
 | `eval/memory_utility` | `configs/eval/memory_utility.yaml` | Memory utility analysis settings |
-| `eval/categories_any_benchmark` | `configs/eval/categories_any_benchmark.yaml` | categories_any benchmark settings |
 | `eval/component_benchmarks` | `configs/eval/component_benchmarks.yaml` | Component benchmark runs |
 | `eval/recommendation_metrics` | `configs/eval/recommendation_metrics.yaml` | K values, metrics |
 | `path/data_paths` | `configs/path/data_paths.yaml` | All filesystem paths |
@@ -1069,10 +1068,10 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
 - `scripts/data_pipeline/run_pipeline.py` — stages 1–4 (clean → merge/filter → map/split → corpus+ItemKNN)
 - `scripts/eda_diagnostic/` — `run_eda.py`, `diagnose_splits.py`
 - `scripts/demo/` — `run_demo.py` (Gradio; `--mock`), `demo_full_agent.py`
-- `scripts/evaluation/` — `run_agent_eval.py`, `run_baselines.py`, `tune_baselines.py`, `candidate_recall.py`, `benchmark_categories_any.py`, `run_campaign.py`, `opik_poc.py`, `jev_smoke_test.py`, `evaluate_product_reply.py`
+- `scripts/evaluation/` — `run_agent_eval.py`, `candidate_recall.py`, `run_campaign.py`, `opik_poc.py`, `jev_smoke_test.py`, `evaluate_product_reply.py`
 - `scripts/tools/` — `run_tools.py`, `check_llm_provider.py`
 - `scripts/llm_agent/smoke_real_llm.py`, `scripts/experiments/compare_experiments.py`
-- `benchmarks/` — `benchmark_categories_any.py`, `run_baselines.py`, `tune_baselines.py`
+- `benchmarks/` — `run_baselines.py`, `tune_baselines.py`
 - Tests: unit (mocked deps), integration (`@pytest.mark.integration`), real smoke tests are scripts not pytest; `tests/tools/` uses the "tiny world" fixture from its `conftest.py`; `tests/tools_helpers.py` provides `corpus`/`cf_setup` fixtures for hardening/regression tests
 
 ### 18.8 Known Framework Limitations (carried forward)

@@ -51,7 +51,6 @@ def _lookup(key: str):
             "ranking_diagnostics": "eval",
             "tool_validation": "eval",
             "memory_utility": "eval",
-            "categories_any_benchmark": "eval",
             "component_benchmarks": "eval",
             "tools": "agent",
             "agent": "agent",
