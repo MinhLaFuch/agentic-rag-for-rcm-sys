@@ -4,7 +4,7 @@ import pytest
 
 from package.agents import PlanExecutor
 from package.api import LLMProviderError
-from package.tools.corpus import _error as corpus_error
+from package.corpus import _error as corpus_error
 from tests.agents.fakes.fake_tools import (
     FakeFilterTool,
     FakeLookupTool,

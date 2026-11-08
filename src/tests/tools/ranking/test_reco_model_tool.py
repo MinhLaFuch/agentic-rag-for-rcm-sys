@@ -1,4 +1,4 @@
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 from package.tools import BaselineScorer, SimilarTool, RankTool, FilterTool
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B
 

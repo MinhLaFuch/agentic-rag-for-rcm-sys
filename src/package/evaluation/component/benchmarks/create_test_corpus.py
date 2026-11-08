@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from .create_test_meta import create_test_meta
 
 

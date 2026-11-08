@@ -7,7 +7,7 @@ from package.agents import _limits as _limits
 from package.config.load_config import ConfigError
 from package.tools import LookupTool, FilterTool
 from package.tools.base import Tool
-from package.tools.corpus import _error as corpus_error
+from package.corpus import _error as corpus_error
 from tests.agents.test_plan_executor import plan
 from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A

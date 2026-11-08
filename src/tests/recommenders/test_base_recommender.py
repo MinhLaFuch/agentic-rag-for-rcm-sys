@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 
-from package.tools.recommenders.shared.recommender import Recommender
-from package.tools.recommenders.evaluation.popularity_matrix_recommender import PopularityMatrixRecommender
+from package.recommenders.shared.recommender import Recommender
+from package.recommenders.evaluation.popularity_matrix_recommender import PopularityMatrixRecommender
 
 
 class MockRecommender(Recommender):

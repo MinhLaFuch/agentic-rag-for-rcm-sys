@@ -2,7 +2,7 @@
 
 import json
 
-from package.tools.recommenders import ItemKNNRecommender
+from package.recommenders import ItemKNNRecommender
 from package.tools import BaselineScorer, SimilarTool, LookupTool, RankTool, FilterTool, ToolCallLogger
 from tests.tools_helpers import EL_D, VG_A, VG_B
 

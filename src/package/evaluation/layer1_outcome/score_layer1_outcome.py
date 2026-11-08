@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from package.data import ITEM_ID_SEPARATOR
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
 
 

@@ -18,13 +18,13 @@ from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.inference import compose_answer, get_inference_limits, MODES, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
-from package.tools.corpus import build_corpus
-from package.tools.corpus.load_corpus import load_corpus
+from package.corpus import build_corpus
+from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.config import select_fit_target
-from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from package.tools.recommenders.shared.load_item_knn import load_item_knn
-from package.tools.recommenders.shared.provenance import fit_provenance
-from package.tools.recommenders.shared import item_knn_data_hash
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared.load_item_knn import load_item_knn
+from package.recommenders.shared.provenance import fit_provenance
+from package.recommenders.shared import item_knn_data_hash
 from .._profile_builder import build_profiles
 from ..adapter import adapt_from_inference, adapt_from_plan_executor, adapt_from_plan_executor_error
 from ..samples import IDENTITY_INJECTION_EN, IDENTITY_INJECTION_VI

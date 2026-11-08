@@ -15,7 +15,7 @@ import pytest
 
 from package.agents import PlanExecutor
 from package.tools import LookupTool, FilterTool, SimilarTool, RankTool
-from package.tools.recommenders import ItemKNNRecommender
+from package.recommenders import ItemKNNRecommender
 from package.agents.session import Session
 from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A, VG_B, VG_C

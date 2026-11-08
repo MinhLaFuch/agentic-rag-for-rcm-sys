@@ -57,8 +57,8 @@ def test_sql_applied_filters_store_is_normalised(corpus):
 
 
 def test_corpus_select_times_out(corpus, monkeypatch):
-    from package.tools.corpus import corpus as mod
-    from package.tools.corpus._error import SQLTimeOutError
+    from package.corpus import corpus as mod
+    from package.corpus._error import SQLTimeOutError
 
     monkeypatch.setattr(mod, "SQL_TIME_BUDGET_SECONDS", 0.0)
     sql = "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM t) SELECT COUNT(*) FROM t"

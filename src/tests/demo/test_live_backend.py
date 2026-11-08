@@ -355,9 +355,9 @@ def test_live_backend_prebuilt_with_files_uses_load_functions():
 def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache):
     from dataclasses import replace
     from package.demo.backend import live_backend as module
-    from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-    from package.tools.recommenders.shared.provenance import fit_provenance
-    from package.tools.recommenders.shared._model_metadata import item_knn_data_hash
+    from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+    from package.recommenders.shared.provenance import fit_provenance
+    from package.recommenders.shared._model_metadata import item_knn_data_hash
     interactions, user2id, item2id = cf_setup
     fit = interactions.assign(timestamp=1)
     empty = fit.iloc[:0]

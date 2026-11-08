@@ -12,7 +12,7 @@ from package.memory.memory_tool import MemoryTool
 from package.tools.ranking.item_cf_tool import SimilarTool
 from package.tools.ranking.reco_model_tool import RankTool
 from package.tools.retrieval.semantic_search_tool import SearchTool
-from package.tools.sql_query.query_tool import LookupTool
+from package.tools.sql.query_tool import LookupTool
 
 def build_tools(knn, scorer, user2id, item2id, interactions, corpus):
     # 1 chỗ duy nhất liệt kê tool nào agent được dùng — thêm/bớt tool chỉ sửa ở đây

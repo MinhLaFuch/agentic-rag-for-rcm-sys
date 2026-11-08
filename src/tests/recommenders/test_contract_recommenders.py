@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 import scipy.sparse as sp
 
-from package.tools.recommenders import (
+from package.recommenders import (
     ALL_MODELS, BPRMFRecommender, FallbackRecommender, ItemKNNMatrixRecommender, ItemKNNRecommender,
     ItemKNNRecommenderABC, PopularityMatrixRecommender, PopularityRecommender, Recommender, build_model,
     build_interaction_matrix,

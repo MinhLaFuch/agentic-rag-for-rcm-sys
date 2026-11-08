@@ -30,7 +30,7 @@ from opik.evaluation.metrics import score_result
 
 # RCM imports
 from package.evaluation import score_trajectory
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.config import get_data_paths
 
 

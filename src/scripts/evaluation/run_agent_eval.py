@@ -65,15 +65,15 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, ToolCallLogger
-from package.tools.corpus.build_corpus import build_corpus
-from package.tools.corpus.load_corpus import load_corpus
+from package.corpus.build_corpus import build_corpus
+from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
 from package.evaluation.recommender.utils import sha256_file
-from package.tools.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
-from package.tools.recommenders.shared import item_knn_data_hash, mapping_hash
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
+from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json

@@ -9,7 +9,7 @@ from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
 from package.memory.memory_tool import MemoryTool
 from package.tools import FilterTool
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 
 
 class ScriptedLLM(LLMProvider):

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.evaluation._schema import PLANNER_AGENTS
 from package.evaluation.requests import AgentRequest
 from package.evaluation.layer1_outcome import score_layer1_outcome, _extract_retrieval_funnel

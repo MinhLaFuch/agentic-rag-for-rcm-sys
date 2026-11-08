@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from package.tools import FilterTool, SearchTool
-from package.tools.corpus import ItemCorpus
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
+from package.corpus import ItemCorpus
+from package.corpus.apply_metadata_policy import apply_metadata_policy
 
 
 def make_corpus():
@@ -67,8 +67,8 @@ def test_cutoff_required(cutoff):
 
 def test_deterministic_chain_uses_same_policy(cf_setup, corpus):
     from package.agents import build_tools
-    from package.tools.recommenders import ItemKNNRecommender
-    from package.tools.score import BaselineScorer
+    from package.recommenders import ItemKNNRecommender
+    from package.tools.scoring import BaselineScorer
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(2).fit(interactions)
     apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10)

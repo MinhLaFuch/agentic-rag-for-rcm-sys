@@ -9,8 +9,8 @@ import pandas as pd
 import pytest
 
 from package.tools.base import ToolInputError
-from package.tools.corpus import ItemCorpus, load_corpus, save_corpus
-from package.tools.corpus._sql import CORPUS_LOGIC_VERSION, get_corpus_schema_fingerprint
+from package.corpus import ItemCorpus, load_corpus, save_corpus
+from package.corpus._sql import CORPUS_LOGIC_VERSION, get_corpus_schema_fingerprint
 
 
 def _make_sample_meta():

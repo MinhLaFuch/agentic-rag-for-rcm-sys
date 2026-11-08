@@ -6,7 +6,7 @@ import pytest
 import scipy.sparse as sp
 
 from package.evaluation.recommender.core import evaluate_recommender, evaluate_ranking
-from package.tools.recommenders import PopularityRecommender
+from package.recommenders import PopularityRecommender
 
 
 class MockRecommender:

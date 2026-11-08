@@ -17,7 +17,7 @@ import pytest
 
 from package.tools import BaselineScorer, SimilarTool, RankTool
 from package.tools.base import ToolResult
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 

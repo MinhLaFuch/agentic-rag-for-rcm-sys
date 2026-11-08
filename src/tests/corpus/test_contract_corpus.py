@@ -9,7 +9,7 @@ import pytest
 
 from package.tools import ItemCorpus, LookupTool
 from package.tools.base import ToolInputError
-from package.tools.corpus import build_corpus
+from package.corpus import build_corpus
 
 
 def _df(**extra):

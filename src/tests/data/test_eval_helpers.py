@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from package.tools.corpus import build_corpus
+from package.corpus import build_corpus
 from package.evaluation.recommender.config import segment_users_by_history, select_fit_target, parameter_grid
 
 

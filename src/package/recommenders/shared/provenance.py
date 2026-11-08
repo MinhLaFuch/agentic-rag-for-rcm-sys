@@ -1,7 +1,7 @@
 """Provenance tracking for recommender models.
 
 Re-exports fit_provenance from fit_provenance.py for backward compatibility
-with imports using `from package.tools.recommenders.shared.provenance import fit_provenance`.
+with imports using `from package.recommenders.shared.provenance import fit_provenance`.
 """
 
 from .fit_provenance import fit_provenance

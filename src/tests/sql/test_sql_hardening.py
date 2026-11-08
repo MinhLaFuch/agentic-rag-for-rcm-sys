@@ -15,7 +15,7 @@ import pytest
 
 from package.tools import LookupTool, FilterTool
 from package.tools.base import ToolResult
-from package.tools.corpus import corpus as corpus_module
+from package.corpus import corpus as corpus_module
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 ALL_IDS = {VG_A, VG_B, VG_C, EL_A, EL_D}

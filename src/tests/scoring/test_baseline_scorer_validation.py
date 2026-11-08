@@ -8,7 +8,7 @@ import pytest
 from scipy import sparse
 
 from package.tools import BaselineScorer
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 
 
 def _create_mock_model(num_items=10, num_users=5, with_similarity=True):

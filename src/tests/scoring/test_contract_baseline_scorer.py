@@ -5,7 +5,7 @@ import pytest
 import scipy.sparse as sp
 
 from package.tools import BaselineScorer
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 
 
 class FakeModel:  # the attributes BaselineScorer needs from a fitted legacy model

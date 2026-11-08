@@ -9,7 +9,7 @@ from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
 from package.tools import BaselineScorer, LookupTool, FilterTool, ToolCallLogger, SimilarTool
 from package.memory.memory_tool import MemoryTool
-from package.tools.recommenders import ItemKNNRecommender
+from package.recommenders import ItemKNNRecommender
 from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A, VG_B, VG_C
 
@@ -90,7 +90,7 @@ def test_every_tool_the_planner_can_see_documents_itself(corpus, cf_setup):
     from package.agents import build_tool_prompt
     from package.memory.memory_tool import MemoryTool
     from package.tools import BaselineScorer, SimilarTool, RankTool, SearchTool, FilterTool
-    from package.tools.recommenders import ItemKNNRecommender
+    from package.recommenders import ItemKNNRecommender
 
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(5).fit(interactions)
@@ -166,7 +166,7 @@ def test_step_includes_args_and_output_summary(corpus):
 def test_step_includes_note_when_present(corpus, cf_setup):
     """Tool output with 'note' field should be copied to step."""
     from package.tools import SimilarTool
-    from package.tools.recommenders import ItemKNNRecommender
+    from package.recommenders import ItemKNNRecommender
 
     interactions, user2id, item2id = cf_setup
     knn = ItemKNNRecommender(5).fit(interactions)
