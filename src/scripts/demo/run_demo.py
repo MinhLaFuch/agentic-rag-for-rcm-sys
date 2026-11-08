@@ -2,7 +2,6 @@
 Demo UI với Gradio cho hệ gợi ý sản phẩm bằng LLM agent.
 
 Cách chạy:
-    PYTHONPATH=. python scripts/demo/run_demo.py --mock               # Chế độ mẫu (không cần dữ liệu/LLM)
     PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games  # Chế độ thật
 """
 
@@ -25,7 +24,6 @@ from package.inference import get_inference_limits
 from package.demo import (
     DemoProfile,
     DemoRequest,
-    OfflineDemoBackend,
     LiveBackend,
     format_items,
     format_memory,
@@ -33,13 +31,11 @@ from package.demo import (
     status_badge,
     sample_requests,
 )
-from package.demo.backend import get_backend
 from package.utils import ensure_utf8_stdout
 
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Demo UI for LLM agent recommender system")
-    ap.add_argument("--mock", action="store_true", help="Run in mock mode (no data/LLM/network needed)")
     ap.add_argument("--tag", help="Data tag (default: tag from run_tag.yaml)")
     ap.add_argument("--domain", action="append", help="Domain to load (repeatable; default: all)")
     ap.add_argument("--host", default="127.0.0.1", help="Host to run server (default: 127.0.0.1)")
@@ -55,8 +51,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_ui(
-    backend: OfflineDemoBackend | LiveBackend,
-    mock_mode: bool,
+    backend: LiveBackend,
     profiles: list[DemoProfile] | None = None,
     default_inference_mode: str = "llm",
 ) -> gr.Blocks:
@@ -73,8 +68,6 @@ def build_ui(
         gr.Markdown("# Demo LLM Agent Recommender System")
 
         # --- Warnings ---
-        if mock_mode:
-            gr.Markdown("⚠️ **MOCK MODE (fake data)** - For demo without real data/LLM/network")
         gr.Markdown("⚠️ **Single-turn demo**: No follow-up questions; send new request for clarification.")
 
         # --- Input ---
@@ -121,7 +114,6 @@ def build_ui(
                 choices=[("LLM", "llm"), ("Template", "template")],
                 value=default_inference_mode,
                 label="Inference",
-                interactive=not mock_mode,
             )
 
         # --- Submit button ---
@@ -297,48 +289,40 @@ def main() -> None:
 
     start_time = time.time()
 
-    if args.mock:
-        print("Mode: MOCK (OfflineDemoBackend)")
-        backend = get_backend(mock=True)
-        profiles = backend.get_profiles()
-        print("OfflineDemoBackend initialized (no data loading needed)")
-    else:
-        print("Mode: LIVE (LiveBackend)")
-        print(f"Tag: {args.tag or '(default)'}")
-        print(f"Domain: {args.domain or '(all)'}")
-        print(f"Eval-on: {args.eval_on}")
+    print("Mode: LIVE (LiveBackend)")
+    print(f"Tag: {args.tag or '(default)'}")
+    print(f"Domain: {args.domain or '(all)'}")
+    print(f"Eval-on: {args.eval_on}")
 
-        print("Initializing LiveBackend...")
-        backend = LiveBackend(
-            tag=args.tag,
-            domain=args.domain,
-            eval_on=args.eval_on,
-            use_prebuilt=args.use_prebuilt,
-            allow_missing_corpus_sources=args.allow_missing_corpus_sources,
-        )
-        try:
-            backend.initialize()
-        except Exception as exc:
-            print("\n" + "=" * 60)
-            print("ERROR: LIVEBACKEND INITIALIZATION FAILED")
-            print("=" * 60)
-            print(f"Reason: {type(exc).__name__}: {exc}")
-            print("\nSuggestion:")
-            print("  - Check data has been processed (resource/...)")
-            print("  - Check tag and domain")
-            print("  - Check LLM_API_KEY environment variable")
-            print("  - Run with --mock to demo without real data:")
-            print("    PYTHONPATH=. python scripts/demo/run_demo.py --mock")
-            sys.exit(1)
+    print("Initializing LiveBackend...")
+    backend = LiveBackend(
+        tag=args.tag,
+        domain=args.domain,
+        eval_on=args.eval_on,
+        use_prebuilt=args.use_prebuilt,
+        allow_missing_corpus_sources=args.allow_missing_corpus_sources,
+    )
+    try:
+        backend.initialize()
+    except Exception as exc:
+        print("\n" + "=" * 60)
+        print("ERROR: LIVEBACKEND INITIALIZATION FAILED")
+        print("=" * 60)
+        print(f"Reason: {type(exc).__name__}: {exc}")
+        print("\nSuggestion:")
+        print("  - Check data has been processed (resource/...)")
+        print("  - Check tag and domain")
+        print("  - Check LLM_API_KEY environment variable")
+        sys.exit(1)
 
-        print("Getting profiles...")
-        profiles = backend.get_profiles()
+    print("Getting profiles...")
+    profiles = backend.get_profiles()
 
     init_elapsed = time.time() - start_time
     print(f"\nStartup time: {init_elapsed:.1f}s")
 
     print("\nBuilding Gradio UI...")
-    demo = build_ui(backend, args.mock, profiles, default_inference_mode=args.inference_mode)
+    demo = build_ui(backend, profiles, default_inference_mode=args.inference_mode)
 
     print(f"\nStarting server at http://{args.host}:{args.port}")
     print("Press Ctrl+C to stop.")

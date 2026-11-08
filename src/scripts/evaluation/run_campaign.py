@@ -23,7 +23,6 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from package.evaluation.campaign import CampaignConfig, CampaignRunner
-from scripts._mock_helper import add_mock_argument, check_mock_conditions
 
 # Default campaign config path
 DEFAULT_CAMPAIGN_CONFIG = "configs/evaluation/campaign.yaml"
@@ -64,12 +63,7 @@ def main() -> None:
         action="store_true",
         help="Print what would be run without actually executing",
     )
-    add_mock_argument(ap)
-
     args = ap.parse_args()
-
-    # Check conditions for real mode
-    check_mock_conditions(args.mock, requires_llm=True, requires_data=True)
 
     # Load campaign configuration
     campaign_path = Path(args.campaign_config)

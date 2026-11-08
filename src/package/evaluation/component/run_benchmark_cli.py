@@ -15,13 +15,6 @@ from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
 from ._schema import BenchmarkSummary
 from ._regression import compare_benchmarks, format_regression_report
 
-# Import mock helper - need to handle the path from package/ to scripts/
-import sys
-from pathlib import Path as PathLib
-SCRIPTS_DIR = PathLib(__file__).resolve().parents[3] / "scripts"
-sys.path.insert(0, str(SCRIPTS_DIR))
-from _mock_helper import add_mock_argument, check_mock_conditions
-
 
 def _get_evaluator(component: str, config: dict[str, Any]):
     """Import and instantiate the appropriate evaluator for the component."""
@@ -97,13 +90,7 @@ def run_benchmark_cli() -> None:
         default=None,
         help="Git commit SHA (auto-detected if not provided)",
     )
-    add_mock_argument(parser)
-
     args = parser.parse_args()
-
-    # Check conditions for real mode (only for components that need LLM)
-    if args.component in ["planner", "executor", "grounding", "integration"]:
-        check_mock_conditions(args.mock, requires_llm=True, requires_data=False)
 
     # Số lần lặp + config evaluator đọc từ configs/eval/component_benchmarks.yaml
     bench_cfg = load_config("eval/component_benchmarks")["component_benchmarks"]

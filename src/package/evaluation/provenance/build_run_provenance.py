@@ -40,7 +40,6 @@ def _git_info() -> tuple[str | None, bool]:
 def build_run_provenance(
     planner_tools: list[Tool],
     memory_tools: list[Tool] | None = None,
-    mode: str = "real",
 ) -> dict[str, Any]:
     """
     Build provenance dict for an experiment run.
@@ -48,7 +47,6 @@ def build_run_provenance(
     Args:
         planner_tools: Tools available to the planner agent
         memory_tools: Tools available to the planner_memory agent (if different)
-        mode: "real" or "mock" (whether using real or fake components)
 
     Returns:
         Dict with keys:
@@ -126,5 +124,4 @@ def build_run_provenance(
         "agent_limits": agent_limits_dict,
         "inference_limits": inference_limits_dict,
         "config_overlay": get_overlay_info(),
-        "mode": mode,
     }

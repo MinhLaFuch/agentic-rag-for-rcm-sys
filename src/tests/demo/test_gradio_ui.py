@@ -14,7 +14,7 @@ def test_build_ui_with_mock_backend():
 
     backend = OfflineDemoBackend()
     profiles = backend.get_profiles()
-    demo = build_ui(backend, mock_mode=True, profiles=profiles, default_inference_mode="llm")
+    demo = build_ui(backend, profiles=profiles, default_inference_mode="llm")
 
     assert demo is not None
     assert hasattr(demo, "blocks")
@@ -53,7 +53,7 @@ def test_build_ui_with_profiles():
 
     backend = OfflineDemoBackend()
     profiles = backend.get_profiles()
-    demo = build_ui(backend, mock_mode=True, profiles=profiles, default_inference_mode="template")
+    demo = build_ui(backend, profiles=profiles, default_inference_mode="template")
 
     assert demo is not None
     assert hasattr(demo, "blocks")
