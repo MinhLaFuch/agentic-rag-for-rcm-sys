@@ -7,13 +7,13 @@ import json
 import subprocess
 from typing import Any
 
-from ..agents import get_agent_limits
-from ..config import get_overlay_info
-from ..agents.planner import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
-from ..agents.toolkit.build_tool_prompt import build_tool_prompt
-from ..inference import get_inference_limits
-from ..inference.compose import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
-from ..tools.base import Tool
+from package.agents import get_agent_limits
+from package.config import get_overlay_info
+from package.agents.planner import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
+from package.agents.toolkit.build_tool_prompt import build_tool_prompt
+from package.inference import get_inference_limits
+from package.inference.compose import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
+from package.tools.base import Tool
 
 
 def _sha256(text: str) -> str:

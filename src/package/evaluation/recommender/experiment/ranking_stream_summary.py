@@ -5,8 +5,8 @@ from collections import Counter
 
 import numpy as np
 
-from .candidate_retrieval_metrics import candidate_retrieval_metrics
-from .metrics import ranking_metrics_at_k
+from ..metrics.retrieval.candidate_retrieval_metrics import candidate_retrieval_metrics
+from ..metrics.ranking.ranking_metrics_at_k import ranking_metrics_at_k
 
 
 class RankingStreamSummary:

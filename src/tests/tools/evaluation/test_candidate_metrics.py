@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 
 from package.evaluation.recommender.metrics.retrieval import candidate_retrieval_metrics, item_familiarity_metrics
-from package.evaluation.recommender.utils import latency_summary, sha256_file
+from package.evaluation.recommender.utils.latency_summary import latency_summary
+from package.evaluation.recommender.utils.sha256_file import sha256_file
 from scripts.evaluation.candidate_recall import drop_seen, sample_users
 
 
