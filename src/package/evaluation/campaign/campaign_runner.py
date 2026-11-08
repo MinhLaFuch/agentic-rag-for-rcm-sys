@@ -11,9 +11,11 @@ from typing import Any
 from datetime import datetime, timezone
 
 from ._schema import CampaignConfig, CampaignResult, ExperimentRun
+from ..statistics import bootstrap_confidence_interval, paired_bootstrap_difference
 from package.config import get_data_paths
 
 import yaml
+from statistics import stdev
 
 
 class CampaignRunner:
@@ -355,16 +357,66 @@ class CampaignRunner:
             "deltas": {},
         }
 
+        # statistical_settings from campaign.yaml drives bootstrap CIs.
+        # Note: ablation/_statistics.py has a separate bootstrap_ci + McNemar
+        # for per-case paired diffs — different semantics (run-level vs
+        # case-level pairing); kept separate intentionally.
+        stats_cfg = self.config.statistical_settings or {}
+        confidence = float(stats_cfg.get("confidence_level", 0.95))
+        n_bootstrap = int(stats_cfg.get("bootstrap_samples", 1000))
+        paired = bool(stats_cfg.get("paired_comparison", True))
+        seed = stats_cfg.get("random_seed")
+        comparison["statistics"] = {
+            "confidence_level": confidence,
+            "bootstrap_samples": n_bootstrap,
+            "paired_comparison": paired,
+        }
+
         # Compute deltas
+        metric_stats: dict[str, Any] = {}
         for key in set(avg_a.keys()) | set(avg_b.keys()):
             val_a = avg_a.get(key, 0)
             val_b = avg_b.get(key, 0)
-            comparison["deltas"][key] = {
+            delta_entry: dict[str, Any] = {
                 "a": val_a,
                 "b": val_b,
                 "delta": val_b - val_a,
                 "relative_delta": (val_b - val_a) / val_a if val_a != 0 else 0,
             }
+
+            # Per-experiment mean/std/CI across repeated runs + paired delta CI.
+            values_a = [r.metrics[key] for r in runs_a if key in r.metrics]
+            values_b = [r.metrics[key] for r in runs_b if key in r.metrics]
+            if len(values_a) >= 2 or len(values_b) >= 2:
+                stat: dict[str, Any] = {}
+                for side, values in (("a", values_a), ("b", values_b)):
+                    if len(values) >= 2:
+                        mean, lo, hi = bootstrap_confidence_interval(
+                            values, confidence, n_bootstrap, seed
+                        )
+                        stat[side] = {
+                            "mean": mean,
+                            "std": float(stdev(values)),
+                            "ci": [lo, hi],
+                            "n": len(values),
+                        }
+                if stat:
+                    metric_stats[key] = stat
+            if (
+                paired
+                and len(values_a) >= 2
+                and len(values_a) == len(values_b)
+            ):
+                mean_diff, dlo, dhi, p_value = paired_bootstrap_difference(
+                    values_a, values_b, confidence, n_bootstrap, seed
+                )
+                delta_entry["delta_ci"] = [dlo, dhi]
+                delta_entry["p_value"] = p_value
+                delta_entry["significant"] = bool(dlo > 0 or dhi < 0)
+            comparison["deltas"][key] = delta_entry
+
+        if metric_stats:
+            comparison["metric_stats"] = metric_stats
 
         return comparison
 

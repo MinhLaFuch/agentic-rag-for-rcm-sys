@@ -471,3 +471,73 @@ def test_load_experiment_metrics_excludes_sample_count(tmp_path: Path):
     metrics = runner._load_experiment_metrics(f"saved -> {exp_dir}")
     assert metrics["planner_similar_task_success"] == 0.9
     assert "planner_similar_n" not in metrics
+
+
+def _stat_runs(name_a="exp_a", name_b="exp_b", n=3):
+    runs_a = [
+        ExperimentRun(
+            experiment_name=name_a, run_number=i + 1, output_dir=f"{name_a}/r{i}",
+            success=True, metrics={"task_success_rate": 0.80 + 0.01 * i},
+        )
+        for i in range(n)
+    ]
+    runs_b = [
+        ExperimentRun(
+            experiment_name=name_b, run_number=i + 1, output_dir=f"{name_b}/r{i}",
+            success=True, metrics={"task_success_rate": 0.90 + 0.01 * i},
+        )
+        for i in range(n)
+    ]
+    return runs_a, runs_b
+
+
+def test_statistical_settings_produce_ci_and_paired_delta():
+    """statistical_settings from campaign.yaml drives bootstrap CIs (Phase 4.1)."""
+    cfg = CampaignConfig(
+        campaign_id="stat_test",
+        statistical_settings={
+            "confidence_level": 0.95,
+            "bootstrap_samples": 200,
+            "paired_comparison": True,
+            "random_seed": 7,
+        },
+    )
+    runner = CampaignRunner(cfg)
+    runs_a, runs_b = _stat_runs()
+    comparison = runner._compare_experiments(runs_a, runs_b)
+
+    assert comparison["statistics"]["confidence_level"] == 0.95
+    assert comparison["statistics"]["bootstrap_samples"] == 200
+
+    tsr = comparison["deltas"]["task_success_rate"]
+    # Paired equal-length runs → delta CI + p_value present
+    assert "delta_ci" in tsr and "p_value" in tsr and "significant" in tsr
+    # B is consistently ~0.10 above A → CI excludes 0 → significant
+    assert tsr["significant"] is True
+    assert tsr["delta_ci"][0] > 0
+
+    # Per-experiment mean/std/CI across runs
+    stats = comparison["metric_stats"]["task_success_rate"]
+    assert stats["a"]["n"] == 3 and stats["b"]["n"] == 3
+    assert stats["a"]["ci"][0] <= stats["a"]["mean"] <= stats["a"]["ci"][1]
+
+
+def test_unpaired_or_disabled_statistics_skip_delta_ci():
+    """paired_comparison=false or unequal run counts → no delta_ci."""
+    cfg = CampaignConfig(
+        campaign_id="stat_test2",
+        statistical_settings={"paired_comparison": False, "bootstrap_samples": 100},
+    )
+    runner = CampaignRunner(cfg)
+    runs_a, runs_b = _stat_runs()
+    comparison = runner._compare_experiments(runs_a, runs_b)
+    assert "delta_ci" not in comparison["deltas"]["task_success_rate"]
+
+    # Unequal lengths with paired enabled → also no delta_ci
+    cfg2 = CampaignConfig(
+        campaign_id="stat_test3",
+        statistical_settings={"paired_comparison": True, "bootstrap_samples": 100},
+    )
+    runner2 = CampaignRunner(cfg2)
+    comparison2 = runner2._compare_experiments(runs_a, runs_b[:2])
+    assert "delta_ci" not in comparison2["deltas"]["task_success_rate"]
