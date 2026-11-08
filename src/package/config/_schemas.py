@@ -529,7 +529,6 @@ class CampaignFileConfig(BaseModel):
     output_dir: str = ""
     comparison_pairs: list[list[str]] = Field(default_factory=list)
     statistical_settings: dict[str, Any] = Field(default_factory=dict)
-    metadata: dict[str, Any] = Field(default_factory=dict)
     default_agents: list[str] = Field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
     )

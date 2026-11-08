@@ -31,9 +31,6 @@ def _comparison_pairs_key() -> str:
 def _statistical_settings_key() -> str:
     return "statistical_settings"
 
-def _metadata_key() -> str:
-    return "metadata"
-
 def _campaign_id_key() -> str:
     return "campaign_id"
 
@@ -107,7 +104,6 @@ class CampaignConfig:
         output_dir: Directory for campaign output
         comparison_pairs: List of (experiment_a, experiment_b) pairs to compare
         statistical_settings: Statistical comparison settings
-        metadata: Additional metadata
     """
     campaign_id: str
     description: str = ""
@@ -118,7 +114,6 @@ class CampaignConfig:
     output_dir: str = ""
     comparison_pairs: list[tuple[str, str]] = field(default_factory=list)
     statistical_settings: dict[str, Any] = field(default_factory=dict)
-    metadata: dict[str, Any] = field(default_factory=dict)
     # Runtime defaults applied to every experiment overlay (were hard-coded in CampaignRunner)
     default_agents: list[str] = field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
@@ -137,7 +132,6 @@ class CampaignConfig:
             _output_dir_key(): self.output_dir,
             _comparison_pairs_key(): self.comparison_pairs,
             _statistical_settings_key(): self.statistical_settings,
-            _metadata_key(): self.metadata,
             "default_agents": self.default_agents,
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
@@ -155,7 +149,6 @@ class CampaignConfig:
             output_dir=data.get(_output_dir_key(), ""),
             comparison_pairs=data.get(_comparison_pairs_key(), []),
             statistical_settings=data.get(_statistical_settings_key(), ""),
-            metadata=data.get(_metadata_key(), {}),
             default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),

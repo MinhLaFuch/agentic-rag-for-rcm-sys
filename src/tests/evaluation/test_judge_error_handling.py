@@ -28,7 +28,6 @@ def _judge_config(api_key: str = "fake_key") -> dict:
         "enable_long_context": False,
         "evaluation": {
             "faithfulness": {
-                "claim_extraction": "rule",
                 "support_threshold": 0.7,
                 "instructions": "Is the claim supported by item fields?",
             },

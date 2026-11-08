@@ -42,8 +42,3 @@ statistical_settings:
 
 # Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
 output_dir: "agent_eval/campaigns/campaign_001"
-
-metadata:
-  author: "evaluation team"
-  created: "2026-11-03"
-  purpose: "Parameter grid search for agents, inference modes, and reflection rounds"
