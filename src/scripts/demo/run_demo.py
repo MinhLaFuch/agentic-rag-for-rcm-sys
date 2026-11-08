@@ -2,7 +2,7 @@
 Demo UI với Gradio cho hệ gợi ý sản phẩm bằng LLM agent.
 
 Cách chạy:
-    PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games  # Chế độ thật
+    PYTHONPATH=. python scripts/demo/run_demo.py --domain Video_Games  # Chế độ thật
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ except ImportError:
     print("Please install with: pip install gradio")
     sys.exit(1)
 
-from package.config import get_data_paths, get_domains, load_config
+from package.config import get_data_paths, get_domains, load_config, resolve_dataset_tag
 from package.inference import get_inference_limits
 from package.demo import (
     DemoProfile,
@@ -36,8 +36,9 @@ from package.utils import ensure_utf8_stdout
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Demo UI for LLM agent recommender system")
-    ap.add_argument("--tag", help="Data tag (default: tag from run_tag.yaml)")
-    ap.add_argument("--domain", action="append", help="Domain to load (repeatable; default: all)")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+                         "1 domain -> bundle tên domain; tập con khác bị từ chối.")
     ap.add_argument("--host", default="127.0.0.1", help="Host to run server (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=7860, help="Port to run server (default: 7860)")
     args = ap.parse_args()
@@ -290,13 +291,12 @@ def main() -> None:
     start_time = time.time()
 
     print("Mode: LIVE (LiveBackend)")
-    print(f"Tag: {args.tag or '(default)'}")
+    print(f"Dataset tag: {resolve_dataset_tag(args.domain)}")
     print(f"Domain: {args.domain or '(all)'}")
     print(f"Eval-on: {args.eval_on}")
 
     print("Initializing LiveBackend...")
     backend = LiveBackend(
-        tag=args.tag,
         domain=args.domain,
         eval_on=args.eval_on,
         use_prebuilt=args.use_prebuilt,

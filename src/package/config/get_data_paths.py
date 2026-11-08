@@ -5,7 +5,7 @@ from typing import Any
 
 from ._constants import PROJECT_ROOT
 from ._dataclass import DataPaths
-from .get_domains import resolve_dataset_tag
+from .resolve_dataset_tag import resolve_dataset_tag
 from .load_config import load_config
 
 

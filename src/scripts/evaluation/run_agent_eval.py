@@ -209,8 +209,10 @@ def run_type1(
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
-    ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu + meta để nạp (lặp lại). "
+                         "Mặc định: tất cả domains.yaml -> bundle 'multi_domain'. "
+                         "Đúng 1 domain -> bundle tên domain đó; tập con khác bị từ chối.")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
     args = ap.parse_args()
@@ -231,7 +233,7 @@ def main() -> None:
     metadata_policy_name = str(cfg["metadata_policy"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
-    data_paths = get_data_paths(args.tag)
+    data_paths = get_data_paths(domains=args.domain)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
@@ -239,7 +241,7 @@ def main() -> None:
     train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
     fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     if "timestamp" not in fit_df.columns:
-        raise SystemExit("Splits have no `timestamp` column: re-run python scripts/data_pipeline/run_pipeline.py --stages 3 --tag <tag>")
+        raise SystemExit("Splits have no `timestamp` column: re-run python scripts/data_pipeline/run_pipeline.py --stages 3")
     as_of = int(target_df["timestamp"].min())
     check_profile_snapshot(as_of_timestamp=as_of, source_interactions=fit_df)  # nothing the agent can read is from the future
 
@@ -266,8 +268,9 @@ def main() -> None:
         if not corpus_path.exists():
             raise SystemExit(
                 f"Corpus file not found: {corpus_path}\n"
-                f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
-                f"Or set agent_eval.use_prebuilt_corpus: false to build in RAM (slower, for debug or small tags)"
+                f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 "
+                f"(tag {data_paths.tag!r} derives from --domain; merged = all domains)\n"
+                f"Or set agent_eval.use_prebuilt_corpus: false to build in RAM (slower, for debug or small datasets)"
             )
         print(f"Load corpus from {corpus_path}")
         corpus, coverage = load_corpus(

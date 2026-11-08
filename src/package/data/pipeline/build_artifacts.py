@@ -50,7 +50,7 @@ def build_artifacts(
     # Check input dependencies
     if not paths.mapped_dir.exists():
         raise FileNotFoundError(
-            f"Không tìm thấy {paths.mapped_dir} — chạy python scripts/data_pipeline/run_pipeline.py --stages 3 --tag {paths.tag} trước."
+            f"Không tìm thấy {paths.mapped_dir} — chạy python scripts/data_pipeline/run_pipeline.py --stages 3 trước."
         )
 
     # Load mappings
@@ -131,7 +131,7 @@ def build_artifacts(
             print(f"  item_knn ({split}): {paths.item_knn_path(split)}")
 
     print("\nTo use these artifacts:")
-    print(f"  python scripts/evaluation/run_agent_eval.py --tag {paths.tag}")
+    print(f"  python scripts/evaluation/run_agent_eval.py")
     if len(eval_on) == 1:
         print(f"  (will use ItemKNN for {eval_on[0]})")
     else:

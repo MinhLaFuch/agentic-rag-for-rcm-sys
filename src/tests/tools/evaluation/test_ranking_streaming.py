@@ -35,7 +35,7 @@ def environment(tmp_path, monkeypatch):
         df.to_parquet(paths.split_path(name))
     meta = pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,
                          "title":["Pok\u00e9mon keyboard"]*7})
-    monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
+    monkeypatch.setattr(script,"get_data_paths",lambda *a,**k:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"load_mappings",lambda *a:(user2id,item2id))
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
@@ -44,7 +44,7 @@ def environment(tmp_path, monkeypatch):
 
 def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"):
     # Tunables go through CONFIG_OVERLAY_PATH (merged over configs/ by load_config);
-    # the CLI only keeps runtime selectors (--tag/--work-dir/--resume/--candidates-from).
+    # the CLI only keeps runtime selectors (--domain/--work-dir/--resume/--candidates-from).
     overlay = {
         "eval/ranking_eval": {"ranking_eval": {
             "per_segment": 2, "candidate_budget": 3, "ks": [1, 3],
@@ -57,7 +57,7 @@ def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"
     overlay_path = base / f"overlay_{name}.yaml"
     overlay_path.write_text(yaml.safe_dump(overlay, sort_keys=False), encoding="utf-8")
     monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
-    args = ["ranking_eval", "--tag", "toy",
+    args = ["ranking_eval", "--domain", "D",
             "--work-dir", str(base / name)]
     if resume:
         args += ["--resume"]

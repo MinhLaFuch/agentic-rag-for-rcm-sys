@@ -63,13 +63,13 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
 
     assert run("path:raw_dir") == (0, ["resource/raw"])
     assert run("path:filtered_path") == (0, ["resource/filtered/multi_domain/interactions.parquet"])
-    assert run("--tag", "vg_toys", "path:splits_dir") == (0, ["resource/splits/vg_toys"])
-    assert run("--tag", "vg_toys", "path:log_dir") == (0, ["experiments/logs/vg_toys"])
+    assert run("--domain", "Video_Games", "path:splits_dir") == (0, ["resource/splits/Video_Games"])
+    assert run("--domain", "Video_Games", "path:log_dir") == (0, ["experiments/logs/Video_Games"])
     assert run("path:experiments_dir") == (0, ["experiments"])
     assert run("path:review_path:Video_Games") == (0, [get_data_paths().review_path("Video_Games").relative_to(PROJECT_ROOT).as_posix()])
     assert run("path:meta_path:Video_Games") == (0, ["resource/raw/meta_Video_Games.jsonl.gz"])
     assert run("path:cleaned_path:Electronics") == (0, ["resource/cleaned/Electronics/interactions.parquet"])
-    assert run("--tag", "t", "path:split_path:train") == (0, ["resource/splits/t/train.parquet"])
+    assert run("--domain", "Electronics", "path:split_path:train") == (0, ["resource/splits/Electronics/train.parquet"])
     # shell and Python must agree: the CLI is just a view of DataPaths
     assert run("path:split_path:test") == (0, [get_data_paths().split_path("test").relative_to(PROJECT_ROOT).as_posix()])
     assert run("path:nope")[0] != 0

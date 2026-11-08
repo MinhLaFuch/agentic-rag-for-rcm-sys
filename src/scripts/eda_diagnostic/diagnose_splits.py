@@ -3,7 +3,7 @@
 Chẩn đoán splits để hiểu lý do recall@10 ≡ 0.
 
 Usage:
-    python scripts/eda_diagnostic/diagnose_splits.py --tag <tag> [--out output.json]
+    python scripts/eda_diagnostic/diagnose_splits.py [--domain <Domain>] [--out output.json]
 """
 
 import argparse
@@ -45,8 +45,10 @@ def main():
         description="Chẩn đoán splits để hiểu lý do recall@10 ≡ 0"
     )
     parser.add_argument(
-        "--tag",
-        help="Data tag (default: tag from run_tag.yaml)"
+        "--domain",
+        action="append",
+        help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+             "1 domain -> bundle tên domain; tập con khác bị từ chối."
     )
     parser.add_argument(
         "--out",
@@ -57,10 +59,8 @@ def main():
     print("="*80)
     print("DIAGNOSING SPLITS")
     print("="*80)
-    print(f"Tag: {args.tag}")
-
-    # Load data paths
-    paths = get_data_paths(args.tag)
+    paths = get_data_paths(domains=args.domain)
+    print(f"Tag: {paths.tag}")
     print(f"Splits dir: {paths.splits_dir}")
 
     print(f"Loading splits from {paths.splits_dir}...")
@@ -74,7 +74,7 @@ def main():
     diagnosis = diagnose_splits(train, validation, test)
 
     # Print report
-    print_diagnosis_report(diagnosis, args.tag)
+    print_diagnosis_report(diagnosis, paths.tag)
 
     # Save to JSON if requested
     if args.out:

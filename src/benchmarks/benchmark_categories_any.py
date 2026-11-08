@@ -6,7 +6,7 @@ Measures query performance and EXPLAIN QUERY PLAN before and after adding
 the composite index idx_cat_item_cat on item_categories(item_id, category).
 
 Usage:
-    python scripts/evaluation/benchmark_categories_any.py --tag <tag>
+    python scripts/evaluation/benchmark_categories_any.py [--domain <Domain>]
 
 Iterations, limit and the default query set live in configs/eval/categories_any_benchmark.yaml.
 """
@@ -140,8 +140,10 @@ def main():
         description="Benchmark SemanticSearchTool categories_any + FTS queries"
     )
     parser.add_argument(
-        "--tag",
-        help="Data tag (default: tag from run_tag.yaml)"
+        "--domain",
+        action="append",
+        help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+             "1 domain -> bundle tên domain; tập con khác bị từ chối."
     )
     args = parser.parse_args()
 
@@ -155,19 +157,17 @@ def main():
     print("="*80)
     print("Benchmark: SemanticSearchTool categories_any + FTS")
     print("="*80)
-    print(f"Tag: {args.tag or '(default)'}")
-
-    # Load data paths
-    paths = get_data_paths(args.tag)
+    paths = get_data_paths(domains=args.domain)
+    print(f"Tag: {paths.tag}")
     meta_files = []
-    for domain in get_domains():
+    for domain in (args.domain or get_domains()):
         meta_path = paths.meta_path(domain)
         if meta_path.exists():
             meta_files.append((domain, str(meta_path)))
         else:
             print(f"  note: {meta_path} not found; skipping metadata for {domain}")
     if not meta_files:
-        raise SystemExit(f"No metadata files found for tag {args.tag!r}")
+        raise SystemExit(f"No metadata files found for tag {paths.tag!r}")
 
     # Load metadata
     print("\nLoading metadata from:")

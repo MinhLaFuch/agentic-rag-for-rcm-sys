@@ -81,7 +81,7 @@ class LiveBackend:
         k = int(agent_eval_cfg["k"])
 
         # Load paths
-        data_paths = get_data_paths(self._tag)
+        data_paths = get_data_paths(tag=self._tag, domains=self._domain)
         meta_files = build_meta_files(data_paths, self._domain)
 
         # Load splits
@@ -104,8 +104,9 @@ class LiveBackend:
             if not corpus_path.exists():
                 raise RuntimeError(
                     f"Corpus file not found: {corpus_path}\n"
-                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
-                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small tags)"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 "
+                    f"(tag {data_paths.tag!r} derives from --domain)\n"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
                 )
             print(f"Load corpus from {corpus_path}")
             corpus, coverage = load_corpus(
@@ -142,7 +143,7 @@ class LiveBackend:
                 raise RuntimeError(
                     f"ItemKNN file not found: {item_knn_path}\n"
                     f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4\n"
-                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small tags)"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
                 )
             print(f"Load ItemKNN from {item_knn_path}")
             try:

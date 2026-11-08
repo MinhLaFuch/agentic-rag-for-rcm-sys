@@ -37,10 +37,10 @@ def main() -> None:
     parser.add_argument(
         "--domain",
         action="append",
-        help="Domain name(s) (repeat for multiple). Default: all domains in domains.yaml. "
-             "Used for stage 1 (run per domain) and stage 2.",
+        help="Domain name(s) (repeat for multiple). Default: all domains in domains.yaml "
+             "(merged bundle 'multi_domain'). Exactly one domain builds a per-domain "
+             "bundle named after it; other subsets are rejected.",
     )
-    parser.add_argument("--tag", help="Run tag (default: tag from run_tag.yaml). Used for stages 2 and 3.")
     parser.add_argument("--force", action="store_true", help="Overwrite existing outputs.")
     parser.add_argument(
         "--cold-start-report",
@@ -65,14 +65,13 @@ def main() -> None:
 
     stages = _parse_stages(args.stages)
     domains = args.domain or get_domains()
-    tag = args.tag or load_config("path/run_tag")["tag"]
 
     # Validate --review-path constraint
     if args.review_path:
         if len(domains) != 1 or 1 not in stages:
             parser.error("--review-path is only valid with a single domain and stage 1")
 
-    paths = get_data_paths(tag)
+    paths = get_data_paths(domains=domains)
     # Splits cho stage 4 ItemKNN lấy từ split.item_knn_splits (configs/data/split.yaml).
     eval_on_list = [str(s) for s in load_config("data/split")["split"]["item_knn_splits"]]
 

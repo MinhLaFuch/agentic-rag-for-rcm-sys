@@ -348,7 +348,7 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     knn._provenance = fit_provenance(fit, **context)
     knn._fit_data_hash = item_knn_data_hash(fit)
     loader = MagicMock(side_effect=ValueError("ItemKNN provenance mismatch")) if reject_cache else MagicMock(return_value=knn)
-    monkeypatch.setattr(module, "get_data_paths", lambda tag: paths)
+    monkeypatch.setattr(module, "get_data_paths", lambda *a, **k: paths)
     monkeypatch.setattr(module, "load_splits", lambda *a: (fit, empty, empty))
     monkeypatch.setattr(module, "load_mappings", lambda *a: (user2id, item2id))
     monkeypatch.setattr(module, "build_meta_files", lambda *a: [])

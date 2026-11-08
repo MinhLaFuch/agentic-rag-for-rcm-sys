@@ -3,12 +3,12 @@ In một giá trị trong configs/ hoặc một đường dẫn của project ra
 config/đường dẫn thay vì hard-code.
 
     python -m package.config path/domains.domains        # mỗi domain một dòng
-    python -m package.config path/run_tag.tag
+    python -m package.config path/domains.merged_name    # tên bundle khi merge tất cả
     python -m package.config path/data_paths.paths.raw_dir
 
     # Đường dẫn đã resolve từ DataPaths (nguồn duy nhất), in tương đối so với gốc project:
     python -m package.config path:filtered_path
-    python -m package.config --tag vg_toys path:splits_dir
+    python -m package.config --domain Video_Games path:splits_dir   # lặp --domain cho nhiều domain
     python -m package.config path:cleaned_path:Video_Games      # <tên>:<đối số> cho review_path/meta_path/cleaned_path/split_path
     python -m package.config path:split_path:train
 
@@ -80,9 +80,9 @@ def _display(path: Path) -> str:
         return path.as_posix()
 
 
-def _resolve_path(spec: str, tag: str | None) -> str:
+def _resolve_path(spec: str, domains: list[str] | None) -> str:
     name, _, arg = spec.partition(":")
-    paths = get_data_paths(tag)
+    paths = get_data_paths(domains=domains)
     if name in _PATH_PROPERTIES and not arg:
         return _display(getattr(paths, name))
     if name in _PATH_METHODS and arg:
@@ -91,15 +91,16 @@ def _resolve_path(spec: str, tag: str | None) -> str:
 
 
 def main(argv: list[str]) -> int:
-    tag = None
-    if len(argv) == 3 and argv[0] == "--tag":
-        tag, argv = argv[1], argv[2:]
+    domains: list[str] = []
+    while len(argv) >= 2 and argv[0] == "--domain":
+        domains.append(argv[1])
+        argv = argv[2:]
     if len(argv) != 1:
         print(__doc__, file=sys.stderr)
         return 2
     try:
         if argv[0].startswith("path:"):
-            print(_resolve_path(argv[0][len("path:"):], tag))
+            print(_resolve_path(argv[0][len("path:"):], domains or None))
             return 0
         value = _lookup(argv[0])
     except (KeyError, TypeError) as exc:

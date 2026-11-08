@@ -33,7 +33,7 @@ def map_split(paths: DataPaths, force: bool = False) -> dict:
 
     if not paths.filtered_path.exists():
         raise FileNotFoundError(
-            f"Không tìm thấy {paths.filtered_path} — chạy python scripts/data_pipeline/run_pipeline.py --stages 2 --tag {paths.tag} trước."
+            f"Không tìm thấy {paths.filtered_path} — chạy python scripts/data_pipeline/run_pipeline.py --stages 2 trước."
         )
     if paths.split_path("train").exists() and not force:
         raise FileExistsError(f"{paths.splits_dir} đã có splits. Dùng --force để ghi đè.")
