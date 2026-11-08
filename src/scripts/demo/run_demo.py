@@ -25,7 +25,7 @@ from package.inference import get_inference_limits
 from package.demo import (
     DemoProfile,
     DemoRequest,
-    MockBackend,
+    OfflineDemoBackend,
     LiveBackend,
     format_items,
     format_memory,
@@ -33,6 +33,7 @@ from package.demo import (
     status_badge,
     sample_requests,
 )
+from package.demo.backend import get_backend
 from package.utils import ensure_utf8_stdout
 
 
@@ -54,7 +55,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_ui(
-    backend: MockBackend | LiveBackend,
+    backend: OfflineDemoBackend | LiveBackend,
     mock_mode: bool,
     profiles: list[DemoProfile] | None = None,
     default_inference_mode: str = "llm",
@@ -297,10 +298,10 @@ def main() -> None:
     start_time = time.time()
 
     if args.mock:
-        print("Mode: MOCK (MockBackend)")
-        backend = MockBackend()
+        print("Mode: MOCK (OfflineDemoBackend)")
+        backend = get_backend(mock=True)
         profiles = backend.get_profiles()
-        print("MockBackend initialized (no data loading needed)")
+        print("OfflineDemoBackend initialized (no data loading needed)")
     else:
         print("Mode: LIVE (LiveBackend)")
         print(f"Tag: {args.tag or '(default)'}")

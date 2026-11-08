@@ -1,4 +1,4 @@
-"""MockBackend: phương án dự phòng khi demo lỗi (không dữ liệu/LLM/mạng)."""
+"""OfflineDemoBackend: backend offline cho demo khi không có dữ liệu/LLM/mạng."""
 
 from __future__ import annotations
 
@@ -85,8 +85,8 @@ _MOCK_TRAILS = {
 }
 
 
-class MockBackend:
-    """Backend giả, trả kết quả có sẵn cho demo (không cần dữ liệu/LLM/mạng)."""
+class OfflineDemoBackend:
+    """Backend offline, trả kết quả có sẵn cho demo (không cần dữ liệu/LLM/mạng)."""
 
     def __init__(self) -> None:
         self._request_count = 0

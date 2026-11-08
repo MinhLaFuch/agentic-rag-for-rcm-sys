@@ -5,31 +5,11 @@ import pandas as pd
 import pytest
 
 from package.agents import PlanExecutor
-from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
 from package.memory.memory_tool import MemoryTool
 from package.tools import FilterTool
 from package.corpus import ItemCorpus
-
-
-class ScriptedLLM(LLMProvider):
-    """LLM that returns scripted responses for testing plan execution."""
-    provider_name = "scripted"
-
-    def __init__(self, *replies: str) -> None:
-        self.replies = list(replies)
-        self.calls: list[list] = []
-
-    def complete(self, messages, *, temperature=0.0, max_tokens=512, response_format_json=False):
-        self.calls.append(list(messages))
-        return LLMResponse(
-            text=self.replies.pop(0),
-            prompt_tokens=10,
-            completion_tokens=5,
-            latency_seconds=0.1,
-            provider_name="scripted",
-            model_name="scripted-0"
-        )
+from tests.agents.fakes.scripted_llm import ScriptedLLM
 
 
 @pytest.fixture
