@@ -18,7 +18,7 @@ from package.data.split import infer_matrix_shape, load_splits
 from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import select_fit_target
-from package.tools.recommenders import build_interaction_matrix, build_model
+from package.recommenders.shared import build_interaction_matrix, build_model
 from package.utils import ensure_utf8_stdout
 
 
