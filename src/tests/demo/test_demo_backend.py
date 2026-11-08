@@ -5,13 +5,13 @@ import pytest
 from package.demo import (
     DemoRequest,
     DemoResult,
-    OfflineDemoBackend,
     format_items,
     format_trace,
     format_memory,
     status_badge,
     sample_requests,
 )
+from tests.demo.fakes.offline_backend import OfflineDemoBackend
 
 
 def test_mock_backend_returns_all_statuses():

@@ -5,8 +5,8 @@ not return ok=True with error nested in data.
 """
 
 import pytest
-from package.evaluation.component.benchmarks.controlled_filter_tool import ControlledFilterTool
-from package.evaluation.component.benchmarks.controlled_similar_tool import ControlledSimilarTool
+from tests.evaluation.component.benchmarks.fakes.controlled_filter_tool import ControlledFilterTool
+from tests.evaluation.component.benchmarks.fakes.controlled_similar_tool import ControlledSimilarTool
 
 
 def test_controlled_filter_tool_returns_ok_false_on_should_fail():

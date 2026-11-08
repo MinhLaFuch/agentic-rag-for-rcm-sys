@@ -4,7 +4,8 @@ import pytest
 
 gradio = pytest.importorskip("gradio")
 
-from package.demo import OfflineDemoBackend, DemoRequest, DemoProfile
+from package.demo import DemoRequest, DemoProfile
+from tests.demo.fakes.offline_backend import OfflineDemoBackend
 
 
 def test_build_ui_with_mock_backend():

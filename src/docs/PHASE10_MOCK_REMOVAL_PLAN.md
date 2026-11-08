@@ -225,6 +225,43 @@ Remove everything that runs on fakes from `package/` and `scripts/`. Real only -
 
 ---
 
+## Verification (answers to pre-deletion questions)
+
+### 1. Test impact — every test importing package/ mock code
+
+Grep of `tests/` for `package.evaluation.doubles`, `controlled_*`, `OfflineDemoBackend`, `MockBackend`, `MockAgentRunner`, `_mock_helper`, `_runtime_factory`, `get_backend`, `fixtures`:
+
+| Test file | Imports from package/ | Minimal fix |
+|---|---|---|
+| `tests/demo/test_demo_backend.py` | `OfflineDemoBackend` from `package.demo` | Relocate `offline_backend.py` → `tests/demo/fakes/offline_backend.py`, repoint import |
+| `tests/demo/test_gradio_ui.py` | `OfflineDemoBackend` from `package.demo` | Same relocated fake |
+| `tests/evaluation/component/benchmarks/test_controlled_tools.py` | `ControlledFilterTool`, `ControlledSimilarTool` | Relocate both → `tests/evaluation/component/benchmarks/fakes/` |
+| `tests/evaluation/component/test_memory_correctness.py` | `memory_correctness_setup` (re-exports `create_test_*`) | Keep — `memory_correctness_setup` stays in package/ (real benchmark uses it); only its `.fixtures` imports stay |
+
+No test imports `package.evaluation.doubles`, `MockAgentRunner`, `_mock_helper`, `_runtime_factory`, `get_backend`, or `fixtures/` directly. No test asserts `--mock` CLI behavior.
+
+### 2. Controlled*Tool
+Move `controlled_filter_tool.py` + `controlled_similar_tool.py` to `tests/evaluation/component/benchmarks/fakes/` as-is (copy, delete from package/). `get_controlled_tools.py` is deleted (only `executor_benchmark` uses it, which loses its failure scenarios). `test_controlled_tools.py` keeps asserting `result.ok is False` and `result.error is not None` — unchanged strength.
+
+### 3. executor_benchmark injected-failure scenarios
+`executor_benchmark.py` builds `ControlledFilterTool`/`ControlledSimilarTool` with `should_fail`, `should_timeout`, `should_return_empty` read from per-tool config (`tool_config`). After Controlled* are gone, these scenarios cannot run. Action: remove the Controlled* import and the failure-injection config path; the benchmark then runs only real-tool scenarios (FilterTool/SimilarTool with real corpus) or reports "no runnable scenarios" when only fake-dependent cases exist. Nothing moves to tests/ in this phase.
+
+### 4. Multi-turn CLI
+`package/evaluation/multi_turn/_run.py` line 72 constructs `MockAgentRunner(config)`; the class is defined at line 136. After deletion the module raises `NotImplementedError("real runner not implemented yet")` at the runner construction point; verified by running the multi-turn entry after the edit.
+
+### 5. Other fake-substitution paths
+Grep of `package/` + `scripts/` for `mock|Mock|fake|Fake|controlled|Controlled|offline|Offline|Scripted`: hits are exactly the inventoried items — `doubles/`, `controlled_*`, `offline_backend.py`, `MockAgentRunner` in `_run.py`, `--mock` in `run_agent_eval.py`, `run_campaign.py`, `link_e2e_cli.py`, `run_benchmark_cli.py`, `run_demo.py`, `demo_full_agent.py` (imports only), plus `build_runtime`/`add_mock_argument`/`check_mock_conditions` in `scripts/_mock_helper.py` + `scripts/_runtime_factory.py`. `openai_compatible_provider.py`, `build_requests.py`, `analyze_ranking_bottlenecks.py`, `candidate_recall.py`, `recommenders/*` hits are incidental words (e.g. "mock" in comments) — no fake substitution. `planner_benchmark.py` uses `Fake*Tool` (covered). No other paths found.
+
+### 6. fixtures/ KEEP list
+`package/evaluation/component/benchmarks/fixtures/` is imported by:
+- `build_cases.py` → `create_test_interactions`, `create_test_mappings`, `create_test_meta` (memory correctness dataset builder — real benchmark path)
+- `memory_correctness_setup.py` → all four `create_test_*` (used by `run_benchmark_cli.py` memory evaluator and `test_memory_correctness.py`)
+- `benchmarks/__init__.py` → re-exports all four
+
+KEEP all four: they are synthetic data builders for the real MemoryCorrectness benchmark, not mock behavior. `planner_benchmark.py` and `smoke_real_llm.py` do NOT import them (verified — no hits). Nothing in fixtures/ is deleted.
+
+---
+
 ## STOP for Approval
 
 This plan is ready for review. No deletions will be made until approval.
