@@ -37,6 +37,8 @@ from itertools import islice
 from pathlib import Path
 from typing import Any
 
+from scripts._mock_helper import add_mock_argument, check_mock_conditions
+
 import numpy as np
 import pandas as pd
 
@@ -212,7 +214,11 @@ def main() -> None:
     ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     ap.add_argument("--resume", action="store_true", help="Dùng lại trajectory đã ghi của lần chạy trước (cùng request text)")
+    add_mock_argument(ap)
     args = ap.parse_args()
+
+    # Check conditions for real mode
+    check_mock_conditions(args.mock, requires_llm=True, requires_data=True)
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
