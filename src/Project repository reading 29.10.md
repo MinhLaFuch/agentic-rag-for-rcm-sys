@@ -1,37 +1,118 @@
 ---
 created: 2026-09-27-15:07
-updated: 2026-11-07-14:30
-viewed: 2026-11-07-14:30
-branch: tools-building
-commit: 6fe49ee
+updated: 2026-11-08-17:30
+viewed: 2026-11-08-17:30
+branch: refactor-phase-0
+commit: 7c755a0
 ---
-
 # Project Repository Reading — agentic-rag-for-rcm-sys
 
-**agentic-rag-for-rcm-sys / `src`** — An LLM-agent product recommender running on Amazon Reviews 2023 (3 domains: `Video_Games`, `Toys_and_Games`, `Electronics`).
+**agentic-rag-for-rcm-sys / src** — An LLM-agent product recommender running on Amazon Reviews 2023 (3 domains: Video_Games, Toys_and_Games, Electronics).
 
-> **Architectural principle:** The LLM only decides *what to do*; tools provide controlled operations; `ItemCorpus` provides item knowledge; recommenders provide recommendation signals; the agent layer combines results; the inference layer writes the final response using only items the agent selected.
+> **Architectural principle:** The LLM only decides *what to do*; tools provide controlled operations; ItemCorpus provides item knowledge; recommenders provide recommendation signals; the agent layer combines results; the inference layer writes the final response using only items the agent selected.
 
-## 1. Repository State (as of 2026-11-07)
+## 1. Repository State (as of 2026-11-08)
 
 | Item | Value |
 |------|-------|
-| **Repository root** | `C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys` |
-| **Current branch** | `tools-building` |
-| **HEAD commit** | `6fe49ee` ("quick save", 2026-11-06 20:31:58 +0700) |
-| **Working tree** | **Modified** — 16 modified files, 50+ untracked files (mostly new reports and experimental artifacts) |
-| **GitNexus index** | 5,462 symbols, 11,115 relationships, 254 execution flows (indexed 2026-11-03) |
-| **Test baseline** | 1,318 passed, 4 skipped, 2 xfailed (64s) — clean regression gate |
+| **Repository root** | `C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys` |
+| **Current branch** | `refactor-phase-0` |
+| **HEAD commit** | `7c755a0` ("Phase 10.1: record execution log - all 7 steps complete, Baseline B maintained") |
+| **Working tree** | Modified (1 modified file, 6 untracked test log files) |
+| **GitNexus index** | Updated with refactored structure |
+| **Test baseline** | 368 passed, 4 skipped, 6 warnings (refactored structure)
 
-### Key Uncommitted Changes (Summary)
-- **Configuration centralization**: `src_root`, `config_dir` added to `data_paths.yaml`; path chains replaced with `get_data_paths().src_root`; Jev timeout defaults removed
-- **Jev reliability**: Config loader switched to `load_config`; env var aligned to `TYPESAFE_API_KEY`; explicit evaluation states added; fake-provider tests (8 passed)
-- **Component benchmarks**: `run_all` fixed (4/5 components work; planner requires `LLM_BASE_URL`); schema fields added; subprocess error handling improved
-- **New reports**: 15+ phase/report files added documenting Opik assessment, configuration centralization, and component verification
+### Key Changes from Previous Version (tools-building branch)
+
+| Change Area | Before (tools-building) | After (refactor-phase-0) |
+|-------------|------------------------|-------------------------|
+| **Package structure** | `package/tools/{corpus,recommenders,score,sql_query,evaluation}` | `package/{corpus,recommenders,tools/{scoring,sql,ranking,retrieval,base}}` |
+| **Tools** | 6 tools in `package/tools/` | 6 tools distributed: `corpus/`, `recommenders/`, `tools/{scoring,sql,ranking,retrieval,base}` |
+| **Recommendation evaluation** | `package/tools/evaluation/` | `package/evaluation/recommender/` (core, metrics, experiment, config, utils) |
+| **Agent evaluation** | `package/evaluation/` (root) | `package/evaluation/` + `trajectory/`, `product_reply/`, `doubles/`, `recommender/` |
+| **Mock vs Real** | Separate implementations | Merged with `--mock` flag, `package/evaluation/doubles/` for test doubles |
+| **Component benchmarks** | 5 components, mostly TODO | 5 components: Memory, Planner, Grounding, Integration, Executor |
+| **Tests** | 1318 passed | 368 passed, 4 skipped, 6 warnings |
+
+### Refactor Summary (Phases 0-8 Complete)
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 0 | Verify, state plan | ✅ Complete |
+| 1 | Fix Baseline Issues | ✅ Complete |
+| 2 | Delete Unused Code | ✅ Complete |
+| 3 | Merge `package/tools/evaluation` into `package/evaluation` | ✅ Complete |
+| 4 | Move `corpus`/`recommenders`/`score` out of `tools/` | ✅ Complete |
+| 5 | Memory Tool Location | ✅ Complete (no changes) |
+| 6 | Merge Mock and Real Implementations | ⚠️ Mostly Complete (Phase E skipped) |
+| 7 | Fix Script Wrappers | ✅ Complete |
+| 8 | Update Documentation | ✅ Complete |
+
+**Overall:** Refactor complete. Phase E (MockAgentRunner replacement) skipped as optional.
 
 ---
 
 ## 2. Repository Structure
+
+```
+src/
+├── configs/                              # YAML configuration (single source of truth)
+│   ├── agent/                            # agent.yaml, llm.yaml, agent_eval.yaml, inference.yaml, ...
+│   ├── data/                             # cleaning.yaml, filtering.yaml, split.yaml
+│   ├── eval/                             # component_benchmarks.yaml, judge.yaml, baselines.yaml, ...
+│   ├── evaluation/                       # campaign.yaml
+│   └── path/                             # data_paths.yaml (centralized paths), domains.yaml, run_tag.yaml
+├── package/                              # Main application package
+│   ├── agents/                           # PlanExecutor (LLM planner), Type1Agent (fixed plan), toolkit, session
+│   ├── api/                              # LLMProvider (abstract), JevProvider, build_llm_provider
+│   ├── config/                           # load_config, get_data_paths, Pydantic schemas
+│   ├── corpus/                           # ItemCorpus (SQLite FTS5 + BM25), build/load/save
+│   ├── data/                             # Pipeline: clean → merge/filter → map/split → leakage check
+│   ├── demo/                             # Gradio demo (adapter, backend, samples, view)
+│   ├── evaluation/                       # 5-layer framework + component benchmarks + campaign runner
+│   │   ├── recommender/                  # Core recommender evaluation (core, metrics, experiment, config, utils)
+│   │   ├── doubles/                      # Test doubles: Fake*Tool, ScriptedLLM, ScriptedJudge
+│   │   ├── trajectory/                   # Trajectory scoring (score_trajectory.py, summarize.py)
+│   │   ├── product_reply/                # Product reply evaluation (with Jev)
+│   │   ├── campaign/                     # Campaign orchestration
+│   │   ├── component/                    # Component benchmarks (Memory, Planner, Grounding, Integration, Executor)
+│   │   ├── layer1_outcome/               # Layer 1: Recommendation quality
+│   │   ├── layer2_interaction/           # Layer 2: Output quality
+│   │   ├── layer3_grounding/             # Layer 3: Faithfulness
+│   │   ├── layer4_process/               # Layer 4: Planning quality
+│   │   ├── layer5_deployment/            # Layer 5: Latency/cost
+│   │   ├── ablation/                     # Ablation experiments
+│   │   ├── campaign/                     # Campaign orchestration
+│   │   ├── multi_turn/                   # Multi-turn evaluation
+│   │   ├── reporting/                    # Report generation
+│   │   └── provenance/                   # Run provenance tracking
+│   ├── inference/                        # compose (LLM/template), grounding (claim check), outcome
+│   ├── memory/                           # MemoryTool (read-only user profile from interactions)
+│   ├── recommenders/                     # Popularity, ItemKNN, BPR-MF (evaluation, runtime, shared)
+│   ├── tools/                            # Base protocol + 6 distributed tools
+│   │   ├── base/                         # Tool protocol, ToolResult, ToolInputError, logger
+│   │   ├── retrieval/                    # SearchTool (BM25/FTS5)
+│   │   ├── ranking/                      # SimilarTool (ItemCF), RankTool (CandidateScorer)
+│   │   ├── scoring/                      # BaselineScorer, CandidateScorer protocol
+│   │   ├── sql/                          # FilterTool, LookupTool
+│   │   └── utils/                        # Utilities
+│   └── utils/                            # Utilities
+├── scripts/                              # Entry points: run_agent_eval, run_pipeline, run_demo, ...
+│   ├── data_pipeline/                    # run_pipeline.py (4 stages)
+│   ├── demo/                             # run_demo.py (--mock flag)
+│   ├── eda_diagnostic/                   # EDA and split diagnostics
+│   ├── evaluation/                       # run_agent_eval.py, run_baselines.py, opik_poc.py
+│   ├── experiments/                      # compare_experiments.py
+│   ├── llm_agent/                        # smoke_real_llm.py
+│   └── tools/                            # run_tools.py, check_llm_provider.py
+├── tests/                                # pytest suite (config, corpus, data, agents, tools, evaluation, demo)
+├── experiments/                          # Artifacts: agent_eval (exp_NNN), baselines, candidate_recall, ...
+├── docs/                                 # Phase reports, refactor plans, mock/real lists
+└── *.md                                  # Phase reports, audit reports, architecture docs
+```
+
+**Code convention:** One public symbol per file (file name = symbol name). Private symbols prefixed with `_`.
+
 ---
 
 ## 3. System Architecture
@@ -46,7 +127,7 @@ User Request
 │                    PLANNER (PlanExecutor)                   │
 │  • LLM writes full JSON plan (steps + optional ask_user)    │
 │  • Tools: SearchTool, FilterTool, SimilarTool, RankTool,   │
-│           QueryTool, SQLTool, MemoryTool                    │
+│           LookupTool, MemoryTool                            │
 │  • Reference resolution: $N.path (step N output field)      │
 │  • Reflection: up to N rounds on failure / quality threshold│
 └─────────────────────────────────────────────────────────────┘
@@ -66,8 +147,7 @@ User Request
 │  • FilterTool        — Structured filter retrieval          │
 │  • SimilarTool       — ItemCF (item-item collaborative)     │
 │  • RankTool          — CandidateScorer (popularity/ItemKNN) │
-│  • QueryTool         — Item metadata hydration              │
-│  • SQLTool           — Raw SQL (read-only, authorised)      │
+│  • LookupTool        — Item metadata hydration (SQL)        │
 │  • MemoryTool        — User profile from interaction history│
 └─────────────────────────────────────────────────────────────┘
     │
@@ -85,7 +165,7 @@ User Request
 │                    INFERENCE LAYER                          │
 │  • compose_llm.py    — LLM writes answer from agent items   │
 │  • compose_template.py — Deterministic template fallback    │
-│  • check_grounding.py — Claim validation (bare ASIN, nums)  │
+│  • grounding/check_grounding.py — Claim validation (bare ASIN, nums)  │
 │  • Jev evaluation    — Faithfulness + communication (LLM-judge)│
 └─────────────────────────────────────────────────────────────┘
     │
@@ -106,43 +186,11 @@ Final Response (grounded, validated)
 
 | Agent | Planning | LLM | Tools | Use Case |
 |-------|----------|-----|-------|----------|
-| **baseline** (ItemKNN) | Fixed (retrieve→rank→fetch) | No | SimilarTool, RankTool, QueryTool | Pure CF, no LLM cost |
-| **type1** | Fixed (retrieve→rank→fetch) | No | SearchTool, RankTool, QueryTool | Text query → retrieval → ranking |
+| **baseline** (ItemKNN) | Fixed (retrieve→rank→fetch) | No | SimilarTool, RankTool, LookupTool | Pure CF, no LLM cost |
+| **type1** | Fixed (retrieve→rank→fetch) | No | SearchTool, RankTool, LookupTool | Text query → retrieval → ranking |
 | **planner** | LLM-generated JSON plan | Yes | All 6 tools | Complex multi-step reasoning |
 | **planner_memory** | LLM-generated JSON plan | Yes | All 6 + MemoryTool | Personalized with user profile |
 
----
-
-```
-src/
-├── configs/                    # YAML configuration (single source of truth)
-│   ├── agent/                  # agent.yaml, llm.yaml, agent_eval.yaml, inference.yaml, ...
-│   ├── data/                   # cleaning.yaml, filtering.yaml, split.yaml
-│   ├── eval/                   # component_benchmarks.yaml, judge.yaml, baselines.yaml, ...
-│   ├── evaluation/             # campaign.yaml
-│   └── path/                   # data_paths.yaml (centralized paths), domains.yaml, run_tag.yaml
-├── package/                    # Main application package
-│   ├── agents/                 # PlanExecutor (LLM planner), Type1Agent (fixed plan), toolkit, session
-│   ├── api/                    # LLMProvider (OpenAI-compatible), JevProvider (judgment)
-│   ├── config/                 # load_config, get_data_paths, Pydantic schemas
-│   ├── data/                   # Pipeline: clean → merge/filter → map/split → leakage check
-│   ├── demo/                   # Gradio demo (adapter, backend, samples, view)
-│   ├── evaluation/             # 5-layer framework + component benchmarks + campaign runner
-│   ├── inference/              # compose (LLM/template), grounding (claim check), outcome
-│   ├── memory/                 # MemoryTool (read-only user profile from interactions)
-│   ├── tools/                  # Base tool protocol + 6 tools + corpus + recommenders + scoring
-│   └── utils/                  # Utilities
-├── scripts/                    # Entry points: run_agent_eval, run_pipeline, run_demo, ...
-├── tests/                      # pytest suite (config, data, agents, tools, evaluation)
-├── experiments/                # Artifacts: agent_eval (exp_002–024), component_benchmarks, campaigns
-├── docs/                       # Research docs (architecture, data_spec, experiment_plan, decisions)
-├── benchmarks/                 # Baseline ranking scripts
-├── resource/                   # Data directory (gitignored): raw, cleaned, filtered, mapped, splits, corpus, item_knn
-└── *.md                        # Phase reports, audit reports, architecture docs
-```
-
-**Code convention:** One public symbol per file (file name = symbol name). Private symbols prefixed with `_`.
----
 ---
 
 ## 4. Data Pipeline and Datasets
@@ -200,8 +248,6 @@ src/
 
 **Top-K**: Configurable per tool, capped at `MAX_CANDIDATES` (default 100). `SEMANTIC_DEFAULT_LIMIT` = 50.
 
-**Evaluation**: `candidate_recall` experiments exist (`exp_001`–`exp_012`) but **environmental blocker** — `resource/` data missing prevents verification.
-
 ### 5.3 Ranking
 
 **Architecture**: `CandidateScorer` protocol → `BaselineScorer` adapter → `RankTool`
@@ -229,67 +275,76 @@ src/
 
 ## 6. Agentic RAG Architecture
 
-```mermaid
-flowchart TB
-    USER["User"]
+### 6.1 PlanExecutor (package/agents/planner/plan_executor.py)
 
-    subgraph AGENT_LAYER["Agent layer â€” package/agents, package/api"]
-        LLM["LLMProvider<br/>(OpenAICompatibleProvider)"]
-        EXEC["PlanExecutor<br/>LLM viáº¿t plan JSON â†’ cháº¡y tá»«ng step"]
-        T1["Type1Agent<br/>plan cá»‘ Ä‘á»‹nh, khÃ´ng LLM"]
-    end
+**Core loop**: `plan()` → `run()` → optional `reflect()`
 
-    subgraph INFER_LAYER["Inference â€” package/inference"]
-        ANS["compose_answer<br/>item agent Ä‘Ã£ chá»n â†’ cÃ¢u tráº£ lá»i<br/>(LLM + kiá»ƒm grounding, hoáº·c template)"]
-    end
+- **Planning**: One LLM call writes complete JSON plan (`steps[]`, optional `ask_user`). System prompt defines 6 tools with schemas.
+- **Reference resolution**: `$N.path` (e.g., `$1.candidates`, `$2.ranked[0].item_id`). Resolved at execution time.
+- **Invented ID check**: Before tool execution, args scanned for IDs not in user request or session history → rejected.
+- **Execution**: Steps run sequentially. Tool errors captured per-step; failed step skips dependent steps.
+- **Reflection triggers**:
+  1. Step failed (tool error) and not invented ID / SQL timeout
+  2. No items returned and not `ask_user`
+  3. Quality threshold: `reflect_quality_threshold > 0` and pipeline quality < threshold
+     - Quality: retrieval-only=0.5, ranking w/o CF=0.7, full pipeline w/ CF=1.0
+- **Reflection rounds**: Up to `reflect_rounds` (config: 1). Failed reflection reply drops; previous result kept.
+- **Output tracking**: `last_plan`, `last_question`, `last_response`, `last_usage`, `last_reflections`, `last_first_attempt_ok`, `last_attempt_plans`
 
-    subgraph TOOL_LAYER["Tool layer â€” package/tools, package/memory"]
-        SEARCH["SemanticSearchTool<br/>text â†’ candidates (BM25)"]
-        CF["ItemCFTool<br/>seed items â†’ similar items"]
-        RECO["RecoModelTool<br/>candidates â†’ ranked"]
-        QUERY["QueryTool<br/>item_ids â†’ metadata"]
-        MEMORY["MemoryTool<br/>user_id â†’ profile tá»« history"]
-        SQL["SQLTool<br/>filter â†’ candidates<br/>(chÆ°a cáº¥p cho planner)"]
-    end
+### 6.2 Type1Agent (package/agents/type1/type1_agent.py)
 
-    subgraph KNOWLEDGE["Item knowledge"]
-        CORPUS["ItemCorpus<br/>SQLite in-memory, read-only<br/>items Â· item_categories Â· items_fts"]
-    end
+**Fixed plan** (no LLM):
+1. `SimilarTool` (retrieve candidates around seed items, `candidate_multiplier=5`, `min_candidates=50`)
+2. `RankTool` (score candidates for user)
+3. `LookupTool` (hydrate metadata for top-K)
 
-    subgraph MODELS["Recommendation models â€” tools/recommenders, tools/score"]
-        POP["PopularityRecommender"]
-        KNN["ItemKNNRecommender"]
-        SCORER["CandidateScorer (Protocol)<br/>â”” BaselineScorer"]
-    end
+Used for `similar`/`personalized` request kinds in agent evaluation.
 
-    INTERACT["Userâ€“item interactions<br/>(splits/train.parquet)"]
+### 6.3 Tools (6 controlled operations)
 
-    USER --> LLM --> EXEC
-    EXEC --> SEARCH & CF & RECO & QUERY & MEMORY
+| Tool | Group | Input | Output (keys for `$N.path`) | Depends On | Planner? |
+|------|-------|-------|------------------------------|------------|----------|
+| `SearchTool` | Retrieval | `query` (English), `filters`, `limit` | `candidates` (w/ score), `total_matches`, `query_tokens`, `truncated`, `applied_filters` | Corpus (FTS5+BM25) | Yes |
+| `FilterTool` | Retrieval | `filters`, `order_by`, `limit` | `candidates`, `total_matches`, `truncated`, `applied_filters` | Corpus | No |
+| `SimilarTool` | Retrieval | `items` (seed), `top_k`, `domain`, `exclude_input` | `candidates` (item_id, similarity, domain), `unknown_items` | ItemKNN similarity | Yes |
+| `RankTool` | Ranking | `user_id`, `candidates`, `top_k`, `exclude_seen` | `ranked`, `model`, `cold_start`, `excluded_seen`, `unscored_item_ids`, `has_personal_signal` | CandidateScorer | Yes |
+| `LookupTool` | Hydration | `item_ids` OR `query` (SELECT), `max_rows` | `items`, `missing_item_ids`, `truncated` | Corpus | Yes |
+| `MemoryTool` | Memory | `user_id`, `top_n_categories` | `user_id`, `known`, `n_interactions`, `top_categories`, `price_range`, `recent_items`, `love/hate_categories`, `loved/hated_items` | Interactions + Corpus | Only planner_memory |
 
-    SEARCH --> CORPUS
-    SEARCH -.->|"mÆ°á»£n bá»™ compile filter"| SQL
-    SQL -.-> CORPUS
-    QUERY --> CORPUS
-    MEMORY --> CORPUS
-    MEMORY --> INTERACT
+**Retrieval → Ranking → Hydration**: Retrieval finds *which items might be relevant*; Ranking orders *which of these candidates are best*; Hydration fetches metadata for *known IDs*.
 
-    INTERACT --> POP
-    INTERACT --> KNN
-    KNN -->|"similarity matrix"| CF
-    POP --> SCORER
-    KNN --> SCORER
-    SCORER --> RECO
+### 6.4 MemoryTool (package/memory/memory_tool.py)
 
-    T1 --> CF
-    T1 --> RECO
-    T1 --> QUERY
+**Read-only** — no write/update/forget (no dialogue to extract preferences from in Amazon Reviews 2023).
 
-    EXEC --> ANS
-    T1 --> ANS
-    ANS -.->|"mode = llm"| LLM
-    ANS --> USER
-```
+**Aggregates from interaction history + ItemCorpus** (SQL MIN/MAX/GROUP BY, not limited by `corpus.select` 100-row cap):
+- `known` (False = cold start)
+- `n_interactions`
+- `top_categories` (most frequent)
+- `price_range` (min/max)
+- `recent_items` (most recent first, for SimilarTool seeds)
+- `love_categories` / `hate_categories` (rating ≥ 4.0 / ≤ 2.0 by default)
+- `loved_items` / `hated_items` (highest/lowest rated items)
+
+**Leakage prevention**: `as_of_timestamp` parameter restricts to interactions ≤ timestamp (validated by `check_profile_snapshot`).
+
+### 6.5 Inference Layer (package/inference/)
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| **compose_llm** | `compose/compose_llm.py` | LLM writes final answer from agent's `recommended` items. Validated by `check_grounding`. Retries up to `llm_retries`. |
+| **compose_template** | `compose/compose_template.py` | Deterministic template fallback (no LLM call). |
+| **grounding** | `grounding/check_grounding.py` | Checks: mentioned IDs ⊆ recommended IDs, bare ASINs, price/rating numbers within `price_tolerance`. Returns error string or None. |
+| **Jev evaluation** | `evaluate_product_reply_with_jev.py` | LLM-as-judge: faithfulness (claim extraction + support check) + communication (relevance, clarity, language, honesty_about_gaps on 1-5 scale). |
+
+**Inference modes** (from `inference.yaml`):
+- `mode: llm` — LLM answer with grounding check + retry
+- `mode: template` — Deterministic, no LLM
+
+### 6.6 Multi-turn
+
+**Status**: `package/evaluation/multi_turn/_run.py` exists with 11 conversations, but `mock: true` — **not real-LLM evaluation**. Framework exists but real provider verification pending. MockAgentRunner still exists (Phase E skipped).
+
 ---
 
 ## 7. End-to-End Data Flow (Example: Planner Agent)
@@ -307,7 +362,7 @@ PlanExecutor.plan() → LLM writes JSON plan
     │      {"tool": "MemoryTool", "args": {"user_id": "..."}},
     │      {"tool": "SearchTool", "args": {"query": "$1.top_categories[0] quiet keyboard", "filters": {"price_max": "$1.price_range.max"}}},
     │      {"tool": "RankTool", "args": {"user_id": "...", "candidates": "$2.candidates", "top_k": 10}},
-    │      {"tool": "QueryTool", "args": {"item_ids": "$3.ranked[0:10].item_id"}}
+    │      {"tool": "LookupTool", "args": {"item_ids": "$3.ranked[0:10].item_id"}}
     │  ]}
     │
     ▼
@@ -316,7 +371,7 @@ PlanExecutor.run() executes steps sequentially
     ├─ Step 1: MemoryTool → user profile (top_categories, price_range, recent_items, ...)
     ├─ Step 2: SearchTool → BM25 candidates (resolves $1 references)
     ├─ Step 3: RankTool → ranked candidates (resolves $2.candidates)
-    └─ Step 4: QueryTool → item metadata for top-K (resolves $3.ranked)
+    └─ Step 4: LookupTool → item metadata for top-K (resolves $3.ranked)
     │
     ▼
 AgentOutcome: { recommended: [...], steps: [...], ask_user: null }
@@ -336,14 +391,6 @@ Final Response + Trajectory (saved to JSONL)
 
 ---
 
-~~Ba Ä‘iá»ƒm dá»… nháº§m:~~
-
-1. ~~ðŸ”´**Planner khÃ´ng cÃ³ `SQLTool`.** `agents/toolkit/build_tools.py` (`build_tools()` â†’ `AgentTools`; `for_planner()` = 4 tool: ItemCF, RecoModel, Query, SemanticSearch; `for_planner_memory()` = thÃªm `MemoryTool`) â€” dÃ¹ng bá»Ÿi `run_agent_eval.py` vÃ  `smoke_real_llm.py` â€” khÃ´ng Ä‘Æ°a `SQLTool` vÃ o. `SQLTool` váº«n Ä‘Æ°á»£c code, test vÃ  cháº¡y trong `scripts/tools/run_tools.py`, vÃ  `SemanticSearchTool` dÃ¹ng chung hÃ m `compile_filters` (`sql_query/compile_filters.py`) vá»›i nÃ³. Náº¿u muá»‘n planner dÃ¹ng filter thuáº§n cáº¥u trÃºc (khÃ´ng text) thÃ¬ pháº£i thÃªm vÃ o `agents/toolkit/build_tools.py` **vÃ ** cáº­p nháº­t `agents/planner/_prompt.py`. (`scripts/demo/demo_full_agent.py` cÃ²n báº£n `build_tools()` riÃªng, cÅ©, 5 tool, khÃ´ng qua `AgentTools` â€” Ä‘á»«ng nháº§m vá»›i báº£n tháº­t.)~~
-2. ~~`PlanExecutor.run()` **tráº£ vá» danh sÃ¡ch káº¿t quáº£ tool**; cÃ¢u tráº£ lá»i cuá»‘i do `package/inference` (má»¥c 9.4) sinh sau Ä‘Ã³ vÃ  **chá»‰ trÃ¬nh bÃ y** cÃ¡c item agent Ä‘Ã£ chá»n (khÃ´ng chá»n láº¡i, khÃ´ng Ä‘á»•i thá»© tá»±). ChÆ°a cÃ³ vÃ²ng láº·p "LLM Ä‘á»c káº¿t quáº£ â†’ quyáº¿t Ä‘á»‹nh bÆ°á»›c káº¿" (má»¥c 15). `demo` chÆ°a gá»i `inference` (má»¥c 13.1).~~
-3. ~~ðŸ”´`MemoryTool` Ä‘á»c **cáº£** `interactions` (DataFrame) vÃ  `ItemCorpus`.~~
-
----
-
 ## 8. Evaluation Framework
 
 ### 8.1 Five-Layer Architecture (package/evaluation/)
@@ -356,7 +403,7 @@ Final Response + Trajectory (saved to JSONL)
 | **L4: Process** | `layer4_process/score_layer4_process.py` | Planning quality | tool_selection_ok, argument_ok, plan_validity, reflection_triggered, reflection_rescued |
 | **L5: Deployment** | `layer5_deployment/score_layer5_deployment.py` | Latency/cost | wall_seconds, token usage, provider_error_rate |
 
-**Entry point**: `score_trajectory.py` orchestrates all 5 layers per trajectory.
+**Entry point**: `package/evaluation/trajectory/score_trajectory.py` orchestrates all 5 layers per trajectory.
 
 ### 8.2 Component Benchmarks (package/evaluation/component/)
 
@@ -364,29 +411,23 @@ Final Response + Trajectory (saved to JSONL)
 
 | Component | Dataset | Key Metrics | Status |
 |-----------|---------|-------------|--------|
-| **Memory** | `memory_correctness_dataset.jsonl` (30 cases) | known_correct, n_interactions_correct, top_categories_exact, loved_items_exact (0.5), all_fields_match (0.933), future_leakage (0) | ✅ Works (mock tools) |
-| **Planner** | `planner_dataset.jsonl` (32 cases) | tool_selection_accuracy (0.31), argument_correctness (0.20), plan_validity (1.0), constraint_handling (0.25), clarification_precision (0.5), refusal_to_guess (0.88) | ⚠️ Requires `LLM_BASE_URL` |
-| **Executor** | `executor_dataset.jsonl` (35 cases) | all_steps_ok (0.57), reflection_rescued (0), reflection_triggered (0.43) | ✅ Works (mock LLM + controlled tools) |
-| **Grounding** | `grounding_dataset.jsonl` (32 cases) | claims_supported (0), grounding_rate (0), hallucination_rate (0.09), prompt_injection_detected (0.03) | ✅ Works (fake Jev provider) |
-| **Integration** | `integration_dataset.jsonl` (35 cases) | contract_valid (0.69), no_mismatch (0.69) | ✅ Works |
+| **Memory** | `dummy_memory_dataset.jsonl` (3 cases) | known_correct, n_interactions_correct, top_categories_exact, loved_items_exact (0.5), all_fields_match (0.933), future_leakage (0) | ✅ Works (mock tools) |
+| **Planner** | `planner_benchmark.py` (fixtures) | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ✅ Implemented (requires LLM) |
+| **Executor** | `executor_benchmark.py` (fixtures) | all_steps_ok, reflection_rescued, reflection_triggered | ✅ Implemented (mock LLM + controlled tools) |
+| **Grounding** | `grounding_benchmark.py` (fixtures) | claims_supported, grounding_rate, hallucination_rate, prompt_injection_detected | ✅ Implemented (ScriptedJudge) |
+| **Integration** | `integration_benchmark.py` (fixtures) | contract_valid, no_mismatch | ✅ Implemented |
 
 **Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`
-
-**Latest unified report** (`unified_report_20261106_221802.json`):
-- All 5 components: status=success, success_rate=1.0 (execution reliability)
-- **But quality metrics reveal gaps**: Planner tool_selection_accuracy=0.31, Executor all_steps_ok=0.57, Grounding grounding_rate=0.0
-- Integration latency suspiciously low (2.8μs mean) — likely measures contract validation only, not end-to-end execution
-- All `git_sha` fields empty (not populated)
 
 ### 8.3 Campaign Runner (package/evaluation/campaign/campaign_runner.py)
 
 - Orchestrates multiple `run_agent_eval.py` experiments via subprocess
 - Parameter grid expansion, comparison pairs, repetition
-- **Environmental blocker**: `run_agent_eval.py` requires `resource/` data (raw, splits, mappings, corpus) — **not available in current environment**. Campaign runs return `success: True` but empty experiment dirs, `metrics: {}`.
+- **Supports `--mock` flag** for testing without real data/LLM
 
 ### 8.4 Opik Integration Assessment
 
-**Workstream A (Phases A0–A2)** — Complete:
+**Workstream A (Phases A0–A2)** — Complete (from previous branch):
 
 | Phase | Deliverable | Key Finding |
 |-------|-------------|-------------|
@@ -394,11 +435,11 @@ Final Response + Trajectory (saved to JSONL)
 | A1 | `opik_phase_1_capability_assessment.md` | Opik cannot replace RCM metrics; **recommends Option B: Complementary Integration** (Opik for tracing/UI, RCM for metrics) |
 | A2 | `opik_phase_2_poc_report.md` | PoC demonstrated: load 58 trajectories, create Opik dataset, log metrics as metadata, custom metric wrapper pattern. Feasible, 1-2 weeks effort. |
 
-**Status**: PoC only (`scripts/evaluation/opik_poc.py`). No live Opik server deployed. No span instrumentation in RCM agents yet.
+**Status**: PoC only. No live Opik server deployed. No span instrumentation in RCM agents yet.
 
 ### 8.5 Configuration Centralization
 
-**Workstream B (Phases B0–B3)** — Complete:
+**Workstream B (Phases B0–B3)** — Complete (from previous branch):
 
 | Phase | Deliverable | Changes |
 |-------|-------------|---------|
@@ -410,6 +451,7 @@ Final Response + Trajectory (saved to JSONL)
 **Result**: All operational parameters centralized in YAML. Single source of truth. Path resolution via `get_data_paths()`. No regression.
 
 ---
+
 ## 9. Configuration Architecture
 
 ### 9.1 Centralized Path Management (configs/path/data_paths.yaml)
@@ -461,7 +503,7 @@ outputs:  # Relative to experiments_dir
 | `configs/agent/llm.yaml` | Provider, model, base_url, api_key, timeout |
 | `configs/agent/agent_eval.yaml` | Agents list, request_scope, per_segment, trajectory_file |
 | `configs/agent/inference.yaml` | Inference mode (llm/template), llm_retries, price_tolerance |
-| `configs/eval/component_benchmarks.yaml` | Component benchmark runs, per-component configs (e.g., `grounding.use_jev: true`) |
+| `configs/eval/component_benchmarks.yaml` | Component benchmark runs, per-component configs |
 | `configs/eval/judge.yaml` | Jev provider config (api_key, model, timeout, evaluation criteria) |
 | `configs/evaluation/campaign.yaml` | Campaign orchestration (parameter_grid, comparison_pairs, repetition_count) |
 | `configs/path/run_tag.yaml` | Run tag for artifact directories (default: `multi_domain`) |
@@ -489,12 +531,11 @@ outputs:  # Relative to experiments_dir
 - **No CLI override flags** — all tunables in YAML (enforced by refactor)
 - **Tag-based runs**: `run_tag.yaml` controls `filtered_dir`, `mapped_dir`, `splits_dir`, `corpus_dir`, `item_knn_dir`
 - **Resume support**: `run_agent_eval.py --resume` continues from existing trajectory file
+- **Mock mode**: `--mock` flag on `run_agent_eval.py`, `run_demo.py`, `run_campaign.py`, component CLI
 
 ---
 
 ## 11. Script Reference Details
-
-This section provides comprehensive command-line reference for all scripts, extending the summary in §10.
 
 ### 11.1 Data Pipeline (Phase 3)
 
@@ -520,16 +561,13 @@ PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --tag my_run_v1
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --force
 
 # Stage 1 options
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 1 --domain Video_Games \
-    --review-path /path/to/review_Video_Games.jsonl.gz
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 1 --domain Video_Games     --review-path /path/to/review_Video_Games.jsonl.gz
 
 # Stage 2 options
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 2 --cold-start-report
 
 # Stage 4 options
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 4 \
-    --skip-corpus \
-    --skip-item-knn
+PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 4     --skip-corpus     --skip-item-knn
 ```
 
 **Stages**:
@@ -539,24 +577,7 @@ PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages 4 \
 | 2 | Merge domains + filter (k-core) → `resource/filtered/<tag>/interactions.parquet` |
 | 3 | ID mapping + temporal split → `resource/mapped/<tag>/`, `resource/splits/<tag>/` |
 | 4 | Build ItemCorpus SQLite + ItemKNN artifacts → `resource/corpus/<tag>/`, `resource/item_knn/<tag>/` |
----
 
-## 12. Testing Strategy and Coverage
-
-| Test Suite | Command | Coverage |
-|------------|---------|----------|
-| **Config tests** | `pytest tests/config/ -v` | 50 passed (overlay, path resolution, schema validation) |
-| **Component tests** | `pytest tests/evaluation/component/ -v` | 40 passed, 2 skipped (benchmark schemas, regression, loaders) |
-| **Jev reliability tests** | `pytest tests/evaluation/test_jev_reliability.py -v` | 8 passed (fake provider: success, exception, missing key, env expansion, malformed) |
-| **Data tests** | `pytest tests/data/ -v` | Pipeline stages, leakage checks, mapping |
-| **Agent tests** | `pytest tests/agents/ -v` | PlanExecutor, Type1Agent, tools, session |
-| **Tool tests** | `pytest tests/tools/ -v` | All 6 tools, corpus, recommenders, scoring |
-| **Full suite** | `pytest tests/ -q` | 1,318 passed, 4 skipped, 2 xfailed (64s) |
-
-**Mock vs. Real Provider**:
-- Component benchmarks: **all mocked** (fake LLM, fake Jev, controlled tools)
-- Agent evaluation: Can run with real LLM (requires `LLM_BASE_URL`, `LLM_API_KEY`)
-- Jev smoke test: `scripts/evaluation/jev_smoke_test.py` for manual real-provider testing
 ### 11.2 EDA & Diagnostics
 
 **`scripts/eda_diagnostic/run_eda.py`** — Streaming EDA on raw review files.
@@ -592,11 +613,7 @@ PYTHONPATH=. python scripts/demo/run_demo.py --tag v1 --domain Video_Games
 
 # Live mode options (inference mode, corpus flags, eval split come from
 # configs/agent/demo.yaml and configs/agent/inference.yaml — not CLI)
-PYTHONPATH=. python scripts/demo/run_demo.py \
-    --tag v1 \
-    --domain Video_Games \
-    --host 0.0.0.0 \
-    --port 7860
+PYTHONPATH=. python scripts/demo/run_demo.py     --tag v1     --domain Video_Games     --host 0.0.0.0     --port 7860
 ```
 
 **Arguments**:
@@ -620,7 +637,7 @@ PYTHONPATH=. python scripts/tools/run_tools.py --list
 PYTHONPATH=. python scripts/tools/run_tools.py --tool SearchTool --args '{"query": "mechanical keyboard", "filters": {}, "limit": 5}'
 
 # Chain tools
-PYTHONPATH=. python scripts/tools/run_tools.py --chain SearchTool RankTool QueryTool --init-args '{"user_id": "user_123"}'
+PYTHONPATH=. python scripts/tools/run_tools.py --chain SearchTool RankTool LookupTool --init-args '{"user_id": "user_123"}'
 
 # Test data overrides
 PYTHONPATH=. python scripts/tools/run_tools.py --tool MemoryTool --args '{"user_id": "u1"}' --interactions /path/to/interactions.parquet
@@ -645,6 +662,9 @@ PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --resume
 
 # Run on test split (use sparingly)
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on test
+
+# Mock mode (no data/LLM needed)
+PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation --mock
 ```
 
 **`scripts/evaluation/run_baselines.py`** — Ranking baseline evaluation (Popularity, ItemKNN, BPR-MF).
@@ -677,66 +697,6 @@ PYTHONPATH=. python scripts/experiments/compare_experiments.py --contrast reflec
 TYPESAFE_API_KEY=your_key PYTHONPATH=. python scripts/evaluation/jev_smoke_test.py
 ```
 
-**No integration test** runs full agent + real LLM + real corpus end-to-end (environmental blocker: `resource/` data).
-
----
-
-## 13. Known Issues and Bottlenecks
-
-### 12.1 Upstream Bottlenecks (Embedding → Retrieval → Ranking)
-
-| Bottleneck | Evidence | Downstream Impact |
-|------------|----------|-------------------|
-| **No embedding retrieval** | `package/tools/embeddings/__init__.py`: "NOT IMPLEMENTED" | Cold users (72% single-interaction) rely on BM25 over English catalog; Vietnamese semantic gap |
-| **BM25 recall unverified** | `candidate_recall` experiments exist but `resource/` data missing | If relevant items not retrieved, ranking cannot promote them |
-| **ItemKNN similarity matrix** | Precomputed offline; cold items outside matrix → `unscored_item_ids` | Ranking falls back to popularity for unknown items |
-| **Planner tool selection poor** | `tool_selection_accuracy=0.31` in component benchmark | Wrong tools → wrong candidates → poor ranking input |
-| **Executor reflection ineffective** | `reflection_rescued=0.0`, `reflection_no_change=1.0` | Failed plans not corrected; quality threshold reflection untested |
-
-**Dependency chain verified**: Embedding (absent) → Retrieval (BM25/FTS5) → Ranking (CandidateScorer) → Agent Tools → Agent Response → Grounding. Weak upstream quality propagates downstream.
-
-### 12.2 Agentic Layer Issues
-
-| Issue | Evidence | Status |
-|-------|----------|--------|
-| **Planner LLM produces invalid tool calls** | 31% tool selection accuracy, 20% argument correctness | Requires better prompt / few-shot / model |
-| **Reflection doesn't rescue failures** | `reflection_rescued=0.0` across all executor benchmarks | Quality threshold reflection (configurable) untested |
-| **Grounding rate zero** | `grounding_rate=0.0` in component benchmark | Dummy answer limitation fixed (Phase 1); real answer generation untested |
-| **Integration latency anomaly** | 2.8μs mean suggests contract-only measurement | Need end-to-end latency measurement |
-| **Multi-turn not real-LLM evaluated** | `mock: true` in multi-turn framework | Real provider verification pending |
-### 12.3 Evaluation Framework Gaps
-
-| Gap | Evidence | Impact |
-|-----|----------|--------|
-| **No real-provider agent evaluation** | All component benchmarks mocked; agent eval requires `resource/` data | Quality metrics from mocks ≠ real behavior |
-| **Campaign runner unverified** | Empty experiment dirs, `metrics: {}` | Cannot run comparative experiments |
-| **Retrieval recall unmeasured** | Environmental blocker | Cannot quantify upstream bottleneck |
-| **Opik integration PoC only** | No live server, no span instrumentation | Tracing/observability not operational |
-| **Provenance incomplete** | `git_sha` empty in unified report | Cannot link results to exact code version |
-
-### 14.1 Running Tests
-```bash
-# Full suite (regression gate)
-PYTHONPATH=. python -m pytest tests/ -q
-
-# Specific suites
-PYTHONPATH=. python -m pytest tests/config/ -v
-PYTHONPATH=. python -m pytest tests/evaluation/component/ -v
-PYTHONPATH=. python -m pytest tests/evaluation/test_jev_reliability.py -v
-```
-
-### 14.2 Running Component Benchmarks
-```bash
-# Single component (from src/)
-python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl
-
-# All components + unified report
-python -m package.evaluation.component._run_all
-```
-
-### 14.3 Running Agent Evaluation (requires `resource/` data + LLM)
-```bash
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
 ### 11.7 Config Reference
 
 All tunable parameters live in YAML. CLI flags are only operational selectors (`--tag`, `--domain`, `--eval-on`, `--resume`, `--work-dir`, `--candidates-from`, `--stages`, `--force`, `--mock`, `--host`, `--port`).
@@ -814,25 +774,73 @@ agent/inference:
 ```
 
 ```bash
-CONFIG_OVERLAY_PATH=/path/to/overlay.yaml PYTHONPATH=. \
-    python scripts/evaluation/run_agent_eval.py --eval-on validation
+CONFIG_OVERLAY_PATH=/path/to/overlay.yaml PYTHONPATH=.     python scripts/evaluation/run_agent_eval.py --eval-on validation
 ```
 
 The campaign runner (`package/evaluation/campaign/`) writes one overlay per experiment automatically. Overlay fragments are deep-merged over the base configs before Pydantic validation, and changing the overlay invalidates cached limits.
-PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --resume
-```
-
-### 14.4 Data Pipeline (requires raw data)
-```bash
-PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games --tag my_run --force
-```
-
-### 14.5 Configuration Override (for experiments)
-```bash
-CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_agent_eval.py ...
-```
 
 ---
+
+## 12. Testing Strategy and Coverage
+
+| Test Suite | Command | Coverage |
+|------------|---------|----------|
+| **Config tests** | `pytest tests/config/ -v` | 50+ passed (overlay, path resolution, schema validation) |
+| **Corpus tests** | `pytest tests/corpus/ -v` | ItemCorpus build/load/save, FTS5 |
+| **Data tests** | `pytest tests/data/ -v` | Pipeline stages, leakage checks, mapping |
+| **Agent tests** | `pytest tests/agents/ -v` | PlanExecutor, Type1Agent, tools, session |
+| **Recommender tests** | `pytest tests/recommenders/ -v` | Popularity, ItemKNN, BPR-MF |
+| **Scoring tests** | `pytest tests/scoring/ -v` | BaselineScorer, CandidateScorer protocol |
+| **Tool tests** | `pytest tests/tools/ -v` | All 6 tools, corpus, recommenders, scoring |
+| **Evaluation tests** | `pytest tests/evaluation/ -v` | Component benchmarks, trajectory scoring, campaign |
+| **Full suite** | `pytest tests/ -q` | 368 passed, 4 skipped, 6 warnings |
+
+**Mock vs. Real Provider**:
+- Component benchmarks: **all mocked** (ScriptedLLM, ScriptedJudge, controlled tools)
+- Agent evaluation: Can run with real LLM (requires `LLM_BASE_URL`, `LLM_API_KEY`)
+- Jev smoke test: `scripts/evaluation/jev_smoke_test.py` for manual real-provider testing
+
+---
+
+## 13. Known Issues and Bottlenecks
+
+### 13.1 Upstream Bottlenecks (Embedding → Retrieval → Ranking)
+
+| Bottleneck | Evidence | Downstream Impact |
+|------------|----------|-------------------|
+| **No embedding retrieval** | `package/tools/embeddings/__init__.py`: "NOT IMPLEMENTED" | Cold users (72% single-interaction) rely on BM25 over English catalog; Vietnamese semantic gap |
+| **BM25 recall unverified** | `candidate_recall` experiments exist but `resource/` data missing | If relevant items not retrieved, ranking cannot promote them |
+| **ItemKNN similarity matrix** | Precomputed offline; cold items outside matrix → `unscored_item_ids` | Ranking falls back to popularity for unknown items |
+| **Planner tool selection poor** | Low `tool_selection_accuracy` in component benchmark | Wrong tools → wrong candidates → poor ranking input |
+| **Executor reflection ineffective** | `reflection_rescued=0.0` in component benchmark | Failed plans not corrected; quality threshold reflection untested |
+
+**Dependency chain verified**: Embedding (absent) → Retrieval (BM25/FTS5) → Ranking (CandidateScorer) → Agent Tools → Agent Response → Grounding. Weak upstream quality propagates downstream.
+
+### 13.2 Agentic Layer Issues
+
+| Issue | Evidence | Status |
+|-------|----------|--------|
+| **Planner LLM produces invalid tool calls** | Low `tool_selection_accuracy` in component benchmark | Requires better prompt / few-shot / model |
+| **Reflection doesn't rescue failures** | `reflection_rescued=0.0` in component benchmark | Quality threshold reflection (configurable) untested |
+| **Grounding rate zero** | `grounding_rate=0.0` in component benchmark | Dummy answer limitation; real answer generation untested |
+| **Integration latency anomaly** | Low mean latency in component benchmark | Likely contract-only measurement |
+| **Multi-turn not real-LLM evaluated** | `mock: true` in multi-turn framework | Phase E (MockAgentRunner) skipped |
+
+### 13.3 Evaluation Framework Gaps
+
+| Gap | Evidence | Impact |
+|-----|----------|--------|
+| **No real-provider agent evaluation** | All component benchmarks mocked | Quality metrics from mocks ≠ real behavior |
+| **Campaign runner unverified** | No data for real runs | Cannot run comparative experiments |
+| **Retrieval recall unmeasured** | Environmental blocker | Cannot quantify upstream bottleneck |
+| **Opik integration PoC only** | No live server, no span instrumentation | Tracing/observability not operational |
+| **Provenance incomplete** | `git_sha` may be empty in reports | Cannot link results to exact code version |
+
+### 13.4 Environmental Blockers
+
+1. **`resource/` data missing** — Raw Amazon Reviews 2023 files, cleaned/filtered/mapped/splits, corpus, ItemKNN artifacts. Required for: agent evaluation, campaign runner, retrieval recall, baseline ranking.
+2. **`LLM_BASE_URL` / `LLM_API_KEY` not set** — Required for planner benchmark and real agent evaluation.
+3. **`TYPESAFE_API_KEY` not set** — Required for real Jev evaluation (grounding benchmark uses ScriptedJudge in CI).
 
 ---
 
@@ -843,55 +851,57 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 | **Embedding-based retrieval** | Not implemented | Explicit in code |
 | **Real LLM agent evaluation** | Not verified | Requires `LLM_BASE_URL` + `resource/` data |
 | **Real Jev grounding evaluation** | Not verified | Requires `TYPESAFE_API_KEY` |
-| **Campaign orchestration** | Code verified, artifacts empty | Phase 3 report: environmental blocker |
+| **Campaign orchestration** | Code verified, artifacts empty | No real runs yet |
 | **Retrieval recall (BM25 vs. embedding)** | Not measured | Phase 5: environmental blocker |
 | **Vietnamese/English retrieval gap** | Not measured | Phase 5: environmental blocker |
-| **Multi-turn real-LLM behavior** | Mock only | Framework exists, no real evaluation |
-| **BPR-MF online serving** | Evaluation only | `package/tools/recommenders/evaluation/bpr_mf_recommender.py` |
-| **End-to-end latency profiling** | Anomalous integration latency | Component benchmark shows 2.8μs for integration |
-| **Provenance (git_sha, config hash)** | Partially implemented | `build_run_provenance.py` exists; `git_sha` empty in reports |
+| **Multi-turn real-LLM behavior** | Mock only (Phase E skipped) | Framework exists, MockAgentRunner still in place |
+| **BPR-MF online serving** | Evaluation only | `package/recommenders/evaluation/bpr_mf_recommender.py` |
+| **End-to-end latency profiling** | Anomalous integration latency | Component benchmark shows contract-only measurement |
+| **Provenance (git_sha, config hash)** | Partially implemented | `build_run_provenance.py` exists; `git_sha` may be empty |
 
 ---
 
 ## 15. Development Workflow
 
-### 14.1 Running Tests
+### 15.1 Running Tests
 ```bash
 # Full suite (regression gate)
-PYTHONPATH=. python -m pytest tests/ -q
+cd src && PYTHONPATH=. python -m pytest tests/ -q
 
 # Specific suites
-PYTHONPATH=. python -m pytest tests/config/ -v
-PYTHONPATH=. python -m pytest tests/evaluation/component/ -v
-PYTHONPATH=. python -m pytest tests/evaluation/test_jev_reliability.py -v
+cd src && PYTHONPATH=. python -m pytest tests/config/ -v
+cd src && PYTHONPATH=. python -m pytest tests/corpus/ -v
+cd src && PYTHONPATH=. python -m pytest tests/evaluation/component/ -v
 ```
 
-### 14.2 Running Component Benchmarks
+### 15.2 Running Component Benchmarks
 ```bash
 # Single component (from src/)
-python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl
+python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/dummy_memory_dataset.jsonl
 
 # All components + unified report
 python -m package.evaluation.component._run_all
 ```
 
-### 14.3 Running Agent Evaluation (requires `resource/` data + LLM)
+### 15.3 Running Agent Evaluation (requires `resource/` data + LLM)
 ```bash
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation
 PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --resume
+PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation --mock  # Mock mode
 ```
 
-### 14.4 Data Pipeline (requires raw data)
+### 15.4 Data Pipeline (requires raw data)
 ```bash
 PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games --tag my_run --force
 ```
 
-### 14.5 Configuration Override (for experiments)
+### 15.5 Configuration Override (for experiments)
 ```bash
 CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_agent_eval.py ...
 ```
 
 ---
+
 ## 16. Future Work and Recommended Investigation Order
 
 ### Priority 1: Resolve Environmental Blockers
@@ -905,7 +915,7 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 6. **Analyze retrieval funnel** per request kind (similar vs. constrained vs. cold_text)
 
 ### Priority 3: Improve Agentic Quality
-7. **Diagnose planner failures** — Low tool_selection_accuracy (0.31): prompt engineering, few-shot examples, model upgrade
+7. **Diagnose planner failures** — Low tool_selection_accuracy: prompt engineering, few-shot examples, model upgrade
 8. **Fix reflection effectiveness** — Quality threshold reflection untested; `reflect_quality_threshold` in config
 9. **Validate grounding with real answers** — Dummy answer limitation fixed; test with real LLM inference output
 
@@ -918,7 +928,7 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 ### Priority 5: Architectural Enhancements
 14. **Implement embedding-based retrieval** if BM25 recall insufficient
 15. **Add BPR-MF to online serving** (currently evaluation only)
-16. **Real multi-turn evaluation** with LLM
+16. **Real multi-turn evaluation** with LLM (Phase E: replace MockAgentRunner)
 17. **Cross-domain recommendation** (currently per-domain corpus)
 
 ---
@@ -940,19 +950,22 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 | **CONFIG_OVERLAY_PATH** | Env var for per-experiment config overrides (used by campaign runner). |
 | **Run Tag** | Identifier for artifact directories (from `run_tag.yaml`, default `multi_domain`). |
 | **Provenance** | Artifact tracking: file_hash, mapping_hash, fit_provenance, git_sha, config hash. |
+| **ScriptedLLM** | Test double in `package/evaluation/doubles/`: returns pre-scripted responses for testing. |
+| **ScriptedJudge** | Test double in `package/evaluation/doubles/`: returns pre-scripted Jev-like judgments. |
+| **Fake*Tool** | Test doubles in `package/evaluation/doubles/`: deterministic fake tools for benchmarks. |
 
 ---
 
 ## 18. Document Provenance
 
 | Field | Value |
-|------|-------|
+|-------|-------|
 | **Document** | `src/Project repository reading 29.10.md` (updated in place) |
-| **Update date** | 2026-11-07 |
-| **Branch** | `tools-building` |
-| **Commit** | `6fe49ee` ("quick save") |
-| **Working tree** | Modified (16 files changed, 50+ untracked) — reflects current working tree |
-| **Key evidence sources** | Phase 0–6 reports, Opik A0–A2 reports, Config B0–B3 reports, `unified_report_20261106_221802.json`, `FINAL_SUMMARY.md`, source code inspection |
+| **Update date** | 2026-11-08 |
+| **Branch** | `refactor-phase-0` |
+| **Commit** | `7c755a0` ("Phase 10.1: record execution log - all 7 steps complete, Baseline B maintained") |
+| **Working tree** | Modified (1 modified file, 6 untracked test log files) |
+| **Key evidence sources** | Phase status report, refactor plans, mock/real list, component README, source code inspection |
 | **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), campaign artifacts (empty) |
 
 ---
