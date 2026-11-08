@@ -20,13 +20,13 @@ def run_all_benchmarks(
         output_dir = get_data_paths().output_dir("component_benchmarks")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    components = [
-        ("memory", "package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl"),
-        ("planner", "package/evaluation/component/benchmarks/planner_dataset.jsonl"),
-        ("executor", "package/evaluation/component/benchmarks/executor_dataset.jsonl"),
-        ("grounding", "package/evaluation/component/benchmarks/grounding_dataset.jsonl"),
-        ("integration", "package/evaluation/component/benchmarks/integration_dataset.jsonl"),
-    ]
+    # Component -> dataset map lives in configs/eval/component_benchmarks.yaml
+    from package.config import load_config
+    bench_cfg = load_config("eval/component_benchmarks")["component_benchmarks"]
+    datasets = bench_cfg.get("datasets") or {}
+    if not datasets:
+        raise RuntimeError("component_benchmarks.yaml has no datasets map")
+    components = list(datasets.items())
 
     results = {}
 

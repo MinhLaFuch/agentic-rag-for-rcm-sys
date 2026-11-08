@@ -5,6 +5,13 @@ component_benchmarks:
   runs: 1   # số lần chạy mỗi case để lấy trung bình (tăng khi cần ổn định số đo)
   # Config từng evaluator (truyền cho ComponentEvaluator). Component không có entry → config rỗng.
   # LLM của planner benchmark tự đọc configs/agent/llm.yaml — không lặp lại ở đây.
+  # Component -> dataset path (src-relative). Read by _run_all.py.
+  datasets:
+    memory: "package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl"
+    planner: "package/evaluation/component/benchmarks/planner_dataset.jsonl"
+    executor: "package/evaluation/component/benchmarks/executor_dataset.jsonl"
+    grounding: "package/evaluation/component/benchmarks/grounding_dataset.jsonl"
+    integration: "package/evaluation/component/benchmarks/integration_dataset.jsonl"
   configs:
     grounding:
       use_jev: true

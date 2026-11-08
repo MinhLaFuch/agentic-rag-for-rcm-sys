@@ -20,7 +20,7 @@ commit: 0ce2ea8
 | **HEAD commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
 | **Working tree** | Clean except untracked `experiments/` artifacts |
 | **GitNexus index** | Re-indexed after Phase 2 (5,454 nodes / 13,038 edges) |
-| **Test baseline** | 1388 passed, 0 skipped, 2 xfailed (Week 46 remediation through Phase 4.7) |
+| **Test baseline** | 1395 passed, 0 skipped, 2 xfailed (Week 46 remediation through Phase 4) |
 
 ### Week 46 Audit Remediation Status (Phases 1–2.1 complete)
 
@@ -355,7 +355,7 @@ Used for `similar`/`personalized` request kinds in agent evaluation.
 
 ### 6.6 Multi-turn
 
-**Status**: `package/evaluation/multi_turn/` has schemas, `conversations.jsonl` (11 scenarios M1–M7 + edge cases), evaluator, runner, and reporting — but **no real runner is wired**: `reference_correctness`, `context_retention`, and several conversation metrics still return placeholder/default values (e.g. 1.0). Per D3 decision, multi-turn is treated as **not implemented** for reporting purposes until Phase 4.4 builds a real runner.
+**Status**: `package/evaluation/multi_turn/` has schemas, `conversations.jsonl` (11 scenarios M1–M7 + edge cases), evaluator, reporting, and a **real runner** (`_agent_runner.py`: PlanExecutor + Session + real LLM over fixture tools, wired in `_run.py`). `reference_correctness`/`context_retention` now return real measurements or `None` (not measurable) instead of placeholder 1.0. Requires `LLM_BASE_URL`/`LLM_API_KEY` — without them the CLI fails loudly.
 
 ---
 
@@ -426,8 +426,8 @@ Final Response + Trajectory (saved to JSONL)
 | **Memory** | `memory_correctness_dataset.jsonl` (30 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0) |
 | **Planner** | `planner_dataset.jsonl` (32 cases) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
 | **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
-| **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required; answers are `synthetic_answer_judge_only` until Phase 4.3; no thresholds yet |
-| **Integration** | `integration_dataset.jsonl` (35 cases) via `integration_benchmark.py` | contract_valid, no_mismatch | ⚠️ Currently validates dict inputs, not real planner→executor→inference boundary; no thresholds yet |
+| **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required (`TYPESAFE_API_KEY`); judged answer is real `compose_answer` output (Phase 4.3, template mode default / llm via config); no thresholds yet |
+| **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, grounded_rate | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary (Phase 4.2, template mode); no thresholds yet |
 
 **Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`; exits non-zero if any component fails; shows per-component `pass`/`fail`/`not_evaluated` quality-gate status.
 
@@ -807,10 +807,10 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 | **Scoring tests** | `pytest tests/scoring/ -v` | BaselineScorer, CandidateScorer protocol |
 | **Tool tests** | `pytest tests/tools/ -v` | All 6 tools, corpus, recommenders, scoring |
 | **Evaluation tests** | `pytest tests/evaluation/ -v` | Component benchmarks, trajectory scoring, campaign |
-| **Full suite** | `pytest tests/ -q` | 1388 passed, 0 skipped, 2 xfailed |
+| **Full suite** | `pytest tests/ -q` | 1395 passed, 0 skipped, 2 xfailed |
 
 **Mock vs. Real Provider**:
-- Component benchmarks: mixed — memory runs the **real** MemoryTool against an independent oracle; planner uses real LLM + fixture tools; grounding uses real Jev (`TYPESAFE_API_KEY`); executor runs real tools over the fixture corpus (`_execute` scope only); integration validates dict contracts only
+- Component benchmarks: mixed — memory runs the **real** MemoryTool against an independent oracle; planner uses real LLM + fixture tools; grounding uses real Jev (`TYPESAFE_API_KEY`); executor runs real tools over the fixture corpus (`_execute` scope only); integration runs the real executor→inference boundary; grounding judges real `compose_answer` output; multi-turn has a real runner (`multi_turn/_agent_runner.py`, needs LLM creds)
 - Agent evaluation: Can run with real LLM (requires `LLM_BASE_URL`, `LLM_API_KEY`)
 - Jev smoke test: `scripts/evaluation/jev_smoke_test.py` for manual real-provider testing
 
@@ -838,7 +838,7 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 | **Reflection doesn't rescue failures** | `reflection_rescued=0.0` in component benchmark | Quality threshold reflection (configurable) untested |
 | **Grounding rate zero (old)** | Fixed in Phase 1 — missing Jev/key now FAILs instead of fake 1.0 | Real-answer grounding still pending Phase 4.3 |
 | **Integration latency anomaly** | Low mean latency in component benchmark | Likely contract-only measurement |
-| **Multi-turn not real-LLM evaluated** | Schemas/dataset exist; runner is placeholder, metrics default to 1.0 | Phase 4.4 (D3) |
+| **Multi-turn not real-LLM evaluated** | Real runner implemented (Phase 4.4); needs LLM creds for an actual run | Run with credentials |
 
 ### 13.3 Evaluation Framework Gaps
 
@@ -868,7 +868,7 @@ The campaign runner (`package/evaluation/campaign/`) writes one overlay per expe
 | **Campaign orchestration** | Code verified, artifacts empty | No real runs yet |
 | **Retrieval recall (BM25 vs. embedding)** | Not measured | Phase 5: environmental blocker |
 | **Vietnamese/English retrieval gap** | Not measured | Phase 5: environmental blocker |
-| **Multi-turn real-LLM behavior** | Mock only (Phase E skipped) | Framework exists, MockAgentRunner still in place |
+| **Multi-turn real-LLM behavior** | Real runner exists; unverified without LLM credentials | Run `python -m package.evaluation.multi_turn._run` with creds |
 | **BPR-MF online serving** | Evaluation only | `package/recommenders/evaluation/bpr_mf_recommender.py` |
 | **End-to-end latency profiling** | Anomalous integration latency | Component benchmark shows contract-only measurement |
 | **Provenance (git_sha, config hash)** | Partially implemented | `build_run_provenance.py` exists; `git_sha` may be empty |
@@ -942,7 +942,7 @@ CONFIG_OVERLAY_PATH=my_overlay.yaml PYTHONPATH=. python scripts/evaluation/run_a
 ### Priority 5: Architectural Enhancements
 14. **Implement embedding-based retrieval** if BM25 recall insufficient
 15. **Add BPR-MF to online serving** (currently evaluation only)
-16. **Real multi-turn evaluation** with LLM (Phase E: replace MockAgentRunner)
+16. ~~Real multi-turn evaluation~~ — done in Phase 4.4 (`_agent_runner.py`); pending a credentialed run
 17. **Cross-domain recommendation** (currently per-domain corpus)
 
 ---
@@ -1097,7 +1097,7 @@ Note: `campaign.yaml` is loaded directly by `campaign/_schema.py`, **not** throu
 | **Commit** | `0ce2ea8` ("Phase 2.1: quality gate thresholds + verification fixes") |
 | **Working tree** | Clean except untracked `experiments/` artifacts |
 | **Key evidence sources** | Week 46 audit (`docs/audit_week46_report.md`), phase reports (`docs/phase1_report.md`, `docs/phase2_report.md`), source code inspection, GitNexus index |
-| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), multi-turn runner (Phase 4.4) |
+| **Unresolved evidence** | `resource/` data (missing), real LLM/Jev evaluation (no credentials), multi-turn real run (needs LLM creds) |
 
 ---
 

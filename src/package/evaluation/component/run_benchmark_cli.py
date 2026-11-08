@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -14,6 +15,58 @@ from package.config import get_data_paths, load_config
 from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
 from ._schema import BenchmarkSummary
 from ._regression import compare_benchmarks, format_regression_report
+
+
+_SECRET_KEY_PARTS = ("key", "secret", "token", "password", "credential")
+
+
+def _scrub_secrets(obj: Any) -> Any:
+    """Replace values of secret-looking keys so hashes never leak credentials."""
+    if isinstance(obj, dict):
+        return {
+            k: "<redacted>" if any(p in str(k).lower() for p in _SECRET_KEY_PARTS) else _scrub_secrets(v)
+            for k, v in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_scrub_secrets(v) for v in obj]
+    return obj
+
+
+def _config_hash(obj: Any) -> str:
+    """Stable short sha256 of a (secret-scrubbed) config object."""
+    payload = json.dumps(_scrub_secrets(obj), sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _build_provenance(component: str, evaluator_config: dict[str, Any], dataset: str) -> dict[str, Any]:
+    """Provider/judge provenance for benchmark result JSON (Phase 4.5).
+
+    Records hashes, not raw values: api keys are scrubbed before hashing and
+    base_url is stored as a hash only.
+    """
+    prov: dict[str, Any] = {
+        "component": component,
+        "dataset": dataset,
+        "evaluator_config_sha256": _config_hash(evaluator_config),
+    }
+    try:
+        if component == "planner":
+            llm_cfg = load_config("agent/llm")
+            prov["llm"] = {
+                "provider": llm_cfg.get("provider"),
+                "model": llm_cfg.get("model"),
+                "base_url_sha256": hashlib.sha256(str(llm_cfg.get("base_url", "")).encode()).hexdigest()[:16],
+                "config_sha256": _config_hash(llm_cfg),
+            }
+        elif component == "grounding":
+            judge_cfg = load_config("eval/judge")
+            prov["judge"] = {
+                "model": judge_cfg.get("model"),
+                "config_sha256": _config_hash(judge_cfg),
+            }
+    except Exception as exc:  # config unreadable → record the failure, don't fake provenance
+        prov["provenance_error"] = f"{type(exc).__name__}: {exc}"
+    return prov
 
 
 def _get_evaluator(component: str, config: dict[str, Any]):
@@ -153,7 +206,8 @@ def run_benchmark_cli() -> None:
 
     # Add metadata
     summary.metadata["git_sha"] = git_sha
-    summary.metadata["config"] = config
+    summary.metadata["config"] = _scrub_secrets(config)  # never write raw secrets into result JSON
+    summary.metadata["provenance"] = _build_provenance(args.component, config, args.dataset)
     summary.metadata["dataset_path"] = args.dataset
     summary.metadata["tags_filter"] = args.tags
     summary.metadata["metadata_filter"] = args.metadata

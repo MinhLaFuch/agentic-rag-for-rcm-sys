@@ -429,6 +429,10 @@ class ComponentBenchmarksConfig(BaseModel):
     configs: dict[str, dict[str, Any]] = Field(
         default_factory=dict, description="Per-component evaluator config maps"
     )
+    datasets: dict[str, str] = Field(
+        default_factory=dict,
+        description="Component name -> benchmark dataset path (src-relative), used by _run_all.py",
+    )
 
 
 class RankingDiagnosticsConfig(BaseModel):

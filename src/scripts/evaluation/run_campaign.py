@@ -24,8 +24,8 @@ sys.path.insert(0, str(ROOT))
 
 from package.evaluation.campaign import CampaignConfig, CampaignRunner
 
-# Default campaign config path
-DEFAULT_CAMPAIGN_CONFIG = "configs/evaluation/campaign.yaml"
+# Default campaign config path (anchored to repo root, not CWD)
+DEFAULT_CAMPAIGN_CONFIG = str(ROOT / "configs" / "evaluation" / "campaign.yaml")
 
 
 def get_git_sha() -> str:

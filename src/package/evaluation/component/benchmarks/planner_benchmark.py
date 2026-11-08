@@ -14,7 +14,6 @@ Tests:
 
 from __future__ import annotations
 
-import os
 import time
 from typing import Any
 
@@ -38,26 +37,13 @@ class PlannerBenchmark(ComponentEvaluator):
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         
-        # Load LLM config from file or use provided config
-        llm_config = self.config.get("llm", {})
-        if not llm_config:
-            # Try to load from default config file
-            import yaml
-            config_path = "configs/agent/llm.yaml"
-            if os.path.exists(config_path):
-                with open(config_path, "r") as f:
-                    llm_config = yaml.safe_load(f)
-                    # Substitute environment variables
-                    base_url = llm_config.get("base_url", "")
-                    if "${LLM_BASE_URL:-}" in base_url or base_url.startswith("${"):
-                        base_url = os.environ.get("LLM_BASE_URL", "")
-                    llm_config["base_url"] = base_url
-                    
-                    api_key = llm_config.get("api_key", "")
-                    if "${LLM_API_KEY:-}" in api_key or api_key.startswith("${"):
-                        api_key = os.environ.get("LLM_API_KEY", "")
-                    llm_config["api_key"] = api_key
-        
+        # Load LLM config from file or use provided config.
+        # load_config resolves configs/ relative to the package root (not CWD)
+        # and expands ${LLM_BASE_URL}/${LLM_API_KEY} env vars.
+        from package.config import load_config
+
+        llm_config = self.config.get("llm") or load_config("agent/llm")
+
         if not llm_config.get("base_url"):
             raise ValueError(
                 "LLM base_url not configured. Set LLM_BASE_URL environment variable "
