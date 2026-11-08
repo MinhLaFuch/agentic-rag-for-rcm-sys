@@ -173,3 +173,31 @@ def test_session_repr():
     repr_str = repr(session)
     assert "turns=1" in repr_str
     assert "shown=2" in repr_str
+
+
+def test_session_limits_come_from_memory_yaml():
+    """memory.session.* in configs/agent/memory.yaml drives Session limits."""
+    from package.agents import get_session_limits
+
+    limits = get_session_limits()
+    assert limits.max_turns == 10
+    assert limits.max_shown_items == 50
+    assert limits.max_candidates == 100
+    assert limits.max_turn_chars == 500
+
+
+def test_session_limits_follow_config_overlay(tmp_path, monkeypatch):
+    """CONFIG_OVERLAY_PATH changes to memory.session take effect (config is live, not dead)."""
+    from package.agents import get_session_limits
+
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text(
+        'agent/memory:\n  memory:\n    session:\n      max_turns: 3\n      max_turn_chars: 120\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+
+    limits = get_session_limits()
+    assert limits.max_turns == 3
+    assert limits.max_turn_chars == 120
+    assert limits.max_shown_items == 50  # untouched keys keep base values

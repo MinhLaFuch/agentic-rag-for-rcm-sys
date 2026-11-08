@@ -33,6 +33,7 @@ import hashlib
 import json
 import shutil
 import time
+from dataclasses import asdict
 from itertools import islice
 from pathlib import Path
 from typing import Any
@@ -41,7 +42,7 @@ import numpy as np
 import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools, Session
-from package.agents import extract_recommendations, get_agent_limits
+from package.agents import extract_recommendations, get_agent_limits, get_session_limits
 from package.evaluation import (
     AGENTS,
     INFERENCE_AGENTS,
@@ -157,7 +158,7 @@ def run_planner(
     # to prevent cross-request contamination. The executor's session is replaced temporarily.
     original_session = executor.session
     if session_enabled:
-        executor.session = Session()
+        executor.session = Session(**asdict(get_session_limits()))
     try:
         results = executor.run(request.text)
         traj["steps"] = [

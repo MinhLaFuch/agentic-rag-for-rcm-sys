@@ -9,7 +9,10 @@ import time
 from typing import Any
 from collections import defaultdict
 
+from dataclasses import asdict
+
 from ._schema import Conversation, TurnResult, ConversationResult, ConversationSummary
+from package.agents import get_session_limits
 from package.agents.session import Session
 
 
@@ -125,7 +128,7 @@ class MultiTurnEvaluator:
 
         Creates a real Session object and applies initial context.
         """
-        session = Session()
+        session = Session(**asdict(get_session_limits()))
         if initial_context:
             session.update_constraints(initial_context)
         return session

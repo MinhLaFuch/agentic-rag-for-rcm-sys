@@ -1056,7 +1056,7 @@ Runtime: `scripts/evaluation/run_campaign.py --campaign-config <yaml> [--dry-run
 
 Result: `campaign_result.json` with `runs[]` (metrics, duration, success), `comparisons{}` (deltas: a, b, delta, relative_delta), `summary{}` (success rate, per-experiment stats), timestamp + git_sha. Checkpoint/resume via `campaign_checkpoint.json`. Comparisons currently compute plain deltas only — `statistical_settings` (confidence_level, bootstrap_samples, paired_comparison) is defined but **not yet consumed** (Phase 4.1).
 
-Note: `campaign.yaml` is loaded directly by `campaign/_schema.py`, **not** through `load_config` — no `extra="forbid"`, no overlay/env expansion (see Phase 3.7 config audit).
+Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.from_yaml` routes configs/-relative paths) — env interpolation, `extra="forbid"` schema (`CampaignFileConfig`) and `CONFIG_OVERLAY_PATH` overlay all apply; paths outside `configs/` still read raw.
 
 ### 18.6 Execution, Resume, Compare, Export
 
@@ -1080,10 +1080,9 @@ Note: `campaign.yaml` is loaded directly by `campaign/_schema.py`, **not** throu
 ### 18.8 Known Framework Limitations (carried forward)
 
 - Charts/visualizations are placeholders; `generate_example_report.py` uses synthetic data and is not wired into any pipeline
-- Multi-turn runner not implemented (metrics default to 1.0) — Phase 4.4
-- Campaign `statistical_settings` dead config — Phase 4.1
-- Integration benchmark validates dict contracts, not the real planner→executor→inference boundary — Phase 4.2
-- Grounding benchmark uses synthetic answers judged by real Jev — Phase 4.3
+- Multi-turn real-LLM run still needs credentials (runner implemented in Phase 4.4)
+- Planner/grounding/multi-turn benchmarks need LLM/Jev credentials for a real run
+- `no_mismatch` (integration) verifies `answer["items"]` provenance only — not free-text ids in `answer["text"]` (that is `check_grounding`/Jev)
 - Bootstrap with 1000 samples may be slow on large datasets
 - Non-parametric tests assume non-normal data; no automatic normality check
 

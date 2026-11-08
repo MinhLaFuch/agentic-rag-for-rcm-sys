@@ -9,7 +9,7 @@ memory:
   top_n_categories: 5         # số lượng category phổ biến nhất được trả về (cả love và hate categories)
   recent_items: 10           # số lượng item gần nhất được trả về (đã có trong MemoryTool hiện tại)
 
-  # Phiên đa lượt (Session state) - TODO: sẽ implement trong P2
+  # Phiên đa lượt (Session state) — wired via get_session_limits() (package/agents/_limits.py)
   session:
     max_turns: 10             # số lượt tối đa trong một phiên (cũ hơn bị loại)
     max_shown_items: 50       # số item đã hiển thị tối đa được lưu (cũ hơn bị loại)
