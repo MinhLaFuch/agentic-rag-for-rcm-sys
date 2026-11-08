@@ -235,7 +235,13 @@ def main() -> None:
     allow_missing = bool(cfg["allow_missing_corpus_sources"])
     metadata_policy_name = str(cfg["metadata_policy"])
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
-    data_paths = get_data_paths(args.tag)
+
+    # Add -mock suffix to tag if in mock mode
+    tag = args.tag
+    if args.mock:
+        tag = f"{tag}-mock" if tag else "mock"
+
+    data_paths = get_data_paths(tag)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
@@ -327,6 +333,7 @@ def main() -> None:
     provenance = build_run_provenance(
         planner_tools=tools.for_planner(),
         memory_tools=tools.for_planner_memory() if "planner_memory" in agents else None,
+        mode="mock" if args.mock else "real",
     )
 
     def answerer(outcome: Any) -> Any:
