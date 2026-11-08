@@ -38,7 +38,9 @@ def load_json(file_path: Path) -> dict | list:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Evaluate product recommendation assistant replies using Jev (TypeSafe AI)"
+        description="Evaluate product recommendation assistant replies using Jev (TypeSafe AI)",
+        epilog="Judge config: configs/eval/judge.yaml "
+               "(per-run override via the CONFIG_OVERLAY_PATH env var)",
     )
     parser.add_argument(
         "--input-file",
@@ -59,12 +61,6 @@ def main() -> int:
         "--answer",
         type=str,
         help="Assistant's answer text (use if not using --input-file)"
-    )
-    parser.add_argument(
-        "--config-file",
-        type=Path,
-        default=None,
-        help="Path to judge.yaml config. If not provided, uses configs/eval/judge.yaml"
     )
     parser.add_argument(
         "--output-file",
@@ -92,7 +88,6 @@ def main() -> int:
                 request=entry["request"],
                 items=entry["items"],
                 answer=entry["answer"],
-                config_path=args.config_file,
             )
             results.append(result)
 
@@ -112,7 +107,6 @@ def main() -> int:
             request=args.request,
             items=items,
             answer=args.answer,
-            config_path=args.config_file,
         )
 
     # Output results

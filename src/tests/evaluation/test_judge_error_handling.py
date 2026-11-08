@@ -142,3 +142,21 @@ def test_success_path_unchanged(monkeypatch):
     assert result["judge_error_count"] == 0
     assert result["unsupported_count"] == 0
     assert result["supported_count"] >= 1
+
+
+def test_no_config_path_parameter():
+    """Regression: --config-file was accepted but ignored (always load_config('eval/judge')).
+    The dead parameter must not come back — overrides go through CONFIG_OVERLAY_PATH."""
+    import inspect
+
+    assert "config_path" not in inspect.signature(evaluate_product_reply_with_jev).parameters
+
+
+def test_cli_rejects_config_file_flag(monkeypatch):
+    """The removed --config-file flag must be rejected by argparse, not silently ignored."""
+    from scripts.evaluation import evaluate_with_jev
+
+    monkeypatch.setattr("sys.argv", ["evaluate_with_jev.py", "--config-file", "x.yaml"])
+    with pytest.raises(SystemExit) as exc:
+        evaluate_with_jev.main()
+    assert exc.value.code == 2
