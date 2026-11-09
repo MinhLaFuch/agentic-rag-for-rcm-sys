@@ -425,13 +425,13 @@ Final Response + Trajectory (saved to JSONL)
 |-----------|------------------|-------------|--------|
 | **Memory** | `memory_correctness_dataset.jsonl` (29 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0); case 031 isolates the execute()-level `ts<=as_of` filter via `snapshot_mode="tool_side_asof"` (guard bypassed post-construction — defense-in-depth coverage, NOT a production path) |
 | **Planner** | `planner_dataset.jsonl` (26 scored + 6 backlog) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
-| **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
+| **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok, step_count_match, data_correctness | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
 | **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required (`TYPESAFE_API_KEY`); judged answer is real `compose_answer` output — `answer_mode=template` default (deterministic), `"llm"` via config (Phase 4.3); no thresholds yet |
-| **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, grounded_rate | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary — `answer_mode=template` default, `"llm"` via config (Phase 4.2); no thresholds yet |
+| **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, presented_ids_exact, item_fields_match (+ `grounded_rate` in llm mode only) | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary — `answer_mode=template` default, `"llm"` via config (Phase 4.2); no thresholds yet |
 
 **Unified runner**: `package/evaluation/component/_run_all.py` → subprocesses each component CLI → aggregates into `unified_report_*.json/.md`; exits non-zero if any component fails; shows per-component `pass`/`fail`/`not_evaluated` quality-gate status.
 
-> **`no_mismatch` limitation (integration)**: the metric only compares `answer["items"]` ids against ids actually produced by executed tool steps. In both `template` and `llm` compose modes, `Answer.items` is copied from `outcome.items`, so the metric verifies the executor→adapter→composer provenance plumbing (it caught an injected foreign id in mutation testing) — it does **not** inspect ids mentioned in `answer["text"]`. Free-text hallucination checking belongs to `check_grounding`/Jev, not this metric. Similarly `grounded_rate` reflects the composer flag, which is `True` by construction in template mode.
+> **`no_mismatch` limitation (integration)**: the metric only compares `answer["items"]` ids against ids actually produced by executed tool steps. In both `template` and `llm` compose modes, `Answer.items` is copied from `outcome.items`, so the metric verifies the executor→adapter→composer provenance plumbing (it caught an injected foreign id in mutation testing) — it does **not** inspect ids mentioned in `answer["text"]`. Free-text hallucination checking belongs to `check_grounding`/Jev, not this metric. `grounded_rate` is likewise not emitted in template mode — the composer flag is `True` by construction there (Phase 6.5).
 
 ### 8.3 Campaign Runner (package/evaluation/campaign/campaign_runner.py)
 
@@ -1141,7 +1141,30 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
   that filter can produce the truncated profile; expected verified
   field-by-field against a hand computation from the fixture. No
   production path makes that filter load-bearing (guard makes it an
-  identity on any frame that reaches execute()).
+  identity on any frame that reaches execute()). Open backlog: keep or
+  remove the now-covered execute()-level filter — user decision.
+- **Executor (Phase 6.5)**: dataset 18 cases now carries
+  `expected.num_steps` + `step_outputs` (item_ids / ordered / item_count /
+  total_matches / unknown_items / fixture_ids_only / title_contains) and
+  `metadata.expected_provenance`. New metrics: `step_count_match` (fixes
+  the vacuous empty-plan case — exec_018 previously passed under ANY
+  implementation) and `data_correctness` (hand-computed fixture
+  expectations; ordered only where the tool contract guarantees order —
+  FilterTool `ORDER BY rating_number DESC, item_id`, LookupTool input
+  order; never asserted for SimilarTool kNN or SearchTool FTS).
+- **Integration (Phase 6.5)**: `run_component` now returns
+  `produced_items` (rows merged first-non-None across executed steps).
+  New metrics: `presented_ids_exact` (ordered presented-id comparison,
+  asserted on the 5 deterministic FilterTool/LookupTool cases) and
+  `item_fields_match` (every ITEM_FIELDS value must equal the produced
+  row — catches composer dropping/rewriting fields). `grounded_rate` is
+  NO LONGER emitted in template mode — `compose_template` hardcodes
+  `grounded=True`, so the metric was constant 1.0 and uninformative; it
+  is only emitted in `mode="llm"` where `compose_llm` can actually fail
+  grounding. Aggregation averages only keys present, so mixed-mode result
+  sets are safe. Null-price contract (verified against the real tool):
+  category-only filters do NOT exclude null-price items, price-bound
+  filters DO unless `include_missing_price=true`.
 
 ---
 
