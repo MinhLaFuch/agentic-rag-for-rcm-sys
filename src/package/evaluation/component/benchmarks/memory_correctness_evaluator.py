@@ -19,8 +19,11 @@ class MemoryCorrectnessEvaluator(ComponentEvaluator):
     Case input:
       user_id, top_n_categories (default 5), as_of_timestamp (optional),
       snapshot_mode: "pretruncated" (default; interactions are cut to ts <= as_of before the
-        tool sees them, which is how a point-in-time snapshot is meant to be built) or
-        "untruncated" (full frame is passed with an as_of; the tool's leakage guard must raise).
+        tool sees them, which is how a point-in-time snapshot is meant to be built),
+        "untruncated" (full frame is passed with an as_of; the tool's leakage guard must raise),
+        or "tool_side_asof" (full frame + as_of assigned AFTER construction so the
+        constructor guard is bypassed — isolates the execute()-level ts<=as_of
+        filter; defense-in-depth coverage, not a production path).
     Case expected:
       a profile dict, or {"expect_error": "LeakageError"}; optional "leakage_probe"
       (see memory_oracle.leakage_probe).
@@ -56,7 +59,16 @@ class MemoryCorrectnessEvaluator(ComponentEvaluator):
         if user_id == "u_no_rating":
             df = get_interactions_without_rating(df, user_id)
         try:
-            tool = self.tool_factory(df, self.user2id, self.item2id, self.corpus, as_of_timestamp=as_of)
+            # "tool_side_asof": hand the tool the UNTRUNCATED frame and assign
+            # as_of after construction, so the constructor's leakage guard is
+            # bypassed and only the execute()-level ts<=as_of filter can cut
+            # the data. This isolates a defense-in-depth code path that is
+            # otherwise dead (guard + evaluator pretruncation) — NOT a
+            # production path; see case correctness_031 metadata.
+            tool_as_of = None if mode == "tool_side_asof" else as_of
+            tool = self.tool_factory(df, self.user2id, self.item2id, self.corpus, as_of_timestamp=tool_as_of)
+            if mode == "tool_side_asof" and as_of is not None:
+                tool.as_of_timestamp = as_of
             return tool.execute(user_id, top_n_categories=top_n)
         except LeakageError as e:
             return {"error_type": "LeakageError", "message": str(e)}

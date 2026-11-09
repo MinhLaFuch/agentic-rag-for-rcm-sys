@@ -102,9 +102,9 @@ def _evaluator(world, **kw):
 
 def test_real_tool_passes_every_case(world):
     cases = load_cases(builder.DATASET_PATH)
-    # Only test the original 20 cases (correctness_001 to correctness_020)
-    # The additional 10 cases (correctness_021 to correctness_030) are expansion cases
-    # that can be validated separately as they test new scenarios
+    # Only test the original 20 cases (correctness_001 to correctness_020);
+    # expansion cases (021-031, minus removed duplicates) are covered by
+    # dedicated tests below.
     original_cases = [c for c in cases if c.case_id <= "correctness_020"]
     summary = _evaluator(world).run_benchmark(original_cases, component_name="memory_correctness")
     bad = [r.case_id for r in summary.per_case_results if r.metrics.get("all_fields_match") != 1.0]
@@ -147,3 +147,41 @@ def test_detector_flags_guard_that_stops_raising(world):
     cases = [c for c in load_cases(builder.DATASET_PATH) if "leakage_guard" in c.tags and "negative" in c.tags]
     s = _evaluator(world, tool_factory=NoGuard).run_benchmark(cases, component_name="noguard")
     assert s.metrics["error_behavior_correct_mean"] == 0.0
+
+
+def test_tool_side_asof_case_031_passes(world):
+    """correctness_031 isolates the execute()-level ts<=as_of filter:
+    untruncated frame + as_of assigned post-construction (guard bypassed).
+    If that filter were removed, the profile would contain ts>4 rows."""
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    assert case.input["snapshot_mode"] == "tool_side_asof"
+    assert case.metadata["production_path"] is False
+    ev = _evaluator(world)
+    out = ev.run_component(case.input)
+    assert "error_type" not in out
+    metrics = ev.score_component(out, case.expected)
+    assert metrics["all_fields_match"] == 1.0
+    assert metrics["n_interactions_correct"] == 1.0
+    assert metrics.get("future_leakage", 0.0) == 0.0
+
+
+def test_tool_side_asof_catches_removed_execute_filter(world):
+    """Mutation check: a tool whose execute() ignores as_of_timestamp must
+    fail case 031 — proving the case exercises the tool-side filter."""
+    class NoExecuteFilter(MemoryTool):
+        def execute(self, user_id, top_n_categories=None):
+            saved = self.as_of_timestamp
+            self.as_of_timestamp = None
+            try:
+                return super().execute(user_id, top_n_categories=top_n_categories)
+            finally:
+                self.as_of_timestamp = saved
+
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    ev = _evaluator(world, tool_factory=NoExecuteFilter)
+    metrics = ev.score_component(ev.run_component(case.input), case.expected)
+    assert metrics["all_fields_match"] == 0.0
+    assert metrics["n_interactions_correct"] == 0.0
+    assert metrics["future_leakage"] == 1.0

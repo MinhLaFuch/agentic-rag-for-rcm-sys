@@ -423,8 +423,8 @@ Final Response + Trajectory (saved to JSONL)
 
 | Component | Dataset / Runner | Key Metrics | Status |
 |-----------|------------------|-------------|--------|
-| **Memory** | `memory_correctness_dataset.jsonl` (30 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0) |
-| **Planner** | `planner_dataset.jsonl` (32 cases) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
+| **Memory** | `memory_correctness_dataset.jsonl` (29 cases) + `memory_oracle.py` independent oracle | `all_fields_match_mean`, `future_leakage_max`, `success_rate` | ✅ Real MemoryTool vs oracle; thresholds configured (all_fields_match ≥ 0.95, success_rate = 1.0, leakage = 0); case 031 isolates the execute()-level `ts<=as_of` filter via `snapshot_mode="tool_side_asof"` (guard bypassed post-construction — defense-in-depth coverage, NOT a production path) |
+| **Planner** | `planner_dataset.jsonl` (26 scored + 6 backlog) via `planner_benchmark.py` | tool_selection_accuracy, argument_correctness, plan_validity, constraint_handling, clarification_precision, refusal_to_guess | ⚠️ Real LLM + fixture corpus; requires `LLM_BASE_URL`/`LLM_API_KEY`; no thresholds yet |
 | **Executor** | `executor_dataset.jsonl` (18 cases) via `executor_benchmark.py` | all_steps_ok, step_success_rate, error_kind_accuracy, reference_resolution_ok | ✅ Real tools over fixture corpus; measures `_execute` only (no plan/reflection — those need LLM, covered by planner benchmark + `tests/agents/test_executor_error_taxonomy.py`); no thresholds yet |
 | **Grounding** | `grounding_dataset.jsonl` (32 cases) via `grounding_benchmark.py` | grounding_rate, hallucination_rate, prompt_injection_detected (heuristic), judge_error | ⚠️ Real Jev required (`TYPESAFE_API_KEY`); judged answer is real `compose_answer` output — `answer_mode=template` default (deterministic), `"llm"` via config (Phase 4.3); no thresholds yet |
 | **Integration** | `integration_dataset.jsonl` (12 cases) via `integration_benchmark.py` | contract_valid, no_mismatch, grounded_rate | ✅ Real `_execute` → `outcome_from_plan_results` → `compose_answer` boundary — `answer_mode=template` default, `"llm"` via config (Phase 4.2); no thresholds yet |
@@ -1129,6 +1129,19 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
     that legitimately adds `exclude_categories` (or other listed keys) on
     its own — it asserts absence, not wrongness. Use it only on turns
     where carrying any such filter is genuinely a leak (iso pair).
+- **Memory (Phase 6.4)**: dataset 30 → 29 cases. Removed `correctness_030`
+  (byte-identical duplicate of 016) and `correctness_021` (user
+  `u_mixed_ratings` has interaction rows identical to `u_love_hate_mix`
+  behind 017 → duplicate expected). Added `correctness_031`
+  (`snapshot_mode="tool_side_asof"`): the tool's execute()-level
+  `timestamp <= as_of` filter was previously a dead path — the evaluator
+  pretruncates and the constructor guard rejects any frame containing
+  future rows, so deleting the filter scored 1.0 everywhere. 031 assigns
+  `as_of_timestamp` AFTER construction (guard bypassed on purpose) so only
+  that filter can produce the truncated profile; expected verified
+  field-by-field against a hand computation from the fixture. No
+  production path makes that filter load-bearing (guard makes it an
+  identity on any frame that reaches execute()).
 
 ---
 

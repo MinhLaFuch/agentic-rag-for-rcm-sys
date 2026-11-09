@@ -37,8 +37,8 @@ SPECS = [
     ("correctness_020", "u_no_rating", 5, None, None, ["love_hate", "no_rating_column"],
      "Interactions without rating column: love/hate empty, legacy fields work", "medium", "2"),
     # Phase 4 expansion cases
-    ("correctness_021", "u_mixed_ratings", 5, None, None, ["love_hate", "mixed_ratings"],
-     "Mixed ratings (5,4,3,2,1): love=5, hate=1, neutral=2-4", "medium", "2"),
+    # correctness_021 removed in 6.4: byte-identical interactions to
+    # correctness_017 (u_mixed_ratings == u_love_hate_mix rows) -> duplicate.
     ("correctness_022", "u_boundary_love", 5, None, None, ["love_hate", "boundary"],
      "Boundary case: rating exactly 4.0 is love", "medium", "2"),
     ("correctness_023", "u_boundary_hate", 5, None, None, ["love_hate", "boundary"],
@@ -55,6 +55,12 @@ SPECS = [
      "Cutoff late in history", "medium", "2"),
     ("correctness_029", "u_leakage_test", 3, 3, "untruncated", ["leakage_guard", "negative"],
      "Untruncated with as_of in middle: guard must raise", "hard", "3"),
-    ("correctness_030", "u_leakage_test", 3, 14, "untruncated", ["leakage_guard", "control"],
-     "Untruncated with as_of past max: guard must NOT raise", "hard", "3"),
+    # correctness_030 removed in 6.4: exact duplicate of correctness_016.
+    # correctness_031 isolates the execute()-level ts<=as_of filter, which is
+    # otherwise a dead path (evaluator pretruncates + constructor guard).
+    ("correctness_031", "u_leakage_test", 3, 4, "tool_side_asof",
+     ["leakage_guard", "tool_side_filter"],
+     "untruncated frame + as_of assigned post-construction: only the tool's "
+     "execute()-level timestamp filter can produce the truncated profile",
+     "hard", "3"),
 ]
