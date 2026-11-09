@@ -57,13 +57,21 @@ def test_save_load_corpus_gives_same_results(tmp_path):
     meta_file_path.write_text("fake")
     meta_files = [("TestDomain", str(meta_file_path))]
 
-    save_corpus(corpus, corpus_path, meta_files, item2id, min_coverage, coverage, build_times)
+    save_corpus(
+        corpus, corpus_path, meta_files, item2id, min_coverage, coverage, build_times,
+        coverage_by_domain={"TestDomain": {"mapping_items": 2, "metadata_items": 2, "coverage": 1.0}},
+        duplicates_dropped_by_domain={"TestDomain": 1},
+    )
 
     # Load
     loaded_corpus, loaded_coverage = load_corpus(corpus_path, meta_files, item2id, min_coverage)
 
     # Check coverage
     assert loaded_coverage == coverage
+    metadata = json.loads(corpus_path.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert metadata["coverage_by_domain"]["TestDomain"]["coverage"] == 1.0
+    assert metadata["metadata_duplicates_dropped_by_domain"] == {"TestDomain": 1}
+    assert loaded_corpus._source_provenance["coverage_by_domain"] == metadata["coverage_by_domain"]
 
     # Check query results
     rows1, _ = corpus.select("SELECT item_id, title FROM items")

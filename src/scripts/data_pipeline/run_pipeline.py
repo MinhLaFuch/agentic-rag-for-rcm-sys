@@ -48,6 +48,15 @@ def main() -> None:
         help="Print cold-start statistics for stage 2 (expensive).",
     )
     parser.add_argument(
+        "--allow-manifest-mismatch",
+        action="store_true",
+        help="Continue after upstream manifest mismatch/missing manifest; records a warning in output manifest.",
+    )
+    parser.add_argument(
+        "--scratch-dir",
+        help="Scratch directory for disk-backed Stage 3 (temporal_train_core).",
+    )
+    parser.add_argument(
         "--review-path",
         help="Override review path for stage 1 (only valid with --domain single and --stages 1).",
     )
@@ -72,8 +81,10 @@ def main() -> None:
             parser.error("--review-path is only valid with a single domain and stage 1")
 
     paths = get_data_paths(domains=domains)
-    # Splits cho stage 4 ItemKNN lấy từ split.item_knn_splits (configs/data/split.yaml).
-    eval_on_list = [str(s) for s in load_config("data/split")["split"]["item_knn_splits"]]
+    split_cfg = load_config("data/split")["split"]
+    # Splits cho stage 4 ItemKNN lấy từ split.item_knn_splits; giao thức stage 2/3 từ split.data_protocol.
+    eval_on_list = [str(s) for s in split_cfg["item_knn_splits"]]
+    data_protocol = str(split_cfg.get("data_protocol", "legacy_kcore_before_split"))
 
     # Fail-fast checks before running any stage
     errors = []
@@ -103,6 +114,13 @@ def main() -> None:
             split_path = paths.split_path(split_name)
             if split_path.exists() and not args.force:
                 errors.append(f"Stage 3 output exists (use --force): {split_path}")
+        if data_protocol == "temporal_train_core":
+            for extra in [paths.splits_dir / "train_core.parquet",
+                          paths.splits_dir / "evaluation_cohort.parquet",
+                          paths.mapped_dir / "fit_core" / "user2id.json",
+                          paths.mapped_dir / "fit_core" / "item2id.json"]:
+                if extra.exists() and not args.force:
+                    errors.append(f"Stage 3 output exists (use --force): {extra}")
 
     if 4 in stages:
         if not paths.mapped_dir.exists():
@@ -141,12 +159,15 @@ def main() -> None:
 
         if 2 in stages:
             stage_start = time.time()
-            merge_filter_domains(paths, domains, force=args.force, cold_start_report=args.cold_start_report)
+            merge_filter_domains(paths, domains, force=args.force, cold_start_report=args.cold_start_report,
+                             allow_manifest_mismatch=args.allow_manifest_mismatch,
+                             legacy_kcore_before_split=(data_protocol == "legacy_kcore_before_split"))
             stage_times[2] = time.time() - stage_start
 
         if 3 in stages:
             stage_start = time.time()
-            map_split(paths, force=args.force)
+            map_split(paths, force=args.force, allow_manifest_mismatch=args.allow_manifest_mismatch,
+                  data_protocol=data_protocol, scratch_dir=args.scratch_dir)
             stage_times[3] = time.time() - stage_start
 
         if 4 in stages:
@@ -158,6 +179,7 @@ def main() -> None:
                 skip_corpus=args.skip_corpus,
                 skip_item_knn=args.skip_item_knn,
                 force=args.force,
+                allow_manifest_mismatch=args.allow_manifest_mismatch,
             )
             stage_times[4] = time.time() - stage_start
 

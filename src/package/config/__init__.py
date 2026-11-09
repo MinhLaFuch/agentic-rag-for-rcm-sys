@@ -3,7 +3,7 @@ from .get_data_paths import DataPaths, get_data_paths
 from .get_domains import get_domains
 from .resolve_dataset_tag import resolve_dataset_tag
 from ._helper import config_signature, get_overlay_info
-from ._constants import CONFIG_DIR
+from ._constants import CONFIG_DIR, PROJECT_ROOT
 
 __all__ = [
     "load_config",
@@ -14,4 +14,5 @@ __all__ = [
     "config_signature",
     "get_overlay_info",
     "CONFIG_DIR",
+    "PROJECT_ROOT",
 ]

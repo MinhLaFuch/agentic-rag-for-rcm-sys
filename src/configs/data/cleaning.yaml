@@ -2,3 +2,6 @@
 
 cleaning:
   chunk_size: 250000     # số review xử lý mỗi lần ở stage 1; giảm nếu hết RAM
+  min_timestamp_ms: 788918400000   # 1995-01-01T00:00:00Z inclusive; milliseconds
+  max_timestamp_ms: 1704067200000  # 2024-01-01T00:00:00Z exclusive; milliseconds
+  max_invalid_timestamp_fraction: 0.01

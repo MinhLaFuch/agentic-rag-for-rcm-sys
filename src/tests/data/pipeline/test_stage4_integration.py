@@ -83,7 +83,7 @@ def test_stage4_eval_on_validation_creates_one_file(tmp_path):
     _prepare_mappings_and_splits(paths)
 
     from package.data.pipeline import build_artifacts
-    report = build_artifacts(paths, eval_on=["validation"], skip_corpus=True, force=True)
+    report = build_artifacts(paths, eval_on=["validation"], skip_corpus=True, force=True, allow_manifest_mismatch=True)
 
     assert set(report["item_knn"]) == {"validation"}
     assert paths.item_knn_path("validation").exists()
@@ -119,7 +119,7 @@ def test_stage4_skip_corpus_skips_corpus_building(tmp_path):
 
     # Build with skip_corpus - should not create corpus file
     from package.data.pipeline import build_artifacts
-    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True)
+    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True, allow_manifest_mismatch=True)
 
     assert "corpus" in report
     assert report["corpus"] == {}  # Empty because skipped
@@ -132,7 +132,7 @@ def test_stage4_skip_item_knn_skips_item_knn_building(tmp_path):
     _prepare_mappings_and_splits(paths)
 
     from package.data.pipeline import build_artifacts
-    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True)
+    report = build_artifacts(paths, skip_corpus=True, skip_item_knn=True, force=True, allow_manifest_mismatch=True)
 
     assert report["item_knn"] == {}
     assert not paths.item_knn_dir.exists() or not list(paths.item_knn_dir.glob("*.npz"))

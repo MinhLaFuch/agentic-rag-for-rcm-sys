@@ -1,0 +1,16 @@
+# Evaluation-only contract v1. Same thresholds as the previously fixed contract.
+# exp_009 and its pilot prefixes are development data, not untouched qualification.
+policy_acceptance:
+  version: 1
+  primary_merge: union_all
+  ndcg_relative_min: 0.10
+  ndcg_absolute_min: 0.0005
+  family_alpha: 0.05
+  planned_comparisons: 4
+  recall_hit_retention_min: 0.95
+  coverage_retention_min: 0.80
+  policy_fetch_p95_ratio_max: 1.20
+  fresh_chain_p95_ratio_max: 1.10
+  cold_policy: unchanged_baseline
+  fallback: none
+  qualification: untouched_validation_and_repeated_clean_timing_required

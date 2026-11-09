@@ -42,6 +42,7 @@ class DemoResult:
     usage: dict[str, Any]
     error: str | None  # thông báo lỗi rút gọn (chỉ khi status="tool_error")
     memory: MemoryView | None = None  # view của memory tool cho UI
+    recommendation_source: str | None = None  # "history_itemcf" | "intent_bm25" | ... (None = không ghi)
 
 
 @dataclass
@@ -76,3 +77,5 @@ class DemoRequest:
     mode: str  # "planner" hoặc "type1"
     inference_mode: str = "llm"  # "llm" hoặc "template"
     profile_id: str | None = None  # profile được chọn (để tương lai)
+    intent_query: str | None = None  # từ khóa tìm kiếm tường minh (intent path, cần demo.intent_path_enabled)
+    intent_filters: dict[str, Any] | None = None  # bộ lọc cứng: domain/price_min/price_max/exclude_item_ids

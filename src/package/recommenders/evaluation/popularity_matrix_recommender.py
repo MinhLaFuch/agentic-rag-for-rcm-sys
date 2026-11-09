@@ -19,3 +19,9 @@ class PopularityMatrixRecommender(Recommender):
     def score_batch(self, user_idxs: np.ndarray) -> np.ndarray:
         assert self.item_counts is not None, "call fit() first"
         return np.broadcast_to(self.item_counts, (len(user_idxs), self.num_items))
+
+    def _recommend_sparse(self, user_idxs, k, exclude):
+        if type(self) is not PopularityMatrixRecommender:
+            return None
+        from ..shared.sparse_topk import sparse_topk
+        return sparse_topk(user_idxs, k, exclude, self.num_items, self._get_popularity_order())

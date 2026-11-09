@@ -3,6 +3,8 @@
 # seed experiment lưu vào metrics.
 
 ranking_eval:
+  all_users: false                  # true = đánh giá tất cả user có target (sau exclusions), bỏ per_segment
+  exclude_users_from: []            # danh sách config.yaml của experiment trước — loại user khỏi cohort
   per_segment: 1000               # số user tối đa lấy mẫu mỗi segment
   candidate_budget: 100           # candidate tối đa mỗi nguồn (<= tools.max_candidates)
   seed_items: 5                   # số item fit gần nhất làm seed cho ItemCF
