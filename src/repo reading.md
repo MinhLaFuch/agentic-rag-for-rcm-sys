@@ -1102,6 +1102,13 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
   assertable (produced by `_extract_claims` inside the measured pipeline).
 - Judge-level negative control:
   `src/scripts/evaluation/jev_negative_control.py` (manual, needs `TYPESAFE_API_KEY`).
+- **Planner / known system limitation**: the toolset cannot express
+  exclude-by-category (`categories_none` does not exist; FilterTool only has
+  `categories_any`/`categories_all`/`exclude_item_ids`). Cases planner_011,
+  planner_020, planner_027 (and similar+price 002/022, cheaper-than-seed 028)
+  live in `planner_dataset_backlog.jsonl` — this is a limitation of the
+  SYSTEM, not only of the benchmark. Planner benchmark now uses
+  `for_planner_memory()` (matches SYSTEM_PROMPT + multi-turn runner).
 
 ---
 
