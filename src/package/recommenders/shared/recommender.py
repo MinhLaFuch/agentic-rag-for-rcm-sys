@@ -47,6 +47,8 @@ class Recommender(ABC):
             num_users = int(train_matrix["user_idx"].max()) + 1 if not train_matrix.empty else 0
             num_items = int(train_matrix["item_idx"].max()) + 1 if not train_matrix.empty else 0
             train_matrix = build_interaction_matrix(train_matrix, num_users, num_items)
+        self.__dict__.pop("history_matrix", None)
+        self.__dict__.pop("_popularity_order", None)
         self.train_matrix = _prepare_train_matrix(train_matrix)
         self.num_users, self.num_items = self.train_matrix.shape
         self._fit(self.train_matrix)
@@ -64,7 +66,7 @@ class Recommender(ABC):
     def history_sizes(self, user_idxs: np.ndarray) -> np.ndarray:
         """Số tương tác trong dữ liệu fit của từng user (dùng cho phân đoạn cold/sparse/warm)."""
         assert self.train_matrix is not None, "call fit() first"
-        return np.diff(self.train_matrix.indptr)[user_idxs]
+        return np.diff(getattr(self, "history_matrix", self.train_matrix).indptr)[user_idxs]
 
     def recommend(
         self,
@@ -128,6 +130,10 @@ class Recommender(ABC):
                 )
             exclude = exclude.tocsr()
 
+        fast = self._recommend_sparse(user_idxs, k, exclude)
+        if fast is not None:
+            return fast[0].tolist() if scalar else fast
+
         scores = np.array(self.score_batch(user_idxs), dtype=np.float32, copy=True)
         if scores.shape != (len(user_idxs), self.num_items):
             raise ValueError(
@@ -180,3 +186,12 @@ class Recommender(ABC):
         if scalar:
             return result[0].tolist()
         return result
+
+    def _recommend_sparse(self, user_idxs, k, exclude):
+        return None
+
+    def _get_popularity_order(self):
+        if not hasattr(self, "_popularity_order"):
+            counts = np.asarray(self.train_matrix.sum(axis=0)).ravel().astype(np.float32)
+            self._popularity_order = np.argsort(-counts, kind="stable")
+        return self._popularity_order

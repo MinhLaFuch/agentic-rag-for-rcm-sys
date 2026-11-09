@@ -49,3 +49,40 @@ viết lại theo kiến trúc tools-building (`package.corpus`, `package.data`,
 
 - **Corpus artifact phải rebuild trên mỗi máy**: `load_corpus` kiểm `source_hashes` (sha256 file meta), `mapping_hash`, `schema_fingerprint`, `logic_version`, `first_seen_protocol`. Artifact sqlite build trên máy A vẫn load được trên máy B **chỉ khi** các file `resource/` (meta, cleaned, mapped, splits) giống hệt byte — nếu dataset khác version thì phải chạy lại stage 4. Backup cũ giữ tại `_backups/corpus_pre_first_seen_20261109/` (ngoài repo).
 - **`0a0d20a`** (commit duy nhất của tb2 ngoài 53eb6a1): "save tool call of Type1 and scorer agent" — `HybridScorer`/`HybridItemKNNRecommender` mới, type1 tool-call recording, `agent/scoring.yaml`, sửa `run_agent_eval.py`/`type1_agent.py`. Gán **G2** (hybrid scorer/recommender) + **G5** (type1). Không đụng file G1 ngoài `run_agent_eval.py` (vùng khác, không conflict logic) → **G1 không cần cập nhật**.
+
+## G2 — Sparse top-k + HybridItemKNN + fit_splits provenance + eval deltas + HybridScorer (nguồn: `d4fe5b4`, `0a0d20a`)
+
+Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.recommenders.{shared,evaluation}` thay `package.tools.recommenders`; `package.tools.scoring` thay `package.tools.score`; `package.evaluation.recommender.*` thay `package.tools.evaluation.*`.
+
+### File mới
+- `recommenders/shared/sparse_topk.py` — copy nguyên (không import tương đối).
+- `recommenders/evaluation/hybrid_item_knn_recommender.py` — adapt import `..shared.recommender`, `..shared.sparse_topk`.
+- `tools/scoring/hybrid_scorer.py` — adapt import `.baseline_scorer`; export qua `tools/scoring/__init__.py` + `tools/__init__.py`.
+- `configs/agent/scoring.yaml` + `ScoringConfig` trong `config/_schemas.py` (key `scoring`, `extra=forbid`).
+
+### Merge delta (bên nào thắng)
+| Điểm | Quyết định | Lý do |
+|---|---|---|
+| `recommender.py` dense ranking loop | **TB giữ lexsort loop**; chỉ thêm `_recommend_sparse` fast-path + `_get_popularity_order` + `history_matrix`/`_popularity_order` pop trong `fit()` + `history_sizes` getattr | Source viết lại dense loop (partition-based); TB lexsort tương đương ngữ nghĩa (score desc, index asc, chỉ >-inf) và là audit-hardened. Sparse path mới chạy TRƯỚC dense → dense loop chỉ còn cho model không hỗ trợ sparse. |
+| `_recommend_sparse` hooks | **source thắng**: port vào `item_knn_matrix`, `popularity_matrix`, `fallback` (delegate primary), base `Recommender` trả None | Tính năng cốt lõi: exact sparse top-k không materialize B×catalog. |
+| `score_batch`/`history_sizes` `history_matrix` getattr | **source thắng**: `getattr(self, "history_matrix", self.train_matrix)` | Cho phép eval trên history khác train_matrix (train_core/full-history hybrid). |
+| `fit_splits` override | **source thắng**: param mới trong `fit_provenance`/`save_item_knn`/`load_item_knn`/`Provenance.fit_provenance` + validation (cần dataset-bound + non-empty strings) | Phục vụ `fit_splits=["train_core"]` ở G4/build_core_model G3. TB `_model_metadata.py` đã có `fit_split_names`/`mapping_hash`/`file_hash`/`item_knn_data_hash` — giữ, không tách file. |
+| `evaluate_recommender.py` | **merge delta đúng bảng hunk**: +`progress_every`, +`evaluation_users` (validate 1D-int/unique/target-bearing), sparse-model batch=1024, `item_familiarity_matrix` getattr cho `item_seen`, hits qua `target[np.repeat(u,max_k), safe_top]` (không `toarray`), progress ETA prints, `relevant_items` cho seen_ratio khi subset | Giữ toàn bộ cấu trúc/segment logic TB; import recommender paths → `package.recommenders.evaluation.*`. |
+| `evaluation_protocol.py` | **merge delta**: +param `cohort_policy` default giữ literal cũ | Caller TB chưa truyền → output y hệt. |
+| `save_experiment.py` | **merge delta**: +param `write_readme=True` + early return sau metrics.json | Source sparse scripts cần `write_readme=False` (G3). Giữ `parents[5]` của TB (source `parents[3]` theo layout cũ — TB thắng). |
+| `run_agent_eval.py` scorer wiring | **adapt**: `agent/scoring.yaml` load + validate (KHÔNG thêm cờ CLI — Phase 5: tunables chỉ trong yaml; `--scorer`/`--hybrid-popularity-weight` của source bị loại), `HybridScorer`/`BaselineScorer` chọn theo mode, `baseline_model` = `HybridItemKNNRecommender` khi hybrid (cf similarity = `knn.similarity.T`), `scorer_provenance` vào `protocol_manifest["scorer"]` + `exp_config["scorer"]`, `knn_cache_used` expression | TB script khác source (domain-based, agents từ config) — port phần scorer, giữ nguyên phần còn lại. |
+
+### Không port trong G2 (ghi nhận)
+- `type1_agent.py` `last_tool_calls` + trajectory `tool_calls`/`steps` recording + `test_type1_audit.py` → **G5** (Type1 tool-call).
+- `test_agent_scorer_cli.py` → **chưa port / adapted-test-pending (G6)**: file không tồn tại ở TB (không phải skip/xfail); test viết trên kiến trúc run_agent_eval của source (`--agents`, `build_core_model`, `verify_tag_manifest`, `--trajectory-file`) không tồn tại ở TB; cần viết lại test tương đương khi G5 ổn định.
+- `build_core_model.py`, `core_inputs.py`, `global_core_pairs.py`, `outside_core_content_retriever.py`, `tune_item_knn_hybrid.py`, `run_baselines.py` history_matrix/sparse args → G3/G4.
+- `experiments/**`, docs, test logs của source → skip (artifacts).
+
+### Tag note (theo yêu cầu)
+- `v1`, `exp_002`, `exp_003` trong docstring demo/baseline scripts: **chỉ là ví dụ, không map** — script gặp tag lạ sẽ báo lỗi qua `get_data_paths`/config, không tự map.
+
+### Verify G2
+- Golden dense-equivalence: hash `recommend()` của popularity/item_knn/random/bpr_mf × k∈{1,7,25} trên fixture cố định — **12/12 hash giống hệt trước và sau port** (sparse path cho kết quả byte-identical).
+- pytest: **1510 passed, 2 xfailed** (1485 + 25 test mới: hybrid_item_knn 12, sparse_evaluator_optimization 6+param, hybrid_scorer 4+param... thực tế 25 case).
+- memory 29/29 (1.0), executor 18/18 (`step_success_rate_mean=0.6111`), integration 12/12 (1.0) — **y hệt baseline**.
+- planner/grounding/multi-turn: chưa so (cần LLM/Jev).

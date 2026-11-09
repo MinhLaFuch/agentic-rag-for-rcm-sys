@@ -561,6 +561,15 @@ class JudgeEvaluationConfig(BaseModel):
     communication: JudgeCommunicationConfig
 
 
+class ScoringConfig(BaseModel):
+    """Agent scorer config from configs/agent/scoring.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    mode: str = Field(default="baseline", description="baseline | hybrid")
+    hybrid_popularity_weight: float = Field(default=4.0, ge=0, description="Hybrid scorer popularity weight")
+
+
 class JudgeConfig(BaseModel):
     """Jev judge config from configs/eval/judge.yaml (no wrapper key)."""
 
@@ -599,6 +608,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "agent/memory": ("memory", MemoryConfig),
         "agent/tools": ("tools", ToolsConfig),
         "agent/inference": ("inference", InferenceConfig),
+        "agent/scoring": ("scoring", ScoringConfig),
         "agent/ablation": ("ablation", AblationConfig),
         "agent/reference_plans": (None, ReferencePlansConfig),  # No key wrapper
         "eval/baselines": ("baselines", BaselinesConfig),

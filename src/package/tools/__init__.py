@@ -3,7 +3,7 @@ from ._schema import ITEM_COLUMNS, FILTER_KEYS, ORDER_COLUMNS, SCHEMA_HINT
 from .base import ToolCallLogger
 from .retrieval import SearchTool
 from .ranking import SimilarTool, RankTool
-from .scoring import BaselineScorer, CandidateScorer
+from .scoring import BaselineScorer, CandidateScorer, HybridScorer
 from .sql import FilterTool, LookupTool
 
 __all__ = [
@@ -13,6 +13,6 @@ __all__ = [
     "ToolCallLogger",
     "SearchTool",
     "SimilarTool", "RankTool",
-    "BaselineScorer", "CandidateScorer",
+    "BaselineScorer", "CandidateScorer", "HybridScorer",
     "FilterTool", "LookupTool",
 ]
