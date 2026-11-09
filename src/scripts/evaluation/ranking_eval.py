@@ -236,11 +236,11 @@ def main() -> None:
             return
         store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
         if not store.get("scoring_complete"):
-            _run_stages(args, paths, meta_files, store, ks, variants)
+            _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest)
         _finalize(args, paths, store, ks, variants, exp_root)
 
 
-def _run_stages(args, paths, meta_files, store, ks, variants):
+def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     print("[splits] loading and sampling; ETA unknown", flush=True)
     train, validation, test = _load_eval_splits(paths, args.eval_on)
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
