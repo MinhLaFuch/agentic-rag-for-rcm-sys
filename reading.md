@@ -98,3 +98,18 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 - **Configs mới**: eval/{policy_acceptance, semantic_candidate_pilot, sparse_content_eval, sparse_seed_eval}.yaml (pass-through, không schema).
 - **Tests port (5)**: test_{confirmation_cohort, outside_core_content, policy_chain_eval, semantic_embeddings, train_core_model} → `tests/tools/evaluation/`; adapt import paths; `test_baseline_runner_*` viết lại theo yaml-config (bỏ `--models/--ks/--popularity-source/--item-knn-hybrid-weight` flags — Phase 5); monkeypatch get_data_paths lambda nhận **kwargs.
 - **Verify**: pytest **1549 passed, 2 xfailed** (1510+39); benchmark memory 29/29, executor 18/18, integration 12/12 — y hệt baseline.
+
+### G3 review — bảng delta chức năng 6 module "TB thắng" (kiểm chứng lại bằng diff trực tiếp)
+
+| Module | Delta chức năng ngoài CLI | Đã port? |
+|---|---|---|
+| `tune_baselines` | **Không** — chỉ khác cờ CLI (`--models/--ks/--run-final-test/--splits-dir`) + import path; logic tuning y hệt | N/A (TB thắng, yaml-driven) |
+| `analyze_ranking_bottlenecks` | **Không** — source delegate `candidate_policy_order` cho rrf_60/popularity_first; TB inline tương đương + yaml `ranking_diagnostics`; module `candidate_policy_order` đã port ở G3 cho scripts khác | N/A (tương đương ngữ nghĩa) |
+| `evaluate_product_reply` | **Không** — chỉ khác import path | N/A |
+| `evaluate_with_jev` | **Không** — chỉ khác cơ chế config (`--config-file` flag vs `CONFIG_OVERLAY_PATH` env của TB) | N/A (TB thắng theo Phase 5) |
+| `candidate_recall` | **Có, defer G4**: `verify_tag_manifest` + `config.manifest_status/manifest_sha256` — phụ thuộc `package.data.manifest` chưa tồn tại; corpus `manifest_path/sha256` TB đã ghi sẵn | Defer G4 |
+| `ranking_eval` | **Có — ĐÃ PORT** (commit follow-up G3): `_load_eval_splits` selective load, exclusion cohort `exclude_users_from` (yaml), `all_users` mode, insufficient-sample guard, `build_core_model` wiring (no-op cho legacy tag), popularity từ `knn.scores` cho train-core, `cohort_exclusions` trong config | ✅ |
+
+- G2 hash hiện tại: **`ddecf1e`** (đã amend bỏ `--scorer`/`--hybrid-popularity-weight`; đọc `scoring.mode`/`scoring.hybrid_popularity_weight` từ yaml + validate).
+- G3 commit: `f1f17d7` — message `Port eval analysis modules + eval scripts + train-core baselines (G3)`, nguồn `e05879c`/`e83bf33`/`d4fe5b4`/`53eb6a1`, `Co-authored-by: Quan Anh`.
+- **Pre-G4 artifact baseline**: `docs/pre_g4_artifact_hashes.json` — sha256 đầy đủ của `user2id.json`/`item2id.json`/`train|validation|test.parquet` (multi_domain) chụp trên `f1f17d7`. Short-hash khớp listing cũ.

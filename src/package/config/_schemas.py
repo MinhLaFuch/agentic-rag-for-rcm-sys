@@ -271,6 +271,8 @@ class RankingEvalConfig(BaseModel):
 
     model_config = _BASE_CONFIG
 
+    all_users: bool = Field(default=False, description="Evaluate all target-bearing users after exclusions")
+    exclude_users_from: list[str] = Field(default_factory=list, description="Prior experiment config.yaml paths whose sampled users are excluded")
     per_segment: int = Field(gt=0, description="Max sampled users per segment")
     candidate_budget: int = Field(gt=0, description="Max candidates per source")
     seed_items: int = Field(gt=0, description="Recent fit items seeding ItemCF")
