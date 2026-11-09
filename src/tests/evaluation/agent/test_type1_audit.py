@@ -37,6 +37,8 @@ def test_type1_preserves_ordered_calls_and_failures_without_previous_request(fai
         assert [step["tool"] for step in row["steps"]] == expected
         assert all(c["agent"] == "type1" and c["input_hash"] and c["timestamp"] for c in row["tool_calls"])
         assert all(c["latency_seconds"] >= 0 for c in row["tool_calls"])
+        assert all("data" in c for c in row["tool_calls"])
+        assert all("data" in s for s in row["steps"])
         if failure:
             assert row["error"] and not row["steps"][-1]["ok"]
         else:

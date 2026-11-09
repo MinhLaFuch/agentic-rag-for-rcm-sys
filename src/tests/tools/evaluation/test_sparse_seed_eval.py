@@ -93,3 +93,36 @@ def test_runner_json_only_same_sample_budget_and_resume(environment,monkeypatch,
     assert metrics["variants"]["2"]["paired_ndcg10"]["mean_delta"]==0
     monkeypatch.setattr(sys,"argv",argv+["--resume"]); script.main()
     assert len(list(out.parent.glob("exp_*")))==1
+
+
+class _StubTool:
+    """Minimal callable tool for adapter kwargs coverage (agent/action metadata)."""
+    def __init__(self, name, data):
+        from package.tools.base import ToolCallLogger
+        self.name, self._data, self.logger = name, data, ToolCallLogger()
+    def __call__(self, **kwargs):
+        from package.tools.base import ToolResult
+        return ToolResult(ok=True, data=self._data)
+
+
+def test_content_retriever_accepts_agent_action_kwargs():
+    """Type1Agent.call() passes agent=/action=; adapters must tolerate them (**_ignored)."""
+    cf = _StubTool("SimilarTool", {"candidates": [{"item_id": "D::a"}]})
+    query = _StubTool("LookupTool", {"items": [{"item_id": "D::a", "title": "Keyboard"}]})
+    search = _StubTool("SearchTool", {"candidates": [{"item_id": "D::b"}]})
+    retriever = script._ContentRetriever(cf, search, query, seen=[])
+    out = retriever(items=["D::a"], top_k=2, agent="type1", action="retrieve")
+    assert out.ok and {r["item_id"] for r in out.data["candidates"]} == {"D::a", "D::b"}
+
+
+def test_rrf_model_tool_accepts_agent_action_kwargs():
+    provider = type("P", (), {})()
+    provider.fallback_reason = None
+    provider.events = [
+        {"tool": "SimilarTool", "ok": True, "data": {"candidates": [{"item_id": "a"}]}},
+        {"tool": "SearchTool", "ok": True, "data": {"candidates": [{"item_id": "b"}]}},
+    ]
+    inner = _StubTool("RankTool", {"ranked": [{"item_id": "a"}, {"item_id": "b"}], "cold_start": False})
+    ranker = script._RRFModelTool(inner, provider)
+    out = ranker(user_id="u", candidates=["a", "b"], top_k=1, agent="type1", action="rank")
+    assert out.ok and out.data["ranked"][0]["item_id"] in ("a", "b")

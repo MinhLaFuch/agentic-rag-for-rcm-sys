@@ -180,17 +180,37 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 | `plan_executor` steps/tool_calls | **không port — TB đã có** | TB `plan_executor` ghi `entry["data"]=res.data`, `output_summary`, `args`, `error_kind` sẵn (line ~236-265); source delta rỗng. |
 
 ### Bug fix kèm theo (phát hiện khi port sparse_seed_eval)
-- `ranking_eval._run_stages` tham chiếu `tag_manifest` (local của `main()`) → `NameError` trên mọi run chưa-scoring-complete. Fix: truyền `tag_manifest` vào `_run_stages`. Test `test_ranking_streaming` bắt được.
+- `ranking_eval._run_stages` tham chiếu `tag_manifest` (local của `main()`) → `NameError` trên mọi run chưa-scoring-complete. Fix: truyền `tag_manifest` vào `_run_stages`. **Thuộc G4** — tách commit riêng `ca23757` (không nằm trong G5 `4b310ac`). Test `test_ranking_streaming` bắt được: FAIL (NameError) trước fix → PASS sau.
+- `_ObservedTool` trong `sparse_seed_eval` thiếu `.logger` → `Type1Agent.call()` crash `AttributeError`. Fix: forward inner tool logger hoặc `ToolCallLogger()` rỗng.
+- Wrappers `_ContentRetriever`/`_RRFModelTool` thiếu `**_ignored` → `TypeError` khi `Type1Agent` truyền `agent=`/`action=`. Fix: thêm `**_ignored` (kwargs chỉ là metadata, không vào `execute` — `Tool.__call__` đã reserved sẵn).
 
-### Verify G5
-- `type1_agent.recommend()` output **byte-identical** với bản f1f17d7 (chạy module cũ/mới trên stub tools, diff JSON output — IDENTICAL); khác biệt duy nhất là `last_tool_calls` (attr mới) và agent/action trong log records (mục đích của feature).
-- pytest full: **1605 passed, 2 xfailed** (1570 + 35 test mới: type1_audit 3, intent_flow 17, sparse_seed_eval 4, +layout fix), 0 failed.
-- Benchmark: memory **29/29**, executor **18/18**, integration **12/12** — y hệt baseline. Planner/grounding vẫn fail do thiếu LLM_BASE_URL (môi trường, như mọi nhóm trước).
-- GitNexus `detect_changes --scope all`: 15 symbols/10 files, risk **critical** — LiveBackend/Type1Agent là hub; mọi thay đổi additive/opt-in, verify bằng pytest + benchmark + equivalence proof.
-- FAIL→PASS: `test_intent_flow`/`test_type1_audit`/`test_sparse_seed_eval` là test mới cho code mới; `test_ranking_streaming` FAIL (NameError) → PASS sau fix.
-- Mutation coverage: `recommend_from_intent` được bao phủ bởi parametrized tests (ask_user guards, invalid filters, budget, fetch failure, fail-closed metadata, seen/exclude merge không mutate input).
+### Verify G5 (bổ sung sau review)
+- `type1_agent.recommend()` output **byte-identical** với bản f1f17d7 (stub tools, diff JSON — IDENTICAL).
+- **Parity tool thật**: `build_tools` (ItemKNNRecommender + BaselineScorer + corpus/cf fixture → SimilarTool/RankTool/LookupTool/SearchTool/FilterTool/MemoryTool thật) — old `Type1Agent`@f1f17d7 vs new, 23 requests (11 users × k, + unseen user cold-start): `recommend()` outputs **identical 23/23**; `run_type1` trajectories **identical modulo field mới** (`tool_calls`, `steps`, `wall_seconds`) 23/23. Khác biệt duy nhất còn lại: `agent`/`action` trong log records (mục đích feature) — không ảnh hưởng `execute` kwargs.
+- pytest full: **1605 passed, 2 xfailed**, 0 failed (+ test cứng hóa: `**_ignored` kwargs cho cả 2 adapter, assert `data` trong tool_calls/steps).
+- Benchmark: memory **29/29**, executor **18/18**, integration **12/12** — y hệt baseline. Planner/grounding vẫn fail do thiếu LLM_BASE_URL (môi trường, như mọi nhóm trước). Lưu ý: executor suite **không chứa Type1** — bằng chứng Type1 nằm ở parity run_type1 ở trên.
+- GitNexus `detect_changes --scope all`: 15 symbols/10 files, risk **critical** — LiveBackend/Type1Agent là hub; mọi thay đổi additive/opt-in, verify bằng pytest + benchmark + parity proof.
+
+### FAIL-before → PASS-after (bug latent, revert-fix chứng minh)
+| Bug | Revert fix → test | Kết quả |
+|---|---|---|
+| `tag_manifest` NameError (G4) | `test_ranking_streaming` | FAIL (NameError) → PASS sau `ca23757` |
+| `_ObservedTool.logger` thiếu | `test_runner_json_only_same_sample_budget_and_resume[False]` | FAIL (AttributeError → tool_error rows) → PASS sau restore |
+| `**_ignored` thiếu | `test_content_retriever_accepts_agent_action_kwargs` (+ `_RRFModelTool` case) | FAIL (TypeError) → PASS sau restore |
+
+### Mutation test thật (sửa code → test đỏ → revert)
+| Mutation | Test bắt được | Kết quả |
+|---|---|---|
+| `_intent_path_enabled` → `return True` | `test_intent_path_disabled_by_default` | FAIL → revert PASS |
+| bỏ `self.last_tool_calls.append(entry)` | `test_type1_preserves_ordered_calls_and_failures_without_previous_request[None]` | FAIL → revert PASS |
+| bỏ `entry["data"] = data` | cùng test trên | FAIL → revert PASS |
+
+### `LiveBackend.respond` — điều kiện skip LLM trước/sau G5
+- **Trước (27a8cee)**: `initialize()` không tham số; `respond()` gọi nó ở request đầu tiên bất kể mode → luôn `build_llm_provider` + `health_check()` + dựng 2 PlanExecutor. Type1+template **vẫn bắt buộc LLM sống**; thiếu creds → RuntimeError → `tool_error`.
+- **Sau (HEAD)**: `respond()` gọi `initialize(initialize_planner = request.mode != "type1" or inference_mode == "llm")` → skip LLM/planner **chỉ khi `mode=="type1"` AND `inference_mode=="template"`**; planner mode và type1+llm vẫn init đầy đủ. `_respond_planner`/`_respond_type1` gọi `_ensure_planner()` lazy khi cần. `initialize()` default `initialize_planner=True` giữ nguyên chữ ký.
+- **Đây là đổi hành vi thật** ở nhánh type1+template (trước: yêu cầu LLM; sau: không cần) — cố ý theo source, cho phép demo type1 chạy không creds; planner path không đổi.
 
 ### Còn nợ / lưu ý
 - Multi-turn vẫn chưa nối `_run_all` (đã báo từ G3, không thuộc G5).
-- `filtered/interactions.parquet` vẫn là bản format mới sau G4 (không có backup cũ; content tương đương đã verify gián tiếp qua splits).
+- `filtered/interactions.parquet` vẫn là bản format mới sau G4 — **không có backup bản cũ**, không nằm trong 5/5 hash match; content tương đương chỉ verify gián tiếp qua splits đã decode-compare. Ghi nhận: artifact set hiện là hỗn hợp (splits=old bytes, filtered= new format).
 - `intent_path_enabled` hiện chỉ có tác dụng khi UI/request truyền `intent_query`/`intent_filters`; `run_demo.py`/mock backend chưa có control cho 2 field này.
