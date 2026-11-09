@@ -199,7 +199,20 @@ def run_type1(
     """One type1 trajectory (fixed plan, no LLM for the recommendation); `answerer` as in run_planner."""
     traj = empty_trajectory(request, "type1", [])
     started = time.perf_counter()
-    out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    try:
+        out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    except Exception as exc:
+        out = {"ok": False, "stage": "exception", "error": f"{type(exc).__name__}: {exc}"}
+    calls = list(getattr(runner, "last_tool_calls", []))
+    traj["tools_available"] = ["SimilarTool", "RankTool", "LookupTool"]
+    traj["tool_calls"] = calls
+    traj["steps"] = [dict(tool=c["tool"], ok=c["output"]["ok"],
+                          args=c.get("input"), input_hash=c.get("input_hash"),
+                          timestamp=c.get("timestamp"), action=c.get("action"),
+                          latency_seconds=c["latency_seconds"], output_summary=c["output"],
+                          data=c.get("data") or {}, error=c["output"].get("error"),
+                          invented_ids=[], error_kind=None if c["output"]["ok"] else "tool_error")
+                     for c in calls]
     if out["ok"]:
         traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
     else:

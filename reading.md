@@ -154,3 +154,43 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
   - 3 file parquet: **byte-hash DIFF** nhưng **content 100% identical** — đã so từng cột (decode dictionary→string, cast large_string→string, order-sensitive `Array.equals`) trên cả train (21.69M rows)/validation/test: **0 value diffs**. Nguyên nhân byte-diff: write-path source mới `_write_filtered_parquet` (chunked `ParquetWriter` + `StringDtype`→`large_string`, column order `original_item_id` trước `domain`) thay `df.to_parquet` cũ (dictionary-encoded `string`, `domain` trước). Cùng SNAPPY, cùng row counts/row groups. → Không phải data regression; là format-level delta cố ý của source.
 - `verify_tag.py` trên multi_domain sau run: stage2/3 manifests tồn tại, stage1/4 chưa → incomplete chain (fail-closed đúng thiết kế); eval scripts sẽ báo `legacy_unmanifested`→lỗi incomplete cho tới khi chạy đủ pipeline.
 - GitNexus `detect_changes --scope all`: 40 symbols/26 files, risk **critical** — do chạm hub functions (build_artifacts/map_split/merge_filter_domains/clean_domain + các `main` eval scripts); expected cho G4, mọi thay đổi additive/opt-in, verify bằng pytest + real pipeline run + benchmarks.
+
+## G5 — Type1 tool-call audit + demo intent path (0a0d20a và liên quan)
+
+### File mới
+- `package/agents/type1/recent_seed_items.py`, `recommend_from_intent.py` — port gần nguyên source.
+- `scripts/evaluation/sparse_seed_eval.py` — port với adapt layout TB (xem bảng dưới).
+- Tests: `tests/evaluation/agent/test_type1_audit.py`, `tests/demo/test_intent_flow.py`, `tests/tools/evaluation/test_sparse_seed_eval.py`.
+
+### Merge delta (bên nào thắng)
+| Điểm | Quyết định | Lý do |
+|---|---|---|
+| `Type1Agent.last_tool_calls` | **source thắng, adapt**: wrapper `call()` đọc `tool.logger.records[start:]` + gắn `data` (ToolResult.data) vào mỗi entry | TB `ToolCallLogger.records` đã tồn tại; `data` thêm để funnel scorer (`step["data"]`) hoạt động cho type1 — planner steps vốn đã lưu full `data`. |
+| `run_type1` (run_agent_eval) | **merge**: try/except quanh `recommend`, `tools_available=[SimilarTool,RankTool,LookupTool]`, `tool_calls`, `steps` (kèm `data`, `error_kind`) | Source delta thật; TB tool names + `error_kind`/`data` cho layer4/funnel tương thích. Phần `main()` CLI flags của source **không lấy** (TB yaml-driven). |
+| `live_backend.initialize(initialize_planner=True)` + `_ensure_planner()` | **merge**: lazy LLM/planner; `respond` truyền `initialize_planner = mode!="type1" or inference_mode=="llm"` | Mặc định planner/type1+llm init LLM như cũ; chỉ type1+template mới skip health-check (cho phép demo type1 không cần key — đúng intent source). `_ensure_planner` được gọi lại trong `_respond_planner` và khi `initialize()` re-entry. |
+| Intent path (`_respond_intent`, `recommend_from_intent`) | **GATE `demo.intent_path_enabled` mặc định FALSE** (yaml + `DemoConfig`) | Điều kiện user: không đổi hành vi mặc định. Flag off: intent fields → ask_user; user_history.empty → no_result như cũ. Flag on: theo semantics source (user thiếu/lạ/rỗng history → intent; không keyword → ask_user; no-CF candidates → fallback intent). |
+| `live_backend` type1 answer | **TB thắng**: giữ `compose_answer`/`adapt_from_inference` (LLM answer); source bỏ inference cho type1 | Source rewrite làm mất tính năng inference answer của TB — regression. |
+| `live_backend` memory snapshots, `mock_backend`, `IDENTITY_INJECTION`, `get_data_paths(tag=,domains=)` | **TB thắng**: giữ nguyên | Source layout cũ, không có memory panel/mock backend. |
+| `demo/view/_dataclass.py` | **merge**: +`intent_query`/`intent_filters` (DemoRequest, default None), +`recommendation_source` (DemoResult, default None, đặt SAU `memory` để không vỡ positional args) | Field mới có default → backward compatible. |
+| `sample_users` | **source delta**: `sparse_max=None`→đọc `eval/segment_thresholds`, validate non-negative, **dedupe (user_idx,item_idx) trước bincount** | Fix đếm trùng interaction; `sparse_max` lên yaml đúng convention. `_profile_builder` vẫn truyền `sparse_max=5` explicit (source giữ nguyên). |
+| `adapt_from_plan_executor._extract_items_from_results` | **source delta**: metadata fallback từ tool `results` (`candidates`/`ranked`/`items`) khi `item_id_to_metadata` thiếu | Item hiển thị đủ title/price kể cả khi corpus snapshot không có. |
+| `demo.yaml` | **TB thắng + thêm key**: giữ `eval_on`/`use_prebuilt_corpus`/`allow_missing_corpus_sources`; +`intent_path_enabled: false` | Source xóa các key LiveBackend của TB; chỉ thêm key mới. |
+| `memory_tool.py` | **KHÔNG đụng** | Source revert love-hate thresholds — ngược TB audit-hardened behavior; không bắt buộc cho G5. |
+| `sparse_seed_eval.py` | **port adapt**: tool names SimilarTool/RankTool/LookupTool/SearchTool; imports → TB layout (`package.tools`, `package.corpus`, `package.evaluation.recommender.*`, `package.recommenders.shared`); **fix 2 latent bug của source**: `_ObservedTool` thiếu `.logger` (type1_agent.call crash) → thêm logger shim; `_ContentRetriever`/`_RRFModelTool.__call__` thiếu `**_ignored` cho agent/action kwargs → thêm | Source script không chạy được với type1_agent mới (last_tool_calls); fix tối thiểu, eval-only. |
+| `plan_executor` steps/tool_calls | **không port — TB đã có** | TB `plan_executor` ghi `entry["data"]=res.data`, `output_summary`, `args`, `error_kind` sẵn (line ~236-265); source delta rỗng. |
+
+### Bug fix kèm theo (phát hiện khi port sparse_seed_eval)
+- `ranking_eval._run_stages` tham chiếu `tag_manifest` (local của `main()`) → `NameError` trên mọi run chưa-scoring-complete. Fix: truyền `tag_manifest` vào `_run_stages`. Test `test_ranking_streaming` bắt được.
+
+### Verify G5
+- `type1_agent.recommend()` output **byte-identical** với bản f1f17d7 (chạy module cũ/mới trên stub tools, diff JSON output — IDENTICAL); khác biệt duy nhất là `last_tool_calls` (attr mới) và agent/action trong log records (mục đích của feature).
+- pytest full: **1605 passed, 2 xfailed** (1570 + 35 test mới: type1_audit 3, intent_flow 17, sparse_seed_eval 4, +layout fix), 0 failed.
+- Benchmark: memory **29/29**, executor **18/18**, integration **12/12** — y hệt baseline. Planner/grounding vẫn fail do thiếu LLM_BASE_URL (môi trường, như mọi nhóm trước).
+- GitNexus `detect_changes --scope all`: 15 symbols/10 files, risk **critical** — LiveBackend/Type1Agent là hub; mọi thay đổi additive/opt-in, verify bằng pytest + benchmark + equivalence proof.
+- FAIL→PASS: `test_intent_flow`/`test_type1_audit`/`test_sparse_seed_eval` là test mới cho code mới; `test_ranking_streaming` FAIL (NameError) → PASS sau fix.
+- Mutation coverage: `recommend_from_intent` được bao phủ bởi parametrized tests (ask_user guards, invalid filters, budget, fetch failure, fail-closed metadata, seen/exclude merge không mutate input).
+
+### Còn nợ / lưu ý
+- Multi-turn vẫn chưa nối `_run_all` (đã báo từ G3, không thuộc G5).
+- `filtered/interactions.parquet` vẫn là bản format mới sau G4 (không có backup cũ; content tương đương đã verify gián tiếp qua splits).
+- `intent_path_enabled` hiện chỉ có tác dụng khi UI/request truyền `intent_query`/`intent_filters`; `run_demo.py`/mock backend chưa có control cho 2 field này.

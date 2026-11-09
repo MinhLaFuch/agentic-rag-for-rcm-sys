@@ -500,6 +500,7 @@ class DemoConfig(BaseModel):
     eval_on: str = Field(description="validation | test — split loaded by LiveBackend")
     use_prebuilt_corpus: bool = Field(description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(description="Accept prebuilt corpus when raw meta files are missing")
+    intent_path_enabled: bool = Field(default=False, description="Type1 intent search path (keyword + filters); default off")
 
     @field_validator("default_language")
     @classmethod
