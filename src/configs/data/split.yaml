@@ -5,3 +5,10 @@ split:
   train_ratio: 0.8
   validation_ratio: 0.1
   test_ratio: 0.1
+  item_knn_splits: [validation, test]   # stage 4 build ItemKNN cho các split eval này (run_pipeline.py)
+  # Giao thức dữ liệu stage 2/3: legacy_kcore_before_split (mặc định) | temporal_train_core (opt-in).
+  data_protocol: legacy_kcore_before_split
+  # Cutoff cố định cho temporal_train_core (inclusive ở cuối train/validation); chỉ dùng khi data_protocol=temporal_train_core.
+  temporal_train_core:
+    train_end_inclusive_ms: 1617737606134
+    validation_end_inclusive_ms: 1651701127817

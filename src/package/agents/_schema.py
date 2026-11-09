@@ -12,6 +12,8 @@ TEMPLATES = {
             "Tôi muốn mua một món quà.",
             "Có gì mới không?",
         ),
+        "exclusion": "Tôi là user {user_id}. Gợi ý cho tôi {k} sản phẩm KHÔNG thuộc nhóm \"{exclude_categories}\" và KHÔNG bao gồm các sản phẩm {exclude_items}.",
+        "unanswerable": "Tôi là user {user_id}. Tìm cho tôi sản phẩm giá dưới 1 đô thuộc nhóm \"NonExistentCategory999\".",
     },
     "en": {
         "similar": "I am user {user_id} and just bought {item_id}. Recommend {k} similar products.",
@@ -23,5 +25,7 @@ TEMPLATES = {
             "I want to buy a gift.",
             "Anything new?",
         ),
+        "exclusion": "I am user {user_id}. Recommend {k} products that are NOT in the \"{exclude_categories}\" category and do NOT include items {exclude_items}.",
+        "unanswerable": "I am user {user_id}. Find me products under $1 in the \"NonExistentCategory999\" category.",
     },
 }

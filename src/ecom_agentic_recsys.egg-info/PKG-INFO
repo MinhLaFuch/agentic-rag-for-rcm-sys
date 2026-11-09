@@ -8,6 +8,7 @@ Requires-Dist: numpy<2.6.0,>=2.5.0
 Requires-Dist: PyYAML<6.1.0,>=6.0.2
 Requires-Dist: scipy<1.19.0,>=1.14.0
 Requires-Dist: pyarrow<19.0.0,>=18.0.0
+Requires-Dist: httpx<0.28.0,>=0.27.0
 Provides-Extra: dev
 Requires-Dist: pytest<9.2.0,>=9.1.0; extra == "dev"
 Provides-Extra: demo

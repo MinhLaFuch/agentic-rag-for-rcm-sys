@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..config import config_signature
 from ..config.load_config import ConfigError, load_config
+
+# Re-export from package.memory for backward compatibility
+from ..memory import get_memory_limits, clear_memory_limits_cache, MemoryLimits
 
 
 @dataclass(frozen=True)
@@ -18,10 +22,11 @@ class AgentLimits:
     type1_candidate_multiplier: int
     type1_min_candidates: int
     reflect_error_chars: int
+    reflect_quality_threshold: float  # Minimum quality score to avoid reflection (0.0 = disabled)
 
 
 @lru_cache(maxsize=1)
-def get_agent_limits() -> AgentLimits:
+def _cached_agent_limits() -> AgentLimits:
     cfg = load_config("agent/agent")["agent"]
     limits = AgentLimits(
         max_steps=int(cfg["max_steps"]),
@@ -32,6 +37,7 @@ def get_agent_limits() -> AgentLimits:
         type1_candidate_multiplier=int(cfg["type1"]["candidate_multiplier"]),
         type1_min_candidates=int(cfg["type1"]["min_candidates"]),
         reflect_error_chars=int(cfg["reflect_error_chars"]),
+        reflect_quality_threshold=float(cfg.get("reflect_quality_threshold", 0.0)),  # Default 0.0 = disabled
     )
     positive = ("max_steps", "max_tokens", "type1_candidate_multiplier", "type1_min_candidates", "reflect_error_chars")
     for name in positive:
@@ -40,4 +46,64 @@ def get_agent_limits() -> AgentLimits:
     for name in ("plan_retries", "reflect_rounds"):
         if getattr(limits, name) < 0:
             raise ConfigError(f"configs/agent/agent.yaml: {name} must be >= 0")
+    if not (0.0 <= limits.reflect_quality_threshold <= 1.0):
+        raise ConfigError(f"configs/agent/agent.yaml: reflect_quality_threshold must be between 0.0 and 1.0")
     return limits
+
+
+@dataclass(frozen=True)
+class SessionLimits:
+    """Multi-turn Session limits from configs/agent/memory.yaml (memory.session)."""
+
+    max_turns: int
+    max_shown_items: int
+    max_candidates: int
+    max_turn_chars: int
+
+
+@lru_cache(maxsize=1)
+def _cached_session_limits() -> SessionLimits:
+    cfg = load_config("agent/memory")["memory"]["session"]
+    limits = SessionLimits(
+        max_turns=int(cfg["max_turns"]),
+        max_shown_items=int(cfg["max_shown_items"]),
+        max_candidates=int(cfg["max_candidates"]),
+        max_turn_chars=int(cfg["max_turn_chars"]),
+    )
+    for name, value in vars(limits).items():
+        if value <= 0:
+            raise ConfigError(f"configs/agent/memory.yaml: session.{name} must be > 0, got {value!r}")
+    return limits
+
+
+_session_limits_signature: tuple | None = None
+
+
+def get_session_limits() -> SessionLimits:
+    """Session limits, refreshed when configs/agent/memory.yaml or the config overlay changes."""
+    global _session_limits_signature
+    signature = config_signature("agent/memory")
+    if signature != _session_limits_signature:
+        _session_limits_signature = signature
+        _cached_session_limits.cache_clear()
+    return _cached_session_limits()
+
+
+_limits_signature: tuple | None = None
+
+
+def get_agent_limits() -> AgentLimits:
+    """Agent limits, refreshed when configs/agent/agent.yaml or the config overlay changes."""
+    global _limits_signature
+    signature = config_signature("agent/agent")
+    if signature != _limits_signature:
+        _limits_signature = signature
+        _cached_agent_limits.cache_clear()
+    return _cached_agent_limits()
+
+
+def clear_agent_limits_cache() -> None:
+    """Clear the agent limits cache when config files change."""
+    _cached_agent_limits.cache_clear()
+    _cached_session_limits.cache_clear()
+

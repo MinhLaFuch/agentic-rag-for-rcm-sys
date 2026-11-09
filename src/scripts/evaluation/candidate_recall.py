@@ -8,8 +8,8 @@ reranking or agent work.
 
 Sources
   popularity   global top-N by train count               (works for everyone, incl. cold)
-  item_cf      ItemCFTool seeded with the user's recent items   (needs history)
-  semantic     SemanticSearchTool, query built as below         (needs a query)
+  item_cf      SimilarTool seeded with the user's recent items   (needs history)
+  semantic     SearchTool, query built as below         (needs a query)
   union        all three, merged round-robin to N (budget-matched) and plain union (larger)
 
 Where the semantic query comes from (there are no real user queries offline, so it is simulated):
@@ -25,8 +25,7 @@ Reads splits/mappings from resource/ (see data_paths.yaml) and meta_<Domain>.jso
 Defaults for budgets, sample sizes, etc. live in configs/eval/candidate_recall.yaml → candidate_recall.
 
     PYTHONPATH=. python scripts/evaluation/candidate_recall.py --eval-on validation
-    PYTHONPATH=. python scripts/evaluation/candidate_recall.py --eval-on validation --query-modes category_oracle
-    PYTHONPATH=. python scripts/evaluation/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
+    PYTHONPATH=. python scripts/evaluation/candidate_recall.py --domain Video_Games
 """
 
 from __future__ import annotations
@@ -42,31 +41,30 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps, namespaced_item_id
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.tools import ItemCFTool, SemanticSearchTool
+from package.tools import SimilarTool, SearchTool
 from package.tools import get_tool_limits
 from package.tools.base import ToolCallLogger
-from package.tools.corpus import build_corpus, load_corpus
-from package.tools.evaluation import (
+from package.corpus import build_corpus, load_corpus
+from package.evaluation.recommender.metrics.retrieval import (
     candidate_retrieval_metrics,
     item_familiarity_metrics,
-    latency_summary,
-    next_experiment_dir,
-    save_experiment,
-    sha256_file,
-    segment_users_by_history,
-    select_fit_target,
 )
-from package.tools.recommenders import build_interaction_matrix
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+from package.evaluation.recommender.utils import latency_summary, sha256_file
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.recommenders import build_interaction_matrix
+from package.recommenders import ItemKNNRecommender
+from package.recommenders.shared import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
+from package.recommenders.shared import mapping_hash
 
 MAX_CANDIDATES = get_tool_limits().max_candidates
 
@@ -140,68 +138,49 @@ def sample_users(seg_of: dict[int, str], per_segment: int, rng: np.random.Genera
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
-    ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu + meta để nạp (lặp lại). "
+                         "Mặc định: tất cả -> bundle 'multi_domain'; 1 domain -> bundle tên domain; "
+                         "tập con khác bị từ chối.")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
-    ap.add_argument("--n", help="candidate budgets, comma separated (mặc định: candidate_recall.budgets)")
-    ap.add_argument("--per-segment", type=int, help="max users sampled per segment")
-    ap.add_argument("--seed-items", type=int, help="recent fit items used as ItemCF seeds")
-    ap.add_argument("--query-items", type=int, help="recent fit items whose titles form the history query")
-    ap.add_argument("--neighbors", type=int, help="ItemKNN k (mặc định: baselines.item_knn.k)")
-    ap.add_argument("--seed", type=int, help="mặc định: baselines.seed")
-    ap.add_argument(
-        "--query-modes",
-        default="history",
-        help="Query source: history (default realistic offline proxy) and/or category_oracle (explicit oracle upper bound).",
-    )
-    ap.add_argument(
-        "--allow-missing-corpus-sources",
-        action="store_true",
-        help="Load a prebuilt corpus when raw metadata files are unavailable; schema and item mapping are still validated.",
-    )
-    ap.add_argument(
-        "--no-prebuilt-corpus",
-        action="store_true",
-        help="Build corpus from configured metadata in memory, bypassing a cached corpus.",
-    )
-    ap.add_argument("--experiments-dir", help="mặc định: <experiments_dir>/<candidate_recall.experiments_subdir>")
-    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
-                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
-    ap.add_argument("--query-normalization", choices=("raw", "ascii_fold"), default="raw",
-                    help="Metadata query preprocessing; ascii_fold is explicit and must get its own baseline.")
     args = ap.parse_args()
 
-    # CLI > configs/eval/candidate_recall.yaml / eval/baselines.yaml / eval/segment_thresholds.yaml
+    # Mọi tham số đọc từ configs/eval/candidate_recall.yaml, eval/baselines.yaml, eval/segment_thresholds.yaml
     cfg = load_config("eval/candidate_recall")["candidate_recall"]
     baselines = load_config("eval/baselines")["baselines"]
-    args.n = args.n or ",".join(str(b) for b in cfg["budgets"])
-    args.per_segment = cfg["per_segment"] if args.per_segment is None else args.per_segment
-    args.seed_items = cfg["seed_items"] if args.seed_items is None else args.seed_items
-    args.query_items = cfg["query_items"] if args.query_items is None else args.query_items
-    args.neighbors = baselines["item_knn"]["k"] if args.neighbors is None else args.neighbors
-    args.seed = baselines["seed"] if args.seed is None else args.seed
-    budgets = sorted(int(x) for x in args.n.split(","))
+    budgets = sorted(int(b) for b in cfg["budgets"])
     if not budgets or any(n <= 0 for n in budgets) or len(set(budgets)) != len(budgets):
-        raise SystemExit("candidate budgets must be unique positive integers")
+        raise SystemExit("candidate_recall.budgets must be unique positive integers")
     if max(budgets) > MAX_CANDIDATES:
         raise SystemExit(f"largest candidate budget cannot exceed tools.max_candidates={MAX_CANDIDATES}")
-    if args.seed_items <= 0 or args.query_items <= 0 or args.neighbors <= 0:
-        raise SystemExit("seed-items, query-items, and neighbors must be positive")
-    if args.per_segment <= 0:
-        raise SystemExit("per-segment must be positive")
-    query_modes = [mode.strip() for mode in args.query_modes.split(",") if mode.strip()]
+    per_segment = int(cfg["per_segment"])
+    seed_items = int(cfg["seed_items"])
+    query_items = int(cfg["query_items"])
+    neighbors = int(baselines["item_knn"]["k"])
+    seed = int(baselines["seed"])
+    query_modes = [str(mode) for mode in cfg["query_modes"]]
     allowed_query_modes = {"history", "category_oracle"}
     if not query_modes or set(query_modes) - allowed_query_modes:
-        raise SystemExit(f"--query-modes must contain values from {sorted(allowed_query_modes)}")
+        raise SystemExit(f"candidate_recall.query_modes must contain values from {sorted(allowed_query_modes)}")
+    if seed_items <= 0 or query_items <= 0 or neighbors <= 0 or per_segment <= 0:
+        raise SystemExit("seed_items, query_items, neighbors, per_segment must be positive")
+    metadata_policy_name = str(cfg["metadata_policy"])
+    query_normalization = str(cfg["query_normalization"])
+    use_prebuilt = bool(cfg["use_prebuilt_corpus"])
+    allow_missing = bool(cfg["allow_missing_corpus_sources"])
 
-    data_paths = get_data_paths(args.tag)
-    args.experiments_dir = args.experiments_dir or data_paths.experiments_dir / cfg["experiments_subdir"]
-    args.splits_dir = str(data_paths.splits_dir)
+    data_paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(data_paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
+    experiments_dir = data_paths.output_dir("candidate_recall")
     meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
 
     n_max = max(budgets)
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
-    rng = np.random.default_rng(args.seed)
+    rng = np.random.default_rng(seed)
     t_start = time.time()
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py)
@@ -217,7 +196,7 @@ def main() -> None:
     target_by_user = target_df.groupby("user_idx")["item_idx"].apply(set).to_dict()
     hist_size = np.diff(fit_matrix.indptr)
     seg_of = segment_users_by_history(target_by_user, hist_size, sparse_max)
-    sampled = sample_users(seg_of, args.per_segment, rng)
+    sampled = sample_users(seg_of, per_segment, rng)
     sampled_users = {user for users in sampled.values() for user in users}
     # Build histories only for sampled evaluation users, not for the entire multi-million-user fit set.
     sampled_fit = fit_df[fit_df["user_idx"].isin(sampled_users)]
@@ -228,28 +207,30 @@ def main() -> None:
     # ---- corpus + tools
     print("Load/build corpus")
     corpus_started = time.perf_counter()
-    if data_paths.corpus_path.exists() and not args.no_prebuilt_corpus:
+    if data_paths.corpus_path.exists() and use_prebuilt:
         corpus, coverage = load_corpus(
             data_paths.corpus_path,
             meta_files,
             item2id,
             float(cfg["min_metadata_coverage"]),
-            allow_missing_sources=args.allow_missing_corpus_sources,
+            allow_missing_sources=allow_missing,
         )
     else:
-        if args.no_prebuilt_corpus:
+        if not use_prebuilt:
             print("  Bypassing cached corpus; building from configured metadata in memory")
-        corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        first_seen_ts = build_first_seen_timestamps([(d, data_paths.cleaned_path(d)) for d, _ in meta_files])
+        corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), first_seen_ts=first_seen_ts)
     corpus_load_seconds = time.perf_counter() - corpus_started
     item_text = item_text_tables(corpus, namespaced)
     print(f"  metadata covers {coverage:.1%} of mapped items")
 
-    metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
+    metadata_policy = apply_metadata_policy(corpus, metadata_policy_name, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
-        sampled=sampled, metadata_policy=metadata_policy, evaluation_kind="candidate")
+        sampled=sampled, metadata_policy=metadata_policy, evaluation_kind="candidate",
+        cohort_policy=cohort_policy_for_paths(data_paths))
 
-    protocol_manifest["query_normalization"] = args.query_normalization
+    protocol_manifest["query_normalization"] = query_normalization
 
     cached_knn_path = data_paths.item_knn_path(args.eval_on)
     knn_started = time.perf_counter()
@@ -262,10 +243,10 @@ def main() -> None:
         knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
     print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
     knn_fit_data_hash = item_knn_data_hash(fit_pairs)
-    knn = ItemKNNRecommender(neighbors=args.neighbors).fit(fit_pairs)
+    knn = ItemKNNRecommender(neighbors=neighbors).fit(fit_pairs)
     knn_seconds = time.perf_counter() - knn_started
-    item_cf = ItemCFTool(knn, item2id, logger=ToolCallLogger())
-    search = SemanticSearchTool(corpus, logger=ToolCallLogger())
+    item_cf = SimilarTool(knn, item2id, logger=ToolCallLogger())
+    search = SearchTool(corpus, logger=ToolCallLogger())
     pop_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable").tolist()
     fit_item_seen = np.asarray(fit_matrix.sum(axis=0)).ravel() > 0
 
@@ -276,7 +257,7 @@ def main() -> None:
         return min(n_max + len(seen_of[u]), MAX_CANDIDATES)
 
     def get_item_cf(u: int) -> list[int] | None:
-        seeds = [id2item[i] for i in recent.get(u, [])[: args.seed_items]]
+        seeds = [id2item[i] for i in recent.get(u, [])[: seed_items]]
         if not seeds:
             return None
         res = item_cf(items=seeds, top_k=ask_limit(u))
@@ -285,13 +266,13 @@ def main() -> None:
 
     def get_semantic(u: int, mode: str) -> list[int] | None:
         if mode == "history":
-            query_ids = [id2item[i] for i in recent.get(u, [])[: args.query_items]]
+            query_ids = [id2item[i] for i in recent.get(u, [])[: query_items]]
         else:  # category_oracle
             query_ids = [id2item[i] for i in target_by_user[u]]
         text_by_id = item_text(query_ids)
         column = 0 if mode == "history" else 1
         query = " ".join(text_by_id[item_id][column] for item_id in query_ids if item_id in text_by_id)
-        query = normalize_query_text(query, args.query_normalization)
+        query = normalize_query_text(query, query_normalization)
         if not query.strip():
             return None
         res = search(query=query, limit=ask_limit(u))
@@ -409,9 +390,10 @@ def main() -> None:
         for domain, path in meta_files
     }
     exp_dir = save_experiment(
-        next_experiment_dir(args.experiments_dir),
-        config={"protocol": protocol_manifest, "budgets": budgets, "per_segment": args.per_segment, "seed_items": args.seed_items,
-                "query_items": args.query_items, "neighbors": args.neighbors, "query_modes": query_modes,
+        next_experiment_dir(experiments_dir),
+        config={"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "protocol": protocol_manifest, "budgets": budgets, "per_segment": per_segment, "seed_items": seed_items,
+                "query_items": query_items, "neighbors": neighbors, "query_modes": query_modes,
                 "evaluation_protocol": {mode: ("oracle_upper_bound" if mode == "category_oracle" else "realistic_offline_proxy") for mode in query_modes},
                 "sampled_user_ids": sampled, "sparse_max": sparse_max,
                 "knn_artifact_status": knn_status, "knn_fit_seconds": round(knn_seconds, 6),
@@ -419,21 +401,21 @@ def main() -> None:
                 "knn_cache_used": False,
                 "corpus_load_seconds": round(corpus_load_seconds, 6),
                 "corpus_source_validation": {
-                    "mode": "built_from_metadata_in_memory" if args.no_prebuilt_corpus else "loaded_prebuilt",
+                    "mode": "built_from_metadata_in_memory" if not use_prebuilt else "loaded_prebuilt",
                     "metadata_sources": metadata_source_records,
-                    "allow_missing_sources": bool(args.allow_missing_corpus_sources),
+                    "allow_missing_sources": allow_missing,
                     "missing_sources": [path for _, path in meta_files if not Path(path).exists()],
                 },
                 "corpus_artifacts": {
-                    "sqlite_path": None if args.no_prebuilt_corpus else str(data_paths.corpus_path),
-                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
+                    "sqlite_path": None if not use_prebuilt else str(data_paths.corpus_path),
+                    "sqlite_sha256": sha256_file(data_paths.corpus_path) if data_paths.corpus_path.exists() and use_prebuilt else None,
                     "manifest_path": str(data_paths.corpus_path.with_suffix(".meta.json")),
-                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and not args.no_prebuilt_corpus else None,
+                    "manifest_sha256": sha256_file(data_paths.corpus_path.with_suffix(".meta.json")) if data_paths.corpus_path.with_suffix(".meta.json").exists() and use_prebuilt else None,
                     "source_hash_semantics": getattr(corpus, "_source_provenance", {"source_hash_protocol": "built_from_current_sources"}),
                 }},
         metrics=metrics,
-        seed=args.seed,
-        dataset_info={"tag": data_paths.tag, "splits_dir": args.splits_dir, "eval_on": args.eval_on, "num_users": num_users,
+        seed=seed,
+        dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": num_items, "id_format": "namespaced" if namespaced else "plain",
                       "metadata_coverage": round(coverage, 4),
                       "mapping_hash": mapping_hash(item2id), "user_mapping_hash": mapping_hash(user2id),

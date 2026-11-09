@@ -11,9 +11,9 @@ if exist "..\..\.venv\Scripts\activate.bat" (
     call "..\..\.venv\Scripts\activate.bat"
 )
 
-REM Create logs directory if it doesn't exist (absolute path, so it survives the cd below)
-if not exist logs mkdir logs
-set "LOG_DIR=%CD%\logs"
+REM Create logs directory if it doesn't exist (experiments/test_logs — see configs/path/data_paths.yaml)
+if not exist "..\experiments\test_logs" mkdir "..\experiments\test_logs"
+set "LOG_DIR=%CD%\..\experiments\test_logs"
 
 REM Get current timestamp (PowerShell instead of wmic, which is removed on newer Windows)
 for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set TIMESTAMP=%%I

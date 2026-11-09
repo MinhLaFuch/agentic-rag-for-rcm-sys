@@ -1,8 +1,8 @@
 """
 Test các hàm EDA bằng dữ liệu SYNTHETIC (tự tạo, không phải Amazon Reviews
 2023 thật). Mục đích: verify logic tính toán đúng, KHÔNG dùng để báo cáo
-số liệu EDA thật (số liệu thật vẫn BLOCKED do network — xem
-src/data/acquire.py và docs/limitations.md).
+số liệu EDA thật (số liệu thật vẫn BLOCKED do network — dữ liệu thô phải đặt sẵn vào
+resource/raw/).
 """
 
 import pandas as pd

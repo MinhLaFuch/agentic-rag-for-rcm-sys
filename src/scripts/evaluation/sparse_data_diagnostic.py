@@ -13,10 +13,11 @@ import yaml
 
 from package.config import get_data_paths
 from package.data.mapping import load_mappings
-from package.tools.evaluation import next_experiment_dir, save_experiment
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.evaluation.recommender.experiment.next_experiment_dir import next_experiment_dir
+from package.evaluation.recommender.experiment.save_experiment import save_experiment
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
+from package.recommenders.shared import file_hash
+from package.recommenders.shared import mapping_hash
 from package.tools.retrieval.tokenize_search_query import tokenize_search_query
 
 

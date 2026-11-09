@@ -2,8 +2,8 @@
 
 import pytest
 
-from package.tools import BaselineScorer, ItemCFTool, RecoModelTool
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.tools import BaselineScorer, SimilarTool, RankTool
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 
 G_A1, G_B2, G_C3, G_D4, T_A1, T_E5 = "Games::A1", "Games::B2", "Games::C3", "Games::D4", "Toys::A1", "Toys::E5"
 
@@ -15,12 +15,12 @@ def knn(world):
 
 @pytest.fixture
 def cf_tool(knn, world):
-    return ItemCFTool(knn, world.item2id, corpus=world.corpus)
+    return SimilarTool(knn, world.item2id, corpus=world.corpus)
 
 
 @pytest.fixture
 def reco_tool(knn, world):
-    return RecoModelTool(BaselineScorer(knn), world.user2id, world.item2id, corpus=world.corpus)
+    return RankTool(BaselineScorer(knn), world.user2id, world.item2id, corpus=world.corpus)
 
 
 def test_item_cf_ranks_by_hand_computed_similarity_with_index_tie_break(cf_tool):
@@ -87,7 +87,7 @@ def test_reco_never_returns_items_outside_the_candidate_set(reco_tool, world):
 
 def test_reco_ties_keep_candidate_input_order(world):
     # B2 and T_A1 have equal popularity (4): the order of the input decides, deterministically
-    tool = RecoModelTool(BaselineScorer(PopularityRecommender().fit(world.interactions)), world.user2id, world.item2id)
+    tool = RankTool(BaselineScorer(PopularityRecommender().fit(world.interactions)), world.user2id, world.item2id)
     one = [r["item_id"] for r in tool(user_id="stranger", candidates=[G_B2, T_A1]).data["ranked"]]
     two = [r["item_id"] for r in tool(user_id="stranger", candidates=[T_A1, G_B2]).data["ranked"]]
     assert one == [G_B2, T_A1] and two == [T_A1, G_B2]
@@ -102,4 +102,4 @@ def test_reco_top_k_boundaries(reco_tool):
 
 def test_reco_output_keys_match_the_declared_output_schema(reco_tool):
     data = reco_tool(user_id="u1", candidates=[G_B2]).data
-    assert set(data) == set(RecoModelTool.output_schema)
+    assert set(data) == set(RankTool.output_schema)

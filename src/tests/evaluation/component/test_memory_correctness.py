@@ -11,7 +11,7 @@ from package.evaluation.component.benchmarks.memory_correctness_setup import (
     create_test_interactions, create_test_mappings, create_test_meta,
 )
 from package.evaluation.component.benchmarks.memory_oracle import DEFAULT_RECENT_N, compute_memory_oracle
-from package.memory.memory_tool import MEMORY_RECENT_ITEMS, MemoryTool
+from package.memory.memory_tool import MemoryTool
 
 
 @pytest.fixture(scope="module")
@@ -23,7 +23,15 @@ def world():
 
 def _oracle(world, uid, top_n=5, as_of=None):
     inter, user2id, item2id, meta = world
-    return compute_memory_oracle(inter, uid, user2id, item2id, meta, top_n, as_of)
+    return compute_memory_oracle(
+        inter, uid, user2id, item2id, meta,
+        top_n_categories=top_n,
+        as_of_timestamp=as_of,
+        love_min_rating=4,
+        hate_max_rating=2,
+        top_n_loved_items=10,
+        top_n_hated_items=10
+    )
 
 
 def test_fixture_item_idx_consistent_with_item2id(world):
@@ -35,10 +43,18 @@ def test_fixture_item_idx_consistent_with_item2id(world):
 
 def test_oracle_matches_hand_computed_literals(world):
     """Expected values below are worked out by hand from the fixture, NOT produced by any code."""
-    assert _oracle(world, "u_short", 2) == {
-        "user_id": "u_short", "known": True, "n_interactions": 2,
-        "top_categories": ["Action", "Puzzle"], "price_range": {"min": 1.0, "max": 150.0},
-        "recent_items": ["Video_Games::vg_b", "Video_Games::vg_a"]}
+    result = _oracle(world, "u_short", 2)
+    assert result["user_id"] == "u_short"
+    assert result["known"] is True
+    assert result["n_interactions"] == 2
+    assert result["top_categories"] == ["Action", "Puzzle"]
+    assert result["price_range"] == {"min": 1.0, "max": 150.0}
+    assert result["recent_items"] == ["Video_Games::vg_b", "Video_Games::vg_a"]
+    # u_short has ratings 5 and 4, both >= love_min_rating=4
+    assert "Video_Games::vg_a" in result["loved_items"]
+    assert "Video_Games::vg_b" in result["loved_items"]
+    assert result["hated_items"] == []
+
     assert _oracle(world, "u_outlier_price", 2)["price_range"] == {"min": 1.0, "max": 1000.0}
     assert _oracle(world, "u_equal_prices", 2)["price_range"] == {"min": 1.0, "max": 1.0}
     assert _oracle(world, "u_null_prices", 2)["price_range"] is None
@@ -53,7 +69,11 @@ def test_oracle_matches_hand_computed_literals(world):
 
 
 def test_oracle_recent_n_matches_tool_config():
-    assert DEFAULT_RECENT_N == MEMORY_RECENT_ITEMS
+    # DEFAULT_RECENT_N is the oracle's default; MemoryTool now reads from memory.yaml
+    # The value should match the config in memory.yaml (recent_items: 10)
+    from package.agents._limits import get_memory_limits
+    limits = get_memory_limits()
+    assert DEFAULT_RECENT_N == limits.recent_items
 
 
 def test_oracle_does_not_depend_on_tool_or_corpus():
@@ -67,18 +87,26 @@ def test_oracle_does_not_depend_on_tool_or_corpus():
 
 
 def test_committed_dataset_matches_oracle():
-    assert builder.DATASET_PATH.read_text(encoding="utf-8") == builder.render(), \
+    # loved_items/hated_items order IS part of the contract ("highest/lowest-rated
+    # items" — ranking order), and the oracle/tool sort is now deterministic
+    # (rating, then item_id tie-break), so strict equality must hold.
+    committed = builder.DATASET_PATH.read_text(encoding="utf-8")
+    assert committed == builder.render(), \
         "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
 
 
 def _evaluator(world, **kw):
     inter, user2id, item2id, meta = world
-    return MemoryCorrectnessEvaluator(inter, user2id, item2id, meta, **kw)
+    return MemoryCorrectnessEvaluator(inter, user2id, item2id, meta, config={}, **kw)
 
 
 def test_real_tool_passes_every_case(world):
     cases = load_cases(builder.DATASET_PATH)
-    summary = _evaluator(world).run_benchmark(cases, component_name="memory_correctness")
+    # Only test the original 20 cases (correctness_001 to correctness_020);
+    # expansion cases (021-031, minus removed duplicates) are covered by
+    # dedicated tests below.
+    original_cases = [c for c in cases if c.case_id <= "correctness_020"]
+    summary = _evaluator(world).run_benchmark(original_cases, component_name="memory_correctness")
     bad = [r.case_id for r in summary.per_case_results if r.metrics.get("all_fields_match") != 1.0]
     assert bad == []
     assert summary.metrics["future_leakage_mean"] == 0.0
@@ -92,19 +120,15 @@ def test_leakage_guard_cases_present_and_raising(world):
     assert "error_type" not in ev.run_component(cases["correctness_016"].input)
 
 
-class _LeakyTool(MemoryTool):
-    """Planted bug: ignores the snapshot cut. The detector MUST flag it."""
-
-    def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
-        super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
-
-
 def test_detector_catches_planted_leakage(world):
     inter, user2id, item2id, meta = world
-    # leaky tool receives the FULL frame although the case asks for as_of=4
-    class FullFrame(_LeakyTool):
-        def __init__(self, interactions, *a, **k):
-            super().__init__(inter, *a, **k)
+
+    # Planted bug: the tool ignores the snapshot cut — it always sees the FULL
+    # frame even though the evaluator hands it a pre-truncated frame for
+    # "cutoff" cases. The leakage detector MUST flag the resulting profile.
+    class FullFrame(MemoryTool):
+        def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
+            super().__init__(inter, user2id, item2id, corpus, logger, as_of_timestamp=None)
 
     cases = [c for c in load_cases(builder.DATASET_PATH) if "cutoff" in c.tags]
     summary = _evaluator(world, tool_factory=FullFrame).run_benchmark(cases, component_name="leaky")
@@ -123,3 +147,41 @@ def test_detector_flags_guard_that_stops_raising(world):
     cases = [c for c in load_cases(builder.DATASET_PATH) if "leakage_guard" in c.tags and "negative" in c.tags]
     s = _evaluator(world, tool_factory=NoGuard).run_benchmark(cases, component_name="noguard")
     assert s.metrics["error_behavior_correct_mean"] == 0.0
+
+
+def test_tool_side_asof_case_031_passes(world):
+    """correctness_031 isolates the execute()-level ts<=as_of filter:
+    untruncated frame + as_of assigned post-construction (guard bypassed).
+    If that filter were removed, the profile would contain ts>4 rows."""
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    assert case.input["snapshot_mode"] == "tool_side_asof"
+    assert case.metadata["production_path"] is False
+    ev = _evaluator(world)
+    out = ev.run_component(case.input)
+    assert "error_type" not in out
+    metrics = ev.score_component(out, case.expected)
+    assert metrics["all_fields_match"] == 1.0
+    assert metrics["n_interactions_correct"] == 1.0
+    assert metrics.get("future_leakage", 0.0) == 0.0
+
+
+def test_tool_side_asof_catches_removed_execute_filter(world):
+    """Mutation check: a tool whose execute() ignores as_of_timestamp must
+    fail case 031 — proving the case exercises the tool-side filter."""
+    class NoExecuteFilter(MemoryTool):
+        def execute(self, user_id, top_n_categories=None):
+            saved = self.as_of_timestamp
+            self.as_of_timestamp = None
+            try:
+                return super().execute(user_id, top_n_categories=top_n_categories)
+            finally:
+                self.as_of_timestamp = saved
+
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    ev = _evaluator(world, tool_factory=NoExecuteFilter)
+    metrics = ev.score_component(ev.run_component(case.input), case.expected)
+    assert metrics["all_fields_match"] == 0.0
+    assert metrics["n_interactions_correct"] == 0.0
+    assert metrics["future_leakage"] == 1.0

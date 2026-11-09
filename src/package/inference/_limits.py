@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..config import config_signature
 from ..config.load_config import ConfigError, load_config
 from ._schema import MODES
 
@@ -23,7 +24,7 @@ class InferenceLimits:
 
 
 @lru_cache(maxsize=1)
-def get_inference_limits() -> InferenceLimits:
+def _cached_inference_limits() -> InferenceLimits:
     where = "configs/agent/inference.yaml"
     try:
         cfg = load_config("agent/inference")["inference"]
@@ -51,3 +52,21 @@ def get_inference_limits() -> InferenceLimits:
         if getattr(limits, name) < 0:
             raise ConfigError(f"{where}: {name} must be >= 0")
     return limits
+
+
+_limits_signature: tuple | None = None
+
+
+def get_inference_limits() -> InferenceLimits:
+    """Inference limits, refreshed when configs/agent/inference.yaml or the config overlay changes."""
+    global _limits_signature
+    signature = config_signature("agent/inference")
+    if signature != _limits_signature:
+        _limits_signature = signature
+        _cached_inference_limits.cache_clear()
+    return _cached_inference_limits()
+
+
+def clear_inference_limits_cache() -> None:
+    """Clear the inference limits cache when config files change."""
+    _cached_inference_limits.cache_clear()

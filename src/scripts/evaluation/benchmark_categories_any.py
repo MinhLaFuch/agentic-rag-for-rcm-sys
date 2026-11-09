@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Benchmark script for SemanticSearchTool with categories_any + FTS.
+Benchmark script for SearchTool with categories_any + FTS.
 
 Measures query performance and EXPLAIN QUERY PLAN before and after adding
 the composite index idx_cat_item_cat on item_categories(item_id, category).
@@ -18,7 +18,8 @@ import pandas as pd
 
 from package.config import get_data_paths, get_domains
 from package.data.loader import load_item_metadata
-from package.tools import ItemCorpus, SemanticSearchTool
+from package.tools import SearchTool
+from package.corpus import ItemCorpus
 from package.tools import get_tool_limits
 from package.tools.base import ToolResult
 
@@ -31,7 +32,7 @@ def _check_result(result: ToolResult) -> bool:
         return True
     if result.error == "query exceeded the time budget":
         return False
-    raise RuntimeError(f"SemanticSearchTool failed: {result.error}")
+    raise RuntimeError(f"SearchTool failed: {result.error}")
 
 
 def create_corpus_without_composite_index(meta: pd.DataFrame) -> ItemCorpus:
@@ -39,7 +40,7 @@ def create_corpus_without_composite_index(meta: pd.DataFrame) -> ItemCorpus:
     Create a corpus WITHOUT the composite index idx_cat_item_cat.
     This is done by temporarily modifying the CATEGORIES_INDEXES list.
     """
-    from package.tools.corpus import CATEGORIES_INDEXES
+    from package.corpus import CATEGORIES_INDEXES
 
     # Save original indexes
     original_indexes = CATEGORIES_INDEXES.copy()
@@ -60,13 +61,13 @@ def create_corpus_without_composite_index(meta: pd.DataFrame) -> ItemCorpus:
 
 
 def benchmark_query(
-    tool: SemanticSearchTool,
+    tool: SearchTool,
     query: str,
     category: str,
     iterations: int = 5,
     limit: int = 100,
 ) -> dict[str, Any]:
-    """Run SemanticSearchTool query multiple times and collect timing information."""
+    """Run SearchTool query multiple times and collect timing information."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
 
@@ -136,12 +137,12 @@ def list_indexes(corpus: ItemCorpus) -> list[str]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Benchmark SemanticSearchTool categories_any + FTS queries"
+        description="Benchmark SearchTool categories_any + FTS queries"
     )
     parser.add_argument(
-        "--tag",
-        required=True,
-        help="Data tag (e.g., exp_002, exp_003)"
+        "--domain", action="append",
+        help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+             "1 domain -> bundle tên domain; tập con khác bị từ chối."
     )
     parser.add_argument(
         "--queries-file",
@@ -164,12 +165,13 @@ def main():
         parser.error("--iterations must be at least 1")
 
     print("="*80)
-    print("Benchmark: SemanticSearchTool categories_any + FTS")
+    print("Benchmark: SearchTool categories_any + FTS")
     print("="*80)
-    print(f"Tag: {args.tag}")
+    print(f"Dataset tag: {paths_tag}")
 
     # Load data paths
-    paths = get_data_paths(args.tag)
+    paths = get_data_paths(domains=args.domain)
+    paths_tag = paths.tag
     meta_files = []
     for domain in get_domains():
         meta_path = paths.meta_path(domain)
@@ -178,7 +180,7 @@ def main():
         else:
             print(f"  note: {meta_path} not found; skipping metadata for {domain}")
     if not meta_files:
-        raise SystemExit(f"No metadata files found for tag {args.tag!r}")
+        raise SystemExit(f"No metadata files found for dataset {paths.tag!r}")
 
     # Load metadata
     print("\nLoading metadata from:")
@@ -217,7 +219,7 @@ def main():
         indexes_without = list_indexes(corpus_without)
         print(f"Indexes on item_categories: {indexes_without}")
 
-        tool_without = SemanticSearchTool(corpus_without)
+        tool_without = SearchTool(corpus_without)
         plan_without = get_query_plan(corpus_without, query_text, category)
         print("Query plan:")
         for row in plan_without:
@@ -240,7 +242,7 @@ def main():
         indexes_with = list_indexes(corpus_with)
         print(f"Indexes on item_categories: {indexes_with}")
 
-        tool_with = SemanticSearchTool(corpus_with)
+        tool_with = SearchTool(corpus_with)
         plan_with = get_query_plan(corpus_with, query_text, category)
         print("Query plan:")
         for row in plan_with:

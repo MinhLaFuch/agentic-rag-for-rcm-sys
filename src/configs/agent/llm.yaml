@@ -1,5 +1,5 @@
 # LLM config (mục IV, XII, XIV, XX, XXI).
-# reference architecture: InteRecAgent/RecAI (xem docs/decisions.md D-003b)
+# reference architecture: InteRecAgent / RecAI
 
 provider: "openai_compatible"       # openai_compatible — cấu hình base_url + api_key khi có endpoint thật
 model: "gpt-5.4"

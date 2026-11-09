@@ -6,10 +6,10 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from package.tools.corpus import ItemCorpus
-from package.tools.evaluation.policy_chain_compare import policy_chain_compare
-from package.tools.evaluation.retrieval_loss_breakdown import retrieval_loss_breakdown
-from package.tools.evaluation.ranking_run_store import RankingRunStore
+from package.corpus import ItemCorpus
+from package.evaluation.recommender.analysis.policy_chain_compare import policy_chain_compare
+from package.evaluation.recommender.analysis.retrieval_loss_breakdown import retrieval_loss_breakdown
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
 from scripts.evaluation import policy_chain_eval as script
 from tests.tools.evaluation.test_ranking_streaming import environment, launch
 
@@ -85,7 +85,7 @@ def test_real_tools_smoke_and_completed_resume(environment,monkeypatch,mode,inte
     base,paths,items=environment
     source=launch(monkeypatch,base,"ranking_reference")
     paths=replace(paths,experiments_dir=base/"policy_results")
-    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,
+    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,"first_seen_ts":[1]*7,
                        "title":["Pok\u00e9mon keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])

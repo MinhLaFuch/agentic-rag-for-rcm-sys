@@ -1,0 +1,3 @@
+scoring:
+  mode: baseline  # baseline | hybrid; use hybrid explicitly for new comparisons
+  hybrid_popularity_weight: 4.0

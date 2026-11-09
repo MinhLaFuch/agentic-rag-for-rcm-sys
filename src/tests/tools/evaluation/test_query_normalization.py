@@ -1,6 +1,6 @@
 import pytest
 
-from package.tools.evaluation.normalize_query_text import normalize_query_text
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 from package.tools.retrieval._helper import _tokenize
 
 
@@ -21,8 +21,10 @@ def test_ascii_fold_and_raw_contract(raw, expected):
         _tokenize(folded)
 
 
-def test_does_not_change_production_ascii_guard():
+def test_non_ascii_queries_are_now_accepted():
+    """Non-ASCII queries are now accepted for multilingual support."""
     with pytest.raises(ValueError):
         normalize_query_text("text", "unknown")
-    with pytest.raises(Exception, match="ASCII"):
-        _tokenize("Pok\u00e9mon")
+    # _tokenize now accepts non-ASCII
+    tokens = _tokenize("Pok\u00e9mon")
+    assert isinstance(tokens, list)

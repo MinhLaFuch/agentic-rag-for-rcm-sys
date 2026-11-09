@@ -15,10 +15,11 @@ import yaml
 
 from package.config import get_data_paths
 from package.data.mapping import load_mappings
-from package.tools.evaluation import next_experiment_dir,save_experiment
-from package.tools.evaluation.classify_cf_link import classify_cf_link
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.evaluation.recommender.experiment.next_experiment_dir import next_experiment_dir
+from package.evaluation.recommender.experiment.save_experiment import save_experiment
+from package.evaluation.recommender.analysis.classify_cf_link import classify_cf_link
+from package.recommenders.shared import file_hash
+from package.recommenders.shared import mapping_hash
 
 
 def probe(source,corpus,model,sample_size,seed):

@@ -18,26 +18,30 @@ import yaml
 from package.agents import Type1Agent,get_agent_limits
 from package.agents.type1.recent_seed_items import recent_seed_items
 from package.config import get_data_paths,get_domains,load_config
+from package.data import build_first_seen_timestamps
 from package.data.mapping import load_mappings
-from package.tools import ItemCFTool,RecoModelTool,QueryTool,SemanticSearchTool
+from package.tools import SimilarTool,RankTool,LookupTool,SearchTool,BaselineScorer
 from package.tools.base import ToolResult
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.score import BaselineScorer
-from package.tools.corpus import build_corpus
-from package.tools.evaluation import next_experiment_dir,save_experiment
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.evaluation.save_experiment import _source_fingerprint,_environment_versions
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.recommenders.mapping_hash import mapping_hash
-from package.tools.recommenders.load_item_knn import load_item_knn
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
+from package.corpus import build_corpus
+from package.evaluation.recommender.experiment import next_experiment_dir,save_experiment
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.utils.stage_progress import StageProgress
+from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint,_environment_versions
+from package.recommenders.shared import file_hash,mapping_hash
+from package.recommenders.shared.load_item_knn import load_item_knn
 from package.tools.retrieval.tokenize_search_query import tokenize_search_query
-from package.tools.evaluation.history_title_query import history_title_query
+from package.evaluation.recommender.analysis.history_title_query import history_title_query
 from scripts.evaluation.analyze_ranking_bottlenecks import _metrics
 
 
 class _ObservedTool:
-    def __init__(self,tool,events): self.tool,self.events=tool,events
+    def __init__(self,tool,events):
+        self.tool,self.events=tool,events
+        # Type1Agent.call() slices tool.logger.records; forward the inner tool's
+        # logger when present, else an empty one (adapters record into `events`).
+        from package.tools.base import ToolCallLogger
+        self.logger=getattr(tool,"logger",None) or ToolCallLogger()
     def __call__(self,**kwargs):
         started=time.perf_counter()
         try:
@@ -61,7 +65,7 @@ class _ContentRetriever:
         self.fallback_reason=None
         self.history_items=history_items
 
-    def __call__(self,*,items,top_k):
+    def __call__(self,*,items,top_k,**_ignored):
         self.events=[]; self.query_record={}; self.fallback_reason=None
         if top_k%2 or len(items)!=1:
             return ToolResult(ok=False,error="content experiment requires even budget and one latest seed")
@@ -102,11 +106,11 @@ class _RRFModelTool:
     """Evaluation adapter: retain model eligibility filtering, then source-rank RRF60.
 
     The delegated model scoring is included in measured ranking latency. No model
-    score participates in the final ordering; production RecoModelTool is unchanged.
+    score participates in the final ordering; production RankTool is unchanged.
     """
-    name="RecoModelTool"
+    name="RankTool"
     def __init__(self,tool,provider): self.tool,self.provider=tool,provider
-    def __call__(self,*,user_id,candidates,top_k):
+    def __call__(self,*,user_id,candidates,top_k,**_ignored):
         from scripts.evaluation.sparse_content_replay import rrf
         if self.provider.fallback_reason:
             # Preserve baseline scores/order rather than substituting CF source ranks.
@@ -115,7 +119,7 @@ class _RRFModelTool:
         if not out.ok: return out
         eligible={r['item_id']:r for r in out.data['ranked']}
         sources=[[r['item_id'] for r in e['data']['candidates']] for e in self.provider.events
-                 if e['tool'] in ('ItemCFTool','SemanticSearchTool') and e['ok']]
+                 if e['tool'] in ('SimilarTool','SearchTool') and e['ok']]
         if len(sources)!=2: return ToolResult(ok=False,error='RRF requires both retrieval sources')
         pool=[i for i in candidates if i in eligible]
         ranked=rrf(pool,*sources)
@@ -139,8 +143,8 @@ def _run(tools,user_id,history,id2item,seed_count,k):
     no_cf=out.get("stage")=="retrieve" and out.get("error")=="no candidates returned"
     status="ask_user" if no_cf else ("tool_error" if not out["ok"] else ("ok" if out["items"] else "no_result"))
     candidates=[r["item_id"] for r in events[0]["data"].get("candidates",[])] if events else []
-    fetch=next((e for e in events if e["tool"]=="QueryTool"),None)
-    ranked=next((e for e in events if e["tool"]=="RecoModelTool"),None)
+    fetch=next((e for e in events if e["tool"]=="LookupTool"),None)
+    ranked=next((e for e in events if e["tool"]=="RankTool"),None)
     expected=[r["item_id"] for r in ranked["data"].get("ranked",[])] if ranked else []
     fetched=[r["item_id"] for r in fetch["data"].get("items",[])] if fetch else []
     excluded=ranked["data"].get("excluded_seen",[]) if ranked else []
@@ -160,7 +164,7 @@ def _summarize(store,items,protocol,seed,samples,user_ids=None):
     result={}; per_user={}; base_ids=None; segments={}
     for count in counts:
         q=Counter(); outcomes=Counter(); timing=[]; cov=set(); ndcg=[]; users=[]; sizes=[]; effective=[]; retrieved=[]; missing=0
-        stages={name:[] for name in ("ItemCFTool","RecoModelTool","QueryTool")}
+        stages={name:[] for name in ("SimilarTool","RankTool","LookupTool")}
         source_stages={}; source_sizes=Counter(); source_requests=0; shares=Counter(); final_items=0; fallbacks=Counter()
         for _,row in store.rows(f"{prefix}{count}"):
             if user_ids is not None and row['user_idx'] not in user_ids: continue
@@ -354,11 +358,14 @@ def main():
         model=load_item_knn(args.item_knn,neighbors,train[["user_idx","item_idx"]],user2id=users,item2id=items,eval_on="validation",tag=d["tag"])
         if model._fit_data_hash!=cfg["retrieval"]["item_knn_fit_data_hash"]: raise ValueError("fit hash mismatch")
         print("[corpus] building current snapshot, matching live demo metadata policy",flush=True)
-        corpus,_,coverage=build_corpus([(domain,str(paths.meta_path(domain))) for domain in get_domains()],items,
-                                       float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]))
-        tools=(ItemCFTool(model,items,corpus=corpus),RecoModelTool(BaselineScorer(model),users,items,corpus=corpus),QueryTool(corpus))
-        search=SemanticSearchTool(corpus,exact_count=not runtime_rrf) if content else None
-        counted_search=SemanticSearchTool(corpus) if runtime_rrf else None
+        meta_files = [(domain,str(paths.meta_path(domain))) for domain in get_domains()]
+        first_seen_ts = build_first_seen_timestamps([(domain, paths.cleaned_path(domain)) for domain, _ in meta_files])
+        corpus,_,coverage=build_corpus(meta_files,items,
+                                       float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+                                       first_seen_ts=first_seen_ts)
+        tools=(SimilarTool(model,items,corpus=corpus),RankTool(BaselineScorer(model),users,items,corpus=corpus),LookupTool(corpus))
+        search=SearchTool(corpus,exact_count=not runtime_rrf) if content else None
+        counted_search=SearchTool(corpus) if runtime_rrf else None
         id2item={v:k for k,v in items.items()}; id2user={v:k for k,v in users.items()}
         budget=max(10*get_agent_limits().type1_candidate_multiplier,get_agent_limits().type1_min_candidates)
         if runtime_rrf and budget!=50: raise ValueError('RRF v1 requires runtime candidate budget 50')
@@ -385,10 +392,10 @@ def main():
                 row.update(source_events=provider.events,query_provenance=provider.query_record,
                            fallback_reason=provider.fallback_reason,
                            source_quotas={"item_cf":budget//2,"bm25":budget//2})
-                row["source_candidates"]={"item_cf":[r["item_id"] for e in provider.events if e["tool"]=="ItemCFTool" and e["ok"] for r in e["data"]["candidates"]],
-                                          "bm25":[r["item_id"] for e in provider.events if e["tool"]=="SemanticSearchTool" and e["ok"] for r in e["data"]["candidates"]]}
+                row["source_candidates"]={"item_cf":[r["item_id"] for e in provider.events if e["tool"]=="SimilarTool" and e["ok"] for r in e["data"]["candidates"]],
+                                          "bm25":[r["item_id"] for e in provider.events if e["tool"]=="SearchTool" and e["ok"] for r in e["data"]["candidates"]]}
                 if runtime_rrf:
-                    event=next((e for e in provider.events if e['tool']=='SemanticSearchTool' and e['ok']),None)
+                    event=next((e for e in provider.events if e['tool']=='SearchTool' and e['ok']),None)
                     if event:
                         started=time.perf_counter(); checked=counted_search(**event['args'])
                         elapsed=time.perf_counter()-started

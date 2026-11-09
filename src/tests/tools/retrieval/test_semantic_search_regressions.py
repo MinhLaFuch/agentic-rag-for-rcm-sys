@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus, SemanticSearchTool
+from package.corpus import ItemCorpus
+from package.tools.retrieval import SearchTool
 
 
 def _ids(result):
@@ -32,7 +33,7 @@ def kb_corpus():
 
 
 def test_search_applies_structured_filters(kb_corpus):
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     cheap = tool(query="keyboard", filters={"price_max": 20})
     assert _ids(cheap) == ["Electronics::k3"]
     games = tool(query="keyboard", filters={"domain": "Video_Games"})
@@ -40,22 +41,22 @@ def test_search_applies_structured_filters(kb_corpus):
 
 
 def test_search_query_cannot_inject_fts_syntax(kb_corpus):
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     for q in ['keyboard" OR title:mouse', "keyboard NOT mouse *", "NEAR(keyboard mouse)", "col:keyboard"]:
         assert tool(query=q).ok  # treated as plain words, never as FTS5 operators
 
 
 def test_search_rejects_unknown_filter_and_bad_limit(kb_corpus):
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     assert not tool(query="keyboard", filters={"colour": "red"}).ok
     assert not tool(query="keyboard", limit=0).ok
 
 
 def test_search_respects_limit_and_is_logged(kb_corpus):
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     result = tool(query="keyboard", limit=1, agent="unit", action="search")
     assert len(result.data["candidates"]) == 1 and result.data["truncated"]
-    assert tool.logger.records[-1]["tool"] == "SemanticSearchTool"
+    assert tool.logger.records[-1]["tool"] == "SearchTool"
 
 
 def test_search_hyphenated_tokens_preserved(kb_corpus):
@@ -74,13 +75,13 @@ def test_search_hyphenated_tokens_preserved(kb_corpus):
         }
     )
     corpus_usb = ItemCorpus.from_dataframe(meta_usb)
-    result = SemanticSearchTool(corpus_usb)(query="usb-c cable")
+    result = SearchTool(corpus_usb)(query="usb-c cable")
     assert "Electronics::u1" in _ids(result)
 
 
 def test_search_empty_lists_in_filters(kb_corpus):
     """Test that empty lists in filters are treated as 'no filter'."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     result_empty_any = tool(query="keyboard", filters={"categories_any": []})
     result_empty_all = tool(query="keyboard", filters={"categories_all": []})
     result_empty_domain = tool(query="keyboard", filters={"domain": []})
@@ -92,7 +93,7 @@ def test_search_empty_lists_in_filters(kb_corpus):
 
 def test_search_long_exclude_item_ids(kb_corpus):
     """Test that a long list of exclude_item_ids works correctly."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Exclude 3 out of 4 items
     result = tool(query="keyboard", filters={"exclude_item_ids": ["Electronics::k1", "Electronics::k2", "Electronics::k3"]})
     assert _ids(result) == ["Video_Games::g1"]
@@ -100,7 +101,7 @@ def test_search_long_exclude_item_ids(kb_corpus):
 
 def test_search_total_matches_with_filters(kb_corpus):
     """Test that total_matches correctly accounts for filters."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Filter by price should reduce total_matches
     result_all = tool(query="keyboard")
     result_filtered = tool(query="keyboard", filters={"price_max": 20})
@@ -110,7 +111,7 @@ def test_search_total_matches_with_filters(kb_corpus):
 
 def test_search_rejects_non_dict_filters(kb_corpus):
     """Test that non-dictionary filters are rejected."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     result_list = tool(query="keyboard", filters=["domain"])
     result_str = tool(query="keyboard", filters="domain")
     result_int = tool(query="keyboard", filters=123)
@@ -124,7 +125,7 @@ def test_search_rejects_non_dict_filters(kb_corpus):
 
 def test_search_validates_filter_types(kb_corpus):
     """Test that filter values are validated for correct types."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Invalid price filter
     result_bad_price = tool(query="keyboard", filters={"price_min": "invalid"})
     assert not result_bad_price.ok
@@ -137,7 +138,7 @@ def test_search_validates_filter_types(kb_corpus):
 
 def test_search_applied_filters_are_normalized(kb_corpus):
     """Test that applied_filters returns normalized filters, not raw input."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     result = tool(query="keyboard", filters={"price_min": "50", "price_max": "100"})
     assert result.ok
     # Normalized filters should have numeric types, not strings
@@ -150,7 +151,7 @@ def test_search_applied_filters_are_normalized(kb_corpus):
 
 def test_search_fts_with_categories_any(kb_corpus):
     """Test that FTS search combined with categories_any filter returns correct results."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Query for "keyboard" with categories_any filter
     result = tool(query="keyboard", filters={"categories_any": ["Keyboards"]})
     assert result.ok
@@ -165,7 +166,7 @@ def test_search_fts_with_categories_any(kb_corpus):
 
 def test_search_fts_with_categories_any_multiple(kb_corpus):
     """Test that categories_any with multiple categories works correctly (OR semantics)."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Query for items in Keyboards OR Accessories categories
     result = tool(query="keyboard", filters={"categories_any": ["Keyboards", "Accessories"]})
     assert result.ok
@@ -179,7 +180,7 @@ def test_search_fts_with_categories_any_multiple(kb_corpus):
 
 def test_search_fts_with_categories_any_excludes_unmatched(kb_corpus):
     """Test that categories_any correctly excludes items not matching any specified category."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     # Query for a specific category that doesn't match some items
     result = tool(query="keyboard", filters={"categories_any": ["Accessories"]})
     assert result.ok
@@ -194,7 +195,7 @@ def test_search_fts_with_categories_any_excludes_unmatched(kb_corpus):
 
 def test_search_fts_with_categories_any_empty_list(kb_corpus):
     """Test that empty categories_any list is treated as no filter (already covered but explicit for FTS)."""
-    tool = SemanticSearchTool(kb_corpus)
+    tool = SearchTool(kb_corpus)
     result = tool(query="keyboard", filters={"categories_any": []})
     assert result.ok
     # Should return all keyboard-matching items regardless of category
@@ -243,7 +244,7 @@ def test_search_fts_with_categories_any_correctness_large_corpus():
         })
     meta = pd.DataFrame(items)
     corpus = ItemCorpus.from_dataframe(meta)
-    tool = SemanticSearchTool(corpus)
+    tool = SearchTool(corpus)
 
     # Query with FTS + categories_any targeting the large category
     result = tool(query="keyboard", filters={"categories_any": ["Keyboards"]}, limit=50)
@@ -279,7 +280,7 @@ def test_categories_any_uses_composite_index():
     )
     corpus = ItemCorpus.from_dataframe(meta)
     
-    # Run EXPLAIN QUERY PLAN on the same SQL pattern that SemanticSearchTool uses
+    # Run EXPLAIN QUERY PLAN on the same SQL pattern that SearchTool uses
     match = '"keyboard"'
     where = """EXISTS (SELECT 1 FROM item_categories c WHERE c.item_id = items.item_id
 AND c.category IN (?))"""

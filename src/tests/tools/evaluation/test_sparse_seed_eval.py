@@ -8,11 +8,11 @@ import pytest
 from package.agents import Type1Agent
 from package.agents.type1.recent_seed_items import recent_seed_items
 from package.demo import DemoRequest,LiveBackend
-from package.tools import ItemCFTool,RecoModelTool,QueryTool
-from package.tools.score import BaselineScorer
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.corpus import ItemCorpus
-from package.tools.evaluation.ranking_run_store import RankingRunStore
+from package.tools import SimilarTool,RankTool,LookupTool
+from package.tools.scoring import BaselineScorer
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.corpus import ItemCorpus
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
 from scripts.evaluation import sparse_seed_eval as script
 from tests.tools.evaluation.test_ranking_streaming import environment,launch
 
@@ -28,7 +28,7 @@ def test_actual_type1_and_live_backend_baseline_parity(corpus,cf_setup):
     fit,users,items=cf_setup
     fit=fit.assign(timestamp=list(range(len(fit))))
     model=ItemKNNRecommender(2).fit(fit)
-    tools=(ItemCFTool(model,items,corpus=corpus),RecoModelTool(BaselineScorer(model),users,items,corpus=corpus),QueryTool(corpus))
+    tools=(SimilarTool(model,items,corpus=corpus),RankTool(BaselineScorer(model),users,items,corpus=corpus),LookupTool(corpus))
     u=int(fit.user_idx.iloc[0]); user=next(k for k,v in users.items() if v==u)
     history=fit[fit.user_idx==u]; id2item={v:k for k,v in items.items()}
     row=script._run(tools,user,history,id2item,1,10)
@@ -49,7 +49,7 @@ def test_multiple_distinct_seeds_change_only_retrieval_input(corpus,cf_setup):
     history=fit[fit.user_idx==user_idx]; unique=int(history.item_idx.nunique())
     assert unique>=2
     model=ItemKNNRecommender(2).fit(fit)
-    tools=(ItemCFTool(model,items,corpus=corpus),RecoModelTool(BaselineScorer(model),users,items,corpus=corpus),QueryTool(corpus))
+    tools=(SimilarTool(model,items,corpus=corpus),RankTool(BaselineScorer(model),users,items,corpus=corpus),LookupTool(corpus))
     name=next(k for k,v in users.items() if v==user_idx); inverse={v:k for k,v in items.items()}
     rows=[script._run(tools,name,history,inverse,n,10) for n in [1,2,4]]
     assert [r["actual_seed_count"] for r in rows]==[1,min(2,unique),min(4,unique)]
@@ -62,7 +62,7 @@ def test_runner_json_only_same_sample_budget_and_resume(environment,monkeypatch,
     base,paths,items=environment
     source=launch(monkeypatch,base,"seed_reference")
     paths=replace(paths,experiments_dir=base/"seed_results")
-    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,"title":["keyboard"]*7})
+    meta=pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,"first_seen_ts":[1]*7,"title":["keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
@@ -93,3 +93,36 @@ def test_runner_json_only_same_sample_budget_and_resume(environment,monkeypatch,
     assert metrics["variants"]["2"]["paired_ndcg10"]["mean_delta"]==0
     monkeypatch.setattr(sys,"argv",argv+["--resume"]); script.main()
     assert len(list(out.parent.glob("exp_*")))==1
+
+
+class _StubTool:
+    """Minimal callable tool for adapter kwargs coverage (agent/action metadata)."""
+    def __init__(self, name, data):
+        from package.tools.base import ToolCallLogger
+        self.name, self._data, self.logger = name, data, ToolCallLogger()
+    def __call__(self, **kwargs):
+        from package.tools.base import ToolResult
+        return ToolResult(ok=True, data=self._data)
+
+
+def test_content_retriever_accepts_agent_action_kwargs():
+    """Type1Agent.call() passes agent=/action=; adapters must tolerate them (**_ignored)."""
+    cf = _StubTool("SimilarTool", {"candidates": [{"item_id": "D::a"}]})
+    query = _StubTool("LookupTool", {"items": [{"item_id": "D::a", "title": "Keyboard"}]})
+    search = _StubTool("SearchTool", {"candidates": [{"item_id": "D::b"}]})
+    retriever = script._ContentRetriever(cf, search, query, seen=[])
+    out = retriever(items=["D::a"], top_k=2, agent="type1", action="retrieve")
+    assert out.ok and {r["item_id"] for r in out.data["candidates"]} == {"D::a", "D::b"}
+
+
+def test_rrf_model_tool_accepts_agent_action_kwargs():
+    provider = type("P", (), {})()
+    provider.fallback_reason = None
+    provider.events = [
+        {"tool": "SimilarTool", "ok": True, "data": {"candidates": [{"item_id": "a"}]}},
+        {"tool": "SearchTool", "ok": True, "data": {"candidates": [{"item_id": "b"}]}},
+    ]
+    inner = _StubTool("RankTool", {"ranked": [{"item_id": "a"}, {"item_id": "b"}], "cold_start": False})
+    ranker = script._RRFModelTool(inner, provider)
+    out = ranker(user_id="u", candidates=["a", "b"], top_k=1, agent="type1", action="rank")
+    assert out.ok and out.data["ranked"][0]["item_id"] in ("a", "b")

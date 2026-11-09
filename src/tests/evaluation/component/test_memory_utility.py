@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import random
 
+import yaml
+
 from package.evaluation.component.benchmarks.memory_utility import analyze_metric, main, scope_of
 
 A, B = "planner", "planner_memory"
@@ -85,7 +87,7 @@ def test_run_std_reflects_llm_noise():
     assert g["run_std_baseline"] == 1.0 and g["run_std_memory"] == 0.0
 
 
-def test_cli_end_to_end(tmp_path, capsys):
+def test_cli_end_to_end(tmp_path, capsys, monkeypatch):
     dirs = []
     for run in range(3):
         d = tmp_path / f"exp_{run}"
@@ -96,7 +98,14 @@ def test_cli_end_to_end(tmp_path, capsys):
         (d / "scored.jsonl").write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
         dirs.append(str(d))
     out = tmp_path / "out"
-    assert main(["--dirs", *dirs, "--metrics", "task_success", "--out-dir", str(out), "--resamples", "500"]) == 0
+    # resamples/dirs/output dir đi qua CONFIG_OVERLAY_PATH (configs/eval/memory_utility.yaml + data_paths.outputs)
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text(yaml.safe_dump({
+        "eval/memory_utility": {"memory_utility": {"resamples": 500, "dirs": dirs}},
+        "path/data_paths": {"outputs": {"memory_utility": str(out)}},
+    }), encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+    assert main([]) == 0
     data = json.loads((out / "memory_utility.json").read_text())
     assert data["meta"]["runs_a"] == 3
     assert data["result"]["task_success"]["realistic/similar"]["verdict"] == "memory_better"

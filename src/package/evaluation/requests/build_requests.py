@@ -8,7 +8,7 @@ from collections.abc import Mapping
 import numpy as np
 
 from package.agents import TEMPLATES
-from package.tools.corpus import ItemCorpus
+from package.corpus import ItemCorpus
 from package.evaluation._schema import KIND_SEGMENTS, ORACLE_KINDS
 from package.evaluation.requests._dataclass import AgentRequest
 from package.evaluation.requests._helper import _deepest_category, _price_of, items_satisfying
@@ -101,5 +101,38 @@ def build_requests(
     phrasings = templates["ambiguous"]
     for i in range(n_ambiguous):
         add("ambiguous", "none", text=phrasings[i % len(phrasings)])
+
+    # exclusion: items/categories to exclude from recommendations
+    # Uses held-out items to determine what to exclude
+    for segment in KIND_SEGMENTS["exclusion"]:
+        for u in users_in(segment):
+            if sum(1 for r in requests if r.kind == "exclusion" and r.segment == segment) >= per_segment:
+                break
+            # Pick some held-out items as exclusions
+            held_out = [id2item[i] for i in sorted(target_by_user[u])]
+            if not held_out:
+                continue
+            # Exclude first held-out item and its category
+            exclude_item = held_out[0]
+            exclude_category = _deepest_category(corpus, exclude_item)
+            if exclude_category is None:
+                continue
+            # Targets are the remaining held-out items (what SHOULD be recommended)
+            relevant = [item for item in held_out if item != exclude_item]
+            add("exclusion", segment, user_id=id2user[u], user_idx=u,
+                targets=sorted(item2id[i] for i in relevant),
+                text=templates["exclusion"].format(
+                    user_id=id2user[u], k=k,
+                    exclude_categories=exclude_category,
+                    exclude_items=exclude_item
+                ))
+
+    # unanswerable: request that cannot be answered from available information
+    # Uses impossible constraints (non-existent category, extremely low price)
+    for segment in KIND_SEGMENTS["unanswerable"]:
+        # For unanswerable, we just need a few requests (no user context needed)
+        for i in range(min(per_segment, n_ambiguous)):  # reuse n_ambiguous as count
+            add("unanswerable", "none",
+                text=templates["unanswerable"].format(user_id=f"user_{i}", k=k))
 
     return requests

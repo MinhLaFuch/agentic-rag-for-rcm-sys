@@ -7,10 +7,10 @@ from package.inference.outcome import outcome_from_plan_results
 from package.inference.compose import compose_answer
 from package.inference._dataclass import AgentOutcome
 from tests.agents.fakes.fake_tools import (
-    FakeItemCFTool,
-    FakeRecoModelTool,
-    FakeQueryTool,
-    FakeSQLTool,
+    FakeSimilarTool,
+    FakeRankTool,
+    FakeLookupTool,
+    FakeFilterTool,
     FakeMemoryTool,
 )
 from tests.agents.fakes.scripted_llm import ScriptedLLM
@@ -25,14 +25,14 @@ from tests.agents.fakes.sample_data import (
 def test_successful_3_step_pipeline():
     """Success path: ItemCF → Reco → Query → status='ok' with ranked order."""
     # Setup fake tools with data
-    item_cf = FakeItemCFTool(
+    item_cf = FakeSimilarTool(
         fixed_data={
             "candidates": build_item_cf_candidates("item1", "item2", "item3"),
             "unknown_items": [],
             "note": None,
         }
     )
-    reco = FakeRecoModelTool(
+    reco = FakeRankTool(
         fixed_data={
             "ranked": build_reco_ranked("item2", "item1", "item3", score=0.9),
             "model": "fake",
@@ -43,7 +43,7 @@ def test_successful_3_step_pipeline():
             "note": None,
         }
     )
-    query = FakeQueryTool(
+    query = FakeLookupTool(
         fixed_data={
             "items": build_items("item2", "item1", "item3"),
             "missing_item_ids": [],
@@ -53,9 +53,9 @@ def test_successful_3_step_pipeline():
 
     # Plan: ItemCF → Reco → Query
     plan = build_plan_json(
-        {"tool": "ItemCFTool", "args": {"items": ["seed_item"], "top_k": 30}},
-        {"tool": "RecoModelTool", "args": {"user_id": "user1", "candidates": "$1.candidates", "top_k": 5}},
-        {"tool": "QueryTool", "args": {"item_ids": "$2.ranked.*.item_id"}},
+        {"tool": "SimilarTool", "args": {"items": ["seed_item"], "top_k": 30}},
+        {"tool": "RankTool", "args": {"user_id": "user1", "candidates": "$1.candidates", "top_k": 5}},
+        {"tool": "LookupTool", "args": {"item_ids": "$2.ranked.*.item_id"}},
     )
 
     llm = ScriptedLLM(plan)
@@ -70,7 +70,7 @@ def test_successful_3_step_pipeline():
     outcome = outcome_from_plan_results("recommend similar items to seed_item for user1", results)
     assert outcome.items
     assert len(outcome.items) == 3
-    # Order should be from RecoModelTool (ranked)
+    # Order should be from RankTool (ranked)
     assert [i["item_id"] for i in outcome.items] == ["item2", "item1", "item3"]
 
     # Compose answer
@@ -97,7 +97,7 @@ def test_personalization_path_with_known_user():
             "recent_items": ["item1", "item2"],
         }
     )
-    sql = FakeSQLTool(
+    sql = FakeFilterTool(
         fixed_data={
             "candidates": build_items("item3", "item4", "item5"),
             "total_matches": 3,
@@ -105,7 +105,7 @@ def test_personalization_path_with_known_user():
             "applied_filters": {},
         }
     )
-    reco = FakeRecoModelTool(
+    reco = FakeRankTool(
         fixed_data={
             "ranked": build_reco_ranked("item3", "item4", "item5", score=0.8),
             "model": "fake",
@@ -116,7 +116,7 @@ def test_personalization_path_with_known_user():
             "note": None,
         }
     )
-    query = FakeQueryTool(
+    query = FakeLookupTool(
         fixed_data={
             "items": build_items("item3", "item4", "item5"),
             "missing_item_ids": [],
@@ -127,9 +127,9 @@ def test_personalization_path_with_known_user():
     # Plan: Memory → SQL → Reco → Query
     plan = build_plan_json(
         {"tool": "MemoryTool", "args": {"user_id": "user1"}},
-        {"tool": "SQLTool", "args": {"filters": {"categories_any": "$1.top_categories", "price_max": "$1.price_range.max"}, "limit": 30}},
-        {"tool": "RecoModelTool", "args": {"user_id": "user1", "candidates": "$2.candidates", "top_k": 5}},
-        {"tool": "QueryTool", "args": {"item_ids": "$3.ranked.*.item_id"}},
+        {"tool": "FilterTool", "args": {"filters": {"categories_any": "$1.top_categories", "price_max": "$1.price_range.max"}, "limit": 30}},
+        {"tool": "RankTool", "args": {"user_id": "user1", "candidates": "$2.candidates", "top_k": 5}},
+        {"tool": "LookupTool", "args": {"item_ids": "$3.ranked.*.item_id"}},
     )
 
     llm = ScriptedLLM(plan)
@@ -157,7 +157,7 @@ def test_personalization_path_with_unknown_user_reflects():
             "recent_items": [],
         }
     )
-    sql = FakeSQLTool(
+    sql = FakeFilterTool(
         fixed_data={
             "candidates": build_items("item1", "item2"),
             "total_matches": 2,
@@ -165,7 +165,7 @@ def test_personalization_path_with_unknown_user_reflects():
             "applied_filters": {},
         }
     )
-    reco = FakeRecoModelTool(
+    reco = FakeRankTool(
         fixed_data={
             "ranked": build_reco_ranked("item1", "item2", score=0.7),
             "model": "fake",
@@ -176,7 +176,7 @@ def test_personalization_path_with_unknown_user_reflects():
             "note": None,
         }
     )
-    query = FakeQueryTool(
+    query = FakeLookupTool(
         fixed_data={
             "items": build_items("item1", "item2"),
             "missing_item_ids": [],
@@ -187,16 +187,16 @@ def test_personalization_path_with_unknown_user_reflects():
     # Plan 1: tries to use $1.price_range.max (will fail)
     plan1 = build_plan_json(
         {"tool": "MemoryTool", "args": {"user_id": "user2"}},
-        {"tool": "SQLTool", "args": {"filters": {"categories_any": "$1.top_categories", "price_max": "$1.price_range.max"}, "limit": 30}},
-        {"tool": "RecoModelTool", "args": {"user_id": "user2", "candidates": "$2.candidates", "top_k": 5}},
-        {"tool": "QueryTool", "args": {"item_ids": "$3.ranked.*.item_id"}},
+        {"tool": "FilterTool", "args": {"filters": {"categories_any": "$1.top_categories", "price_max": "$1.price_range.max"}, "limit": 30}},
+        {"tool": "RankTool", "args": {"user_id": "user2", "candidates": "$2.candidates", "top_k": 5}},
+        {"tool": "LookupTool", "args": {"item_ids": "$3.ranked.*.item_id"}},
     )
 
     # Plan 2: fixed, doesn't use the bad reference
     plan2 = build_plan_json(
-        {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 30}},
-        {"tool": "RecoModelTool", "args": {"user_id": "user2", "candidates": "$1.candidates", "top_k": 5}},
-        {"tool": "QueryTool", "args": {"item_ids": "$2.ranked.*.item_id"}},
+        {"tool": "FilterTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 30}},
+        {"tool": "RankTool", "args": {"user_id": "user2", "candidates": "$1.candidates", "top_k": 5}},
+        {"tool": "LookupTool", "args": {"item_ids": "$2.ranked.*.item_id"}},
     )
 
     llm = ScriptedLLM(plan1, plan2)

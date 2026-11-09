@@ -64,7 +64,7 @@ def _requests(corpus, **overrides):
 def test_build_requests_makes_every_kind_with_the_right_ground_truth(corpus):
     reqs = _requests(corpus)
     assert sorted(reqs) == ["ambiguous-none-0", "ambiguous-none-1", "cold_text-cold-0", "constrained-warm-0",
-                            "personalized-warm-0", "similar-warm-0"]
+                            "exclusion-warm-0", "personalized-warm-0", "similar-warm-0", "unanswerable-none-0"]
     similar = reqs["similar-warm-0"]
     assert similar.seed_item_id == VG_A and VG_A in similar.text and similar.targets == [1, 2] and not similar.oracle
     constrained = reqs["constrained-warm-0"]  # VG_B has no price, so VG_C (5.5, "Accessories") seeds the constraint
@@ -73,6 +73,16 @@ def test_build_requests_makes_every_kind_with_the_right_ground_truth(corpus):
     cold = reqs["cold_text-cold-0"]
     assert cold.category == "Electronics" and cold.targets == [3, 4] and cold.oracle
     assert reqs["ambiguous-none-0"].user_id is None and reqs["ambiguous-none-0"].targets == []
+    
+    # Check exclusion request
+    exclusion = reqs["exclusion-warm-0"]
+    assert exclusion.user_id is not None
+    assert exclusion.targets  # should have targets (held-out items except the excluded one)
+    
+    # Check unanswerable request
+    unanswerable = reqs["unanswerable-none-0"]
+    assert unanswerable.user_id is None
+    assert unanswerable.targets == []
 
 
 def test_request_scope_keeps_target_informed_cases_separate(corpus):
@@ -94,9 +104,9 @@ def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
 
 
 def test_extract_recommendations_prefers_ranking_then_retrieval_then_query():
-    ranked = {"tool": "RecoModelTool", "ok": True, "data": {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}}
-    cands = {"tool": "SemanticSearchTool", "ok": True, "data": {"candidates": [{"item_id": "x"}, {"item_id": "y"}]}}
-    fetched = {"tool": "QueryTool", "ok": True, "data": {"items": [{"item_id": "z"}]}}
+    ranked = {"tool": "RankTool", "ok": True, "data": {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}}
+    cands = {"tool": "SearchTool", "ok": True, "data": {"candidates": [{"item_id": "x"}, {"item_id": "y"}]}}
+    fetched = {"tool": "LookupTool", "ok": True, "data": {"items": [{"item_id": "z"}]}}
     assert extract_recommendations([cands, ranked, fetched], 2) == ["a", "b"]
     assert extract_recommendations([cands, fetched], 5) == ["x", "y"]
     assert extract_recommendations([fetched], 5) == ["z"]
@@ -105,12 +115,12 @@ def test_extract_recommendations_prefers_ranking_then_retrieval_then_query():
 
 
 def test_reference_groups_drop_tools_the_agent_does_not_have():
-    assert reference_groups("personalized", {"SemanticSearchTool", "RecoModelTool"}) == [("SemanticSearchTool",), ("RecoModelTool",)]
-    assert reference_groups("personalized", {"MemoryTool", "SemanticSearchTool", "RecoModelTool"})[0] == ("MemoryTool",)
-    assert reference_groups("ambiguous", {"RecoModelTool"}) == []
+    assert reference_groups("personalized", {"SearchTool", "RankTool"}) == [("SearchTool",), ("RankTool",)]
+    assert reference_groups("personalized", {"MemoryTool", "SearchTool", "RankTool"})[0] == ("MemoryTool",)
+    assert reference_groups("ambiguous", {"RankTool"}) == []
 
 
-def _trajectory(agent="planner", steps=(), recommended=(), error=None, ask_user=None, tools=("ItemCFTool", "RecoModelTool")):
+def _trajectory(agent="planner", steps=(), recommended=(), error=None, ask_user=None, tools=("SimilarTool", "RankTool")):
     return {"agent": agent, "plan": [], "ask_user": ask_user, "steps": list(steps), "recommended": list(recommended),
             "usage": {"attempts": 1, "prompt_tokens": 7, "completion_tokens": 3, "latency_seconds": 0.5}, "error": error,
             "truncated": False, "tools_available": list(tools), "wall_seconds": 1.0}
@@ -122,20 +132,20 @@ def _step(tool, ok=True):
 
 def test_score_trajectory_ranking_and_tool_selection(corpus):
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["recall@2"] == 1.0 and row["hit_rate@2"] == 1.0 and row["mrr@2"] == 0.5
     assert row["ndcg@2"] == pytest.approx(1 / math.log2(3))
     assert row["precision@2"] == pytest.approx(0.5)
     assert row["map@2"] == pytest.approx(0.5)
     assert row["tool_selection_ok"] is True and row["task_success"] is True and row["n_steps"] == 2
-    wrong_order = _trajectory(steps=[_step("RecoModelTool"), _step("ItemCFTool")], recommended=[VG_A])
+    wrong_order = _trajectory(steps=[_step("RankTool"), _step("SimilarTool")], recommended=[VG_A])
     assert score_trajectory(request, wrong_order, item2id=ITEM2ID, corpus=corpus, k=2)["tool_selection_ok"] is False
 
 
 def test_score_trajectory_deduplicates_recommendations_before_ranking(corpus):
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_B, VG_B])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_B, VG_B])
     row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["n_recommended"] == 1
     assert row["precision@2"] == pytest.approx(0.5)  # one unique result and one unfilled rank
@@ -150,7 +160,7 @@ def test_failed_plan_scores_zero_not_missing(corpus):
 
 def test_constraint_satisfaction_and_unknown_price(corpus):
     request = AgentRequest(request_id="c", kind="constrained", segment="warm", text="t", targets=[2], price_max=20.0, category="Accessories")
-    traj = _trajectory(steps=[_step("SemanticSearchTool"), _step("RecoModelTool")], recommended=[VG_C, VG_B], tools=("SemanticSearchTool", "RecoModelTool"))
+    traj = _trajectory(steps=[_step("SearchTool"), _step("RankTool")], recommended=[VG_C, VG_B], tools=("SearchTool", "RankTool"))
     row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["constraint_satisfaction"] == 0.5 and row["price_unknown_rate"] == 0.5 and row["task_success"] is False
 
@@ -158,7 +168,7 @@ def test_constraint_satisfaction_and_unknown_price(corpus):
 def test_ambiguous_request_succeeds_only_by_asking(corpus):
     request = AgentRequest(request_id="a", kind="ambiguous", segment="none", text="t")
     asked = score_trajectory(request, _trajectory(ask_user="Which product?"), item2id=ITEM2ID, corpus=corpus, k=2)
-    acted = score_trajectory(request, _trajectory(steps=[_step("RecoModelTool")], recommended=[VG_A]), item2id=ITEM2ID, corpus=corpus, k=2)
+    acted = score_trajectory(request, _trajectory(steps=[_step("RankTool")], recommended=[VG_A]), item2id=ITEM2ID, corpus=corpus, k=2)
     assert asked["task_success"] is True and asked["asked_clarification"] is True and asked["recall@2"] is None
     assert acted["task_success"] is False
 
@@ -247,8 +257,8 @@ def test_personalized_is_not_scored_for_a_planner_that_cannot_read_history(corpu
     request = AgentRequest(request_id="p", kind="personalized", segment="warm", text="t", targets=[1])
     blind = score_trajectory(request, _trajectory(ask_user="What do you like?"), item2id=ITEM2ID, corpus=corpus, k=2)
     assert blind["task_success"] is None and blind["tool_selection_ok"] is None and blind["asked_clarification"] is True
-    with_memory = _trajectory(steps=[_step("MemoryTool"), _step("SemanticSearchTool"), _step("RecoModelTool")],
-                              recommended=[VG_B], tools=("MemoryTool", "SemanticSearchTool", "RecoModelTool"))
+    with_memory = _trajectory(steps=[_step("MemoryTool"), _step("SearchTool"), _step("RankTool")],
+                              recommended=[VG_B], tools=("MemoryTool", "SearchTool", "RankTool"))
     scored = score_trajectory(request, with_memory, item2id=ITEM2ID, corpus=corpus, k=2)
     assert scored["tool_selection_ok"] is True and scored["task_success"] is True
 
@@ -271,7 +281,7 @@ def _similar_request():
 
 
 def test_score_trajectory_exposes_reflections_and_first_attempt_ok(corpus):
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     traj.update(reflections=1, first_attempt_ok=False)
     row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["reflections"] == 1 and row["first_attempt_ok"] is False
@@ -279,7 +289,7 @@ def test_score_trajectory_exposes_reflections_and_first_attempt_ok(corpus):
 
 
 def test_score_trajectory_still_scores_old_trajectories_without_the_new_fields(corpus):
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     assert "reflections" not in traj and "first_attempt_ok" not in traj
     row = score_trajectory(_similar_request(), traj, item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["reflections"] == 0 and row["first_attempt_ok"] is None and row["task_success"] is True
@@ -288,8 +298,8 @@ def test_score_trajectory_still_scores_old_trajectories_without_the_new_fields(c
 def test_score_trajectory_still_scores_old_trajectories_without_args_and_output_summary(corpus):
     """Old trajectories without args/output_summary fields should still be scored."""
     # Create a step without the new fields (as it would be in old trajectories)
-    old_step = {"tool": "ItemCFTool", "ok": True, "error": None, "invented_ids": [], "latency_seconds": 0.01}
-    traj = _trajectory(steps=[old_step, _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    old_step = {"tool": "SimilarTool", "ok": True, "error": None, "invented_ids": [], "latency_seconds": 0.01}
+    traj = _trajectory(steps=[old_step, _step("RankTool")], recommended=[VG_A, VG_B])
     # Manually ensure the first step doesn't have the new fields
     traj["steps"][0] = old_step
     assert "args" not in traj["steps"][0]
@@ -321,14 +331,14 @@ def test_run_planner_records_reflections_and_the_last_attempt(corpus):
     import json
 
     from package.agents import PlanExecutor
-    from package.tools import SQLTool
+    from package.tools import FilterTool
     from tests.agents.test_plan_executor import ScriptedLLM
 
     script = _load_run_agent_eval()
-    bad = {"tool": "SQLTool", "args": {"category": "Games"}}
-    good = {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
+    bad = {"tool": "FilterTool", "args": {"category": "Games"}}
+    good = {"tool": "FilterTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
     llm = ScriptedLLM(json.dumps({"steps": [bad]}), json.dumps({"steps": [good]}))
-    executor = PlanExecutor(llm, [SQLTool(corpus)], reflect_rounds=1)
+    executor = PlanExecutor(llm, [FilterTool(corpus)], reflect_rounds=1)
     traj = script.run_planner(executor, _similar_request(), "planner", 2)
     assert traj["reflections"] == 1 and traj["first_attempt_ok"] is False and traj["reflect_rounds"] == 1
     assert [s["ok"] for s in traj["steps"]] == [True] and traj["plan"] == [good] and traj["recommended"]
@@ -338,10 +348,10 @@ def test_run_planner_records_reflections_and_the_last_attempt(corpus):
 
 def test_run_planner_marks_an_unparsable_plan_as_not_ok_first_time(corpus):
     from package.agents import PlanExecutor
-    from package.tools import SQLTool
+    from package.tools import FilterTool
     from tests.agents.test_plan_executor import ScriptedLLM
 
-    executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=1)
+    executor = PlanExecutor(ScriptedLLM("nope"), [FilterTool(corpus)], plan_retries=0, reflect_rounds=1)
     traj = _load_run_agent_eval().run_planner(executor, _similar_request(), "planner", 2)
     assert traj["error"] and traj["first_attempt_ok"] is False and traj["reflections"] == 0
 
@@ -350,7 +360,7 @@ def test_trajectory_error_chars_comes_from_yaml_and_must_be_positive(corpus, mon
     from package.agents import PlanExecutor
     from package.config import load_config
     from package.config.load_config import ConfigError
-    from package.tools import SQLTool
+    from package.tools import FilterTool
     from tests.agents.test_plan_executor import ScriptedLLM
 
     script = _load_run_agent_eval()
@@ -365,7 +375,7 @@ def test_trajectory_error_chars_comes_from_yaml_and_must_be_positive(corpus, mon
         return fake
 
     monkeypatch.setattr(script, "load_config", with_chars(12))
-    executor = PlanExecutor(ScriptedLLM("nope"), [SQLTool(corpus)], plan_retries=0, reflect_rounds=0)
+    executor = PlanExecutor(ScriptedLLM("nope"), [FilterTool(corpus)], plan_retries=0, reflect_rounds=0)
     traj = script.run_planner(executor, _similar_request(), "planner", 2)
     assert 0 < len(traj["error"]) <= 12
     monkeypatch.setattr(script, "load_config", with_chars(0))

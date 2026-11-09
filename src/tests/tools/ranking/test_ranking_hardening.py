@@ -1,4 +1,4 @@
-"""Hardening tests for package/tools/ranking (ItemCFTool, RecoModelTool) and the scorer contract they rely on.
+"""Hardening tests for package/tools/ranking (SimilarTool, RankTool) and the scorer contract they rely on.
 
 Fills the gaps left by test_tools_item_cf.py / test_tools_reco_model.py:
   1. mapping invariants: negative index and duplicate index in item2id
@@ -15,9 +15,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from package.tools import BaselineScorer, ItemCFTool, RecoModelTool
+from package.tools import BaselineScorer, SimilarTool, RankTool
 from package.tools.base import ToolResult
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
 from tests.tools_helpers import EL_A, EL_D, VG_A, VG_B, VG_C
 
 
@@ -37,13 +37,13 @@ def knn(cf_setup):
 
 @pytest.fixture
 def cf_tool(knn, cf_setup, corpus):
-    return ItemCFTool(knn, cf_setup[2], corpus=corpus)
+    return SimilarTool(knn, cf_setup[2], corpus=corpus)
 
 
 @pytest.fixture
 def reco_tool(knn, cf_setup, corpus):
     _, user2id, item2id = cf_setup
-    return RecoModelTool(BaselineScorer(knn), user2id, item2id, corpus=corpus)
+    return RankTool(BaselineScorer(knn), user2id, item2id, corpus=corpus)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ def reco_tool(knn, cf_setup, corpus):
 def test_item_cf_negative_index_in_mapping_is_an_unknown_seed(knn, cf_setup, corpus):
     """-1 would silently select the LAST row of the similarity matrix (numpy negative indexing)."""
     _, _, item2id = cf_setup
-    tool = ItemCFTool(knn, {**item2id, "Fake::neg": -1}, corpus=corpus)
+    tool = SimilarTool(knn, {**item2id, "Fake::neg": -1}, corpus=corpus)
     result = tool(items=["Fake::neg"])
     assert result.ok
     assert result.data["candidates"] == []
@@ -61,9 +61,9 @@ def test_item_cf_negative_index_in_mapping_is_an_unknown_seed(knn, cf_setup, cor
 
 def test_item_cf_negative_seed_does_not_pollute_valid_seeds(knn, cf_setup, corpus):
     _, _, item2id = cf_setup
-    tool = ItemCFTool(knn, {**item2id, "Fake::neg": -1}, corpus=corpus)
+    tool = SimilarTool(knn, {**item2id, "Fake::neg": -1}, corpus=corpus)
     mixed = tool(items=[VG_A, "Fake::neg"])
-    clean = ItemCFTool(knn, item2id, corpus=corpus)(items=[VG_A])
+    clean = SimilarTool(knn, item2id, corpus=corpus)(items=[VG_A])
     assert _ids(mixed) == _ids(clean)
     assert [c["similarity"] for c in mixed.data["candidates"]] == [c["similarity"] for c in clean.data["candidates"]]
     assert mixed.data["unknown_items"] == ["Fake::neg"]
@@ -72,7 +72,7 @@ def test_item_cf_negative_seed_does_not_pollute_valid_seeds(knn, cf_setup, corpu
 def test_item_cf_seed_index_beyond_similarity_matrix_is_unknown(knn, cf_setup, corpus):
     _, _, item2id = cf_setup
     n = knn.similarity.shape[0]
-    tool = ItemCFTool(knn, {**item2id, "Fake::big": n + 5}, corpus=corpus)
+    tool = SimilarTool(knn, {**item2id, "Fake::big": n + 5}, corpus=corpus)
     result = tool(items=["Fake::big"])
     assert result.ok and result.data["candidates"] == [] and result.data["unknown_items"] == ["Fake::big"]
 
@@ -82,13 +82,13 @@ def test_item_cf_rejects_mapping_where_two_items_share_an_index(knn, cf_setup):
     _, _, item2id = cf_setup
     broken = {**item2id, "Fake::dup": item2id[VG_A]}
     with pytest.raises(ValueError, match="(?i)duplicate|unique|same index"):
-        ItemCFTool(knn, broken)
+        SimilarTool(knn, broken)
 
 
 def test_reco_negative_index_in_mapping_goes_to_unscored(cf_setup, knn):
     """idx -1 passes `idx >= num_items` and would be 'scored' (as 0.0) and ranked."""
     _, user2id, item2id = cf_setup
-    tool = RecoModelTool(BaselineScorer(knn), user2id, {**item2id, "Fake::neg": -1})
+    tool = RankTool(BaselineScorer(knn), user2id, {**item2id, "Fake::neg": -1})
     result = tool(user_id="u3", candidates=[VG_B, "Fake::neg"])
     assert result.ok
     assert "Fake::neg" in result.data["unscored_item_ids"]
@@ -165,7 +165,7 @@ def test_reco_duplicate_candidates_are_ranked_once(reco_tool):
 
 
 # ---------------------------------------------------------------------------------------------
-# 2b. ItemCFTool behaviour not covered elsewhere
+# 2b. SimilarTool behaviour not covered elsewhere
 # ---------------------------------------------------------------------------------------------
 def test_item_cf_top_k_keeps_the_most_similar(cf_tool):
     assert _ids(cf_tool(items=[VG_A], top_k=1)) == [VG_B]
@@ -180,7 +180,7 @@ def test_item_cf_exclude_input_applies_to_every_seed(cf_tool):
 
 
 def test_item_cf_without_corpus_has_no_domain_key(knn, cf_setup):
-    result = ItemCFTool(knn, cf_setup[2])(items=[VG_A])
+    result = SimilarTool(knn, cf_setup[2])(items=[VG_A])
     assert result.ok and all("domain" not in c for c in result.data["candidates"])
 
 
@@ -231,7 +231,7 @@ class FakeScorer:
 
 
 def _fake_tool(score_fn, **kw):
-    return RecoModelTool(FakeScorer(score_fn, **kw), {"u": 0}, {"i0": 0, "i1": 1, "i2": 2})
+    return RankTool(FakeScorer(score_fn, **kw), {"u": 0}, {"i0": 0, "i1": 1, "i2": 2})
 
 
 def test_reco_with_a_well_behaved_scorer_sorts_descending_with_contiguous_ranks():
@@ -274,7 +274,7 @@ def test_known_user_without_neighbours_is_not_cold_start_but_has_no_personal_sig
     item2id = {it: i for i, it in enumerate(inter["item_id"].unique())}
     inter["user_idx"] = inter["user_id"].map(user2id)
     inter["item_idx"] = inter["item_id"].map(item2id)
-    tool = RecoModelTool(BaselineScorer(ItemKNNRecommender(5).fit(inter)), user2id, item2id)
+    tool = RankTool(BaselineScorer(ItemKNNRecommender(5).fit(inter)), user2id, item2id)
 
     known_isolated = tool(user_id="a", candidates=["Y", "Z"])
     assert known_isolated.ok

@@ -68,5 +68,5 @@ ablation:
       a: [type1, infer_template]
       b: [type1, reflect_1]
 
-  # Đường dẫn xuất báo cáo (tương đối experiments_dir)
-  output_subdir: "agent_eval/ablation"
+  # Đường dẫn xuất báo cáo: outputs.ablation trong configs/path/data_paths.yaml
+  # (tương đối experiments_dir → experiments/agent_eval/ablation/)

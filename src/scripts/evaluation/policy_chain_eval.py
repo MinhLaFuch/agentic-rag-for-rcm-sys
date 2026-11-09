@@ -17,23 +17,31 @@ import pandas as pd
 import yaml
 
 from package.config import get_data_paths, get_domains, load_config
+from package.data import build_first_seen_timestamps
 from package.data.mapping import load_mappings
-from package.tools import ItemCFTool, QueryTool, RecoModelTool, SemanticSearchTool
-from package.tools.corpus import build_corpus
-from package.tools.corpus.apply_metadata_policy import apply_metadata_policy
-from package.tools.evaluation import next_experiment_dir, save_experiment
-from package.tools.evaluation.policy_chain_compare import policy_chain_compare
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
-from package.tools.recommenders.load_item_knn import load_item_knn
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.recommenders.mapping_hash import mapping_hash
-from package.tools.score import BaselineScorer
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.evaluation.retrieval_loss_breakdown import retrieval_loss_breakdown
-from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin
-from scripts.evaluation.analyze_ranking_bottlenecks import _metrics, _score_rows
+from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
+from package.corpus import build_corpus
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.experiment.next_experiment_dir import next_experiment_dir
+from package.evaluation.recommender.experiment.save_experiment import save_experiment
+from package.evaluation.recommender.analysis.policy_chain_compare import policy_chain_compare
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.utils.stage_progress import StageProgress
+from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint, _environment_versions
+from package.recommenders.shared.load_item_knn import load_item_knn
+from package.recommenders.shared import file_hash
+from package.recommenders.shared import mapping_hash
+from package.tools.scoring import BaselineScorer
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
+from package.evaluation.recommender.analysis.retrieval_loss_breakdown import retrieval_loss_breakdown
+if __package__:
+    from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin
+else:
+    from candidate_recall import drop_seen, item_text_tables, round_robin
+if __package__:
+    from scripts.evaluation.analyze_ranking_bottlenecks import _metrics, _score_rows
+else:
+    from analyze_ranking_bottlenecks import _metrics, _score_rows
 
 POLICIES = ("baseline", "popularity_first", "rrf_60")
 MERGES = ("union_rr", "union_all")
@@ -202,6 +210,14 @@ def main():
     contract=Path(__file__).resolve().parents[2]/"configs"/"eval"/"policy_acceptance.yaml"
     doc=yaml.safe_load((args.source/"config.yaml").read_text(encoding="utf-8"))
     cfg,dataset=doc["config"],doc["run"]["dataset"]
+    source_tag = dataset.get("tag")
+    if not source_tag:
+        raise ValueError("source experiment config does not identify dataset tag; cannot verify pipeline manifest")
+    # Pipeline-manifest verification lands with G4 (package.data.manifest);
+    # record what the source experiment itself stored instead of re-verifying.
+    tag_manifest = dataset.get("tag_manifest") or {"status": "not_recorded_in_source", "manifest_sha256": None, "warnings": []}
+    if tag_manifest.get("warnings"):
+        print(f"!!! WARNING: source tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     if dataset["eval_on"]!="validation": raise ValueError("validation only; no test selection")
     if cfg["scorers"]["baseline_weight"]!=1e-6: raise ValueError("unsupported baseline")
     identity=cfg["checkpoint_identity"]
@@ -214,7 +230,7 @@ def main():
                 (args.source/"config.yaml",args.item_knn,args.item_knn.with_suffix(".meta.json"),contract)]
     print("[provenance] verifying source, splits, mappings, metadata, model and contract",flush=True)
     _verify(entries)
-    run_identity=dict(mode=args.mode,seed=args.seed,per_segment=args.per_segment,
+    run_identity=dict(mode=args.mode,tag_manifest_sha256=tag_manifest["manifest_sha256"],seed=args.seed,per_segment=args.per_segment,
                       bootstrap_samples=args.bootstrap_samples,files=entries,
                       code=_source_fingerprint(),environment=_environment_versions())
     paths=get_data_paths(dataset["tag"])
@@ -244,17 +260,19 @@ def main():
                           user2id=users,item2id=items,eval_on="validation",tag=dataset["tag"])
         if knn._fit_data_hash!=cfg["retrieval"]["item_knn_fit_data_hash"]: raise ValueError("fit hash differs")
         meta=[(d,str(paths.meta_path(d))) for d in get_domains()]
-        corpus,_,coverage=build_corpus(meta,items,float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]))
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta])
+        corpus,_,coverage=build_corpus(meta,items,float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+                                       first_seen_ts=first_seen_ts)
         actual_policy=apply_metadata_policy(corpus,cfg["protocol"]["metadata_policy"]["name"],
                                             as_of_timestamp=int(target.timestamp.min()))
         if actual_policy!=cfg["protocol"]["metadata_policy"]: raise ValueError("metadata policy mismatch")
-        reco=RecoModelTool(BaselineScorer(knn,popularity_weight=1e-6),users,items,corpus=corpus)
-        query=QueryTool(corpus)
+        reco=RankTool(BaselineScorer(knn,popularity_weight=1e-6),users,items,corpus=corpus)
+        query=LookupTool(corpus)
         popularity=np.asarray(knn.user_items.sum(axis=0)).ravel()
         popularity=np.pad(popularity,(0,len(items)-len(popularity)))
         ctx=dict(recent=recent,config=cfg,id2item={i:n for n,i in items.items()},item2id=items,
                  popular=np.argsort(-popularity,kind="stable"),
-                 cf=ItemCFTool(knn,items,corpus=corpus),semantic=SemanticSearchTool(corpus),text=item_text_tables(corpus,True))
+                 cf=SimilarTool(knn,items,corpus=corpus),semantic=SearchTool(corpus),text=item_text_tables(corpus,True))
         warmed=set()
         progress=StageProgress("policy-chain:"+args.mode,len(chosen),every=100)
         position=0
@@ -333,6 +351,7 @@ def main():
         output=next_experiment_dir(root)
         staging=store.path/("publication_"+uuid.uuid4().hex)
         save_experiment(staging,config=dict(source=str(args.source.resolve()),identity=run_identity,
+                 manifest_status=tag_manifest["status"],manifest_sha256=tag_manifest["manifest_sha256"],
                  policies=list(POLICIES),primary_merge="union_all",ks=[5,10,20],baseline_weight=1e-6,rrf_offset=60,
                  sampled_user_ids=selected,source_protocol=cfg["protocol"],metadata_coverage=coverage,
                  warmup="first request per segment/session, all policies, excluded",

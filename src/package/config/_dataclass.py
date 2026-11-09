@@ -13,6 +13,8 @@ class DataPaths:
     """Every project directory, resolved from configs/path/data_paths.yaml (+ run tag). The one source of truth."""
 
     tag: str
+    src_root: Path  # Source root directory (repository root)
+    config_dir: Path  # Configuration directory
     raw_dir: Path
     cleaned_dir: Path
     filtered_dir: Path
@@ -26,6 +28,15 @@ class DataPaths:
     @property
     def corpus_path(self) -> Path:
         return self.corpus_dir / f"corpus_{self.tag}.sqlite"
+
+    def output_dir(self, key: str) -> Path:
+        """Experiment/log output dir from ``outputs:`` in data_paths.yaml (relative to experiments_dir)."""
+        from .load_config import load_config  # lazy: keep config import-light and cycle-free
+
+        outputs = load_config("path/data_paths").get("outputs", {})
+        if key not in outputs:
+            raise KeyError(f"unknown output dir {key!r}; known: {sorted(outputs)}")
+        return self.experiments_dir / outputs[key]
 
     def item_knn_path(self, eval_on: str) -> Path:
         return self.item_knn_dir / f"item_knn_{self.tag}_{eval_on}.npz"
@@ -49,6 +60,18 @@ class DataPaths:
 
     def cleaned_path(self, domain: str) -> Path:
         return self.cleaned_dir / domain / INTERACTIONS_FILE
+
+    def stage1_manifest_path(self, domain: str, *, tag_scoped: bool = False) -> Path:
+        """Return the Stage 1 manifest for this tag, falling back to the legacy shared path.
+
+        Stage 1 cleaned Parquet files are shared across downstream tags, so their provenance
+        manifests must be tag-scoped to let multiple immutable pipeline runs coexist.
+        """
+        domain_dir = self.cleaned_path(domain).parent
+        scoped = domain_dir / "manifests" / self.tag / "stage_1.manifest.json"
+        if tag_scoped or scoped.is_file():
+            return scoped
+        return domain_dir / "stage_1.manifest.json"
 
     @property
     def filtered_path(self) -> Path:

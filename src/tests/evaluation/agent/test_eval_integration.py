@@ -5,12 +5,14 @@ import sys
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.agents import PlanExecutor
 from package.evaluation import INFERENCE_AGENTS, AgentRequest, score_trajectory, summarize
 from package.evaluation._schema import ANSWER_STATUSES
 from package.inference import compose_answer
 from package.inference._schema import STATUSES
-from package.tools import QueryTool
+from package.tools import LookupTool
 from tests.evaluation.agent.test_agent_eval import ITEM2ID, _load_run_agent_eval, _step, _trajectory
 from tests.agents.test_plan_executor import ScriptedLLM, plan
 from tests.agents.inference.helpers import good_reply
@@ -25,7 +27,7 @@ def _request(text="t"):
 
 
 def _answered(status="ok", grounded=True, fallback=None, composer="llm", **kw):
-    traj = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B], **kw)
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B], **kw)
     traj.update(answer="text", answer_status=status, answer_grounded=grounded, answer_composer=composer, answer_fallback=fallback,
                 answer_reason=None, inference_mode="llm",
                 inference_usage={"attempts": 2, "prompt_tokens": 40, "completion_tokens": 12, "latency_seconds": 0.7})
@@ -42,7 +44,7 @@ def test_answer_statuses_of_the_evaluation_match_the_inference_statuses():
 # ---------------------------------------------------------------- scoring
 
 def test_new_columns_do_not_change_any_existing_column(corpus):
-    bare = _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A, VG_B])
+    bare = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     row_bare = score_trajectory(_request(), bare, item2id=ITEM2ID, corpus=corpus, k=2)
     row_full = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
     assert {k: v for k, v in row_full.items() if k not in NEW_COLUMNS} == {k: v for k, v in row_bare.items() if k not in NEW_COLUMNS}
@@ -50,7 +52,7 @@ def test_new_columns_do_not_change_any_existing_column(corpus):
 
 
 def test_old_trajectories_without_an_answer_score_with_empty_answer_columns(corpus):
-    row = score_trajectory(_request(), _trajectory(steps=[_step("ItemCFTool"), _step("RecoModelTool")], recommended=[VG_A]),
+    row = score_trajectory(_request(), _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A]),
                            item2id=ITEM2ID, corpus=corpus, k=2)
     assert all(row[c] is None for c in NEW_COLUMNS)
 
@@ -91,14 +93,14 @@ def test_summary_columns_print_the_answer_metrics():
 # ---------------------------------------------------------------- run_planner / run_type1
 
 def _executor(corpus, *replies):
-    return PlanExecutor(ScriptedLLM(*replies), [QueryTool(corpus)], plan_retries=0, reflect_rounds=0)
+    return PlanExecutor(ScriptedLLM(*replies), [LookupTool(corpus)], plan_retries=0, reflect_rounds=0)
 
 
 def _two_items_request():
     return _request(f"tell me about {VG_A} and {VG_B}")
 
 
-QUERY_PLAN = plan({"tool": "QueryTool", "args": {"item_ids": [VG_A, VG_B]}})
+QUERY_PLAN = plan({"tool": "LookupTool", "args": {"item_ids": [VG_A, VG_B]}})
 
 
 def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
@@ -109,10 +111,9 @@ def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
 def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage(corpus):
     script = _load_run_agent_eval()
     plain = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
-    infer_llm = ScriptedLLM()
 
     def answerer(outcome):
-        infer_llm.replies.append(good_reply(outcome.items))
+        infer_llm = ScriptedLLM(good_reply(outcome.items))
         return compose_answer(outcome, infer_llm, mode="llm")
 
     with_answer = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2, answerer=answerer, inference_mode="llm")
@@ -129,7 +130,7 @@ def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_plan
 
 
 def test_run_planner_answers_even_when_the_plan_failed_and_never_calls_the_llm_for_it(corpus):
-    infer_llm = ScriptedLLM()
+    infer_llm = ScriptedLLM("")
     traj = _load_run_agent_eval().run_planner(
         _executor(corpus, "nope"), _two_items_request(), "planner", 2,
         answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
@@ -138,7 +139,7 @@ def test_run_planner_answers_even_when_the_plan_failed_and_never_calls_the_llm_f
 
 
 def test_run_planner_ask_user_returns_the_question_as_the_answer(corpus):
-    infer_llm = ScriptedLLM()
+    infer_llm = ScriptedLLM("")
     traj = _load_run_agent_eval().run_planner(
         _executor(corpus, plan(ask_user="Bạn cần loại sản phẩm nào?")), _request("gợi ý sản phẩm hay"), "planner", 2,
         answerer=lambda o: compose_answer(o, infer_llm, mode="llm"), inference_mode="llm")
@@ -184,16 +185,23 @@ def test_resume_keeps_old_records_and_drops_other_inference_modes():
     assert keep(rec, text_of, ["planner"], 0)  # the old call signature still works
 
 
-def test_inference_mode_is_a_cli_flag(monkeypatch, capsys):
+def test_inference_mode_comes_from_yaml_not_cli(monkeypatch, capsys, tmp_path):
+    """inference.mode sống trong configs/agent/inference.yaml (hoặc CONFIG_OVERLAY_PATH), không còn là CLI flag."""
+    from package.config.load_config import ConfigError, load_config
+
     script = _load_run_agent_eval()
     monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--help"])
     with pytest.raises(SystemExit) as helped:
         script.main()
-    assert helped.value.code == 0 and "--inference-mode" in capsys.readouterr().out
-    monkeypatch.setattr(sys, "argv", ["run_agent_eval.py", "--inference-mode", "gpt"])
-    with pytest.raises(SystemExit) as bad:
-        script.main()
-    assert bad.value.code == 2
+    assert helped.value.code == 0 and "--inference-mode" not in capsys.readouterr().out
+
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text("agent/inference:\n  inference:\n    mode: gpt\n", encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+    with pytest.raises(ConfigError):
+        load_config("agent/inference")
+    monkeypatch.delenv("CONFIG_OVERLAY_PATH")
+    assert load_config("agent/inference")["inference"]["mode"] in ("llm", "template")
 
 
 # ---------------------------------------------------------------- end to end: request -> planner -> Inference -> trajectory -> score -> summary
@@ -202,11 +210,12 @@ def test_inference_mode_is_a_cli_flag(monkeypatch, capsys):
 def test_end_to_end_scenario(corpus, mode):
     script = _load_run_agent_eval()
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text=f"similar to {VG_A} and {VG_B}", targets=[1])
-    infer_llm = ScriptedLLM()
+    from tests.agents.inference.helpers import item, good_reply
+    
+    test_items = [item(VG_A, "Game A"), item(VG_B, "Game B")]
+    infer_llm = ScriptedLLM(good_reply(test_items) if mode == "llm" else "")
 
     def answerer(outcome):
-        if mode == "llm":
-            infer_llm.replies.append(good_reply(outcome.items))
         return compose_answer(outcome, infer_llm, mode=mode)
 
     traj = script.run_planner(_executor(corpus, QUERY_PLAN), request, "planner", 2, answerer=answerer, inference_mode=mode)

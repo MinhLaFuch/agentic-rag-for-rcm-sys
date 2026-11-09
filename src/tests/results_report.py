@@ -17,7 +17,7 @@ runs, so there is no effect on fixtures/teardown and almost no overhead on stdli
 
 Usage (wired up from tests/conftest.py)::
 
-    pytest tests/                                   # -> tests/logs/test_results_<timestamp>.md
+    pytest tests/                                   # -> experiments/test_logs/test_results_<timestamp>.md
     pytest tests/ --results-file=out/results.json   # extension picks the format: .md or .json (use '=')
     pytest tests/ --no-results                      # disable
     TEST_RESULTS_FILE=out/r.md pytest tests/        # env var alternative to --results-file
@@ -40,7 +40,19 @@ import pytest
 
 TESTS_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = TESTS_DIR.parent
-DEFAULT_RESULTS_DIR = TESTS_DIR / "logs"
+
+
+def _default_results_dir() -> Path:
+    """experiments/test_logs/ via data_paths.yaml outputs.test_logs;
+    falls back to the literal path if package.config is not importable."""
+    try:
+        from package.config import get_data_paths
+        return get_data_paths().output_dir("test_logs")
+    except Exception:
+        return PROJECT_DIR / "experiments" / "test_logs"
+
+
+DEFAULT_RESULTS_DIR = _default_results_dir()
 
 # Code under test: calls from test code into these directories are recorded as "input -> output".
 TRACED_DIRS = tuple(str(PROJECT_DIR / name) + os.sep for name in ("package", "scripts"))
@@ -308,7 +320,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption("--results-file", default=None, metavar="PATH",
                     help="write input/output of every test to this ONE file (.md or .json); "
                          "write it as --results-file=PATH (with '=') so pytest does not mistake PATH for a test path. "
-                         f"Default: {DEFAULT_RESULTS_DIR.name}/test_results_<timestamp>.md")
+                         f"Default: {DEFAULT_RESULTS_DIR.parent.name}/{DEFAULT_RESULTS_DIR.name}/test_results_<timestamp>.md")
     group.addoption("--no-results", action="store_true", default=False, help="do not write the results file")
 
 

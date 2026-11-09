@@ -1,7 +1,7 @@
 """
 Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
-Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.yaml):
+Needs (paths come from configs/path/data_paths.yaml; dataset tag derives from --domain):
   - resource/splits/<tag>/{train,validation}.parquet   (stage 3)
   - resource/mapped/<tag>/{user2id,item2id}.json       (stage 3)
   - resource/raw/meta_<Domain>.jsonl.gz per domain     (raw metadata; domains whose
@@ -10,7 +10,7 @@ Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.
 Run from the project root:
 
     PYTHONPATH=. python scripts/tools/run_tools.py
-    PYTHONPATH=. python scripts/tools/run_tools.py --tag vg_toys --domain Video_Games
+    PYTHONPATH=. python scripts/tools/run_tools.py --domain Video_Games
 
 Only train is used to fit the model and validation is used to check it, so
 nothing here touches the test split.
@@ -38,13 +38,10 @@ from package.data import ITEM_ID_SEPARATOR
 from package.data.loader import load_item_metadata
 from package.data.mapping import load_mappings
 from package.data.split import split_path
-from package.tools.corpus import ItemCorpus
-from package.tools.ranking.item_cf_tool import ItemCFTool
-from package.tools.ranking.reco_model_tool import RecoModelTool
-from package.tools.recommenders import ItemKNNRecommender, PopularityRecommender
-from package.tools.score import BaselineScorer
-from package.tools.sql_query.query_tool import QueryTool
-from package.tools.sql_query.sql_tool import SQLTool
+from package.corpus import ItemCorpus
+from package.tools import SimilarTool, RankTool, LookupTool, FilterTool
+from package.recommenders import ItemKNNRecommender, PopularityRecommender
+from package.tools.scoring import BaselineScorer
 
 
 class _Tee:
@@ -93,17 +90,18 @@ def load_meta(meta_args: list[tuple[str, str]], wanted: dict[str, set[str]]) -> 
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append",
-                    help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml).")
-    ap.add_argument("--model", choices=["knn", "popularity"], default="knn",
-                    help="knn needs a lot of RAM on big data; popularity is a light fallback")
-    ap.add_argument("--neighbors", type=int, help="mặc định: baselines.item_knn.k trong baselines.yaml")
-    ap.add_argument("--eval-users", type=int, default=200)
-    ap.add_argument("--negatives", type=int, default=99)
-    ap.add_argument("--seed", type=int, default=0)
+                    help="Domain của bundle dữ liệu + meta để nạp (lặp lại). "
+                         "Mặc định: tất cả -> 'multi_domain'; 1 domain -> bundle tên domain; "
+                         "tập con khác bị từ chối.")
     args = ap.parse_args()
-    args.neighbors = args.neighbors or load_config("eval/baselines")["baselines"]["item_knn"]["k"]
+    # Tham số kiểm chứng đọc từ configs/eval/tool_validation.yaml + baselines.item_knn.k
+    cfg = load_config("eval/tool_validation")["tool_validation"]
+    args.model = str(cfg["model"])
+    args.eval_users = int(cfg["eval_users"])
+    args.negatives = int(cfg["negatives"])
+    args.seed = int(cfg["seed"])
+    args.neighbors = int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
     return args
 
 
@@ -154,23 +152,23 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     corpus_ids = list(corpus.item_domains(list(item2id)))  # mapped items that exist in the corpus
 
     # ------------------------------------------------------------ SQL tools
-    section("QueryTool / SQLTool on the corpus")
-    query, sql = QueryTool(corpus), SQLTool(corpus)
+    section("LookupTool / FilterTool on the corpus")
+    query, sql = LookupTool(corpus), FilterTool(corpus)
     top = sql(limit=5)
-    show_result("SQLTool: top 5 by rating_number", top, "candidates")
+    show_result("FilterTool: top 5 by rating_number", top, "candidates")
     if has_meta:
-        show_result("SQLTool: price<=30, rating>=4.5, 100+ ratings",
+        show_result("FilterTool: price<=30, rating>=4.5, 100+ ratings",
                     sql(filters={"price_max": 30, "min_rating": 4.5, "min_rating_number": 100}, limit=5), "candidates")
     for d in corpus.domains():
         r = sql(filters={"domain": d}, limit=3)
-        show_result(f"SQLTool: domain={d}", r, "candidates")
+        show_result(f"FilterTool: domain={d}", r, "candidates")
     if top.ok and top.data["candidates"]:
         ids = [c["item_id"] for c in top.data["candidates"]]
         r = query(item_ids=ids)
-        check("QueryTool: look up those ids", r.ok and not r.data["missing_item_ids"])
+        check("LookupTool: look up those ids", r.ok and not r.data["missing_item_ids"])
     r = query(query="SELECT domain, COUNT(*) AS n FROM items GROUP BY domain")
-    show_result("QueryTool: items per domain", r, "items", n=5)
-    check("QueryTool rejects DELETE", not query(query="DELETE FROM items").ok)
+    show_result("LookupTool: items per domain", r, "items", n=5)
+    check("LookupTool rejects DELETE", not query(query="DELETE FROM items").ok)
 
     # ----------------------------------------------------------------- model
     section(f"Fit {args.model} on TRAIN only")
@@ -178,7 +176,7 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     model = (ItemKNNRecommender(args.neighbors) if args.model == "knn" else PopularityRecommender()).fit(train)
     print(f"  fitted in {time.time() - t0:.0f}s")
     scorer = BaselineScorer(model)
-    reco = RecoModelTool(scorer, user2id, item2id, corpus=corpus)
+    reco = RankTool(scorer, user2id, item2id, corpus=corpus)
 
     # pick a real validation user who has train history
     train_users = set(train["user_idx"].unique())
@@ -197,18 +195,18 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
     print(f"  demo user {demo_user} has {len(hist)} train interactions")
 
     # ---------------------------------------------------------------- ItemCF
-    section("ItemCFTool / RecoModelTool on a real user")
+    section("SimilarTool / RankTool on a real user")
     if args.model == "knn":
-        cf = ItemCFTool(model, item2id, corpus=corpus)
+        cf = SimilarTool(model, item2id, corpus=corpus)
         seeds = [id2item[i] for i in hist[:3]]
         r = cf(items=seeds, top_k=5)
-        show_result("ItemCFTool: neighbours of the user's first 3 items", r, "candidates")
+        show_result("SimilarTool: neighbours of the user's first 3 items", r, "candidates")
     else:
-        print("  (skipped ItemCFTool: needs --model knn)")
+        print("  (skipped SimilarTool: needs tool_validation.model = knn)")
 
     pool = sql(filters={"exclude_item_ids": [id2item[i] for i in hist]}, limit=200)
     r = reco(user_id=demo_user, candidates=pool.data["candidates"], top_k=5)
-    show_result("RecoModelTool: rank SQLTool's top-200 for the user", r, "ranked")
+    show_result("RankTool: rank FilterTool's top-200 for the user", r, "ranked")
     if r.ok:
         check("not treated as cold start", r.data["cold_start"] is False)
         check("no already-seen item in the ranking",
@@ -254,7 +252,7 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
 
 def main() -> None:
     args = parse_args()
-    data_paths = get_data_paths(args.tag)
+    data_paths = get_data_paths(domains=args.domain)
     log_path = data_paths.log_dir / "run_tools.log"  # overwritten each run
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with open(log_path, "w", encoding="utf-8") as log_file:

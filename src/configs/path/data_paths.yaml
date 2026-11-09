@@ -6,19 +6,42 @@
 #   resource/…       dữ liệu pipeline (raw, cleaned, filtered, mapped, splits)
 #   experiments/     kết quả thí nghiệm + tất cả log (exp_NNN/, logs/, test_logs/)
 #   experiments/logs/ log của pipeline/tool (stage logs, run_tools.log, etc.)
-#   experiments/test_logs/ log của test
-#   experiments/baselines/ thí nghiệm baseline model
-#   experiments/agent_eval/ thí nghiệm agent evaluation
-#   experiments/data_pipeline/ thí nghiệm data pipeline
-#   experiments/smoke_tests/ thí nghiệm smoke test
+#   experiments/test_logs/ log/kết quả của test (xem outputs.test_logs)
+#   experiments/baselines/ thí nghiệm baseline model (outputs.baselines)
+#   experiments/agent_eval/ thí nghiệm agent evaluation (outputs.agent_eval, ablation, component_benchmarks, memory_utility)
+#   experiments/candidate_recall/ candidate recall (outputs.candidate_recall)
+#   experiments/ranking_eval/ + ranking_diagnostics/ (outputs.ranking_eval, ranking_diagnostics)
+#
+# Mọi thư mục kết quả thí nghiệm/log test được liệt kê tập trung trong
+# outputs: bên dưới — code lấy qua DataPaths.output_dir(<key>).
 
 paths:
+  src_root: "."                   # Source root directory (repository root)
+  config_dir: "configs"           # Configuration directory
   raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
   cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
-  filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
-  mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
-  splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
-  item_knn_dir: "resource/item_knn"  # <run_tag>/item_knn_<tag>_<eval_on>.npz — cached ItemKNN similarity matrix
-  corpus_dir: "resource/corpus"      # <run_tag>/corpus_<tag>.sqlite — cached ItemCorpus SQLite database
-  log_dir: "experiments/logs"       # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
-  experiments_dir: "experiments"     # exp_NNN/… (baselines, tuning); candidate_recall ghi vào <experiments_dir>/<experiments_subdir>
+  filtered_dir: "resource/filtered"  # <dataset_tag>/interactions.parquet (stage 2; tag = resolve_dataset_tag(--domain))
+  mapped_dir: "resource/mapped"      # <dataset_tag>/{user2id,item2id}.json (stage 3)
+  splits_dir: "resource/splits"      # <dataset_tag>/{train,validation,test}.parquet (stage 3)
+  item_knn_dir: "resource/item_knn"  # <dataset_tag>/item_knn_<tag>_<eval_on>.npz — cached ItemKNN similarity matrix
+  corpus_dir: "resource/corpus"      # <dataset_tag>/corpus_<tag>.sqlite — cached ItemCorpus SQLite database
+  log_dir: "experiments/logs"       # <dataset_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
+  experiments_dir: "experiments"     # exp_NNN/… và mọi output dir con — xem outputs:
+
+# Output dirs — NGUỒN DUY NHẤT cho mọi thư mục kết quả được ghi ra.
+# Code lấy đường dẫn qua get_data_paths().output_dir(<key>).
+# Mọi giá trị là đường dẫn TƯƠNG ĐỐI so với experiments_dir (experiments/).
+# campaign.yaml::output_dir cũng tương đối experiments_dir (KHÔNG phải CWD).
+
+outputs:
+  baselines: "baselines"                                # run_baselines.py / tune_baselines.py → exp_NNN/
+  agent_eval: "agent_eval"                              # run_agent_eval.py → exp_NNN/
+  candidate_recall: "candidate_recall"                  # candidate_recall.py → exp_NNN/
+  ranking_eval: "ranking_eval"                          # ranking_eval.py → exp_NNN/ + _checkpoints/
+  ranking_diagnostics: "ranking_diagnostics"            # analyze_ranking_bottlenecks.py → exp_NNN/
+  ablation: "agent_eval/ablation"                       # compare_experiments.py → <contrast>/{report.md,comparison.*,disagreements.jsonl}
+  component_benchmarks: "agent_eval/component_benchmarks"  # component/_run_all.py, run_benchmark_cli.py, link_e2e_cli.py
+  memory_utility: "agent_eval/memory_utility_analysis"  # output dir của memory_utility_analysis.py
+  multi_turn: "agent_eval/multi_turn"                  # multi_turn/_run.py output dir
+  example_report: "agent_eval/example_report"          # reporting/generate_example_report.py
+  test_logs: "test_logs"                                # pytest results_report.py + tests/run_all_tests.*

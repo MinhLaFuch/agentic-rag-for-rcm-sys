@@ -9,7 +9,7 @@ where candidates order is [VG_B, EL_A].
 import pandas as pd
 import pytest
 
-from package.tools import ItemCorpus
+from package.corpus import ItemCorpus
 
 # Sample item IDs with namespace prefix (domain::asin)
 VG_A = "Video_Games::vg_a"
@@ -33,6 +33,7 @@ def corpus():
     meta = pd.DataFrame({
         "parent_asin": ["vg_a", "vg_b", "vg_c", "el_a", "el_d"],
         "domain": ["Video_Games", "Video_Games", "Video_Games", "Electronics", "Electronics"],
+        "first_seen_ts": [1, 1, 1, 1, 1],
         "title": [
             "Super Video Game",  # VG_A
             "Mario 100%",  # VG_B (test line 49: title_contains "100%")

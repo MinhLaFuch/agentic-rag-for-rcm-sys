@@ -1,0 +1,273 @@
+"""CLI entrypoint for running component benchmarks."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+from typing import Any
+from datetime import datetime, timezone
+
+from package.config import get_data_paths, load_config
+
+from ._loader import load_cases, filter_cases_by_tag, filter_cases_by_metadata
+from ._schema import BenchmarkSummary
+from ._regression import compare_benchmarks, format_regression_report
+
+
+_SECRET_KEY_PARTS = ("key", "secret", "token", "password", "credential")
+
+
+def _scrub_secrets(obj: Any) -> Any:
+    """Replace values of secret-looking keys so hashes never leak credentials."""
+    if isinstance(obj, dict):
+        return {
+            k: "<redacted>" if any(p in str(k).lower() for p in _SECRET_KEY_PARTS) else _scrub_secrets(v)
+            for k, v in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_scrub_secrets(v) for v in obj]
+    return obj
+
+
+def _config_hash(obj: Any) -> str:
+    """Stable short sha256 of a (secret-scrubbed) config object."""
+    payload = json.dumps(_scrub_secrets(obj), sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _dataset_sha256(dataset: str) -> str | None:
+    """sha256 of the dataset file bytes — enough to reproduce which data
+    produced a result. None when the file cannot be read."""
+    try:
+        return hashlib.sha256(Path(dataset).read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _save_result_json(output_path: str, result_json: str) -> None:
+    """Write the result JSON, creating missing parent directories."""
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(result_json)
+
+
+def _collect_evidence_kinds(summary: BenchmarkSummary) -> list[str]:
+    """Distinct evidence_kind values reported by per-case actual outputs."""
+    kinds = {
+        (r.actual_output or {}).get("evidence_kind")
+        for r in summary.per_case_results
+        if isinstance((r.actual_output or {}).get("evidence_kind"), str)
+    }
+    return sorted(kinds)
+
+
+def _build_provenance(component: str, evaluator_config: dict[str, Any], dataset: str) -> dict[str, Any]:
+    """Provider/judge provenance for benchmark result JSON (Phase 4.5).
+
+    Records hashes, not raw values: api keys are scrubbed before hashing and
+    base_url is stored as a hash only.
+    """
+    prov: dict[str, Any] = {
+        "component": component,
+        "dataset": dataset,
+        "dataset_sha256": _dataset_sha256(dataset),
+        "evaluator_config_sha256": _config_hash(evaluator_config),
+    }
+    # answer_mode only exists for components that compose answers
+    # (integration/grounding); both default to "template" when unset.
+    if component in ("integration", "grounding"):
+        prov["answer_mode"] = evaluator_config.get("mode", "template")
+    try:
+        if component == "planner":
+            llm_cfg = load_config("agent/llm")
+            prov["llm"] = {
+                "provider": llm_cfg.get("provider"),
+                "model": llm_cfg.get("model"),
+                "base_url_sha256": hashlib.sha256(str(llm_cfg.get("base_url", "")).encode()).hexdigest()[:16],
+                "config_sha256": _config_hash(llm_cfg),
+            }
+        elif component == "grounding":
+            judge_cfg = load_config("eval/judge")
+            prov["judge"] = {
+                "model": judge_cfg.get("model"),
+                "config_sha256": _config_hash(judge_cfg),
+            }
+    except Exception as exc:  # config unreadable → record the failure, don't fake provenance
+        prov["provenance_error"] = f"{type(exc).__name__}: {exc}"
+    return prov
+
+
+def _get_evaluator(component: str, config: dict[str, Any]):
+    """Import and instantiate the appropriate evaluator for the component."""
+    if component == "memory":
+        from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
+        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+
+        return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
+    elif component == "memory_correctness":
+        from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
+        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+
+        return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
+    elif component == "planner":
+        from .benchmarks.planner_benchmark import PlannerBenchmark
+        return PlannerBenchmark(config)
+    elif component == "executor":
+        from .benchmarks.executor_benchmark import ExecutorBenchmark
+        return ExecutorBenchmark(config)
+    elif component == "grounding":
+        from .benchmarks.grounding_benchmark import GroundingBenchmark
+        return GroundingBenchmark(config)
+    elif component == "integration":
+        from .benchmarks.integration_benchmark import IntegrationBenchmark
+        return IntegrationBenchmark(config)
+    else:
+        raise NotImplementedError(
+            f"Evaluator for component '{component}' not yet implemented. "
+            "Please implement a ComponentEvaluator subclass for this component."
+        )
+
+def run_benchmark_cli() -> None:
+    """CLI entrypoint for running component benchmarks."""
+    parser = argparse.ArgumentParser(
+        description="Run component-level benchmarks for individual components",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--component",
+        type=str,
+        required=True,
+        help="Name of the component to benchmark (e.g., memory, planner, grounding, integration)",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=True,
+        help="Path to the benchmark dataset file (JSON or JSONL)",
+    )
+    parser.add_argument(
+        "--tags",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Filter cases by tags (OR logic: return cases with ANY of these tags)",
+    )
+    parser.add_argument(
+        "--metadata",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Filter cases by metadata (format: key=value, multiple allowed, AND logic)",
+    )
+    parser.add_argument(
+        "--git-sha",
+        type=str,
+        default=None,
+        help="Git commit SHA (auto-detected if not provided)",
+    )
+    args = parser.parse_args()
+
+    # Số lần lặp + config evaluator đọc từ configs/eval/component_benchmarks.yaml
+    bench_cfg = load_config("eval/component_benchmarks")["component_benchmarks"]
+    runs = int(bench_cfg["runs"])
+    config: dict[str, Any] = dict(bench_cfg.get("configs", {}).get(args.component, {}))
+
+    # Load dataset
+    print(f"Loading dataset from {args.dataset}...")
+    cases = load_cases(args.dataset)
+    total_cases = len(cases)
+    print(f"Loaded {len(cases)} cases")
+
+    # Filter by tags
+    if args.tags:
+        cases = filter_cases_by_tag(cases, args.tags)
+        print(f"Filtered to {len(cases)} cases by tags: {args.tags}")
+
+    # Filter by metadata
+    if args.metadata:
+        metadata_filter: dict[str, Any] = {}
+        for item in args.metadata:
+            if "=" in item:
+                key, value = item.split("=", 1)
+                try:
+                    metadata_filter[key] = json.loads(value)
+                except json.JSONDecodeError:
+                    metadata_filter[key] = value
+
+        cases = filter_cases_by_metadata(cases, metadata_filter)
+        print(f"Filtered to {len(cases)} cases by metadata: {metadata_filter}")
+
+    if not cases:
+        print("No cases remaining after filtering")
+        return
+
+    # Get git SHA
+    git_sha = args.git_sha
+    if git_sha is None:
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            git_sha = result.stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            git_sha = ""
+
+    # Get evaluator
+    evaluator = _get_evaluator(args.component, config)
+
+    # Run benchmark — output dir comes from data_paths.outputs.component_benchmarks
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    output_path = str(
+        get_data_paths().output_dir("component_benchmarks") / f"{args.component}_benchmark_{timestamp}.json"
+    )
+
+    print(f"Running {args.component} benchmark with {len(cases)} cases, {runs} runs each...")
+    summary = evaluator.run_benchmark(cases, component_name=args.component, runs=runs)
+
+    # Add metadata
+    summary.metadata["git_sha"] = git_sha
+    summary.metadata["config"] = _scrub_secrets(config)  # never write raw secrets into result JSON
+    summary.metadata["provenance"] = _build_provenance(args.component, config, args.dataset)
+    summary.metadata["provenance"]["evidence_kinds"] = _collect_evidence_kinds(summary)
+    summary.metadata["dataset_path"] = args.dataset
+    summary.metadata["dataset_sha256"] = summary.metadata["provenance"]["dataset_sha256"]
+    summary.metadata["cases_run"] = len(cases)
+    summary.metadata["cases_total"] = total_cases
+    summary.metadata["tags_filter"] = args.tags
+    summary.metadata["metadata_filter"] = args.metadata
+    summary.metadata["runs"] = runs
+
+    # Save results
+    result_json = summary.to_json()
+    _save_result_json(output_path, result_json)
+    print(f"Results saved to: {output_path}")
+
+    # Print summary
+    print(f"\n--- {args.component.upper()} BENCHMARK SUMMARY ---")
+    for metric, value in summary.metrics.items():
+        print(f"  {metric}: {value:.4f}")
+    # label_agreement (e.g. grounding) is only defined on cases that carry
+    # expected labels — always show how many cases it was computed over.
+    labeled = [r for r in summary.per_case_results if "label_agreement" in r.metrics]
+    if labeled:
+        print(
+            f"  label_agreement evaluated on {len(labeled)}/{len(summary.per_case_results)} cases"
+        )
+    passed = sum(1 for r in summary.per_case_results if r.success)
+    print(f"Total cases: {len(summary.per_case_results)}, Passed: {passed}")
+
+    # Regression report only when comparing two runs (not for single runs)
+    # format_regression_report expects a RegressionReport object, not JSON
+    # Skip regression report for single-run benchmarks

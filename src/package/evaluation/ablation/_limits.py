@@ -51,9 +51,11 @@ def get_ablation_limits() -> AblationLimits:
     if not isinstance(contrasts, list):
         raise ConfigError("configs/agent/ablation.yaml: contrasts must be a list")
     
-    output_subdir = str(cfg["output_subdir"])
+    # Output subdir lives in configs/path/data_paths.yaml (outputs.ablation),
+    # relative to experiments_dir.
+    output_subdir = str(load_config("path/data_paths").get("outputs", {}).get("ablation", ""))
     if not output_subdir:
-        raise ConfigError("configs/agent/ablation.yaml: output_subdir must be non-empty")
+        raise ConfigError("configs/path/data_paths.yaml: outputs.ablation must be non-empty")
     
     return AblationLimits(
         bootstrap_resamples=bootstrap_resamples,

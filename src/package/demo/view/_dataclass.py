@@ -41,7 +41,30 @@ class DemoResult:
     trace: DemoTrace | None
     usage: dict[str, Any]
     error: str | None  # thông báo lỗi rút gọn (chỉ khi status="tool_error")
-    recommendation_source: str | None = None
+    memory: MemoryView | None = None  # view của memory tool cho UI
+    recommendation_source: str | None = None  # "history_itemcf" | "intent_bm25" | ... (None = không ghi)
+
+
+@dataclass
+class DemoProfile:
+    """Profile người dùng cho demo UI."""
+    profile_id: str
+    label: str
+    description: str
+    user_id: str | None  # None = blank profile (new user)
+    segment: str  # "blank", "cold", "sparse", "warm", hoặc custom
+
+
+@dataclass
+class MemoryView:
+    """View của memory tool cho UI."""
+    enabled: bool  # memory toggle on/off
+    called: bool  # planner có gọi MemoryTool không
+    n_calls: int  # số lần MemoryTool được gọi
+    before: dict[str, Any] | None  # snapshot trước turn (MemoryTool output shape)
+    after: dict[str, Any] | None  # snapshot sau turn (MemoryTool output shape)
+    agent_calls: list[dict[str, Any]]  # từng step MemoryTool trong plan
+    consumed_by: list[dict[str, Any]]  # step nào đã dùng output của MemoryTool ($<n>)
 
 
 @dataclass
@@ -52,5 +75,7 @@ class DemoRequest:
     reflect_rounds: int  # 0 hoặc 1
     use_memory: bool
     mode: str  # "planner" hoặc "type1"
-    intent_query: str | None = None
-    intent_filters: dict[str, Any] | None = None
+    inference_mode: str = "llm"  # "llm" hoặc "template"
+    profile_id: str | None = None  # profile được chọn (để tương lai)
+    intent_query: str | None = None  # từ khóa tìm kiếm tường minh (intent path, cần demo.intent_path_enabled)
+    intent_filters: dict[str, Any] | None = None  # bộ lọc cứng: domain/price_min/price_max/exclude_item_ids

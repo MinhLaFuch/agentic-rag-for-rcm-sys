@@ -1,7 +1,7 @@
 """Integration tests: do the modules agree with each other at their boundaries? (tiny world, hand-checked values)
 
-1. DataFrame -> ItemCorpus -> SQLTool -> item ids
-2. query -> SemanticSearchTool -> candidates -> RecoModelTool ranking
+1. DataFrame -> ItemCorpus -> FilterTool -> item ids
+2. query -> SearchTool -> candidates -> RankTool ranking
 3. train matrix -> recommender.fit -> score_batch -> recommend
 4. cold user -> popularity fallback -> final recommendations
 5. fitted recommender -> evaluator -> metrics / EvaluationResult
@@ -14,11 +14,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from package.tools import (
-    BaselineScorer, ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool, SQLTool,
+    BaselineScorer, SimilarTool, LookupTool, RankTool, SearchTool, FilterTool,
 )
-from package.tools.evaluation import evaluate_recommender, merge_model_params
-from package.tools.recommenders import (
+from package.corpus import ItemCorpus
+from package.evaluation.recommender.core import evaluate_recommender
+from package.evaluation.recommender.config import merge_model_params
+from package.recommenders import (
     FallbackRecommender, ItemKNNMatrixRecommender, ItemKNNRecommender, PopularityMatrixRecommender,
     PopularityRecommender, build_model,
 )
@@ -30,34 +34,34 @@ def _ids(result, key="candidates"):
     return [c["item_id"] for c in result.data[key]]
 
 
-# ------------------------------------------------------------------------- 1. DataFrame -> corpus -> SQLTool -> ids
+# ------------------------------------------------------------------------- 1. DataFrame -> corpus -> FilterTool -> ids
 def test_dataframe_to_corpus_to_sql_tool_to_item_ids(world):
-    sql = SQLTool(world.corpus)
+    sql = FilterTool(world.corpus)
     games_cheap = sql(filters={"domain": "Games", "price_max": 50, "include_missing_price": True})
     assert _ids(games_cheap) == ["Games::A1", "Games::B2", "Games::C3"]  # by rating_number: 120, 80, 40
     # every id the SQL tool returns maps to an index of the model vocabulary and back to the same domain
     assert all(i in world.item2id for i in _ids(games_cheap))
     assert set(world.corpus.item_domains(_ids(games_cheap)).values()) == {"Games"}
     # the same original id in two domains stays two items end to end
-    both = QueryTool(world.corpus)(item_ids=["Toys::A1", "Games::A1"])
+    both = LookupTool(world.corpus)(item_ids=["Toys::A1", "Games::A1"])
     assert [(i["item_id"], i["domain"], i["original_item_id"]) for i in both.data["items"]] == [
         ("Toys::A1", "Toys", "A1"), ("Games::A1", "Games", "A1")]
     assert _ids(sql(filters={"exclude_item_ids": ["Toys::A1"], "categories_any": ["Toys"]})) == ["Toys::E5"]
 
 
 def test_missing_metadata_survives_the_whole_path(world):
-    d4 = QueryTool(world.corpus)(item_ids=["Games::D4"]).data["items"][0]
+    d4 = LookupTool(world.corpus)(item_ids=["Games::D4"]).data["items"][0]
     assert d4["store"] is None and d4["average_rating"] is None and d4["rating_number"] is None
-    assert "Games::D4" in _ids(SQLTool(world.corpus)(filters={"domain": "Games"}))
-    assert "Games::D4" not in _ids(SQLTool(world.corpus)(filters={"min_rating": 0}))  # NULL rating never matches
+    assert "Games::D4" in _ids(FilterTool(world.corpus)(filters={"domain": "Games"}))
+    assert "Games::D4" not in _ids(FilterTool(world.corpus)(filters={"min_rating": 0}))  # NULL rating never matches
 
 
 # ------------------------------------------------------------------------- 2. search -> candidates -> scoring/ranking
 def test_search_candidates_feed_the_ranker_directly(world):
-    search = SemanticSearchTool(world.corpus)
+    search = SearchTool(world.corpus)
     found = search(query="wireless headset")  # B2 matches 'wireless', C3 matches 'headset' (no stem collisions)
     assert set(_ids(found)) == {"Games::B2", "Games::C3"}
-    reco = RecoModelTool(BaselineScorer(PopularityRecommender().fit(world.interactions)), world.user2id, world.item2id,
+    reco = RankTool(BaselineScorer(PopularityRecommender().fit(world.interactions)), world.user2id, world.item2id,
                          corpus=world.corpus)
     # the candidate dicts are passed as-is (output of one tool = input of the next)
     cold = reco(user_id="stranger", candidates=found.data["candidates"])
@@ -68,8 +72,8 @@ def test_search_candidates_feed_the_ranker_directly(world):
 
 def test_search_with_filters_then_item_cf_then_ranker(world):
     knn = ItemKNNRecommender(neighbors=5).fit(world.interactions)
-    cf = ItemCFTool(knn, world.item2id, corpus=world.corpus)
-    reco = RecoModelTool(BaselineScorer(knn), world.user2id, world.item2id, corpus=world.corpus)
+    cf = SimilarTool(knn, world.item2id, corpus=world.corpus)
+    reco = RankTool(BaselineScorer(knn), world.user2id, world.item2id, corpus=world.corpus)
     similar = cf(items=["Games::A1"], domain="Toys")
     ranked = reco(user_id="u1", candidates=similar.data["candidates"])
     # u1 saw only Games::A1 -> both Toys items are unseen; order follows similarity to A1 (tie -> input order)
@@ -129,7 +133,7 @@ def test_fitted_recommender_to_evaluator_to_result(world):
 
 def test_evaluator_and_standalone_metrics_agree_with_the_legacy_evaluation(world):
     """Same model idea through the OTHER API family: legacy evaluate_ranking on user 0 (cold): recs [0,1,4], target {4}."""
-    from package.tools.evaluation import evaluate_ranking
+    from package.evaluation.recommender.core import evaluate_ranking
 
     legacy = PopularityRecommender().fit(world.interactions)
     out = evaluate_ranking(legacy, pd.DataFrame({"user_idx": [0], "item_idx": [4]}), [3])

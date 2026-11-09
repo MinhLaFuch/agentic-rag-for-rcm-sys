@@ -18,3 +18,13 @@ demo:
 
   # Số lượng hàng tối đa trong turn history
   max_turn_history_rows: 50
+
+  # LiveBackend data loading (run_demo.py không --mock)
+  eval_on: "validation"              # split nạp dữ liệu: validation | test
+  use_prebuilt_corpus: true          # false = build corpus/ItemKNN trong RAM
+  allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô
+
+  # Intent search path cho Type1 (keyword + filters, không LLM). Mặc định TẮT:
+  # khi false, request kèm intent_query/intent_filters nhận ask_user và user
+  # không có lịch sử vẫn nhận no_result như cũ.
+  intent_path_enabled: false

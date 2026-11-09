@@ -6,9 +6,10 @@ import pandas as pd
 
 from .agent_tools import AgentTools
 from ...memory.memory_tool import MemoryTool
-from ...tools import ItemCFTool, ItemCorpus, QueryTool, RecoModelTool, SemanticSearchTool, SQLTool
-from ...tools.score import CandidateScorer
-from ...tools.recommenders import Recommender
+from ...corpus import ItemCorpus
+from ...tools import SimilarTool, LookupTool, RankTool, SearchTool, FilterTool
+from ...tools.scoring import CandidateScorer
+from ...recommenders.shared.recommender import Recommender
 
 
 def build_tools(
@@ -21,12 +22,12 @@ def build_tools(
     logger=None,
     as_of_timestamp: int | None = None,
 ) -> AgentTools:
-    """knn: nguồn similarity cho ItemCFTool; scorer: cho RecoModelTool; as_of_timestamp: mốc chống leakage cho MemoryTool."""
+    """knn: nguồn similarity cho SimilarTool; scorer: cho RankTool; as_of_timestamp: mốc chống leakage cho MemoryTool."""
     return AgentTools(
-        item_cf=ItemCFTool(knn, item2id, corpus=corpus, logger=logger),
-        reco=RecoModelTool(scorer, user2id, item2id, corpus=corpus, logger=logger),
-        query=QueryTool(corpus, logger=logger),
-        search=SemanticSearchTool(corpus, logger=logger),
-        sql=SQLTool(corpus, logger=logger),
+        item_cf=SimilarTool(knn, item2id, corpus=corpus, logger=logger),
+        reco=RankTool(scorer, user2id, item2id, corpus=corpus, logger=logger),
+        query=LookupTool(corpus, logger=logger),
+        search=SearchTool(corpus, logger=logger),
+        sql=FilterTool(corpus, logger=logger),
         memory=MemoryTool(interactions, user2id, item2id, corpus, logger=logger, as_of_timestamp=as_of_timestamp),
     )

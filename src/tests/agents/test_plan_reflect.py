@@ -3,19 +3,19 @@
 import pytest
 
 from package.agents import PlanExecutor
-from package.agents import _limits
+from package.agents import _limits as _limits
 from package.config.load_config import ConfigError
-from package.tools import QueryTool, SQLTool
+from package.tools import LookupTool, FilterTool
 from package.tools.base import Tool
-from package.tools.corpus import _error as corpus_error
+from package.corpus import _error as corpus_error
 from tests.agents.test_plan_executor import plan
 from tests.agents.fakes.scripted_llm import ScriptedLLM
 from tests.tools_helpers import VG_A
 
-GOOD = {"tool": "SQLTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
-BAD_ARG = {"tool": "SQLTool", "args": {"category": "Games", "limit": 2}}  # filter key outside `filters`
-BAD_REF = {"tool": "QueryTool", "args": {"item_ids": "$1.summary"}}  # $1.summary does not exist
-NO_ITEMS = {"tool": "SQLTool", "args": {"filters": {"title_contains": "zzz-no-such-title"}}}
+GOOD = {"tool": "FilterTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 2}}
+BAD_ARG = {"tool": "FilterTool", "args": {"category": "Games", "limit": 2}}  # filter key outside `filters`
+BAD_REF = {"tool": "LookupTool", "args": {"item_ids": "$1.summary"}}  # $1.summary does not exist
+NO_ITEMS = {"tool": "FilterTool", "args": {"filters": {"title_contains": "zzz-no-such-title"}}}
 
 
 class TimeoutTool(Tool):
@@ -29,7 +29,7 @@ class TimeoutTool(Tool):
 
 
 def make(corpus, llm, **kw):
-    return PlanExecutor(llm, [SQLTool(corpus), QueryTool(corpus), TimeoutTool()], reflect_rounds=kw.pop("reflect_rounds", 1), **kw)
+    return PlanExecutor(llm, [FilterTool(corpus), LookupTool(corpus), TimeoutTool()], reflect_rounds=kw.pop("reflect_rounds", 1), **kw)
 
 
 def test_failed_step_is_reflected_and_the_fixed_plan_wins(corpus):
@@ -40,13 +40,13 @@ def test_failed_step_is_reflected_and_the_fixed_plan_wins(corpus):
     assert ex.last_reflections == 1 and ex.last_first_attempt_ok is False
     assert len(llm.calls) == 2
     notice = llm.calls[1]["messages"][-1]
-    assert notice.role == "user" and "unknown arg" in notice.content and "SQLTool" in notice.content
+    assert notice.role == "user" and "unknown arg" in notice.content and "FilterTool" in notice.content
     assert llm.calls[1]["messages"][-2].role == "assistant"  # the old plan is replayed as the assistant turn
     assert ex.last_plan == [GOOD] and ex.last_attempt_plans == [[BAD_ARG], [GOOD]]
 
 
 def test_broken_reference_is_reflected(corpus):
-    llm = ScriptedLLM(plan(GOOD, BAD_REF), plan(GOOD, {"tool": "QueryTool", "args": {"item_ids": "$1.candidates.*.item_id"}}))
+    llm = ScriptedLLM(plan(GOOD, BAD_REF), plan(GOOD, {"tool": "LookupTool", "args": {"item_ids": "$1.candidates.*.item_id"}}))
     ex = make(corpus, llm)
     assert all(r["ok"] for r in ex.run("find games"))
     assert ex.last_reflections == 1
@@ -102,7 +102,7 @@ def test_non_json_reflect_reply_keeps_the_previous_result(corpus):
 
 
 def test_invented_ids_are_never_reflected(corpus):
-    llm = ScriptedLLM(plan({"tool": "QueryTool", "args": {"item_ids": ["Video_Games::made_up"]}}), plan(GOOD))
+    llm = ScriptedLLM(plan({"tool": "LookupTool", "args": {"item_ids": ["Video_Games::made_up"]}}), plan(GOOD))
     ex = make(corpus, llm)
     results = ex.run(f"tell me about {VG_A}")
     assert results[0]["invented_ids"] and len(llm.calls) == 1 and ex.last_reflections == 0
@@ -155,7 +155,7 @@ def test_state_is_reset_between_requests(corpus):
 
 
 def test_reflect_rounds_default_comes_from_yaml(corpus):
-    assert PlanExecutor(ScriptedLLM(), [SQLTool(corpus)]).reflect_rounds == _limits.get_agent_limits().reflect_rounds
+    assert PlanExecutor(ScriptedLLM(), [FilterTool(corpus)]).reflect_rounds == _limits.get_agent_limits().reflect_rounds
 
 
 def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
@@ -164,12 +164,12 @@ def test_negative_reflect_rounds_is_a_config_error(monkeypatch):
     cfg = load_config("agent/agent")
     cfg["agent"]["reflect_rounds"] = -1
     monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
-    _limits.get_agent_limits.cache_clear()
+    _limits._cached_agent_limits.cache_clear()
     try:
         with pytest.raises(ConfigError):
             _limits.get_agent_limits()
     finally:
-        _limits.get_agent_limits.cache_clear()
+        _limits._cached_agent_limits.cache_clear()
 
 
 def test_reflect_error_chars_comes_from_yaml_and_must_be_positive(monkeypatch):
@@ -179,12 +179,12 @@ def test_reflect_error_chars_comes_from_yaml_and_must_be_positive(monkeypatch):
     cfg = load_config("agent/agent")
     cfg["agent"]["reflect_error_chars"] = 0
     monkeypatch.setattr(_limits, "load_config", lambda name: cfg)
-    _limits.get_agent_limits.cache_clear()
+    _limits._cached_agent_limits.cache_clear()
     try:
         with pytest.raises(ConfigError):
             _limits.get_agent_limits()
     finally:
-        _limits.get_agent_limits.cache_clear()
+        _limits._cached_agent_limits.cache_clear()
 
 
 def test_provider_error_during_reflect_keeps_the_previous_result(corpus):

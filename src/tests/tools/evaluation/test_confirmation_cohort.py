@@ -2,7 +2,7 @@ import pytest
 import yaml
 import numpy as np
 
-from package.tools.evaluation.confirmation_cohort import confirmation_cohort
+from package.evaluation.recommender.analysis.confirmation_cohort import confirmation_cohort
 
 
 def manifest(tmp_path, **updates):

@@ -147,7 +147,7 @@ def test_adapt_from_inference_tool_error():
         composer="template",
         fallback_reason=None,
         usage={"attempts": 0},
-        reason="tool_error: QueryTool failed",
+        reason="tool_error: LookupTool failed",
     )
 
     request = DemoRequest(
@@ -166,7 +166,7 @@ def test_adapt_from_inference_tool_error():
     assert len(result.items) == 0
     assert result.error is not None
     assert "tool_error" in result.error
-    assert result.trace.inference["reason"] == "tool_error: QueryTool failed"
+    assert result.trace.inference["reason"] == "tool_error: LookupTool failed"
 
 
 def test_adapt_from_inference_fallback():

@@ -5,18 +5,32 @@ from typing import Any
 
 from ._constants import PROJECT_ROOT
 from ._dataclass import DataPaths
+from .resolve_dataset_tag import resolve_dataset_tag
 from .load_config import load_config
 
 
-def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None) -> DataPaths:
+def get_data_paths(
+    tag: str | None = None,
+    config: dict[str, Any] | None = None,
+    domains: list[str] | None = None,
+) -> DataPaths:
+    """Resolve data paths for a dataset bundle.
+
+    ``tag`` is a low-level override kept for tests and for reading artifacts
+    of old experiments (whose manifests store a historical tag such as
+    ``"default"``). Production callers should pass ``domains`` instead — the
+    tag is then derived by :func:`resolve_dataset_tag` (one domain -> its
+    name, all/none -> ``merged_name``). With neither, the merged dataset is
+    used.
+    """
     if config is None:
-        tag_config = load_config("path/run_tag")
-        tag = tag or tag_config["tag"]
-        paths_config = load_config("path/data_paths")
-        paths = paths_config["paths"]
+        paths = load_config("path/data_paths")["paths"]
     else:
-        tag = tag or config["tag"]
         paths = config["paths"]
+        tag = tag or config.get("tag")
+
+    if tag is None:
+        tag = resolve_dataset_tag(domains)
 
     def root(key: str) -> Path:
         return PROJECT_ROOT / paths[key]
@@ -33,6 +47,8 @@ def get_data_paths(tag: str | None = None, config: dict[str, Any] | None = None)
 
     return DataPaths(
         tag=tag,
+        src_root=root("src_root"),
+        config_dir=root("config_dir"),
         raw_dir=root("raw_dir"),
         cleaned_dir=root("cleaned_dir"),
         filtered_dir=root("filtered_dir") / tag,

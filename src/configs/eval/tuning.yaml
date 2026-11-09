@@ -3,7 +3,8 @@
 
 tuning:
   selection_metric: "ndcg@10"
-  models: [popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
+  run_final_test: false      # true = refit cấu hình thắng trên train+validation rồi đánh giá test MỘT lần (chỉ bật sau khi đã review model được chọn)
+  models: [popularity, item_knn, bpr_mf]   # danh sách model tuning mặc định
   item_knn:
     k: [10, 20, 50, 100]
   bpr_mf:

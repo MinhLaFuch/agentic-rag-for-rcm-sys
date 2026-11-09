@@ -7,21 +7,26 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+import yaml
 
 from package.config import get_data_paths
-from package.tools.corpus import ItemCorpus
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
+from package.corpus import ItemCorpus
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.experiment.ranking_stream_summary import RankingStreamSummary
 from scripts.evaluation import ranking_eval as script
 
 
 @pytest.fixture
 def environment(tmp_path, monkeypatch):
     paths = replace(get_data_paths("toy"), raw_dir=tmp_path/"raw", mapped_dir=tmp_path/"mapped",
-                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus")
+                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus",
+                    cleaned_dir=tmp_path/"cleaned")
     paths.raw_dir.mkdir()
     paths.mapped_dir.mkdir()
     paths.splits_dir.mkdir()
+    (paths.cleaned_dir/"D").mkdir(parents=True)
+    pd.DataFrame({"user_id": ["u0"], "parent_asin": ["i0"], "timestamp": [1]}).to_parquet(
+        paths.cleaned_path("D"), index=False)
     (paths.raw_dir/"meta_D.jsonl.gz").write_text("fixture metadata")
     user2id = {"u0":0,"u1":1,"u2":2}
     item2id = {f"D::i{i}":i for i in range(7)}
@@ -33,8 +38,9 @@ def environment(tmp_path, monkeypatch):
     for name,df in (("train",train),("validation",val),("test",test)):
         df.to_parquet(paths.split_path(name))
     meta = pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,
+                         "first_seen_ts":[1]*7,
                          "title":["Pok\u00e9mon keyboard"]*7})
-    monkeypatch.setattr(script,"get_data_paths",lambda *a:paths)
+    monkeypatch.setattr(script,"get_data_paths",lambda *a,**k:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"load_mappings",lambda *a:(user2id,item2id))
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
@@ -42,18 +48,29 @@ def environment(tmp_path, monkeypatch):
 
 
 def launch(monkeypatch, base, name, *, resume=False, frozen=None, weights="1e-6"):
-    args = ["ranking_eval", "--tag","toy","--per-segment","2","--candidate-budget","3",
-            "--ks","1,3","--neighbors","2","--popularity-weights",weights,
-            "--query-normalization","ascii_fold","--no-prebuilt-corpus",
-            "--work-dir",str(base/name),"--experiments-dir",str(base/(name+"_output")),
-            "--batch-size","1","--progress-every","1"]
+    # Tunables go through CONFIG_OVERLAY_PATH (merged over configs/ by load_config);
+    # the CLI only keeps runtime selectors (--domain/--work-dir/--resume/--candidates-from).
+    overlay = {
+        "eval/ranking_eval": {"ranking_eval": {
+            "per_segment": 2, "candidate_budget": 3, "ks": [1, 3],
+            "popularity_weights": [float(w) for w in weights.split(",")],
+            "query_normalization": "ascii_fold", "use_prebuilt_corpus": False,
+            "batch_size": 1, "progress_every": 1}},
+        "eval/baselines": {"baselines": {"item_knn": {"k": 2}}},
+        "path/data_paths": {"outputs": {"ranking_eval": str(base / (name + "_output"))}},
+    }
+    overlay_path = base / f"overlay_{name}.yaml"
+    overlay_path.write_text(yaml.safe_dump(overlay, sort_keys=False), encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+    args = ["ranking_eval", "--domain", "D",
+            "--work-dir", str(base / name)]
     if resume:
         args += ["--resume"]
     if frozen:
-        args += ["--candidates-from",str(frozen)]
-    monkeypatch.setattr(sys,"argv",args)
+        args += ["--candidates-from", str(frozen)]
+    monkeypatch.setattr(sys, "argv", args)
     script.main()
-    return base/(name+"_output")/"exp_001"
+    return base / (name + "_output") / "exp_001"
 
 
 @pytest.mark.parametrize("interrupt_stage", ["candidates", "scored:"])
@@ -98,7 +115,7 @@ def test_frozen_candidates_and_weight_variants(environment,monkeypatch):
     source = launch(monkeypatch,base,"source")
     def no_retrieval(*a,**k):
         raise AssertionError("frozen mode must not call SemanticSearch")
-    monkeypatch.setattr(script.SemanticSearchTool,"execute",no_retrieval)
+    monkeypatch.setattr(script.SearchTool,"execute",no_retrieval)
     result=launch(monkeypatch,base,"frozen",frozen=source,weights="0,1e-6")
     assert (source/"candidate_lists.jsonl").read_bytes()==(result/"candidate_lists.jsonl").read_bytes()
     m=json.loads((result/"metrics.json").read_text())

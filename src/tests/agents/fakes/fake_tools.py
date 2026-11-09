@@ -3,19 +3,19 @@
 from typing import Any
 
 from package.tools.base import Tool, ToolInputError, ToolResult
-from package.tools.ranking import ItemCFTool, RecoModelTool
-from package.tools.sql_query import QueryTool, SQLTool
-from package.tools.retrieval import SemanticSearchTool
+from package.tools.ranking import SimilarTool, RankTool
+from package.tools.sql import LookupTool, FilterTool
+from package.tools.retrieval import SearchTool
 from package.memory.memory_tool import MemoryTool
 
 
-class FakeItemCFTool(Tool):
-    """Fake ItemCFTool with contract matching the real tool."""
+class FakeSimilarTool(Tool):
+    """Fake SimilarTool with contract matching the real tool."""
 
-    name = ItemCFTool.name
-    description = ItemCFTool.description
-    input_schema = ItemCFTool.input_schema
-    output_schema = ItemCFTool.output_schema
+    name = SimilarTool.name
+    description = SimilarTool.description
+    input_schema = SimilarTool.input_schema
+    output_schema = SimilarTool.output_schema
 
     def __init__(
         self,
@@ -44,13 +44,13 @@ class FakeItemCFTool(Tool):
         return {"candidates": [], "unknown_items": [], "note": "fake tool no data"}
 
 
-class FakeRecoModelTool(Tool):
-    """Fake RecoModelTool with contract matching the real tool."""
+class FakeRankTool(Tool):
+    """Fake RankTool with contract matching the real tool."""
 
-    name = RecoModelTool.name
-    description = RecoModelTool.description
-    input_schema = RecoModelTool.input_schema
-    output_schema = RecoModelTool.output_schema
+    name = RankTool.name
+    description = RankTool.description
+    input_schema = RankTool.input_schema
+    output_schema = RankTool.output_schema
 
     def __init__(
         self,
@@ -79,13 +79,13 @@ class FakeRecoModelTool(Tool):
         return {"ranked": [], "model": "fake", "cold_start": True, "excluded_seen": [], "unscored_item_ids": [], "has_personal_signal": False, "note": "fake tool no data"}
 
 
-class FakeQueryTool(Tool):
-    """Fake QueryTool with contract matching the real tool."""
+class FakeLookupTool(Tool):
+    """Fake LookupTool with contract matching the real tool."""
 
-    name = QueryTool.name
-    description = QueryTool.description
-    input_schema = QueryTool.input_schema
-    output_schema = QueryTool.output_schema
+    name = LookupTool.name
+    description = LookupTool.description
+    input_schema = LookupTool.input_schema
+    output_schema = LookupTool.output_schema
 
     def __init__(
         self,
@@ -114,13 +114,13 @@ class FakeQueryTool(Tool):
         return {"items": [], "missing_item_ids": [], "truncated": False}
 
 
-class FakeSemanticSearchTool(Tool):
-    """Fake SemanticSearchTool with contract matching the real tool."""
+class FakeSearchTool(Tool):
+    """Fake SearchTool with contract matching the real tool."""
 
-    name = SemanticSearchTool.name
-    description = SemanticSearchTool.description
-    input_schema = SemanticSearchTool.input_schema
-    output_schema = SemanticSearchTool.output_schema
+    name = SearchTool.name
+    description = SearchTool.description
+    input_schema = SearchTool.input_schema
+    output_schema = SearchTool.output_schema
 
     def __init__(
         self,
@@ -149,13 +149,13 @@ class FakeSemanticSearchTool(Tool):
         return {"candidates": [], "total_matches": 0, "query_tokens": [], "truncated": False, "applied_filters": {}}
 
 
-class FakeSQLTool(Tool):
-    """Fake SQLTool with contract matching the real tool."""
+class FakeFilterTool(Tool):
+    """Fake FilterTool with contract matching the real tool."""
 
-    name = SQLTool.name
-    description = SQLTool.description
-    input_schema = SQLTool.input_schema
-    output_schema = SQLTool.output_schema
+    name = FilterTool.name
+    description = FilterTool.description
+    input_schema = FilterTool.input_schema
+    output_schema = FilterTool.output_schema
 
     def __init__(
         self,

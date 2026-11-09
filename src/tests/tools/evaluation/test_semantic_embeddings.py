@@ -8,8 +8,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from package.tools.corpus import ItemCorpus
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.corpus import ItemCorpus
+from package.recommenders.shared import mapping_hash
 from scripts.evaluation import build_semantic_embeddings as script
 
 

@@ -1,0 +1,6 @@
+# Ranking bottleneck diagnostics config — scripts/evaluation/analyze_ranking_bottlenecks.py.
+# Phân tích saved artifacts của ranking_eval; chỉ số liệu, không retrain/retrieve.
+
+ranking_diagnostics:
+  seed: 42               # seed bootstrap percentile CI trong từng segment
+  bootstrap_samples: 5000  # số resample cho CI 95% của paired delta

@@ -3,14 +3,14 @@
 import pytest
 
 from package.config.load_config import ConfigError, load_config
-from package.inference import _limits
+from package.inference import _limits as _limits
 
 
 @pytest.fixture
 def fresh_limits():
-    _limits.get_inference_limits.cache_clear()
+    _limits._cached_inference_limits.cache_clear()
     yield
-    _limits.get_inference_limits.cache_clear()
+    _limits._cached_inference_limits.cache_clear()
 
 
 def test_limits_come_from_inference_yaml():

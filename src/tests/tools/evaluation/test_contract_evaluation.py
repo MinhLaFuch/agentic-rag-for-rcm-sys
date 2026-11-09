@@ -18,8 +18,10 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 
-from package.tools.evaluation import EvaluationResult, evaluate_recommender, ranking_metrics_at_k, segment_users_by_history
-from package.tools.recommenders import PopularityMatrixRecommender, build_model
+from package.evaluation.recommender.core import EvaluationResult, evaluate_recommender
+from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
+from package.evaluation.recommender.config import segment_users_by_history
+from package.recommenders import PopularityMatrixRecommender, build_model
 
 D2, D3 = 1 / math.log2(3), 0.5  # DCG discounts at ranks 2 and 3
 

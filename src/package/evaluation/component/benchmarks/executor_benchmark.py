@@ -1,10 +1,18 @@
-"""Executor and Reflection benchmark.
+"""Executor benchmark: real execution of PlanExecutor._execute over fixture tools.
 
-Tests:
-- Reference resolution
-- Error handling
-- Retry behavior
-- Reflection contribution
+Scope (D1 option 1): this benchmark measures the execution engine only —
+step execution, $N.path reference resolution, per-step error_kind reporting,
+and empty/edge tool outputs — using REAL tools (FilterTool, SimilarTool,
+LookupTool, SearchTool, RankTool) over the synthetic fixture corpus.
+
+It deliberately does NOT exercise plan() or reflection: those need an LLM
+provider and are covered by the planner benchmark (real LLM) and by
+tests/agents/test_plan_reflect.py + test_executor_error_taxonomy.py
+(ScriptedLLM + fake tools, fault injection).
+
+Infra-failure scenarios from the retired dataset (timeout, rate limit,
+network, auth, schema, ...) are NOT benchmark cases: PlanExecutor treats
+tool-level failures uniformly, so they live in unit tests instead.
 """
 
 from __future__ import annotations
@@ -12,96 +20,139 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from package.agents.planner import PlanExecutor
+from package.agents import PlanExecutor, build_tools
 from package.evaluation.component._evaluator import ComponentEvaluator
+from package.recommenders import ItemKNNRecommender
+from package.tools import BaselineScorer
 
-from .executor_mock_tools import get_controlled_tools
-from .planner_mock_llm import get_mock_llm
+from .fixtures.create_test_corpus import create_test_corpus
+from .fixtures.create_test_interactions import create_test_interactions
+from .fixtures.create_test_mappings import create_test_mappings
 
 
 class ExecutorBenchmark(ComponentEvaluator):
-    """Evaluator for PlanExecutor with reflection analysis."""
+    """Evaluator for PlanExecutor step execution (no planning, no reflection)."""
 
     component_name = "executor"
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.llm = get_mock_llm()
-        self.reflect_rounds = self.config.get("reflect_rounds", 2)
-        self.executor = PlanExecutor(llm=self.llm, tools=[], reflect_rounds=self.reflect_rounds)
+
+        # Real tools over the synthetic fixture corpus (same fixtures as planner/memory benchmarks)
+        interactions = create_test_interactions()
+        user2id, item2id, _ = create_test_mappings(interactions)
+        corpus = create_test_corpus()
+        knn = ItemKNNRecommender(10).fit(interactions[["user_idx", "item_idx"]])
+        agent_tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
+        self.item2id = item2id
+
+        # llm=None is intentional: _execute never calls the LLM. PlanExecutor
+        # stores it but only plan()/run() reflection paths use it.
+        self.executor = PlanExecutor(llm=None, tools=agent_tools.for_planner(), reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:
-        """Run executor with controlled tools and capture reflection data."""
+        """Execute the case's steps with real tools and return per-step results."""
         steps = case_input.get("steps", [])
-        tool_config = case_input.get("tool_config", {})
         user_request = case_input.get("user_request", "")
 
-        # Set up controlled tools
-        self.executor.tools = {t.name: t for t in get_controlled_tools(tool_config)}
-        self.executor.reflect_rounds = self.reflect_rounds
-
         started = time.perf_counter()
+        results = self.executor._execute(steps, user_request)
+        latency = time.perf_counter() - started
 
-        try:
-            # Run first attempt
-            first_results = self.executor._execute(steps, user_request)
-            first_ok = all(r.get("ok") for r in first_results) if first_results else False
-            
-            # If first failed and reflection is enabled, try again (simplified reflection)
-            results = first_results
-            reflections_used = 0
-            if not first_ok and self.reflect_rounds > 0:
-                # Reset tools for retry
-                self.executor.tools = {t.name: t for t in get_controlled_tools(tool_config)}
-                results = self.executor._execute(steps, user_request)
-                reflections_used = 1
-            
-            after_ok = all(r.get("ok") for r in results) if results else False
-            
-            return {
-                "first_attempt_ok": first_ok,
-                "after_reflection_ok": after_ok,
-                "reflections_used": reflections_used,
-                "latency_seconds": time.perf_counter() - started,
-            }
-        except Exception as e:
-            return {
-                "error": str(e),
-                "latency_seconds": time.perf_counter() - started,
-            }
-
-    def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
-        """Score executor output and reflection contribution."""
-        if "error" in actual_output:
-            return {
-                "all_steps_ok": 0.0,
-                "reflection_rescued": 0.0,
-                "reflection_worsened": 0.0,
-                "reflection_no_change": 0.0,
-                "reflection_triggered": 0.0,
-            }
-
-        first_ok = actual_output.get("first_attempt_ok", False)
-        after_ok = actual_output.get("after_reflection_ok", False)
-        reflections_used = actual_output.get("reflections_used", 0)
-
-        metrics = {
-            "all_steps_ok": 1.0 if after_ok else 0.0,
-            "reflection_rescued": 0.0,
-            "reflection_worsened": 0.0,
-            "reflection_no_change": 0.0,
-            "reflection_triggered": 1.0 if reflections_used > 0 else 0.0,
+        return {
+            "steps": results,
+            "latency_seconds": latency,
+            "evidence_kind": "real_execution",
         }
 
-        # Calculate reflection contribution
-        if reflections_used > 0:
-            if not first_ok and after_ok:
-                metrics["reflection_rescued"] = 1.0  # fail → pass
-            elif first_ok and not after_ok:
-                metrics["reflection_worsened"] = 1.0  # pass → fail
-            else:
-                metrics["reflection_no_change"] = 1.0  # no change
-        else:
-            metrics["reflection_no_change"] = 1.0  # no reflection = no change
+    def score_component(self, actual_output: dict[str, Any], expected: dict[str, Any]) -> dict[str, float]:
+        """Score execution results against expected per-step error kinds."""
+        results = actual_output.get("steps", [])
+        exp_all_ok = expected.get("all_steps_ok", True)
+        exp_kinds = expected.get("step_error_kinds", [])
+        exp_bad_refs = expected.get("bad_reference_count", 0)
 
+        n = len(results)
+        ok_count = sum(1 for r in results if r.get("ok"))
+        bad_refs = sum(1 for r in results if r.get("error_kind") == "bad_reference")
+
+        # Per-step error_kind accuracy: missing expectation means the step must succeed (error_kind None)
+        kind_matches = 0
+        for i, r in enumerate(results):
+            exp_kind = exp_kinds[i] if i < len(exp_kinds) else None
+            if r.get("error_kind") == exp_kind:
+                kind_matches += 1
+        # Steps expected to fail but absent from results count as mismatches
+        expected_failures = sum(1 for k in exp_kinds if k is not None)
+        kind_accuracy = kind_matches / max(n, expected_failures) if (n or expected_failures) else 1.0
+
+        metrics = {
+            "all_steps_ok": 1.0 if (ok_count == n) == exp_all_ok else 0.0,
+            "step_success_rate": ok_count / n if n else 1.0,
+            "error_kind_accuracy": kind_accuracy,
+            "reference_resolution_ok": 1.0 if bad_refs == exp_bad_refs else 0.0,
+        }
+
+        # Step-count assertion: catches phantom/missing steps. exec_018
+        # (steps=[]) relies on this — without it every implementation
+        # scores 1.0 on the empty plan.
+        exp_num_steps = expected.get("num_steps")
+        if exp_num_steps is not None:
+            metrics["step_count_match"] = 1.0 if n == exp_num_steps else 0.0
+
+        # Data assertions: expected.step_outputs[i] describes what step i
+        # must return (item ids ordered/unordered, counts, missing/unknown
+        # ids, title keyword, fixture membership). Only hand-computable
+        # expectations are asserted — SimilarTool kNN order and SearchTool
+        # FTS ranking are NOT derivable from the fixture by hand.
+        step_outputs = expected.get("step_outputs") or []
+        checks = [self._check_step_output(results[i] if i < n else None, spec)
+                  for i, spec in enumerate(step_outputs) if not spec.get("skip")]
+        if checks:
+            metrics["data_correctness"] = sum(checks) / len(checks)
         return metrics
+
+    # Item-row keys produced by tools, in preference order
+    _ITEM_ROW_KEYS = ("items", "candidates", "ranked")
+
+    def _step_item_rows(self, step_result: dict[str, Any] | None) -> list[dict[str, Any]]:
+        if not step_result or not step_result.get("ok"):
+            return []
+        data = step_result.get("data") or {}
+        for key in self._ITEM_ROW_KEYS:
+            rows = data.get(key)
+            if isinstance(rows, list):
+                return [r for r in rows if isinstance(r, dict)]
+        return []
+
+    def _step_item_ids(self, step_result: dict[str, Any] | None) -> list[str]:
+        return [r["item_id"] for r in self._step_item_rows(step_result)
+                if isinstance(r.get("item_id"), str)]
+
+    def _check_step_output(self, step_result: dict[str, Any] | None, spec: dict[str, Any]) -> float:
+        """1.0 iff every assertion in spec holds for this step's output."""
+        ok = True
+        data = (step_result or {}).get("data") or {}
+        ids = self._step_item_ids(step_result)
+
+        if "item_ids" in spec:
+            want = spec["item_ids"]
+            ok &= ids == want if spec.get("ordered", False) else set(ids) == set(want)
+        if "item_count" in spec:
+            ok &= len(ids) == spec["item_count"]
+        if "missing_item_ids" in spec:
+            ok &= set(data.get("missing_item_ids") or []) == set(spec["missing_item_ids"])
+        if "unknown_items" in spec:
+            ok &= set(data.get("unknown_items") or []) == set(spec["unknown_items"])
+        if "total_matches" in spec:
+            ok &= data.get("total_matches") == spec["total_matches"]
+        if spec.get("fixture_ids_only"):
+            valid = set(self.item2id)
+            ok &= all(i in valid for i in ids)
+        if "title_contains" in spec:
+            needle = spec["title_contains"].lower()
+            ok &= all(
+                needle in str(r.get("title") or "").lower()
+                for r in self._step_item_rows(step_result)
+            )
+        return 1.0 if ok else 0.0

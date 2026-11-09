@@ -3,8 +3,10 @@
 
 baselines:
   seed: 42
-  models: [random, popularity, item_knn, bpr_mf]   # mặc định khi không truyền --models
+  models: [random, popularity, item_knn, bpr_mf]   # danh sách model baseline mặc định
   popularity_fallback: true
+  popularity_source: train_core      # train_core | full_history (full pre-target history)
+  item_knn_hybrid_weight: null       # float >= 0 opts into HybridItemKNNRecommender
   item_knn:
     k: 20
     # Số phần tử dense tối đa mỗi block khi xây item-item similarity.

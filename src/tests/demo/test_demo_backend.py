@@ -5,18 +5,18 @@ import pytest
 from package.demo import (
     DemoRequest,
     DemoResult,
-    MockBackend,
     format_items,
     format_trace,
     format_memory,
     status_badge,
     sample_requests,
 )
+from tests.demo.fakes.offline_backend import OfflineDemoBackend
 
 
 def test_mock_backend_returns_all_statuses():
     """MockBackend phải trả đủ 4 trạng thái khi gọi lần lượt."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     request = DemoRequest(
         user_id="user123",
         text="test",
@@ -35,7 +35,7 @@ def test_mock_backend_returns_all_statuses():
 
 def test_mock_backend_result_structure():
     """Kết quả MockBackend phải có cấu trúc DemoResult hợp lệ."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
     request = DemoRequest(
         user_id="user123",
         text="test",
@@ -96,10 +96,10 @@ def test_format_trace_basic():
     from package.demo import DemoTrace
 
     trace = DemoTrace(
-        plan=[{"tool": "QueryTool", "args": {"limit": 2}}],
+        plan=[{"tool": "LookupTool", "args": {"limit": 2}}],
         steps=[
-            {"tool": "QueryTool", "ok": True, "error": None, "latency_seconds": 0.1},
-            {"tool": "SemanticSearchTool", "ok": False, "error": "timeout", "latency_seconds": 0.5},
+            {"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1},
+            {"tool": "SearchTool", "ok": False, "error": "timeout", "latency_seconds": 0.5},
         ],
         ask_user=None,
         reflections=1,
@@ -110,8 +110,8 @@ def test_format_trace_basic():
 
     text = format_trace(trace)
     assert "Plan JSON" in text
-    assert "QueryTool" in text
-    assert "SemanticSearchTool" in text
+    assert "LookupTool" in text
+    assert "SearchTool" in text
     assert "Số lần reflect: 1" in text
     assert "Lần đầu thành công: False" in text
     assert "Lỗi: timeout" in text
@@ -193,7 +193,7 @@ def test_format_memory_basic():
             {
                 "memory_step_index": 0,
                 "consumer_step_index": 1,
-                "consumer_tool": "QueryTool",
+                "consumer_tool": "LookupTool",
                 "reference": "$0.top_categories",
             }
         ],
@@ -242,7 +242,7 @@ def test_format_memory_with_metadata():
 
 def test_mock_backend_memory_view():
     """MockBackend phải trả về MemoryView khi memory on."""
-    backend = MockBackend()
+    backend = OfflineDemoBackend()
 
     request_on = DemoRequest(
         user_id="mock_warm_user",
@@ -304,8 +304,8 @@ def test_detect_consumed_by():
 
     steps = [
         {"tool": "MemoryTool", "args": {"user_id": "user123"}},
-        {"tool": "QueryTool", "args": {"categories": "$0.top_categories"}},
-        {"tool": "SQLTool", "args": {"filters": {"categories_any": "$0.top_categories"}}},
+        {"tool": "LookupTool", "args": {"categories": "$0.top_categories"}},
+        {"tool": "FilterTool", "args": {"filters": {"categories_any": "$0.top_categories"}}},
     ]
 
     consumed = detect_consumed_by(steps, [0])
@@ -313,9 +313,9 @@ def test_detect_consumed_by():
     assert len(consumed) == 2
     assert consumed[0]["memory_step_index"] == 0
     assert consumed[0]["consumer_step_index"] == 1
-    assert consumed[0]["consumer_tool"] == "QueryTool"
+    assert consumed[0]["consumer_tool"] == "LookupTool"
     assert consumed[1]["consumer_step_index"] == 2
-    assert consumed[1]["consumer_tool"] == "SQLTool"
+    assert consumed[1]["consumer_tool"] == "FilterTool"
 
 
 def test_detect_consumed_by_no_match():
@@ -324,7 +324,7 @@ def test_detect_consumed_by_no_match():
 
     steps = [
         {"tool": "MemoryTool", "args": {"user_id": "user123"}},
-        {"tool": "QueryTool", "args": {"categories": ["Electronics"]}},
+        {"tool": "LookupTool", "args": {"categories": ["Electronics"]}},
     ]
 
     consumed = detect_consumed_by(steps, [0])

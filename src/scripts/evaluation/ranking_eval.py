@@ -25,24 +25,27 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
-from package.tools import ItemCFTool, QueryTool, RecoModelTool, SemanticSearchTool
+from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
 from package.tools.base import ToolCallLogger
-from package.tools.corpus import build_corpus, load_corpus
-from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target
-from package.tools.evaluation.metrics import ranking_metrics_at_k
-from package.tools.recommenders import ItemKNNRecommender, build_interaction_matrix
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
-from package.tools.score import BaselineScorer
+from package.corpus import build_corpus, load_corpus
+from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
+from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
+from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared.build_interaction_matrix import build_interaction_matrix
+from package.recommenders.shared import item_knn_data_hash, mapping_hash, file_hash
+from package.tools.scoring import BaselineScorer
 from package.utils import ensure_utf8_stdout
-from package.tools.corpus.apply_metadata_policy import POLICIES, apply_metadata_policy
-from package.tools.evaluation.evaluation_protocol import evaluation_protocol
-from package.tools.evaluation.normalize_query_text import normalize_query_text
-from package.tools.recommenders.mapping_hash import mapping_hash
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.evaluation.confirmation_cohort import confirmation_cohort
+from package.corpus.apply_metadata_policy import apply_metadata_policy
+from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.build_core_model import build_core_model
+from package.evaluation.recommender.analysis.confirmation_cohort import confirmation_cohort
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
+from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
 
@@ -101,65 +104,92 @@ def _tie_stats(scores: np.ndarray, k: int) -> dict[str, float]:
     return {"tie_pair_rate": tie_pairs / pair_count, "top_k_boundary_tie": boundary}
 
 
-from package.tools.evaluation.ranking_run_store import RankingRunStore
-from package.tools.evaluation.stage_progress import StageProgress
-from package.tools.evaluation.ranking_stream_summary import RankingStreamSummary
-from package.tools.evaluation.save_experiment import _source_fingerprint, _environment_versions
-from package.tools.recommenders.save_item_knn import save_item_knn
-from package.tools.recommenders.load_item_knn import load_item_knn
+from package.evaluation.recommender.experiment.ranking_run_store import RankingRunStore
+from package.evaluation.recommender.utils import StageProgress
+from package.evaluation.recommender.experiment.ranking_stream_summary import RankingStreamSummary
+from package.evaluation.recommender.experiment.save_experiment import _source_fingerprint, _environment_versions
+from package.recommenders.shared.save_item_knn import save_item_knn
+from package.recommenders.shared.load_item_knn import load_item_knn
+
+
+def _load_eval_splits(paths, eval_on: str):
+    """Load only frames required by this temporal evaluation.
+
+    Validation does not need the test rows in memory. Test evaluation still
+    loads train+validation for fitting and test as its target.
+    """
+    columns = ["user_idx", "item_idx", "timestamp"]
+    train = pd.read_parquet(paths.split_path("train"), columns=columns)
+    if eval_on == "validation":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.DataFrame(columns=columns)
+    elif eval_on == "test":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.read_parquet(paths.split_path("test"), columns=columns)
+    else:
+        raise ValueError(f"unsupported evaluation split: {eval_on}")
+    return train, validation, test
 
 
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--tag")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+                         "1 domain -> bundle tên domain; tập con khác bị từ chối.")
     ap.add_argument("--eval-on", choices=("validation", "test"), default="validation")
-    ap.add_argument("--per-segment", type=int, default=1000)
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--candidate-budget", type=int, default=100)
-    ap.add_argument("--seed-items", type=int, default=5)
-    ap.add_argument("--query-items", type=int, default=3)
-    ap.add_argument("--neighbors", type=int, default=None)
-    ap.add_argument("--ks", default="5,10,20")
-    ap.add_argument("--popularity-weights", default="0,1e-6,1e-4,1e-3,1e-2")
-    ap.add_argument("--allow-missing-corpus-sources", action="store_true")
-    ap.add_argument("--no-prebuilt-corpus", action="store_true")
-    ap.add_argument("--experiments-dir", type=Path)
-    ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
-                    help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
-    ap.add_argument("--query-normalization", choices=("raw", "ascii_fold"), default="raw",
-                    help="Metadata query preprocessing; ascii_fold is explicit and must get its own baseline.")
     ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
     ap.add_argument("--resume", action="store_true")
-    ap.add_argument("--batch-size", type=int, default=50)
-    ap.add_argument("--progress-every", type=int, default=100)
     ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
-    ap.add_argument("--exclude-users-from", action="append", type=Path, default=[],
-                    help="Prior experiment config.yaml; repeat to exclude all previously inspected cohorts")
     args = ap.parse_args()
 
+    # Mọi tham số đánh giá đọc từ configs/eval/ranking_eval.yaml (+ baselines/segment_thresholds/tools).
+    cfg = load_config("eval/ranking_eval")["ranking_eval"]
+    baselines = load_config("eval/baselines")["baselines"]
+    args.all_users = bool(cfg.get("all_users", False))
+    args.exclude_users_from = [str(p) for p in cfg.get("exclude_users_from", [])]
+    args.per_segment = int(cfg["per_segment"])
+    args.seed = int(baselines["seed"])  # single seed source: eval/baselines.baselines.seed
+    args.candidate_budget = int(cfg["candidate_budget"])
+    args.seed_items = int(cfg["seed_items"])
+    args.query_items = int(cfg["query_items"])
+    args.neighbors = int(baselines["item_knn"]["k"])  # baselines.item_knn.k
+    args.ks = ",".join(str(k) for k in cfg["ks"])
+    args.popularity_weights = ",".join(repr(float(w)) for w in cfg["popularity_weights"])
+    args.metadata_policy = str(cfg["metadata_policy"])
+    args.query_normalization = str(cfg["query_normalization"])
+    args.use_prebuilt_corpus = bool(cfg["use_prebuilt_corpus"])
+    args.allow_missing_corpus_sources = bool(cfg["allow_missing_corpus_sources"])
+    args.batch_size = int(cfg["batch_size"])
+    args.progress_every = int(cfg["progress_every"])
+
     if args.per_segment < 1 or args.candidate_budget < 1:
-        ap.error("--per-segment and --candidate-budget must be positive")
+        raise SystemExit("ranking_eval.per_segment and ranking_eval.candidate_budget must be positive")
     ks = sorted({int(x) for x in args.ks.split(",") if x.strip()})
     weights = [float(x) for x in args.popularity_weights.split(",") if x.strip()]
     if not ks or min(ks) < 1 or max(ks) > args.candidate_budget * 3:
-        ap.error("--ks must contain positive cutoffs no greater than 3*candidate-budget")
+        raise SystemExit("ranking_eval.ks must contain positive cutoffs no greater than 3*candidate_budget")
     if not weights or any(not np.isfinite(w) or w < 0 for w in weights):
-        ap.error("--popularity-weights must be finite and non-negative")
+        raise SystemExit("ranking_eval.popularity_weights must be finite and non-negative")
     if len(set(weights)) != len(weights):
-        ap.error("--popularity-weights must be unique")
+        raise SystemExit("ranking_eval.popularity_weights must be unique")
 
     if args.batch_size < 1 or args.progress_every < 1 or args.seed_items < 1 or args.query_items < 1:
-        ap.error("batch-size, progress-every, seed-items and query-items must be positive")
-    if args.neighbors is not None and args.neighbors < 1:
-        ap.error("neighbors must be positive")
+        raise SystemExit("ranking_eval.batch_size/progress_every/seed_items/query_items must be positive")
+    if args.neighbors < 1:
+        raise SystemExit("baselines.item_knn.k must be positive")
     if args.resume and args.work_dir is None:
         ap.error("--resume requires --work-dir")
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
-        ap.error("candidate-budget exceeds tools.max_candidates")
-    paths = get_data_paths(args.tag)
-    meta_files = [(d, str(paths.meta_path(d))) for d in get_domains()]
-    exp_root = args.experiments_dir or (paths.experiments_dir / "ranking_eval")
+        raise SystemExit("candidate-budget exceeds tools.max_candidates")
+    paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
+    meta_files = [(d, str(paths.meta_path(d))) for d in (args.domain or get_domains())]
+    exp_root = paths.output_dir("ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
     print(f"[checkpoint] {work.resolve()} (resume with --work-dir and --resume)", flush=True)
     provenance_started = time.perf_counter()
@@ -168,7 +198,7 @@ def main() -> None:
         "format": 1, "source_fingerprint": _source_fingerprint(), "environment": _environment_versions(),
         "parameters": {k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()
                        if k not in {"resume", "work_dir", "batch_size", "progress_every", "experiments_dir"}},
-        "effective_neighbors": args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"]),
+        "effective_neighbors": args.neighbors,
         "split_files": {name:{"path":str(paths.split_path(name)), "sha256":file_hash(paths.split_path(name))} for name in ("train","validation","test")},
         "mapping_files": {str(f.resolve()):file_hash(f) for f in sorted(paths.mapped_dir.glob("*.json"))},
         "metadata_files": {d:{"path":str(Path(f).resolve()), "sha256":file_hash(f) if Path(f).exists() else None} for d,f in meta_files},
@@ -176,8 +206,8 @@ def main() -> None:
     if not identity["mapping_files"]:
         raise ValueError("no mapping JSON files found")
     identity["exclusion_manifests"] = [{"path": str(p.resolve()), "sha256": file_hash(p)}
-                                       for p in args.exclude_users_from]
-    identity["parameters"]["exclude_users_from"] = [str(p.resolve()) for p in args.exclude_users_from]
+                                       for p in map(Path, args.exclude_users_from)]
+    identity["parameters"]["exclude_users_from"] = [str(Path(p).resolve()) for p in args.exclude_users_from]
     if args.candidates_from:
         identity["frozen_artifacts"] = {name:file_hash(args.candidates_from/name) for name in ("config.yaml","metrics.json","candidate_lists.jsonl","scored.jsonl")}
     variants = {("baseline" if np.isclose(w,1e-6,rtol=0,atol=1e-15) else f"popularity_weight_{w:g}"):w for w in weights}
@@ -206,13 +236,13 @@ def main() -> None:
             return
         store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
         if not store.get("scoring_complete"):
-            _run_stages(args, paths, meta_files, store, ks, variants)
+            _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest)
         _finalize(args, paths, store, ks, variants, exp_root)
 
 
-def _run_stages(args, paths, meta_files, store, ks, variants):
+def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     print("[splits] loading and sampling; ETA unknown", flush=True)
-    train, validation, test = load_splits(paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    train, validation, test = _load_eval_splits(paths, args.eval_on)
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
     user2id, item2id = load_mappings(paths.mapped_dir)
     id2user = {v: k for k, v in user2id.items()}
@@ -225,11 +255,13 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     history_sizes = np.diff(fit_matrix.indptr)
     sparse_max = int(load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"])
     segments_by_user = segment_users_by_history(list(target_by_user), history_sizes, sparse_max)
-    excluded = confirmation_cohort(getattr(args, "exclude_users_from", []), tag=paths.tag,
-                              split=args.eval_on, user_hash=mapping_hash(user2id), item_hash=mapping_hash(item2id))
+    excluded = confirmation_cohort(args.exclude_users_from, tag=paths.tag,
+                                   split=args.eval_on, user_hash=mapping_hash(user2id),
+                                   item_hash=mapping_hash(item2id))
     segments_by_user = {u: s for u, s in segments_by_user.items() if u not in excluded}
-    sampled = sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed))
-    if excluded and any(len(group) != args.per_segment for group in sampled.values()):
+    sampled = ({segment: sorted(u for u, s in segments_by_user.items() if s == segment) for segment in SEGMENTS}
+               if args.all_users else sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed)))
+    if excluded and not args.all_users and any(len(group) != args.per_segment for group in sampled.values()):
         raise ValueError("insufficient untouched users for requested per-segment sample")
     users = {u for group in sampled.values() for u in group}
     sampled_fit = fit_df[fit_df["user_idx"].isin(users)]
@@ -238,30 +270,40 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     seen_of = {u: set(recent.get(u, [])) for u in users}
 
     print("[corpus] start; ETA unknown", flush=True)
-    if paths.corpus_path.exists() and not args.no_prebuilt_corpus:
+    if paths.corpus_path.exists() and args.use_prebuilt_corpus:
         corpus, coverage = load_corpus(
             paths.corpus_path, meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
             allow_missing_sources=args.allow_missing_corpus_sources,
         )
     else:
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
         corpus, _, coverage = build_corpus(
             meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+            first_seen_ts=first_seen_ts,
         )
 
     metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=segments_by_user,
-        sampled=sampled, metadata_policy=metadata_policy)
+        sampled=sampled, metadata_policy=metadata_policy,
+        cohort_policy=cohort_policy_for_paths(paths))
 
     protocol_manifest["query_normalization"] = args.query_normalization
+    protocol_manifest["sampling"] = ("all target-bearing users after declared exclusions; no segment cap"
+                                     if args.all_users else protocol_manifest["sampling"])
 
-    neighbors = args.neighbors if args.neighbors is not None else int(load_config("eval/baselines")["baselines"]["item_knn"]["k"])
+    neighbors = args.neighbors
     knn_started = time.perf_counter()
     local_knn = store.path / "fit_item_knn.npz"
     context = dict(user2id=user2id, item2id=item2id, eval_on=args.eval_on, tag=paths.tag)
-    if local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
+    knn = build_core_model(paths, args.eval_on, neighbors, fit_df, user2id, item2id)
+    if knn is not None:
+        knn_hash = knn._fit_data_hash
+        protocol_manifest["item_knn"] = knn._evaluation_fit_provenance
+        protocol_manifest["cf_history"] = "all pre-target history; similarity and popularity frozen on train_core"
+    elif local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
         print("[ItemKNN] validating local checkpoint model", flush=True)
         knn = load_item_knn(local_knn, neighbors, fit_df[["user_idx", "item_idx"]], **context)
         knn_hash = knn._fit_data_hash
@@ -273,11 +315,13 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         knn_hash = item_knn_data_hash(fit_df[["user_idx", "item_idx"]])
     knn_seconds = time.perf_counter() - knn_started
     print(f"[ItemKNN] ready in {knn_seconds:.1f}s", flush=True)
-    item_cf = ItemCFTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
-    semantic = SemanticSearchTool(corpus, logger=ToolCallLogger())
-    query_tool = QueryTool(corpus, logger=ToolCallLogger())
+    item_cf = SimilarTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
+    semantic = SearchTool(corpus, logger=ToolCallLogger())
+    query_tool = LookupTool(corpus, logger=ToolCallLogger())
     get_text = item_text_tables(corpus, namespaced)
-    popular_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable")
+    popularity = (knn.scores if hasattr(knn, "_evaluation_fit_provenance")
+                  else np.asarray(fit_matrix.sum(axis=0)).ravel())
+    popular_order = np.argsort(-popularity, kind="stable")
     max_candidates = int(load_config("agent/tools")["tools"]["max_candidates"])
 
     max_sampled_user = max(users) if users else 0
@@ -293,6 +337,8 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         },
     }
     config = {
+        "manifest_status": tag_manifest["status"],
+        "manifest_sha256": tag_manifest["manifest_sha256"],
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
         "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),
@@ -307,11 +353,11 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
                     "baseline_weight": 1e-6, "same_saved_candidate_lists": True},
         "ks": ks,
         "target_protocol": f"{args.eval_on} interactions; ranking uses novel targets; candidate recall retains all targets",
-        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and not args.no_prebuilt_corpus else None,
+        "corpus": {"path": str(paths.corpus_path) if paths.corpus_path.exists() and args.use_prebuilt_corpus else None,
                    "metadata_coverage": coverage,
                    "missing_sources": [p for _, p in meta_files if not Path(p).exists()],
                    "allow_missing_sources": args.allow_missing_corpus_sources,
-                   "mode": "in_memory_build" if args.no_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
+                   "mode": "in_memory_build" if not args.use_prebuilt_corpus or not paths.corpus_path.exists() else "prebuilt"},
         "max_sampled_user_idx": max_sampled_user,
     }
     config["persistence"] = {"work_dir":str(store.path.resolve()), "batch_size":args.batch_size,
@@ -415,7 +461,7 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
             done = store.count(stream)
             progress = StageProgress(stream, total, completed=done, every=args.progress_every)
             scorer = BaselineScorer(knn, popularity_weight=weight)
-            reco = RecoModelTool(scorer, user2id, item2id, corpus=corpus)
+            reco = RankTool(scorer, user2id, item2id, corpus=corpus)
             batch = []
             for position,record in store.rows("candidates", start=done, batch_size=args.batch_size):
                 user,segment = record["user_idx"],record["segment"]
@@ -583,7 +629,6 @@ def _finalize(args, paths, store, ks, variants, exp_root):
         raise ValueError("implementation/environment changed during evaluation; results not published")
     print("[provenance] revalidating input hashes before publication",flush=True)
     inputs = list(identity["split_files"].values()) + list(identity["metadata_files"].values())
-    inputs += identity.get("exclusion_manifests", [])
     inputs += [{"path":p,"sha256":h} for p,h in identity["mapping_files"].items()]
     for entry in inputs:
         path = Path(entry["path"])

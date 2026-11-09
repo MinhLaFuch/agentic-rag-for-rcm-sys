@@ -7,7 +7,7 @@ QUESTION_IGNORED = "question ignored: plan also had steps"
 
 
 def classify_outcome(outcome: AgentOutcome) -> tuple[str, str | None]:
-    """(status, reason) of an outcome. First matching rule wins; see docs/inference_contract.md section 5."""
+    """(status, reason) of an outcome. First matching rule wins; the status list is `package.inference._schema.STATUSES`."""
     if outcome.question and outcome.n_steps == 0:
         return "ask_user", None
     notes = [QUESTION_IGNORED] if outcome.question else []  # the plan has steps, so it is judged by their result

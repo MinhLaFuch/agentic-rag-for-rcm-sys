@@ -5,17 +5,17 @@ from typing import Any
 
 
 def build_item_cf_candidates(*items: str, similarity: float = 0.9, domain: str = "Video_Games") -> list[dict[str, Any]]:
-    """Build ItemCFTool candidates output."""
+    """Build SimilarTool candidates output."""
     return [{"item_id": item, "similarity": similarity, "domain": domain} for item in items]
 
 
 def build_reco_ranked(*items: str, score: float = 0.8, domain: str = "Video_Games") -> list[dict[str, Any]]:
-    """Build RecoModelTool ranked output."""
+    """Build RankTool ranked output."""
     return [{"rank": i + 1, "item_id": item, "score": score, "domain": domain} for i, item in enumerate(items)]
 
 
 def build_items(*items: str, domain: str = "Video_Games", title: str = "Test Item", store: str = "TestStore", price: float = 99.99, average_rating: float = 4.5, rating_number: int = 100, main_category: str = "Test") -> list[dict[str, Any]]:
-    """Build QueryTool/SQLTool/SemanticSearchTool items output."""
+    """Build LookupTool/FilterTool/SearchTool items output."""
     return [
         {
             "item_id": item,

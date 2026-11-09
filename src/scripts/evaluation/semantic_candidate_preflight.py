@@ -10,8 +10,8 @@ import yaml
 
 from package.config import get_data_paths,load_config
 from package.data.mapping import load_mappings
-from package.tools.recommenders.file_hash import file_hash
-from package.tools.recommenders.mapping_hash import mapping_hash
+from package.recommenders.shared import file_hash
+from package.recommenders.shared import mapping_hash
 
 
 def main():

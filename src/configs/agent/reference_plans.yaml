@@ -1,0 +1,24 @@
+# Reference plans for Layer 4: Agentic Process Quality evaluation.
+# Ordered groups of tools a good plan visits (any tool of a group counts, groups in this order).
+# Groups are filtered by the tools the agent actually has, so a planner without MemoryTool is not penalised for it.
+
+reference_plans:
+  similar:
+    - ["SimilarTool"]
+    - ["RankTool"]
+  personalized:
+    - ["MemoryTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
+  constrained:
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
+  cold_text:
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
+  ambiguous: []
+  exclusion:
+    - ["MemoryTool"]
+    - ["SearchTool", "FilterTool"]
+    - ["RankTool"]
+  unanswerable: []

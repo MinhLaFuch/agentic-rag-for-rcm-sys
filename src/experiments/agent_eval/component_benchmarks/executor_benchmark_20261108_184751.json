@@ -1,0 +1,2003 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "executor",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "exec_001",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports"
+                },
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_m",
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "latency_seconds": 0.000378
+          }
+        ],
+        "latency_seconds": 0.00038159999894560315,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.0003910000014002435,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_002",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_i",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_i",
+                  "title": "Game I",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.0,
+                  "rating_number": 130,
+                  "main_category": "RPG"
+                },
+                {
+                  "item_id": "Video_Games::vg_f",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_f",
+                  "title": "Game F",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.5,
+                  "rating_number": 100,
+                  "main_category": "RPG"
+                },
+                {
+                  "item_id": "Video_Games::vg_c",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_c",
+                  "title": "Game C",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.0,
+                  "rating_number": 70,
+                  "main_category": "RPG"
+                }
+              ],
+              "total_matches": 3,
+              "truncated": false,
+              "applied_filters": {
+                "categories_any": [
+                  "RPG"
+                ]
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "categories_any": [
+                  "RPG"
+                ]
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 3,
+                "first_ids": [
+                  "Video_Games::vg_i",
+                  "Video_Games::vg_f",
+                  "Video_Games::vg_c"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 3,
+              "truncated": false,
+              "applied_filters": {}
+            },
+            "latency_seconds": 0.000334
+          }
+        ],
+        "latency_seconds": 0.0003375999986019451,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.00034560000131023116,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_003",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports"
+                },
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 4,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0,
+                "exclude_item_ids": [
+                  "Video_Games::vg_a"
+                ]
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50,
+                "exclude_item_ids": [
+                  "Video_Games::vg_a"
+                ]
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 4,
+                "first_ids": [
+                  "Video_Games::vg_m",
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 4,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "latency_seconds": 0.000268
+          }
+        ],
+        "latency_seconds": 0.00027099999715574086,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.00027739999859477393,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_004",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [],
+              "total_matches": 0,
+              "truncated": false,
+              "applied_filters": {
+                "price_min": 10000.0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_min": 10000
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 0,
+                "first_ids": [],
+                "keys": []
+              },
+              "total_matches": 0,
+              "truncated": false,
+              "applied_filters": {
+                "price_min": 10000.0
+              }
+            },
+            "latency_seconds": 0.000199
+          }
+        ],
+        "latency_seconds": 0.00020189999850117601,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.00020799999765586108,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_005",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SimilarTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_b",
+                  "similarity": 0.9746794104576111,
+                  "domain": "Video_Games"
+                },
+                {
+                  "item_id": "Video_Games::vg_c",
+                  "similarity": 0.8062257766723633,
+                  "domain": "Video_Games"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "similarity": 0.7745966911315918,
+                  "domain": "Video_Games"
+                },
+                {
+                  "item_id": "Video_Games::vg_e",
+                  "similarity": 0.7071067690849304,
+                  "domain": "Video_Games"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "similarity": 0.5,
+                  "domain": "Video_Games"
+                }
+              ],
+              "unknown_items": [],
+              "note": null
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "items": [
+                "Video_Games::vg_a"
+              ],
+              "top_k": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_b",
+                  "Video_Games::vg_c",
+                  "Video_Games::vg_d"
+                ],
+                "keys": [
+                  "item_id",
+                  "similarity",
+                  "domain"
+                ]
+              },
+              "unknown_items": {
+                "n": 0,
+                "first_ids": [],
+                "keys": []
+              },
+              "note": null
+            },
+            "note": null,
+            "latency_seconds": 0.000484
+          },
+          {
+            "tool": "LookupTool",
+            "ok": true,
+            "data": {
+              "items": [
+                {
+                  "item_id": "Video_Games::vg_b",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_b",
+                  "title": "Game B",
+                  "store": "StoreA",
+                  "price": 150.0,
+                  "average_rating": 4.5,
+                  "rating_number": 60,
+                  "main_category": "Puzzle"
+                },
+                {
+                  "item_id": "Video_Games::vg_c",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_c",
+                  "title": "Game C",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.0,
+                  "rating_number": 70,
+                  "main_category": "RPG"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_e",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_e",
+                  "title": "Game E",
+                  "store": "StoreA",
+                  "price": 150.0,
+                  "average_rating": 4.0,
+                  "rating_number": 90,
+                  "main_category": "Puzzle"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                }
+              ],
+              "missing_item_ids": [],
+              "truncated": false
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "item_ids": [
+                "Video_Games::vg_b",
+                "Video_Games::vg_c",
+                "Video_Games::vg_d",
+                "Video_Games::vg_e",
+                "Video_Games::vg_g"
+              ]
+            },
+            "output_summary": {
+              "items": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_b",
+                  "Video_Games::vg_c",
+                  "Video_Games::vg_d"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "missing_item_ids": {
+                "n": 0,
+                "first_ids": [],
+                "keys": []
+              },
+              "truncated": false
+            },
+            "latency_seconds": 0.00024
+          }
+        ],
+        "latency_seconds": 0.0007286000000021886,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.0007354000008490402,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_006",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports"
+                },
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 10
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_m",
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "latency_seconds": 0.000225
+          },
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_outlier",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_outlier",
+                  "title": "Outlier Price Game",
+                  "store": "StoreC",
+                  "price": 1000.0,
+                  "average_rating": 4.5,
+                  "rating_number": 100,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 6,
+              "truncated": true,
+              "applied_filters": {
+                "categories_any": [
+                  "Action"
+                ]
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "categories_any": [
+                  "Action"
+                ]
+              },
+              "limit": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g",
+                  "Video_Games::vg_outlier"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 6,
+              "truncated": true,
+              "applied_filters": {}
+            },
+            "latency_seconds": 0.000239
+          }
+        ],
+        "latency_seconds": 0.00046829999701003544,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.0004755000009026844,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_007",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "LookupTool",
+            "ok": false,
+            "data": {},
+            "error": "$2.candidates.*.item_id: step 2 has not run yet",
+            "invented_ids": [],
+            "error_kind": "bad_reference",
+            "args": {
+              "item_ids": "$2.candidates.*.item_id"
+            },
+            "latency_seconds": 1.5e-05
+          },
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports"
+                },
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_m",
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "latency_seconds": 0.000203
+          }
+        ],
+        "latency_seconds": 0.00022200000239536166,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.5,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.00022869999884278513,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_008",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "LookupTool",
+            "ok": false,
+            "data": {},
+            "error": "$2.candidates.*.item_id: step 2 has not run yet",
+            "invented_ids": [],
+            "error_kind": "bad_reference",
+            "args": {
+              "item_ids": "$2.candidates.*.item_id"
+            },
+            "latency_seconds": 1.3e-05
+          }
+        ],
+        "latency_seconds": 1.4499997632810846e-05,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 1.880000127130188e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_009",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports"
+                },
+                {
+                  "item_id": "Video_Games::vg_j",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_j",
+                  "title": "Game J",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 140,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_g",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_g",
+                  "title": "Game G",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 110,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_d",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_d",
+                  "title": "Game D",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.5,
+                  "rating_number": 80,
+                  "main_category": "Action"
+                },
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "limit": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_m",
+                  "Video_Games::vg_j",
+                  "Video_Games::vg_g"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "total_matches": 5,
+              "truncated": false,
+              "applied_filters": {
+                "price_max": 50.0
+              }
+            },
+            "latency_seconds": 0.000203
+          },
+          {
+            "tool": "LookupTool",
+            "ok": false,
+            "data": {},
+            "error": "$1.no_such_field: 'no_such_field' not found. Step 1 (FilterTool) returned: candidates: [{item_id, domain, original_item_id, title, store, price, average_rating, rating_number, main_category}, ...], total_matches, truncated, applied_filters: {price_max}",
+            "invented_ids": [],
+            "error_kind": "bad_reference",
+            "args": {
+              "item_ids": "$1.no_such_field"
+            },
+            "latency_seconds": 2.7e-05
+          }
+        ],
+        "latency_seconds": 0.00023330000112764537,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.5,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.0002392999995208811,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_010",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": false,
+            "data": {},
+            "error": "unknown filter(s) ['bogus_filter_key']; allowed: ['categories_all', 'categories_any', 'domain', 'exclude_item_ids', 'include_missing_price', 'min_rating', 'min_rating_number', 'price_max', 'price_min', 'store', 'title_contains']",
+            "invented_ids": [],
+            "error_kind": "tool_error",
+            "args": {
+              "filters": {
+                "bogus_filter_key": 1
+              },
+              "limit": 5
+            },
+            "output_summary": {},
+            "latency_seconds": 7.6e-05
+          },
+          {
+            "tool": "LookupTool",
+            "ok": false,
+            "data": {},
+            "error": "$1.candidates.*.item_id: skipped, step 1 failed",
+            "invented_ids": [],
+            "error_kind": "bad_reference",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            },
+            "latency_seconds": 1.2e-05
+          }
+        ],
+        "latency_seconds": 9.11999995878432e-05,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 9.700000009615906e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_011",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "NoSuchTool",
+            "ok": false,
+            "data": {},
+            "error": "unknown tool",
+            "invented_ids": [],
+            "error_kind": "unknown_tool",
+            "args": {},
+            "latency_seconds": 1e-06
+          }
+        ],
+        "latency_seconds": 2.7000023692380637e-06,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 6.199999916134402e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_012",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": false,
+            "data": {},
+            "error": "unknown arg(s) ['bogus_arg'] for FilterTool; allowed: ['descending', 'filters', 'limit', 'order_by']",
+            "invented_ids": [],
+            "error_kind": "unknown_args",
+            "args": {
+              "filters": {
+                "price_max": 50
+              },
+              "bogus_arg": 1
+            },
+            "latency_seconds": 1.2e-05
+          }
+        ],
+        "latency_seconds": 1.2800002878066152e-05,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 1.680000059423037e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_013",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "ok": false,
+            "data": {},
+            "error": "`filters` must be a dictionary, got str",
+            "invented_ids": [],
+            "error_kind": "tool_error",
+            "args": {
+              "filters": "cheap",
+              "limit": 5
+            },
+            "output_summary": {},
+            "latency_seconds": 7.2e-05
+          }
+        ],
+        "latency_seconds": 7.360000017797574e-05,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 7.91000020399224e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_014",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "LookupTool",
+            "ok": false,
+            "data": {},
+            "error": "id(s) not found in the request or session (invented?): ['Video_Games::vg_zzz_ghost']",
+            "invented_ids": [
+              "Video_Games::vg_zzz_ghost"
+            ],
+            "error_kind": "invented_id",
+            "args": {
+              "item_ids": [
+                "Video_Games::vg_zzz_ghost"
+              ]
+            },
+            "latency_seconds": 8e-06
+          }
+        ],
+        "latency_seconds": 9.60000033956021e-06,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 1.3200002285884693e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_015",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SimilarTool",
+            "ok": true,
+            "data": {
+              "candidates": [],
+              "unknown_items": [
+                "Video_Games::vg_zzz_ghost"
+              ],
+              "note": "no seed item is known to the CF model"
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "items": [
+                "Video_Games::vg_zzz_ghost"
+              ],
+              "top_k": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 0,
+                "first_ids": [],
+                "keys": []
+              },
+              "unknown_items": {
+                "n": 1,
+                "first_ids": [
+                  "Video_Games::vg_zzz_ghost"
+                ],
+                "keys": [
+                  "item_id"
+                ]
+              },
+              "note": "no seed item is known to the CF model"
+            },
+            "note": "no seed item is known to the CF model",
+            "latency_seconds": 8.4e-05
+          }
+        ],
+        "latency_seconds": 8.639999941806309e-05,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 9.109999882639386e-05,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_016",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "LookupTool",
+            "ok": true,
+            "data": {
+              "items": [
+                {
+                  "item_id": "Video_Games::vg_a",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_a",
+                  "title": "Game A",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 50,
+                  "main_category": "Action"
+                }
+              ],
+              "missing_item_ids": [
+                "Video_Games::vg_zzz_ghost"
+              ],
+              "truncated": false
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "item_ids": [
+                "Video_Games::vg_a",
+                "Video_Games::vg_zzz_ghost"
+              ]
+            },
+            "output_summary": {
+              "items": {
+                "n": 1,
+                "first_ids": [
+                  "Video_Games::vg_a"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category"
+                ]
+              },
+              "missing_item_ids": {
+                "n": 1,
+                "first_ids": [
+                  "Video_Games::vg_zzz_ghost"
+                ],
+                "keys": [
+                  "item_id"
+                ]
+              },
+              "truncated": false
+            },
+            "latency_seconds": 0.000186
+          }
+        ],
+        "latency_seconds": 0.00018819999968400225,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.00019380000230739824,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_017",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "ok": true,
+            "data": {
+              "candidates": [
+                {
+                  "item_id": "Video_Games::vg_o",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_o",
+                  "title": "Game O",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.0,
+                  "rating_number": 190,
+                  "main_category": "Adventure",
+                  "score": 1.02200488997555e-06
+                },
+                {
+                  "item_id": "Video_Games::vg_n",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_n",
+                  "title": "Game N",
+                  "store": "StoreA",
+                  "price": 150.0,
+                  "average_rating": 4.5,
+                  "rating_number": 180,
+                  "main_category": "Racing",
+                  "score": 1.02200488997555e-06
+                },
+                {
+                  "item_id": "Video_Games::vg_m",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_m",
+                  "title": "Game M",
+                  "store": "StoreA",
+                  "price": 1.0,
+                  "average_rating": 4.0,
+                  "rating_number": 170,
+                  "main_category": "Sports",
+                  "score": 1.02200488997555e-06
+                },
+                {
+                  "item_id": "Video_Games::vg_l",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_l",
+                  "title": "Game L",
+                  "store": "StoreA",
+                  "price": 300.0,
+                  "average_rating": 4.5,
+                  "rating_number": 160,
+                  "main_category": "Simulation",
+                  "score": 1.02200488997555e-06
+                },
+                {
+                  "item_id": "Video_Games::vg_k",
+                  "domain": "Video_Games",
+                  "original_item_id": "vg_k",
+                  "title": "Game K",
+                  "store": "StoreA",
+                  "price": 150.0,
+                  "average_rating": 4.0,
+                  "rating_number": 150,
+                  "main_category": "Strategy",
+                  "score": 1.02200488997555e-06
+                }
+              ],
+              "total_matches": 18,
+              "query_tokens": [
+                "game"
+              ],
+              "truncated": true,
+              "applied_filters": {}
+            },
+            "error": null,
+            "invented_ids": [],
+            "error_kind": null,
+            "args": {
+              "query": "Game",
+              "limit": 5
+            },
+            "output_summary": {
+              "candidates": {
+                "n": 5,
+                "first_ids": [
+                  "Video_Games::vg_o",
+                  "Video_Games::vg_n",
+                  "Video_Games::vg_m"
+                ],
+                "keys": [
+                  "item_id",
+                  "domain",
+                  "original_item_id",
+                  "title",
+                  "store",
+                  "price",
+                  "average_rating",
+                  "rating_number",
+                  "main_category",
+                  "score"
+                ]
+              },
+              "total_matches": 18,
+              "query_tokens": {
+                "n": 1,
+                "first_ids": [
+                  "game"
+                ],
+                "keys": [
+                  "item_id"
+                ]
+              },
+              "truncated": true,
+              "applied_filters": {}
+            },
+            "latency_seconds": 0.000598
+          }
+        ],
+        "latency_seconds": 0.0006017000014253426,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 0.0006094999989727512,
+      "token_usage": null
+    },
+    {
+      "case_id": "exec_018",
+      "actual_output": {
+        "steps": [],
+        "latency_seconds": 3.9999940781854093e-07,
+        "evidence_kind": "real_execution"
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 1.0,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0
+      },
+      "latency_seconds": 1.2799999240087345e-05,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "all_steps_ok_mean": 1.0,
+    "all_steps_ok_std": 0.0,
+    "all_steps_ok_min": 1.0,
+    "all_steps_ok_max": 1.0,
+    "error_kind_accuracy_mean": 1.0,
+    "error_kind_accuracy_std": 0.0,
+    "error_kind_accuracy_min": 1.0,
+    "error_kind_accuracy_max": 1.0,
+    "reference_resolution_ok_mean": 1.0,
+    "reference_resolution_ok_std": 0.0,
+    "reference_resolution_ok_min": 1.0,
+    "reference_resolution_ok_max": 1.0,
+    "step_success_rate_mean": 0.6111111111111112,
+    "step_success_rate_std": 0.4581228472908512,
+    "step_success_rate_min": 0.0,
+    "step_success_rate_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 0.00022440000025704244,
+    "std": 0.00021037613661081296,
+    "min": 6.199999916134402e-06,
+    "max": 0.0007354000008490402,
+    "p50": 0.00020089999998162966,
+    "p95": 0.0006283849992541944,
+    "p99": 0.0007139970005300708
+  },
+  "token_cost": null,
+  "timestamp": "2026-11-08T18:47:51.623712+00:00",
+  "git_sha": "",
+  "tags_summary": {
+    "executor": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.6111111111111112,
+      "step_success_rate_std": 0.4581228472908512,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00022440000025704244,
+      "std": 0.00021037613661081296,
+      "min": 6.199999916134402e-06,
+      "max": 0.0007354000008490402,
+      "p50": 0.00020089999998162966,
+      "p95": 0.0006283849992541944,
+      "p99": 0.0007139970005300708
+    },
+    "real_execution": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.6111111111111112,
+      "step_success_rate_std": 0.4581228472908512,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00022440000025704244,
+      "std": 0.00021037613661081296,
+      "min": 6.199999916134402e-06,
+      "max": 0.0007354000008490402,
+      "p50": 0.00020089999998162966,
+      "p95": 0.0006283849992541944,
+      "p99": 0.0007139970005300708
+    },
+    "success": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00041980000023613686,
+      "std": 0.0001146310776673908,
+      "min": 0.00027739999859477393,
+      "max": 0.0006094999989727512,
+      "p50": 0.0003910000014002435,
+      "p95": 0.0005826999993587378,
+      "p99": 0.0006041399990499485
+    },
+    "empty_result": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00020799999765586108,
+      "std": 0.0,
+      "min": 0.00020799999765586108,
+      "max": 0.00020799999765586108,
+      "p50": 0.00020799999765586108,
+      "p95": 0.00020799999765586108,
+      "p99": 0.00020799999765586108
+    },
+    "reference": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.0007354000008490402,
+      "std": 0.0,
+      "min": 0.0007354000008490402,
+      "max": 0.0007354000008490402,
+      "p50": 0.0007354000008490402,
+      "p95": 0.0007354000008490402,
+      "p99": 0.0007354000008490402
+    },
+    "multi_step": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.0004755000009026844,
+      "std": 0.0,
+      "min": 0.0004755000009026844,
+      "max": 0.0004755000009026844,
+      "p50": 0.0004755000009026844,
+      "p95": 0.0004755000009026844,
+      "p99": 0.0004755000009026844
+    },
+    "reference_error": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.25,
+      "step_success_rate_std": 0.25,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 0.5,
+      "success_rate": 1.0,
+      "mean": 0.0001459499999327818,
+      "std": 9.236477871234711e-05,
+      "min": 1.880000127130188e-05,
+      "max": 0.0002392999995208811,
+      "p50": 0.0001628499994694721,
+      "p95": 0.0002377099994191667,
+      "p99": 0.00023898199950053822
+    },
+    "tool_error": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 8.805000106804073e-05,
+      "std": 8.949999028118327e-06,
+      "min": 7.91000020399224e-05,
+      "max": 9.700000009615906e-05,
+      "p50": 8.805000106804073e-05,
+      "p95": 9.610500019334723e-05,
+      "p99": 9.682100011559669e-05
+    },
+    "unknown_tool": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 6.199999916134402e-06,
+      "std": 0.0,
+      "min": 6.199999916134402e-06,
+      "max": 6.199999916134402e-06,
+      "p50": 6.199999916134402e-06,
+      "p95": 6.199999916134402e-06,
+      "p99": 6.199999916134402e-06
+    },
+    "unknown_args": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 1.680000059423037e-05,
+      "std": 0.0,
+      "min": 1.680000059423037e-05,
+      "max": 1.680000059423037e-05,
+      "p50": 1.680000059423037e-05,
+      "p95": 1.680000059423037e-05,
+      "p99": 1.680000059423037e-05
+    },
+    "invented_id": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 0.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 0.0,
+      "step_success_rate_max": 0.0,
+      "success_rate": 1.0,
+      "mean": 1.3200002285884693e-05,
+      "std": 0.0,
+      "min": 1.3200002285884693e-05,
+      "max": 1.3200002285884693e-05,
+      "p50": 1.3200002285884693e-05,
+      "p95": 1.3200002285884693e-05,
+      "p99": 1.3200002285884693e-05
+    },
+    "unknown_seed_item": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 9.109999882639386e-05,
+      "std": 0.0,
+      "min": 9.109999882639386e-05,
+      "max": 9.109999882639386e-05,
+      "p50": 9.109999882639386e-05,
+      "p95": 9.109999882639386e-05,
+      "p99": 9.109999882639386e-05
+    },
+    "missing_item_ids": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 0.00019380000230739824,
+      "std": 0.0,
+      "min": 0.00019380000230739824,
+      "max": 0.00019380000230739824,
+      "p50": 0.00019380000230739824,
+      "p95": 0.00019380000230739824,
+      "p99": 0.00019380000230739824
+    },
+    "edge_case": {
+      "all_steps_ok_mean": 1.0,
+      "all_steps_ok_std": 0.0,
+      "all_steps_ok_min": 1.0,
+      "all_steps_ok_max": 1.0,
+      "error_kind_accuracy_mean": 1.0,
+      "error_kind_accuracy_std": 0.0,
+      "error_kind_accuracy_min": 1.0,
+      "error_kind_accuracy_max": 1.0,
+      "reference_resolution_ok_mean": 1.0,
+      "reference_resolution_ok_std": 0.0,
+      "reference_resolution_ok_min": 1.0,
+      "reference_resolution_ok_max": 1.0,
+      "step_success_rate_mean": 1.0,
+      "step_success_rate_std": 0.0,
+      "step_success_rate_min": 1.0,
+      "step_success_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 1.2799999240087345e-05,
+      "std": 0.0,
+      "min": 1.2799999240087345e-05,
+      "max": 1.2799999240087345e-05,
+      "p50": 1.2799999240087345e-05,
+      "p95": 1.2799999240087345e-05,
+      "p99": 1.2799999240087345e-05
+    }
+  },
+  "metadata": {
+    "git_sha": "c6d91cde2accb1cbda790e507c2e7e3f4922ed3b",
+    "config": {},
+    "dataset_path": "package/evaluation/component/benchmarks/executor_dataset.jsonl",
+    "tags_filter": null,
+    "metadata_filter": null,
+    "runs": 1
+  },
+  "thresholds_result": null
+}

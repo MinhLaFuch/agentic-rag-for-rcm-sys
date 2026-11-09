@@ -1,3 +1,4 @@
+"""Test cho LiveBackend với ScriptedLLM (không cần LLM thật)."""
 
 import json
 from pathlib import Path
@@ -6,36 +7,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from package.agents import PlanExecutor
-from package.api.llm_provider import LLMProvider
 from package.api._dataclass import LLMResponse
 from package.config import get_data_paths
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.demo import DemoRequest, LiveBackend, adapt_from_plan_executor, adapt_from_plan_executor_error, format_trace
-from package.tools import QueryTool, SQLTool
+from package.tools import LookupTool, FilterTool
 from tests.tools_helpers import VG_A
-
-
-class ScriptedLLM(LLMProvider):
-    """LLM giả trả kết quả đã định sẵn."""
-    provider_name = "scripted"
-
-    def __init__(self, *replies: str) -> None:
-        self.replies = list(replies)
-        self.calls: list[list] = []
-
-    def complete(self, messages, *, temperature=0.0, max_tokens=512, response_format_json=False):
-        self.calls.append(list(messages))
-        return LLMResponse(
-            text=self.replies.pop(0),
-            prompt_tokens=10,
-            completion_tokens=5,
-            latency_seconds=0.1,
-            provider_name="scripted",
-            model_name="scripted-0",
-        )
-
+from tests.agents.fakes.scripted_llm import ScriptedLLM
 
 def plan(*steps, ask_user=None) -> str:
     """Tạo JSON plan."""
@@ -44,8 +24,8 @@ def plan(*steps, ask_user=None) -> str:
 
 def test_adapt_from_plan_executor_ok_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor thành DemoResult với status='ok'."""
-    steps = [{"tool": "QueryTool", "args": {"item_ids": [VG_A]}}]
-    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [QueryTool(corpus)])
+    steps = [{"tool": "LookupTool", "args": {"item_ids": [VG_A]}}]
+    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [LookupTool(corpus)])
     results = executor.run(f"tell me about {VG_A}")
 
     request = DemoRequest(
@@ -90,7 +70,7 @@ def test_adapt_from_plan_executor_ok_status(corpus):
 
 def test_adapt_from_plan_executor_ask_user_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor với ask_user thành status='ask_user'."""
-    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which category?")), [SQLTool(corpus)])
+    executor = PlanExecutor(ScriptedLLM(plan(ask_user="Which category?")), [FilterTool(corpus)])
     results = executor.run("recommend something")
 
     request = DemoRequest(
@@ -120,9 +100,9 @@ def test_adapt_from_plan_executor_ask_user_status(corpus):
 
 def test_adapt_from_plan_executor_no_result_status(corpus):
     """Adapter phải chuyển kết quả PlanExecutor không có item thành status='no_result'."""
-    steps = [{"tool": "SQLTool", "args": {"limit": 0}}]
+    steps = [{"tool": "FilterTool", "args": {"limit": 0}}]
     # Cung cấp 2 replies để tránh lỗi pop từ empty list (nếu có reflect)
-    executor = PlanExecutor(ScriptedLLM(plan(*steps), plan(*steps)), [SQLTool(corpus)], reflect_rounds=0)
+    executor = PlanExecutor(ScriptedLLM(plan(*steps), plan(*steps)), [FilterTool(corpus)], reflect_rounds=0)
     results = executor.run("list items")
 
     request = DemoRequest(
@@ -186,8 +166,8 @@ def test_adapter_cuts_error_message():
 
 def test_adapter_no_api_key_in_result(corpus):
     """API key không được xuất hiện trong DemoResult/trace."""
-    steps = [{"tool": "QueryTool", "args": {"item_ids": [VG_A]}}]
-    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [QueryTool(corpus)])
+    steps = [{"tool": "LookupTool", "args": {"item_ids": [VG_A]}}]
+    executor = PlanExecutor(ScriptedLLM(plan(*steps)), [LookupTool(corpus)])
     results = executor.run(f"tell me about {VG_A}")
 
     request = DemoRequest(
@@ -351,13 +331,12 @@ def test_live_backend_prebuilt_with_files_uses_load_functions():
 
 
 @pytest.mark.parametrize("reject_cache", [False, True])
-@pytest.mark.parametrize("offline", [False, True])
-def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache, offline):
+def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monkeypatch, corpus, cf_setup, reject_cache):
     from dataclasses import replace
     from package.demo.backend import live_backend as module
-    from package.tools.recommenders import ItemKNNRecommender
-    from package.tools.recommenders.fit_provenance import fit_provenance
-    from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
+    from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+    from package.recommenders.shared.provenance import fit_provenance
+    from package.recommenders.shared._model_metadata import item_knn_data_hash
     interactions, user2id, item2id = cf_setup
     fit = interactions.assign(timestamp=1)
     empty = fit.iloc[:0]
@@ -369,23 +348,69 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     knn._provenance = fit_provenance(fit, **context)
     knn._fit_data_hash = item_knn_data_hash(fit)
     loader = MagicMock(side_effect=ValueError("ItemKNN provenance mismatch")) if reject_cache else MagicMock(return_value=knn)
-    monkeypatch.setattr(module, "get_data_paths", lambda tag: paths)
+    monkeypatch.setattr(module, "get_data_paths", lambda *a, **k: paths)
     monkeypatch.setattr(module, "load_splits", lambda *a: (fit, empty, empty))
     monkeypatch.setattr(module, "load_mappings", lambda *a: (user2id, item2id))
     monkeypatch.setattr(module, "build_meta_files", lambda *a: [])
     monkeypatch.setattr(module, "load_corpus", lambda *a, **k: (corpus, 1.))
     monkeypatch.setattr(module, "load_item_knn", loader)
-    provider_factory = MagicMock(return_value=MagicMock(health_check=lambda: True))
-    monkeypatch.setattr(module, "build_llm_provider", provider_factory)
+    monkeypatch.setattr(module, "build_llm_provider", lambda *a: MagicMock(health_check=lambda: True))
     backend = LiveBackend(tag="synthetic")
-    backend.initialize(initialize_planner=not offline)
+    backend.initialize()
     assert backend._initialized
     assert loader.call_args.kwargs == context
     assert backend._knn_provenance["status"] == ("refit_cache_rejected" if reject_cache else "validated_cache")
     assert backend._knn_provenance["data_hash"] == item_knn_data_hash(fit)
     assert backend._knn_provenance["fit_splits"] == ["train"]
-    if offline:
-        provider_factory.assert_not_called()
-        assert backend._type1_agent is not None
-        backend._ensure_planner()
-    provider_factory.assert_called_once()
+
+
+def test_format_trace_with_inference():
+    """format_trace phải hiển thị thông tin inference khi có."""
+    from package.demo import DemoTrace
+
+    trace = DemoTrace(
+        plan=[{"tool": "LookupTool"}],
+        steps=[{"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        ask_user=None,
+        reflections=0,
+        first_attempt_ok=True,
+        truncated=False,
+        usage={"attempts": 1, "prompt_tokens": 100, "completion_tokens": 50, "latency_seconds": 0.5},
+        inference={
+            "composer": "llm",
+            "grounded": True,
+            "fallback_reason": None,
+            "reason": None,
+            "usage": {"attempts": 1, "prompt_tokens": 200, "completion_tokens": 100, "latency_seconds": 1.0},
+        },
+    )
+
+    formatted = format_trace(trace)
+
+    assert "## Inference (tạo câu trả lời)" in formatted
+    assert "Composer: llm" in formatted
+    assert "Grounded: True" in formatted
+    assert "Lần gọi LLM: 1" in formatted
+    assert "Tokens: 200 + 100" in formatted
+
+
+def test_format_trace_without_inference():
+    """format_trace không lỗi khi trace không có inference."""
+    from package.demo import DemoTrace
+
+    trace = DemoTrace(
+        plan=[{"tool": "LookupTool"}],
+        steps=[{"tool": "LookupTool", "ok": True, "error": None, "latency_seconds": 0.1}],
+        ask_user=None,
+        reflections=0,
+        first_attempt_ok=True,
+        truncated=False,
+        usage={"attempts": 1, "prompt_tokens": 100, "completion_tokens": 50, "latency_seconds": 0.5},
+        inference=None,
+    )
+
+    formatted = format_trace(trace)
+
+    assert "## Inference (tạo câu trả lời)" not in formatted
+    assert "## Plan JSON" in formatted
+    assert "## Thực thi từng step" in formatted

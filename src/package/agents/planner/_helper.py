@@ -6,6 +6,9 @@ from .._limits import get_agent_limits
 from ..results import extract_recommendations
 from ...tools import get_tool_limits
 
+# Session reference pattern: $S.field or $S.field.path
+_SESSION_REF = re.compile(r"^\$S\.(.+)")
+
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:
         return value
@@ -18,12 +21,31 @@ def _resolve_path(value: Any, parts: list[str]) -> Any:
         return _resolve_path(value[head], rest)
     if isinstance(value, list) and head.isdigit() and int(head) < len(value):
         return _resolve_path(value[int(head)], rest)
+    # For session references like "shown_items.1", we allow direct integer indexing
+    if isinstance(value, list) and head.isdigit():
+        idx = int(head)
+        if 0 <= idx < len(value):
+            return value[idx] if not rest else _resolve_path(value[idx], rest)
     raise KeyError(f"'{head}' not found")
 
 
-def _resolve_refs(obj: Any, results: list[dict[str, Any]]) -> Any:
-    """Thay chuỗi '$N.path' bằng output của step N; ném ValueError nếu step N lỗi/chưa chạy/path sai."""
+def _resolve_refs(obj: Any, results: list[dict[str, Any]], session: Any = None) -> Any:
+    """Thay chuỗi '$N.path' bằng output của step N; ném ValueError nếu step N lỗi/chưa chạy/path sai.
+    Thay chuỗi '$S.field' bằng session state field nếu session được cung cấp."""
     if isinstance(obj, str):
+        # Check for session reference first
+        session_m = _SESSION_REF.match(obj)
+        if session_m and session is not None:
+            field_path = session_m.group(1)
+            session_dict = session.to_dict() if hasattr(session, "to_dict") else session
+            parts = [p for p in field_path.split(".") if p]
+            try:
+                return _resolve_path(session_dict, parts)
+            except KeyError as exc:
+                available = ", ".join(session_dict.keys()) if isinstance(session_dict, dict) else str(type(session_dict))
+                raise ValueError(f"{obj}: session field '{field_path}' not found. Available: {available}") from exc
+
+        # Check for step reference
         m = _REF.match(obj)
         if not m:
             return obj
@@ -48,9 +70,30 @@ def _resolve_refs(obj: Any, results: list[dict[str, Any]]) -> Any:
             else:
                 raise ValueError(f"{obj}: {exc.args[0]}") from exc
     if isinstance(obj, dict):
-        return {k: _resolve_refs(v, results) for k, v in obj.items()}
+        return {k: _resolve_refs(v, results, session) for k, v in obj.items()}
     if isinstance(obj, list):
-        return [_resolve_refs(v, results) for v in obj]
+        return [_resolve_refs(v, results, session) for v in obj]
+    return obj
+
+
+def _resolve_session_refs_only(obj: Any, session: Any) -> Any:
+    """Only resolve $S. references, not step references. Used for invented ID checking."""
+    if isinstance(obj, str):
+        session_m = _SESSION_REF.match(obj)
+        if session_m and session is not None:
+            field_path = session_m.group(1)
+            session_dict = session.to_dict() if hasattr(session, "to_dict") else session
+            parts = [p for p in field_path.split(".") if p]
+            try:
+                return _resolve_path(session_dict, parts)
+            except KeyError as exc:
+                available = ", ".join(session_dict.keys()) if isinstance(session_dict, dict) else str(type(session_dict))
+                raise ValueError(f"{obj}: session field '{field_path}' not found. Available: {available}") from exc
+        return obj
+    if isinstance(obj, dict):
+        return {k: _resolve_session_refs_only(v, session) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_resolve_session_refs_only(v, session) for v in obj]
     return obj
 
 
@@ -106,16 +149,18 @@ def _unknown_args(tool: Any, args: Any) -> str | None:
     return f"unknown arg(s) {unknown} for {tool.name}; allowed: {sorted(schema)}" + (f" ({'; '.join(hints)})" if hints else "")
 
 
-def _invented_ids(args: Any, request: str) -> list[str]:
-    """Literal ids in `args` that do not appear in the request text (the prompt forbids inventing ids)."""
+def _invented_ids(args: Any, request: str, session_valid_ids: set[str] | None = None) -> list[str]:
+    """Literal ids in `args` that do not appear in the request text or session (the prompt forbids inventing ids)."""
     if not isinstance(args, dict):
         return []
+    if session_valid_ids is None:
+        session_valid_ids = set()
     invented: list[str] = []
     for key in ID_ARG_KEYS:
         value = args.get(key)
         literals = [value] if isinstance(value, str) else value if isinstance(value, list) else []
         for v in literals:
-            if isinstance(v, str) and not _REF.match(v) and v not in request:
+            if isinstance(v, str) and not _REF.match(v) and v not in request and v not in session_valid_ids:
                 invented.append(v)
     return invented
 
@@ -129,7 +174,7 @@ def _is_bad_reference(error: Any) -> bool:
     """Check if an error indicates a bad reference (step not run/failed/path not found)."""
     if not isinstance(error, str):
         return False
-    return "step" in error and ("has not run yet" in error or "failed" in error or "not found" in error)
+    return "step" in error.lower() and ("has not run yet" in error or "failed" in error or "not found" in error)
 
 
 def check_time_budget_error(error: Any) -> bool:
@@ -141,28 +186,60 @@ def check_time_budget_error(error: Any) -> bool:
 
 
 def _blocks_reflect(results: list[dict[str, Any]]) -> bool:
-    """No reflect after an invented id (it must not be 'fixed' into another id) or a SQL timeout (a new plan does not help)."""
-    return any(r.get("invented_ids") or _is_time_budget(r.get("error")) for r in results)
+    """
+    No reflect after an invented id (it must not be 'fixed' into another id).
+    SQL timeout errors are surfaced to reflection but may still be blocked
+    if they persist across reflection rounds.
+    """
+    return any(r.get("invented_ids") for r in results) or any(_is_time_budget(r.get("error")) for r in results)
 
 
-def _reflect_problem(results: list[dict[str, Any]], question: str | None) -> str | None:
-    """Why this run needs a corrected plan (None = fine): a failed step, or no item at all for a plan that is not ask_user."""
+def _reflect_problem(results: list[dict[str, Any]], question: str | None, quality_threshold: float = 0.0) -> str | None:
+    """
+    Why this run needs a corrected plan (None = fine):
+    - a failed step
+    - no item at all for a plan that is not ask_user
+    - low recommendation quality (suboptimal pipeline usage) - only if threshold > 0
+    
+    Args:
+        results: execution results
+        question: ask_user question if present
+        quality_threshold: minimum quality score to avoid reflection (0.0 = disabled)
+    """
+    # Execution failures
     if any(not r["ok"] for r in results):
         return "at least one step failed."
+    
+    # Empty results
     if not question and not extract_recommendations(results, 1):
         return "no step returned any item (empty results), so there is nothing to recommend."
+    
+    # Low recommendation quality (but only if this is not a clarifying question AND threshold is enabled)
+    if not question and quality_threshold > 0.0:
+        rec_quality = _compute_recommendation_quality(results)
+        # Trigger reflection if quality is strictly below configured threshold
+        if rec_quality < quality_threshold:
+            return f"recommendation pipeline quality is low (score={rec_quality:.1f}): the plan should use retrieval + ranking with collaborative filtering for better results."
+    
     return None
 
 
 def _step_report(results: list[dict[str, Any]]) -> str:
-    """One line per step: errors cut short; for ok steps only the keys of `data` (lists with their length), never the data."""
+    """
+    One line per step: errors cut short; for ok steps only the keys of `data` (lists with their length), never the data.
+    SQL timeout errors are explicitly noted to help planner adapt.
+    """
     lines = []
     for n, r in enumerate(results, 1):
         if r["ok"]:
             keys = ", ".join(f"{k}[{len(v)}]" if isinstance(v, list) else k for k, v in r["data"].items())
             lines.append(f"{n}. {r['tool']}: ok, returned {keys or 'nothing'}")
         else:
-            lines.append(f"{n}. {r['tool']}: FAILED: {str(r['error'])[:get_agent_limits().reflect_error_chars]}")
+            error_msg = str(r["error"])[:get_agent_limits().reflect_error_chars]
+            # Add explicit marker for SQL timeout
+            if _is_time_budget(r.get("error")):
+                error_msg = f"[SQL TIMEOUT] {error_msg}"
+            lines.append(f"{n}. {r['tool']}: FAILED: {error_msg}")
     return "\n".join(lines)
 
 
@@ -221,3 +298,139 @@ def _simplify_args_for_log(args: dict[str, Any]) -> dict[str, Any]:
         else:
             simplified[key] = value
     return simplified
+
+
+def _compute_recommendation_quality(results: list[dict[str, Any]]) -> float:
+    """
+    Compute a deterministic recommendation quality score (0.0 to 1.0).
+    This is separate from execution quality and focuses on result relevance.
+    
+    Quality criteria (deterministic, no LLM):
+    - 0.0 if no items returned
+    - 0.2 if items returned but no retrieval/ranking step used (e.g., only LookupTool)
+    - 0.5 if retrieval only (no ranking step)
+    - 0.7 if ranking used but from semantic search only (no collaborative signal)
+    - 1.0 if ranking used with collaborative signal (ItemCF or MemoryTool in the plan)
+    
+    The score does NOT judge semantic relevance to the user's query - that would
+    require an LLM judge or embedding similarity. Instead, it rewards using
+    the full recommendation pipeline (retrieval + ranking) over partial pipelines.
+    
+    Returns:
+        float: quality score from 0.0 to 1.0
+    """
+    from ..results import extract_recommendations
+    
+    # Check if any items were returned
+    items = extract_recommendations(results, 1)
+    if not items:
+        return 0.0
+    
+    # Identify which tools were used successfully
+    used_tools = {r["tool"] for r in results if r["ok"]}
+
+    # Check for collaborative signal
+    has_collaborative = "SimilarTool" in used_tools or "MemoryTool" in used_tools
+
+    # Check for ranking step
+    has_ranking = "RankTool" in used_tools
+
+    # Check for retrieval
+    has_retrieval = any(t in used_tools for t in ["SearchTool", "FilterTool", "SimilarTool"])
+
+    # Compute quality score
+    if not has_retrieval and not has_ranking:
+        # Only LookupTool or similar - no actual recommendation logic
+        return 0.2
+    elif has_retrieval and not has_ranking:
+        # Retrieval only, no ranking
+        return 0.5
+    elif has_ranking and not has_collaborative:
+        # Ranking from semantic search only (no personalization)
+        return 0.7
+    elif has_ranking and has_collaborative:
+        # Full pipeline with collaborative signal
+        return 1.0
+    
+    # Fallback
+    return 0.5
+
+
+def _compute_execution_quality(results: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    Compute quality metrics for execution results.
+    Used to determine if a reflected plan improves over the previous attempt.
+
+    Returns:
+        dict with keys:
+        - failed_steps: number of failed steps
+        - total_steps: total number of steps
+        - n_items: number of items returned (from extract_recommendations)
+        - has_error: whether any step has an error
+        - error_kinds: set of error kinds present
+        - rec_quality: recommendation quality score (0-1)
+    """
+    from ..results import extract_recommendations
+
+    failed_steps = sum(1 for r in results if not r["ok"])
+    total_steps = len(results)
+    n_items = len(extract_recommendations(results, 1))
+    has_error = any(r.get("error") for r in results)
+    error_kinds = set(r.get("error_kind") for r in results if r.get("error_kind"))
+    rec_quality = _compute_recommendation_quality(results)
+
+    return {
+        "failed_steps": failed_steps,
+        "total_steps": total_steps,
+        "n_items": n_items,
+        "has_error": has_error,
+        "error_kinds": error_kinds,
+        "rec_quality": rec_quality,
+    }
+
+
+def _is_quality_improvement(old_quality: dict[str, Any], new_quality: dict[str, Any]) -> bool:
+    """
+    Determine if new execution quality is better than or equal to old quality.
+
+    Improvement criteria (in order of priority):
+    1. Fewer failed steps
+    2. Higher recommendation quality score
+    3. More items returned
+    4. Fewer error kinds (different types of errors)
+    5. If all equal, accept if not worse (more steps = more thorough)
+
+    Returns:
+        True if new_quality is not worse than old_quality
+    """
+    # Priority 1: Fewer failed steps is always better
+    if new_quality["failed_steps"] < old_quality["failed_steps"]:
+        return True
+    if new_quality["failed_steps"] > old_quality["failed_steps"]:
+        return False
+
+    # Priority 2: Higher recommendation quality is better
+    if new_quality["rec_quality"] > old_quality["rec_quality"]:
+        return True
+    if new_quality["rec_quality"] < old_quality["rec_quality"]:
+        return False
+
+    # Priority 3: More items is better (if same failed steps and rec_quality)
+    if new_quality["n_items"] > old_quality["n_items"]:
+        return True
+    if new_quality["n_items"] < old_quality["n_items"]:
+        return False
+
+    # Priority 4: Fewer error kinds is better
+    if len(new_quality["error_kinds"]) < len(old_quality["error_kinds"]):
+        return True
+    if len(new_quality["error_kinds"]) > len(old_quality["error_kinds"]):
+        return False
+
+    # Priority 5: If all metrics equal, accept if new has more total steps (more thorough)
+    # or if they're completely equal (accept the new attempt)
+    if new_quality["total_steps"] >= old_quality["total_steps"]:
+        return True
+
+    return False
+

@@ -40,3 +40,4 @@ def build_llm_provider(config: dict[str, Any]) -> LLMProvider:
         f"Unknown LLM provider: {provider!r}. Supported providers: openai_compatible"
     )
 
+

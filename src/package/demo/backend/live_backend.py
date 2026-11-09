@@ -19,17 +19,23 @@ from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.inference import compose_answer, get_inference_limits, MODES, outcome_from_plan_results, outcome_from_type1
-from package.tools import BaselineScorer, ItemCorpus, ToolCallLogger
-from package.tools.corpus import build_corpus
-from package.tools.corpus.load_corpus import load_corpus
-from package.tools.evaluation import select_fit_target
-from package.tools.recommenders import ItemKNNRecommender
-from package.tools.recommenders.load_item_knn import load_item_knn
-from package.tools.recommenders.fit_provenance import fit_provenance
-from package.tools.recommenders.item_knn_data_hash import item_knn_data_hash
-from ..adapter import adapt_from_plan_executor
-from ..adapter import adapt_from_plan_executor_error
-from ..view import DemoItem, DemoRequest, DemoResult, DemoTrace
+from package.corpus import ItemCorpus
+from package.tools.base import ToolCallLogger
+from package.tools.scoring import BaselineScorer
+from package.corpus import build_corpus
+from package.corpus.load_corpus import load_corpus
+from package.data._shared.select_fit_target import select_fit_target
+from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
+from package.recommenders.shared.load_item_knn import load_item_knn
+from package.recommenders.shared.provenance import fit_provenance
+from package.recommenders.shared import item_knn_data_hash
+from .._profile_builder import build_profiles
+from ..adapter import adapt_from_inference, adapt_from_plan_executor, adapt_from_plan_executor_error
+from ..samples import IDENTITY_INJECTION_EN, IDENTITY_INJECTION_VI
+from ..view import DemoItem, DemoProfile, MemoryView, DemoRequest, DemoResult, DemoTrace
+from .._limits import get_demo_limits
+from .._consumed_by import detect_consumed_by
+from .._memory_snapshot import take_memory_snapshot
 
 
 class LiveBackend:
@@ -60,9 +66,9 @@ class LiveBackend:
         self._internal_id_to_item_id: dict[int, str] = {}
         self._fit_df: pd.DataFrame | None = None
         self._initialized = False
-        self._planner_tools = None
-        self._intent_search = None
-        self._intent_query = None
+        self._planner_tools: Any = None
+        self._intent_search: Any = None
+        self._intent_query: Any = None
         self._knn_provenance = {"status": "not_initialized"}
         self._memory_tool: Any = None  # Store MemoryTool for snapshots
 
@@ -82,7 +88,7 @@ class LiveBackend:
         k = int(agent_eval_cfg["k"])
 
         # Load paths
-        data_paths = get_data_paths(self._tag)
+        data_paths = get_data_paths(tag=self._tag, domains=self._domain)
         meta_files = build_meta_files(data_paths, self._domain)
 
         # Load splits
@@ -105,8 +111,9 @@ class LiveBackend:
             if not corpus_path.exists():
                 raise RuntimeError(
                     f"Corpus file not found: {corpus_path}\n"
-                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag}\n"
-                    f"Or use --no-prebuilt to build in RAM (slower, for debug or small tags)"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 "
+                    f"(tag {data_paths.tag!r} derives from --domain)\n"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
                 )
             print(f"Load corpus from {corpus_path}")
             corpus, coverage = load_corpus(
@@ -116,7 +123,7 @@ class LiveBackend:
             file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
             print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
         else:
-            print("Build corpus in RAM (--no-prebuilt)")
+            print("Build corpus in RAM (use_prebuilt_corpus=false)")
             corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(agent_eval_cfg["min_metadata_coverage"]), timing=True)
             print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
@@ -142,8 +149,8 @@ class LiveBackend:
             if not item_knn_path.exists():
                 raise RuntimeError(
                     f"ItemKNN file not found: {item_knn_path}\n"
-                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4 --tag {data_paths.tag} --eval-on {self._eval_on}\n"
-                    f"Or use --no-prebuilt to fit in RAM (slower, for debug or small tags)"
+                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4\n"
+                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
                 )
             print(f"Load ItemKNN from {item_knn_path}")
             try:
@@ -161,7 +168,7 @@ class LiveBackend:
                 print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
         else:
             self._knn_provenance = {"status": "refit_requested"}
-            print("Fit ItemKNN on fit data (--no-prebuilt)")
+            print("Fit ItemKNN on fit data (use_prebuilt_corpus=false)")
             t0 = time.perf_counter()
             knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
             knn._fit_time = time.perf_counter() - t0
@@ -179,6 +186,12 @@ class LiveBackend:
         tools = build_tools(
             knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
         )
+
+        # Store MemoryTool for snapshots
+        tools_memory = build_tools(
+            knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
+        )
+        self._memory_tool = tools_memory.memory if hasattr(tools_memory, "memory") else None
 
         self._planner_tools = tools
         self._intent_search = tools.search
@@ -199,13 +212,16 @@ class LiveBackend:
         print(f"Khởi động hoàn tất ({elapsed:.1f}s)")
 
     def _ensure_planner(self) -> None:
+        """Dựng LLM provider + planner executors lười (chỉ khi cần planner hoặc type1+llm)."""
         if self._executor_planner is not None and self._executor_planner_memory is not None:
             return
         if self._planner_tools is None:
             raise RuntimeError("Planner tools not initialized")
+        print("Đang kiểm tra LLM...")
         llm = build_llm_provider(load_config("agent/llm"))
         if not llm.health_check():
             raise RuntimeError("LLM health check failed: check configs/agent/llm.yaml và LLM_API_KEY")
+        self._llm = llm
         self._executor_planner = PlanExecutor(llm, self._planner_tools.for_planner())
         self._executor_planner_memory = PlanExecutor(llm, self._planner_tools.for_planner_memory())
 
@@ -220,17 +236,32 @@ class LiveBackend:
             raise RuntimeError("Backend not initialized. Call initialize() first.")
         return build_profiles(self._fit_df, self._user_id_to_internal_id)
 
+    @staticmethod
+    def _intent_path_enabled() -> bool:
+        """Cổng tính năng intent search (mặc định TẮT, bật qua demo.intent_path_enabled trong demo.yaml)."""
+        return bool(load_config("agent/demo")["demo"].get("intent_path_enabled", False))
+
     def respond(self, request: DemoRequest) -> DemoResult:
         """Xử lý request với locking (chạy tuần tự)."""
         with self._lock:
-            if request.mode not in ("type1","planner"):
-                return DemoResult("tool_error","Chế độ xử lý không hợp lệ.",[],None,{},"Unknown agent mode")
-            if request.mode=="planner" and (request.intent_query is not None or request.intent_filters is not None):
-                question="Chọn Type1 để dùng từ khóa và bộ lọc riêng, hoặc chuyển các điều kiện vào mô tả tự do của Planner."
-                return DemoResult("ask_user",question,[],DemoTrace([],[],question,0,False,False,{}),{},None)
+            has_intent = request.intent_query is not None or request.intent_filters is not None
+            if request.mode not in ("type1", "planner"):
+                return DemoResult(
+                    status="tool_error",
+                    text="Chế độ xử lý không hợp lệ.",
+                    items=[], trace=None, usage={},
+                    error="Unknown agent mode",
+                )
+            if request.mode == "planner" and has_intent:
+                question = "Chọn Type1 để dùng từ khóa và bộ lọc riêng, hoặc chuyển các điều kiện vào mô tả tự do của Planner."
+                return DemoResult(
+                    status="ask_user", text=question, items=[],
+                    trace=DemoTrace([], [], question, 0, False, False, {}), usage={}, error=None,
+                )
             if not self._initialized:
+                inference_mode = getattr(request, "inference_mode", get_inference_limits().mode)
                 try:
-                    self.initialize(initialize_planner=request.mode != "type1")
+                    self.initialize(initialize_planner=request.mode != "type1" or inference_mode == "llm")
                 except Exception as exc:
                     return DemoResult(
                         status="tool_error",
@@ -259,7 +290,7 @@ class LiveBackend:
                 )
 
     def _respond_planner(self, request: DemoRequest) -> DemoResult:
-        """Xử lý request với PlanExecutor."""
+        """Xử lý request với PlanExecutor và Inference."""
         self._ensure_planner()
         executor = (
             self._executor_planner_memory if request.use_memory else self._executor_planner
@@ -399,14 +430,66 @@ class LiveBackend:
         if agent is None:
             raise RuntimeError("Type1Agent not initialized")
 
+        intent_enabled = self._intent_path_enabled()
+        has_intent = request.intent_query is not None or request.intent_filters is not None
+        if has_intent and not intent_enabled:
+            return DemoResult(
+                status="ask_user",
+                text="Tìm kiếm theo từ khóa/bộ lọc chưa được bật (demo.intent_path_enabled=false).",
+                items=[], trace=None, usage={}, error=None,
+            )
+
+        # Validate inference_mode
+        inference_mode = getattr(request, "inference_mode", get_inference_limits().mode)
+        if inference_mode not in MODES:
+            raise ValueError(f"inference_mode must be one of {list(MODES)}, got {inference_mode!r}")
+
         # Lấy seed item từ lịch sử user (đơn giản hóa: lấy item cuối cùng)
         user_internal_id = self._user_id_to_internal_id.get(request.user_id)
-        user_history = self._fit_df[self._fit_df["user_idx"] == user_internal_id]
-        if request.intent_query is not None or request.intent_filters is not None or user_history.empty:
-            return self._respond_intent(request, user_history)
 
-        seeds = recent_seed_items(user_history,self._internal_id_to_item_id,count=1)
-        if not seeds:
+        if intent_enabled:
+            # Intent path (opt-in): user thiếu/lạ hoặc không có lịch sử đều có thể
+            # tìm theo từ khóa; không có từ khóa thì hỏi lại thay vì báo lỗi.
+            user_history = (
+                self._fit_df[self._fit_df["user_idx"] == user_internal_id]
+                if user_internal_id is not None else self._fit_df.iloc[0:0]
+            )
+            if has_intent or user_history.empty:
+                return self._respond_intent(request, user_history)
+        else:
+            if request.user_id is None:
+                return DemoResult(
+                    status="tool_error",
+                    text="Type1Agent cần user_id.",
+                    items=[],
+                    trace=None,
+                    usage={},
+                    error="Type1Agent requires user_id",
+                )
+            if user_internal_id is None:
+                return DemoResult(
+                    status="tool_error",
+                    text=f"Không tìm thấy user {request.user_id}.",
+                    items=[],
+                    trace=None,
+                    usage={},
+                    error=f"User not found: {request.user_id}",
+                )
+
+        user_history = self._fit_df[self._fit_df["user_idx"] == user_internal_id]
+        if user_history.empty:
+            return DemoResult(
+                status="no_result",
+                text="User này chưa có lịch sử mua hàng.",
+                items=[],
+                trace=None,
+                usage={},
+                error=None,
+            )
+
+        last_item_internal_id = user_history.iloc[-1]["item_idx"]
+        seed_item_id = self._internal_id_to_item_id.get(last_item_internal_id)
+        if seed_item_id is None:
             return DemoResult(
                 status="tool_error",
                 text="Không tìm thấy item seed.",
@@ -416,10 +499,10 @@ class LiveBackend:
                 error="Seed item not found",
             )
 
-        out = agent.recommend(request.user_id, seeds, top_k=10)
+        out = agent.recommend(request.user_id, [seed_item_id], top_k=10)
         if not out["ok"]:
-            if out.get("stage")=="retrieve" and out.get("error")=="no candidates returned":
-                return self._respond_intent(request,user_history)
+            if intent_enabled and out.get("stage") == "retrieve" and out.get("error") == "no candidates returned":
+                return self._respond_intent(request, user_history)
             return DemoResult(
                 status="tool_error",
                 text=f"Lỗi Type1Agent: {out.get('stage')}",
@@ -429,50 +512,56 @@ class LiveBackend:
                 error=f"{out.get('stage')}: {out.get('error')}",
             )
 
-        # Convert sang DemoItem
-        items = []
-        for item in out["items"]:
-            item_id = item.get("item_id", "")
-            meta = {**self._item_id_to_metadata.get(item_id, {}), **item}
-            items.append(
-                DemoItem(
-                    item_id=item_id,
-                    domain=meta.get("domain", ""),
-                    title=meta.get("title", ""),
-                    store=meta.get("store"),
-                    price=meta.get("price"),
-                    average_rating=meta.get("average_rating"),
-                    rating_number=meta.get("rating_number"),
-                    main_category=meta.get("main_category"),
-                )
+        # Dựng AgentOutcome và gọi Inference
+        outcome = outcome_from_type1(request.text, out)
+
+        try:
+            answer = compose_answer(outcome, self._llm, mode=inference_mode)
+        except Exception as exc:
+            # Lỗi bất ngờ từ compose_answer (không nên xảy ra vì đã có fallback)
+            return DemoResult(
+                status="tool_error",
+                text="Có lỗi không mong muốn xảy ra khi tạo câu trả lời.",
+                items=[],
+                trace=None,
+                usage={},
+                error=f"{type(exc).__name__}: {str(exc)[:200]}",
             )
 
-        return DemoResult(
-            status="ok" if items else "no_result",
-            text=f"Dựa trên lịch sử mua hàng của bạn, đây là {len(items)} sản phẩm tương tự.",
-            items=items,
-            trace=None,  # Type1Agent không có trace chi tiết
-            usage={},
-            error=None,
-            recommendation_source="history_itemcf",
-        )
+        return adapt_from_inference(answer, request=request, item_id_to_metadata=self._item_id_to_metadata, trace=None)
 
     def _respond_intent(self, request: DemoRequest, history: pd.DataFrame) -> DemoResult:
+        """Intent search tường minh (keyword + filters), không LLM, không CF rerank."""
         if not request.intent_query or not request.intent_query.strip():
-            question="Bạn muốn tìm sản phẩm gì? Hãy điền từ khóa sản phẩm và bộ lọc giá; nếu muốn mô tả tự do, chọn Planner."
-            return DemoResult("ask_user",question,[],DemoTrace([],[],question,0,False,False,{}),{},None)
+            question = "Bạn muốn tìm sản phẩm gì? Hãy điền từ khóa sản phẩm và bộ lọc giá; nếu muốn mô tả tự do, chọn Planner."
+            return DemoResult(
+                "ask_user", question, [],
+                DemoTrace([], [], question, 0, False, False, {}), {}, None,
+            )
         if self._intent_search is None or self._intent_query is None:
             raise RuntimeError("Intent tools not initialized")
-        seen=[self._internal_id_to_item_id[int(i)] for i in history.item_idx.unique()
-              if int(i) in self._internal_id_to_item_id]
-        out=recommend_from_intent(self._intent_search,self._intent_query,request.intent_query,
-                                  filters=request.intent_filters,seen_items=seen,top_k=10)
-        items=[DemoItem(item_id=r["item_id"],domain=r.get("domain", ""),title=r.get("title") or "",
-                        store=r.get("store"),price=r.get("price"),average_rating=r.get("average_rating"),
-                        rating_number=r.get("rating_number"),main_category=r.get("main_category")) for r in out["items"]]
-        text={"ok":f"Tìm thấy {len(items)} sản phẩm theo từ khóa và bộ lọc bạn cung cấp.",
-              "no_result":"Không tìm thấy sản phẩm phù hợp; bạn có thể đổi từ khóa hoặc bộ lọc.",
-              "tool_error":"Không thể hoàn tất tìm kiếm. Hãy kiểm tra từ khóa tiếng Anh và bộ lọc hoặc thử lại.",
-              "ask_user":out["question"]}[out["status"]]
-        trace=DemoTrace(out["plan"],out["steps"],out["question"],0,out["status"]=="ok",False,{})
-        return DemoResult(out["status"],text,items,trace,{},out["error"],recommendation_source=out["source"])
+        seen = [
+            self._internal_id_to_item_id[int(i)]
+            for i in history.item_idx.unique()
+            if int(i) in self._internal_id_to_item_id
+        ]
+        out = recommend_from_intent(
+            self._intent_search, self._intent_query, request.intent_query,
+            filters=request.intent_filters, seen_items=seen, top_k=10,
+        )
+        items = [
+            DemoItem(
+                item_id=r["item_id"], domain=r.get("domain", ""), title=r.get("title") or "",
+                store=r.get("store"), price=r.get("price"), average_rating=r.get("average_rating"),
+                rating_number=r.get("rating_number"), main_category=r.get("main_category"),
+            )
+            for r in out["items"]
+        ]
+        text = {
+            "ok": f"Tìm thấy {len(items)} sản phẩm theo từ khóa và bộ lọc bạn cung cấp.",
+            "no_result": "Không tìm thấy sản phẩm phù hợp; bạn có thể đổi từ khóa hoặc bộ lọc.",
+            "tool_error": "Không thể hoàn tất tìm kiếm. Hãy kiểm tra từ khóa tiếng Anh và bộ lọc hoặc thử lại.",
+            "ask_user": out["question"],
+        }[out["status"]]
+        trace = DemoTrace(out["plan"], out["steps"], out["question"], 0, out["status"] == "ok", False, {})
+        return DemoResult(out["status"], text, items, trace, {}, out["error"], recommendation_source=out["source"])

@@ -23,12 +23,12 @@ def outcome_from_plan_results(
       question    executor.last_question
       plan_error  text of the ValueError / LLMProviderError when run() raised (results is then [])
     Items = extract_recommendations(...) (so the same ids, same order as trajectory["recommended"]), de-duplicated and cut to
-    max_items. Metadata comes from what the tools returned (QueryTool first, then search/ranker rows); nothing is invented.
+    max_items. Metadata comes from what the tools returned (LookupTool first, then search/ranker rows); nothing is invented.
     """
     max_items = get_inference_limits().max_items if max_items is None else max_items
     ids = list(dict.fromkeys(extract_recommendations(results, sys.maxsize)))[:max_items]
     meta: dict[str, dict[str, Any]] = {i: {f: None for f in ITEM_FIELDS} | {"item_id": i} for i in ids}
-    for result in sorted((r for r in results if r.get("ok")), key=lambda r: r.get("tool") != "QueryTool"):
+    for result in sorted((r for r in results if r.get("ok")), key=lambda r: r.get("tool") != "LookupTool"):
         for key in METADATA_ROW_KEYS:
             rows = (result.get("data") or {}).get(key)
             for row in rows if isinstance(rows, list) else []:
