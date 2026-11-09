@@ -7,8 +7,8 @@ automatically comparing results between experiments.
 Usage:
     PYTHONPATH=. python scripts/evaluation/run_campaign.py
 
-The campaign config path is hardcoded to package/evaluation/campaign/example_campaign.yaml.
-Use --campaign-config to override if needed.
+The campaign config defaults to configs/evaluation/campaign.yaml.
+Use --campaign-config to point at a different campaign YAML.
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ sys.path.insert(0, str(ROOT))
 
 from package.evaluation.campaign import CampaignConfig, CampaignRunner
 
-# Default campaign config path
-DEFAULT_CAMPAIGN_CONFIG = "configs/evaluation/campaign.yaml"
+# Default campaign config path (anchored to repo root, not CWD)
+DEFAULT_CAMPAIGN_CONFIG = str(ROOT / "configs" / "evaluation" / "campaign.yaml")
 
 
 def get_git_sha() -> str:

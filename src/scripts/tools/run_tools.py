@@ -1,7 +1,7 @@
 """
 Run the package/tools on your REAL data (stage 3 outputs + raw item metadata).
 
-Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.yaml):
+Needs (paths come from configs/path/data_paths.yaml; dataset tag derives from --domain):
   - resource/splits/<tag>/{train,validation}.parquet   (stage 3)
   - resource/mapped/<tag>/{user2id,item2id}.json       (stage 3)
   - resource/raw/meta_<Domain>.jsonl.gz per domain     (raw metadata; domains whose
@@ -10,7 +10,7 @@ Needs (paths come from configs/path/data_paths.yaml, default tag = path/run_tag.
 Run from the project root:
 
     PYTHONPATH=. python scripts/tools/run_tools.py
-    PYTHONPATH=. python scripts/tools/run_tools.py --tag vg_toys --domain Video_Games
+    PYTHONPATH=. python scripts/tools/run_tools.py --domain Video_Games
 
 Only train is used to fit the model and validation is used to check it, so
 nothing here touches the test split.
@@ -90,9 +90,10 @@ def load_meta(meta_args: list[tuple[str, str]], wanted: dict[str, set[str]]) -> 
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
     ap.add_argument("--domain", action="append",
-                    help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml).")
+                    help="Domain của bundle dữ liệu + meta để nạp (lặp lại). "
+                         "Mặc định: tất cả -> 'multi_domain'; 1 domain -> bundle tên domain; "
+                         "tập con khác bị từ chối.")
     args = ap.parse_args()
     # Tham số kiểm chứng đọc từ configs/eval/tool_validation.yaml + baselines.item_knn.k
     cfg = load_config("eval/tool_validation")["tool_validation"]
@@ -251,7 +252,7 @@ def run(args: argparse.Namespace, data_paths: DataPaths) -> None:
 
 def main() -> None:
     args = parse_args()
-    data_paths = get_data_paths(args.tag)
+    data_paths = get_data_paths(domains=args.domain)
     log_path = data_paths.log_dir / "run_tools.log"  # overwritten each run
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with open(log_path, "w", encoding="utf-8") as log_file:

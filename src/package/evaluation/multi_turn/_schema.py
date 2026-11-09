@@ -36,6 +36,14 @@ class TurnInput:
     expected_behavior: str = ""
     expected_items: list[str] = field(default_factory=list)
     expected_exclusions: dict[str, list[str]] = field(default_factory=dict)
+    # Filter/constraint keys that must NOT appear in the turn's actual
+    # exclusions — used to detect session leakage across conversations.
+    absent_exclusions: list[str] = field(default_factory=list)
+    # Expected tool calls, e.g. [{"tool": "SimilarTool",
+    # "args_contain": {"items": "$S.shown_items.1"}}]. "$S.<path>" values are
+    # resolved against the turn's post-turn session_state; a list arg matches
+    # when it CONTAINS the resolved value, scalars must be equal.
+    expected_tool_calls: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -48,6 +56,8 @@ class TurnInput:
             "expected_behavior": self.expected_behavior,
             "expected_items": self.expected_items,
             "expected_exclusions": self.expected_exclusions,
+            "absent_exclusions": self.absent_exclusions,
+            "expected_tool_calls": self.expected_tool_calls,
             "metadata": self.metadata,
         }
 
@@ -62,6 +72,8 @@ class TurnInput:
             expected_behavior=data.get("expected_behavior", ""),
             expected_items=data.get("expected_items", []),
             expected_exclusions=data.get("expected_exclusions", {}),
+            absent_exclusions=data.get("absent_exclusions", []),
+            expected_tool_calls=data.get("expected_tool_calls", []),
             metadata=data.get("metadata", {}),
         )
 

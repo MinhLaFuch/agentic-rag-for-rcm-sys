@@ -20,13 +20,13 @@ def run_all_benchmarks(
         output_dir = get_data_paths().output_dir("component_benchmarks")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    components = [
-        ("memory", "package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl"),
-        ("planner", "package/evaluation/component/benchmarks/planner_dataset.jsonl"),
-        ("executor", "package/evaluation/component/benchmarks/executor_dataset.jsonl"),
-        ("grounding", "package/evaluation/component/benchmarks/grounding_dataset.jsonl"),
-        ("integration", "package/evaluation/component/benchmarks/integration_dataset.jsonl"),
-    ]
+    # Component -> dataset map lives in configs/eval/component_benchmarks.yaml
+    from package.config import load_config
+    bench_cfg = load_config("eval/component_benchmarks")["component_benchmarks"]
+    datasets = bench_cfg.get("datasets") or {}
+    if not datasets:
+        raise RuntimeError("component_benchmarks.yaml has no datasets map")
+    components = list(datasets.items())
 
     results = {}
 
@@ -35,6 +35,7 @@ def run_all_benchmarks(
         print(f"Running {component} benchmark...")
         print(f"{'='*60}")
 
+        info: dict[str, Any] = {"result_file": None, "error": None, "not_implemented": False}
         try:
             # Run benchmark from src directory
             cmd = [
@@ -53,30 +54,46 @@ def run_all_benchmarks(
             if result.returncode != 0:
                 print(f"Error running {component}: exit code {result.returncode}")
                 print(f"stderr: {result.stderr}")
-                results[component] = None
+                info["error"] = (result.stderr or "").strip()[-500:] or f"exit code {result.returncode}"
+                info["not_implemented"] = "not yet implemented" in (result.stderr or "").lower()
+                results[component] = info
                 continue
 
             # Extract result file path from output
             for line in result.stdout.split('\n'):
                 if "Results saved to:" in line:
                     result_file = line.split("Results saved to:")[-1].strip()
-                    results[component] = str(get_data_paths().src_root / result_file)
+                    info["result_file"] = str(get_data_paths().src_root / result_file)
                     break
 
-            if component not in results:
+            if info["result_file"] is None:
                 print(f"Warning: {component} completed but no 'Results saved to:' line found in stdout")
-                results[component] = None
+                info["error"] = "completed but no 'Results saved to:' line in stdout"
 
         except Exception as e:
             print(f"Unexpected error running {component}: {e}")
             import traceback
             traceback.print_exc()
-            results[component] = None
+            info["error"] = str(e)
+
+        results[component] = info
 
     return results
 
 
-def aggregate_results(result_files: dict[str, str | None]) -> dict[str, Any]:
+def _as_info(value: Any) -> dict[str, Any]:
+    """Normalize a run_all_benchmarks entry to {result_file, error, not_implemented}."""
+    if isinstance(value, dict):
+        return {
+            "result_file": value.get("result_file"),
+            "error": value.get("error"),
+            "not_implemented": bool(value.get("not_implemented")),
+        }
+    # Legacy shape: plain path string or None
+    return {"result_file": value, "error": None, "not_implemented": False}
+
+
+def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
     """Aggregate all benchmark results into unified report."""
     aggregated = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -88,35 +105,55 @@ def aggregate_results(result_files: dict[str, str | None]) -> dict[str, Any]:
         },
     }
 
-    for component, result_file in result_files.items():
+    for component, raw_info in result_files.items():
+        info = _as_info(raw_info)
+        result_file = info.get("result_file")
+
+        if info.get("not_implemented"):
+            aggregated["components"][component] = {
+                "status": "not_implemented",
+                "quality_gate": "not_evaluated",
+                "error": info.get("error") or "Evaluator not implemented",
+            }
+            aggregated["summary"]["failed_components"] += 1
+            continue
+
         if result_file is None:
-            aggregated["components"][component] = {"status": "failed", "error": "Benchmark did not run"}
+            aggregated["components"][component] = {
+                "status": "failed",
+                "quality_gate": "not_evaluated",
+                "error": info.get("error") or "Benchmark did not run",
+            }
             aggregated["summary"]["failed_components"] += 1
             continue
 
         try:
             with open(result_file, "r", encoding="utf-8") as f:
                 result = json.load(f)
-            
-            # Extract metrics from per_case_results
+
+            # Extract metrics from per_case_results.
+            # NOTE: means are computed over cases that produced metrics (successful
+            # runs only); failed_cases is reported separately so means are not misread.
             metrics_summary = {}
             latencies = []
-            if "per_case_results" in result and result["per_case_results"]:
+            per_case = result.get("per_case_results", []) or []
+            failed_cases = sum(1 for c in per_case if not c.get("success", True))
+            if per_case:
                 # Calculate mean metrics across all cases
                 all_metrics = {}
-                for case in result["per_case_results"]:
+                for case in per_case:
                     for metric, value in case.get("metrics", {}).items():
                         if metric not in all_metrics:
                             all_metrics[metric] = []
                         all_metrics[metric].append(value)
-                    
+
                     # Collect latencies
                     if "latency_seconds" in case:
                         latencies.append(case["latency_seconds"])
-                
+
                 for metric, values in all_metrics.items():
                     metrics_summary[metric] = sum(values) / len(values) if values else 0.0
-            
+
             # Calculate P95 latency
             if latencies:
                 latencies_sorted = sorted(latencies)
@@ -126,21 +163,43 @@ def aggregate_results(result_files: dict[str, str | None]) -> dict[str, Any]:
             else:
                 p95_latency = result.get("p95_latency_seconds", 0)
                 mean_latency = result.get("mean_latency_seconds", 0)
-            
+
+            # success_rate lives in result["metrics"] (written by ComponentEvaluator);
+            # a missing key means unknown — report None, never default to a PASS.
+            success_rate = result.get("metrics", {}).get("success_rate", result.get("success_rate"))
+
+            # Quality gate: thresholds_result comes from the evaluator config
+            # (configs/eval/component_benchmarks.yaml). None → not_evaluated.
+            thresholds_result = result.get("thresholds_result")
+            passed = thresholds_result.get("passed") if isinstance(thresholds_result, dict) else None
+            if passed is True:
+                quality_gate = "pass"
+            elif passed is False:
+                quality_gate = "fail"
+            else:
+                quality_gate = "not_evaluated"
+
             aggregated["components"][component] = {
                 "status": "success",
+                "quality_gate": quality_gate,
+                "thresholds_result": thresholds_result,
                 "metrics": metrics_summary,
                 "latency": {
                     "mean": mean_latency,
                     "p95": p95_latency,
                 },
-                "cases_run": result.get("cases_run", len(result.get("per_case_results", []))),
-                "success_rate": result.get("success_rate", 1.0),
+                "cases_run": result.get("cases_run", len(per_case)),
+                "failed_cases": failed_cases,
+                "success_rate": success_rate,
                 "git_sha": result.get("git_sha"),
             }
             aggregated["summary"]["successful_components"] += 1
         except Exception as e:
-            aggregated["components"][component] = {"status": "error", "error": str(e)}
+            aggregated["components"][component] = {
+                "status": "error",
+                "quality_gate": "not_evaluated",
+                "error": str(e),
+            }
             aggregated["summary"]["failed_components"] += 1
 
     return aggregated
@@ -169,10 +228,19 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
         
         if data["status"] == "success":
             lines.append(f"- Status: ✅ Success")
-            lines.append(f"- Cases run: {data['cases_run']}")
+            failed = data.get("failed_cases", 0)
+            cases_note = f" ({failed} failed)" if failed else ""
+            lines.append(f"- Cases run: {data['cases_run']}{cases_note}")
+            gate = data.get("quality_gate", "not_evaluated")
+            gate_icon = {"pass": "✅ PASS", "fail": "❌ FAIL", "not_evaluated": "⚪ NOT_EVALUATED"}[gate]
+            lines.append(f"- Quality gate (thresholds): {gate_icon}")
+            checks = (data.get("thresholds_result") or {}).get("checks") or {}
+            for check, verdict in checks.items():
+                lines.append(f"  - {check}: {verdict}")
             lines.append("")
             lines.append("**Execution Reliability**:")
-            lines.append(f"- Success rate (ran without exception): {data['success_rate']:.2%}")
+            sr = data.get("success_rate")
+            lines.append(f"- Success rate (ran without exception): {sr:.2%}" if sr is not None else "- Success rate (ran without exception): N/A")
             lines.append("")
             lines.append("**Performance**:")
             lines.append(f"- Mean latency: {data['latency']['mean']:.4f}s")
@@ -186,7 +254,7 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
         else:
             lines.append(f"- Status: ❌ {data['status']}")
             lines.append(f"- Error: {data.get('error', 'Unknown')}")
-        
+
         lines.append("")
 
     # Add execution reliability analysis
@@ -203,7 +271,10 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
     if successful:
         lines.append("**Execution Success Rates**:")
         for comp, data in successful.items():
-            success_rate = data.get('success_rate', 0)
+            success_rate = data.get('success_rate')
+            if success_rate is None:
+                lines.append(f"- {comp}: N/A (unknown)")
+                continue
             status_icon = "✅" if success_rate >= 0.95 else "⚠️" if success_rate >= 0.8 else "❌"
             lines.append(f"- {comp}: {success_rate:.2%} {status_icon}")
         lines.append("")
@@ -262,8 +333,12 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
     output_path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def main():
-    """Main entry point. runs đọc từ configs/eval/component_benchmarks.yaml; output từ data_paths.outputs.component_benchmarks."""
+def main() -> int:
+    """Main entry point. runs đọc từ configs/eval/component_benchmarks.yaml; output từ data_paths.outputs.component_benchmarks.
+
+    Returns 0 only when every component produced a result; non-zero if any
+    component failed, errored, or is not implemented.
+    """
     output_dir = get_data_paths().output_dir("component_benchmarks")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -283,8 +358,10 @@ def main():
     generate_markdown_report(aggregated, md_path)
     print(f"Markdown report saved to: {md_path}")
 
-    print("\nDone!")
+    failed = aggregated["summary"]["failed_components"]
+    print(f"\nDone! failed_components={failed}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

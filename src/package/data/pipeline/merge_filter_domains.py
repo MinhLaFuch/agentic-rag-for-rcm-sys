@@ -92,7 +92,7 @@ def merge_filter_domains(
     if len(filtered) == 0:
         sys.exit(
             "BLOCKED: k-core filtering loại bỏ toàn bộ dữ liệu — giảm ngưỡng filtering trong configs/data/filtering.yaml. "
-            "Nếu vẫn OOM: chạy ít domain cùng lúc với tag riêng (--domain D1 --domain D2 --tag mytag), "
+            "Nếu vẫn OOM: chạy từng domain riêng (--domain D1 — bundle tên domain), "
             "hoặc tăng tạm filtering.min_user_interactions/min_item_interactions."
         )
 

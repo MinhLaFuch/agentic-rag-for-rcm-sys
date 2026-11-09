@@ -9,6 +9,10 @@ Demonstrates:
 
 This is a PoC for complementary integration — RCM metrics are computed by RCM,
 exported to Opik for visualization and comparison.
+
+DRY-RUN ONLY: requires no live Opik server. Dataset/experiment creation is
+simulated with print statements, and RCMMetricWrapper.score() returns a fixed
+placeholder value — it does NOT compute real RCM metrics.
 """
 
 import json
@@ -52,12 +56,13 @@ class RCMMetricWrapper(BaseMetric):
         
         For PoC, we return a placeholder value.
         """
-        # Placeholder: in real implementation, call RCM metric computation
-        value = 0.95  # Placeholder
+        # Placeholder: in real implementation, call RCM metric computation.
+        # The fixed 0.95 below is a stub value, NOT a measured metric.
+        value = 0.95  # PLACEHOLDER — not computed
         return score_result.ScoreResult(
             value=value,
             name=self.name,
-            reason=f"RCM metric {self.name} computed by RCM framework"
+            reason=f"PLACEHOLDER RCM metric {self.name} — real computation not implemented"
         )
 
 

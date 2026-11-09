@@ -135,12 +135,14 @@ def create_test_interactions() -> pd.DataFrame:
     ])
 
     # u_large_recent: 15 interactions to test recent_items capping at 10
+    # item_idx must match create_test_mappings' first-appearance order: vg_null_a/b
+    # and vg_outlier (indices 10-12) appear earlier, so vg_k..vg_o are 13..17.
     for i in range(15):
         interactions.append({
             "user_id": "u_large_recent",
             "item_id": f"Video_Games::vg_{chr(97 + i)}",  # vg_a to vg_o
             "user_idx": 18,
-            "item_idx": i,
+            "item_idx": i if i < 10 else i + 3,
             "rating": 5,
             "timestamp": i,
         })
@@ -152,7 +154,7 @@ def create_test_interactions() -> pd.DataFrame:
             "user_id": "u_many_categories",
             "item_id": f"Video_Games::vg_{chr(97 + i)}",
             "user_idx": 19,
-            "item_idx": i,
+            "item_idx": i if i < 10 else i + 3,
             "rating": 5,
             "timestamp": i,
         })

@@ -25,7 +25,7 @@ Reads splits/mappings from resource/ (see data_paths.yaml) and meta_<Domain>.jso
 Defaults for budgets, sample sizes, etc. live in configs/eval/candidate_recall.yaml → candidate_recall.
 
     PYTHONPATH=. python scripts/evaluation/candidate_recall.py --eval-on validation
-    PYTHONPATH=. python scripts/evaluation/candidate_recall.py --tag vg_toys --domain Video_Games --domain Toys_and_Games
+    PYTHONPATH=. python scripts/evaluation/candidate_recall.py --domain Video_Games
 """
 
 from __future__ import annotations
@@ -136,8 +136,10 @@ def sample_users(seg_of: dict[int, str], per_segment: int, rng: np.random.Genera
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
-    ap.add_argument("--domain", action="append", help="Domain có meta để nạp (lặp lại; mặc định: tất cả trong domains.yaml)")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu + meta để nạp (lặp lại). "
+                         "Mặc định: tất cả -> bundle 'multi_domain'; 1 domain -> bundle tên domain; "
+                         "tập con khác bị từ chối.")
     ap.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     args = ap.parse_args()
 
@@ -165,7 +167,7 @@ def main() -> None:
     use_prebuilt = bool(cfg["use_prebuilt_corpus"])
     allow_missing = bool(cfg["allow_missing_corpus_sources"])
 
-    data_paths = get_data_paths(args.tag)
+    data_paths = get_data_paths(domains=args.domain)
     experiments_dir = data_paths.output_dir("candidate_recall")
     meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
 

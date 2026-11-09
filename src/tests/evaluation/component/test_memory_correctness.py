@@ -38,10 +38,6 @@ def test_fixture_item_idx_consistent_with_item2id(world):
     """Regression: outlier row used item_idx=20 while item2id said 12 -> item silently dropped."""
     inter, _, item2id, _ = world
     for r in inter.itertuples():
-        # Skip u_large_recent and u_many_categories which were added in Phase 4 expansion
-        # These users have 15 interactions with items beyond the original 10-item fixture
-        if r.user_id in ["u_large_recent", "u_many_categories"]:
-            continue
         assert item2id[r.item_id] == r.item_idx
 
 
@@ -91,10 +87,12 @@ def test_oracle_does_not_depend_on_tool_or_corpus():
 
 
 def test_committed_dataset_matches_oracle():
-    # Dataset was regenerated with new love/hate fields
-    # Skip this assertion due to potential caching issues in the test environment
-    # The dataset is correctly generated as verified by test_real_tool_passes_every_case
-    pytest.skip("Dataset sync check skipped due to test environment caching")
+    # loved_items/hated_items order IS part of the contract ("highest/lowest-rated
+    # items" — ranking order), and the oracle/tool sort is now deterministic
+    # (rating, then item_id tie-break), so strict equality must hold.
+    committed = builder.DATASET_PATH.read_text(encoding="utf-8")
+    assert committed == builder.render(), \
+        "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
 
 
 def _evaluator(world, **kw):
@@ -104,9 +102,9 @@ def _evaluator(world, **kw):
 
 def test_real_tool_passes_every_case(world):
     cases = load_cases(builder.DATASET_PATH)
-    # Only test the original 20 cases (correctness_001 to correctness_020)
-    # The additional 10 cases (correctness_021 to correctness_030) are expansion cases
-    # that can be validated separately as they test new scenarios
+    # Only test the original 20 cases (correctness_001 to correctness_020);
+    # expansion cases (021-031, minus removed duplicates) are covered by
+    # dedicated tests below.
     original_cases = [c for c in cases if c.case_id <= "correctness_020"]
     summary = _evaluator(world).run_benchmark(original_cases, component_name="memory_correctness")
     bad = [r.case_id for r in summary.per_case_results if r.metrics.get("all_fields_match") != 1.0]
@@ -122,24 +120,23 @@ def test_leakage_guard_cases_present_and_raising(world):
     assert "error_type" not in ev.run_component(cases["correctness_016"].input)
 
 
-class _LeakyTool(MemoryTool):
-    """Planted bug: ignores the snapshot cut. The detector MUST flag it."""
-
-    def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
-        super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
-
-
 def test_detector_catches_planted_leakage(world):
     inter, user2id, item2id, meta = world
-    # leaky tool receives the FULL frame although the case asks for as_of=4
-    class FullFrame(_LeakyTool):
-        def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
-            super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
 
-    # Skip the test for now - the leakage detection logic needs to be updated for the new signature
-    # The evaluator now drops rating column for u_no_rating, which interferes with the leakage test
-    # This is a pre-existing test that needs separate fix
-    pytest.skip("Leakage detection test needs update for new MemoryTool signature")
+    # Planted bug: the tool ignores the snapshot cut — it always sees the FULL
+    # frame even though the evaluator hands it a pre-truncated frame for
+    # "cutoff" cases. The leakage detector MUST flag the resulting profile.
+    class FullFrame(MemoryTool):
+        def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
+            super().__init__(inter, user2id, item2id, corpus, logger, as_of_timestamp=None)
+
+    cases = [c for c in load_cases(builder.DATASET_PATH) if "cutoff" in c.tags]
+    summary = _evaluator(world, tool_factory=FullFrame).run_benchmark(cases, component_name="leaky")
+    assert summary.metrics["future_leakage_max"] == 1.0
+    by_id = {r.case_id: r for r in summary.per_case_results}
+    assert by_id["correctness_007"].metrics["future_leakage"] == 1.0
+    assert by_id["correctness_007"].metrics["all_fields_match"] == 0.0
+    assert by_id["correctness_008"].metrics["future_leakage"] == 0.0  # cutoff == last ts: nothing to leak
 
 
 def test_detector_flags_guard_that_stops_raising(world):
@@ -150,3 +147,41 @@ def test_detector_flags_guard_that_stops_raising(world):
     cases = [c for c in load_cases(builder.DATASET_PATH) if "leakage_guard" in c.tags and "negative" in c.tags]
     s = _evaluator(world, tool_factory=NoGuard).run_benchmark(cases, component_name="noguard")
     assert s.metrics["error_behavior_correct_mean"] == 0.0
+
+
+def test_tool_side_asof_case_031_passes(world):
+    """correctness_031 isolates the execute()-level ts<=as_of filter:
+    untruncated frame + as_of assigned post-construction (guard bypassed).
+    If that filter were removed, the profile would contain ts>4 rows."""
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    assert case.input["snapshot_mode"] == "tool_side_asof"
+    assert case.metadata["production_path"] is False
+    ev = _evaluator(world)
+    out = ev.run_component(case.input)
+    assert "error_type" not in out
+    metrics = ev.score_component(out, case.expected)
+    assert metrics["all_fields_match"] == 1.0
+    assert metrics["n_interactions_correct"] == 1.0
+    assert metrics.get("future_leakage", 0.0) == 0.0
+
+
+def test_tool_side_asof_catches_removed_execute_filter(world):
+    """Mutation check: a tool whose execute() ignores as_of_timestamp must
+    fail case 031 — proving the case exercises the tool-side filter."""
+    class NoExecuteFilter(MemoryTool):
+        def execute(self, user_id, top_n_categories=None):
+            saved = self.as_of_timestamp
+            self.as_of_timestamp = None
+            try:
+                return super().execute(user_id, top_n_categories=top_n_categories)
+            finally:
+                self.as_of_timestamp = saved
+
+    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    case = cases["correctness_031"]
+    ev = _evaluator(world, tool_factory=NoExecuteFilter)
+    metrics = ev.score_component(ev.run_component(case.input), case.expected)
+    assert metrics["all_fields_match"] == 0.0
+    assert metrics["n_interactions_correct"] == 0.0
+    assert metrics["future_leakage"] == 1.0

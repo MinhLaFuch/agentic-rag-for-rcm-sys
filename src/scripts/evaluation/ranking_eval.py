@@ -111,7 +111,9 @@ from package.recommenders.shared.load_item_knn import load_item_knn
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--tag")
+    ap.add_argument("--domain", action="append",
+                    help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+                         "1 domain -> bundle tên domain; tập con khác bị từ chối.")
     ap.add_argument("--eval-on", choices=("validation", "test"), default="validation")
     ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
     ap.add_argument("--resume", action="store_true")
@@ -155,8 +157,8 @@ def main() -> None:
         ap.error("--resume requires --work-dir")
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
         raise SystemExit("candidate-budget exceeds tools.max_candidates")
-    paths = get_data_paths(args.tag)
-    meta_files = [(d, str(paths.meta_path(d))) for d in get_domains()]
+    paths = get_data_paths(domains=args.domain)
+    meta_files = [(d, str(paths.meta_path(d))) for d in (args.domain or get_domains())]
     exp_root = paths.output_dir("ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
     print(f"[checkpoint] {work.resolve()} (resume with --work-dir and --resume)", flush=True)

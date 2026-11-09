@@ -2,7 +2,7 @@
 Chạy các baseline trên splits của stage 3.
 
     PYTHONPATH=. python scripts/evaluation/run_baselines.py --eval-on validation
-    PYTHONPATH=. python scripts/evaluation/run_baselines.py --tag vg_toys
+    PYTHONPATH=. python scripts/evaluation/run_baselines.py --domain Video_Games
 
 Mọi tham số (models, ks, seed, tham số từng model) đọc từ
 configs/eval/baselines.yaml, eval/recommendation_metrics.yaml, eval/segment_thresholds.yaml
@@ -18,7 +18,7 @@ from package.data.split import infer_matrix_shape, load_splits
 from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import select_fit_target
-from package.tools.recommenders import build_interaction_matrix, build_model
+from package.recommenders.shared import build_interaction_matrix, build_model
 from package.utils import ensure_utf8_stdout
 
 
@@ -26,7 +26,9 @@ def main() -> None:
     ensure_utf8_stdout()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
+    parser.add_argument("--domain", action="append",
+                        help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+                             "1 domain -> bundle tên domain; tập con khác bị từ chối.")
     parser.add_argument("--eval-on", choices=["validation", "test"], default="validation")
     args = parser.parse_args()
 
@@ -35,7 +37,7 @@ def main() -> None:
     ks = eval_cfg["recommendation_metrics"]["k_values"]
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
     model_names = [str(m).strip() for m in model_cfg["models"] if str(m).strip()]
-    paths = get_data_paths(args.tag)
+    paths = get_data_paths(domains=args.domain)
     splits_dir = str(paths.splits_dir)
 
     train, val, test = load_splits(splits_dir)

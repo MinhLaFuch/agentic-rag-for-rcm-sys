@@ -1,4 +1,4 @@
-from ._limits import get_agent_limits, clear_agent_limits_cache, clear_memory_limits_cache
+from ._limits import get_agent_limits, get_session_limits, clear_agent_limits_cache, clear_memory_limits_cache
 from ._schema import TEMPLATES
 from .planner import PlanExecutor
 from .results import extract_recommendations
@@ -16,6 +16,7 @@ __all__ = [
     "build_tools",
     "extract_recommendations",
     "get_agent_limits",
+    "get_session_limits",
     "clear_agent_limits_cache",
     "clear_memory_limits_cache",
 ]

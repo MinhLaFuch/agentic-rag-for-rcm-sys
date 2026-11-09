@@ -14,7 +14,7 @@ Tests:
 
 from __future__ import annotations
 
-import os
+import re
 import time
 from typing import Any
 
@@ -38,26 +38,13 @@ class PlannerBenchmark(ComponentEvaluator):
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         
-        # Load LLM config from file or use provided config
-        llm_config = self.config.get("llm", {})
-        if not llm_config:
-            # Try to load from default config file
-            import yaml
-            config_path = "configs/agent/llm.yaml"
-            if os.path.exists(config_path):
-                with open(config_path, "r") as f:
-                    llm_config = yaml.safe_load(f)
-                    # Substitute environment variables
-                    base_url = llm_config.get("base_url", "")
-                    if "${LLM_BASE_URL:-}" in base_url or base_url.startswith("${"):
-                        base_url = os.environ.get("LLM_BASE_URL", "")
-                    llm_config["base_url"] = base_url
-                    
-                    api_key = llm_config.get("api_key", "")
-                    if "${LLM_API_KEY:-}" in api_key or api_key.startswith("${"):
-                        api_key = os.environ.get("LLM_API_KEY", "")
-                    llm_config["api_key"] = api_key
-        
+        # Load LLM config from file or use provided config.
+        # load_config resolves configs/ relative to the package root (not CWD)
+        # and expands ${LLM_BASE_URL}/${LLM_API_KEY} env vars.
+        from package.config import load_config
+
+        llm_config = self.config.get("llm") or load_config("agent/llm")
+
         if not llm_config.get("base_url"):
             raise ValueError(
                 "LLM base_url not configured. Set LLM_BASE_URL environment variable "
@@ -72,7 +59,10 @@ class PlannerBenchmark(ComponentEvaluator):
         corpus = create_test_corpus()
         knn = ItemKNNRecommender(10).fit(interactions[["user_idx", "item_idx"]])
         agent_tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
-        self.tools = agent_tools.for_planner()
+        # for_planner_memory: the planner SYSTEM_PROMPT advertises MemoryTool and
+        # the multi-turn runner / smoke script / live memory executor all use it.
+        self.tools = agent_tools.for_planner_memory()
+        self._tools_by_name = {t.name: t for t in self.tools}
         self.executor = PlanExecutor(llm=self.llm, tools=self.tools, reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:
@@ -102,21 +92,33 @@ class PlannerBenchmark(ComponentEvaluator):
             "tool_selection_accuracy": 0.0,
             "argument_correctness": 0.0,
             "plan_validity": 0.0,
+            "step_validity_rate": 0.0,
             "reference_correctness": 0.0,
             "constraint_handling": 0.0,
             "clarification_precision": 0.0,
             "clarification_recall": 0.0,
-            "refusal_to_guess": 0.0,
         }
 
-        # Check if expected question matches (for ambiguous cases)
+        # Check if expected question matches (for ambiguous cases).
+        # precision is token-F1, not exact match: two differently-worded but
+        # equivalent questions should not score 0.
+        expected_question = expected.get("question")
+        requires_clarification = bool(expected.get("requires_clarification"))
         if expected_question is not None:
-            metrics["clarification_precision"] = 1.0 if actual_question == expected_question else 0.0
+            metrics["clarification_precision"] = _token_f1(actual_question, expected_question)
             metrics["clarification_recall"] = 1.0 if actual_question is not None else 0.0
         else:
             # Should not ask question
             metrics["clarification_precision"] = 1.0 if actual_question is None else 0.0
             metrics["clarification_recall"] = 1.0
+
+        # Plan validity, checked against the REAL tool schemas (not the dataset):
+        # every step must name a real tool, use only declared args, provide all
+        # required args, and only reference earlier steps with valid $N.path refs.
+        validity = [_step_error(s, i, self._tools_by_name) for i, s in enumerate(actual_steps, 1)]
+        bad = [e for e in validity if e]
+        metrics["step_validity_rate"] = (len(validity) - len(bad)) / len(validity) if validity else 1.0
+        metrics["plan_validity"] = 0.0 if bad else 1.0
 
         # Tool selection accuracy
         if len(actual_steps) == len(expected_steps):
@@ -138,14 +140,21 @@ class PlannerBenchmark(ComponentEvaluator):
                         correct_args += 1
             metrics["argument_correctness"] = correct_args / total_args if total_args > 0 else 1.0
 
-        # Plan validity (is it a valid list of steps)
-        metrics["plan_validity"] = 1.0 if isinstance(actual_steps, list) and all(isinstance(s, dict) for s in actual_steps) else 0.0
-
-        # Refusal to guess (if expected asks for clarification, treat as refusal)
-        if expected_question is not None:
-            metrics["refusal_to_guess"] = 1.0 if actual_question is not None else 0.0
+        # Refusal to guess: only defined on cases flagged requires_clarification.
+        # Distinct from clarification_recall ("did it ask at all"): this penalizes
+        # GUESSING — producing steps, or asking AND stepping, when required
+        # information is missing. Emitted only where the flag exists so the
+        # aggregate never averages over cases where the concept does not apply.
+        if requires_clarification:
+            metrics["refusal_to_guess"] = (
+                1.0 if actual_question is not None and not actual_steps else 0.0
+            )
+        # Mirror metric on the other side: on cases that do NOT require
+        # clarification, asking anyway is an unnecessary clarification.
         else:
-            metrics["refusal_to_guess"] = 1.0
+            metrics["unnecessary_clarification_rate"] = (
+                1.0 if actual_question is None else 0.0
+            )
 
         # Reference correctness (check if $N.path format is used correctly)
         # Simplified: just check if references are present when expected
@@ -167,3 +176,75 @@ class PlannerBenchmark(ComponentEvaluator):
             metrics["constraint_handling"] = correct_filters / total_filters if total_filters > 0 else 1.0
 
         return metrics
+
+
+_REF_RE = re.compile(r"^\$(\d+)((?:\.[\w*]+)*)$")
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
+def _token_f1(actual: str | None, expected: str) -> float:
+    """Token-level F1 between an actual question and the expected one."""
+    if not actual:
+        return 0.0
+    a, b = set(_TOKEN_RE.findall(actual.lower())), set(_TOKEN_RE.findall(expected.lower()))
+    if not a or not b:
+        return 0.0
+    overlap = len(a & b)
+    if not overlap:
+        return 0.0
+    precision, recall = overlap / len(a), overlap / len(b)
+    return 2 * precision * recall / (precision + recall)
+
+
+def _iter_strings(obj):
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _iter_strings(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _iter_strings(v)
+
+
+def _step_error(step: Any, position: int, tools_by_name: dict[str, Any]) -> str | None:
+    """First schema violation in a planned step, validated against the REAL tool
+    input_schema — never against dataset expectations. `position` is 1-based;
+    a $N.path ref may only point at steps 1..position-1."""
+    if not isinstance(step, dict):
+        return "step is not an object"
+    name = step.get("tool")
+    tool = tools_by_name.get(name)
+    if tool is None:
+        return f"unknown tool {name!r}"
+    schema = tool.input_schema or {}
+    args = step.get("args") or {}
+    if not isinstance(args, dict):
+        return "args is not an object"
+    unknown = sorted(set(args) - set(schema))
+    if unknown:
+        return f"unknown args {unknown} for {name}"
+    for key, spec in schema.items():
+        # Required = spec string has no 'default' and no 'None' (same rule the
+        # planner prompt states). Nested dict specs (e.g. FilterTool.filters)
+        # are treated as optional groups — but their keys ARE validated below.
+        required = isinstance(spec, str) and "default" not in spec and "None" not in spec
+        if required and key not in args:
+            return f"missing required arg {key!r} for {name}"
+        if isinstance(spec, dict) and isinstance(args.get(key), dict):
+            # spec keys may combine alternatives ("price_min / price_max")
+            allowed = {part.strip() for k in spec for part in k.split("/")}
+            bad_nested = sorted(set(args[key]) - allowed)
+            if bad_nested:
+                return f"unknown {key} keys {bad_nested} for {name}"
+    for s in _iter_strings(args):
+        if s.startswith("$S."):
+            return f"session ref {s!r} but benchmark runs without session"
+        m = _REF_RE.match(s)
+        if m:
+            n = int(m.group(1))
+            if not 1 <= n < position:
+                return f"ref {s!r} points at step {n}, only steps 1..{position - 1} have run"
+        elif s.startswith("$"):
+            return f"malformed ref {s!r}"
+    return None

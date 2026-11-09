@@ -20,12 +20,12 @@ paths:
   config_dir: "configs"           # Configuration directory
   raw_dir: "resource/raw"            # <Domain>.jsonl.gz và meta_<Domain>.jsonl.gz
   cleaned_dir: "resource/cleaned"    # <Domain>/interactions.parquet (stage 1)
-  filtered_dir: "resource/filtered"  # <run_tag>/interactions.parquet (stage 2)
-  mapped_dir: "resource/mapped"      # <run_tag>/{user2id,item2id}.json (stage 3)
-  splits_dir: "resource/splits"      # <run_tag>/{train,validation,test}.parquet (stage 3)
-  item_knn_dir: "resource/item_knn"  # <run_tag>/item_knn_<tag>_<eval_on>.npz — cached ItemKNN similarity matrix
-  corpus_dir: "resource/corpus"      # <run_tag>/corpus_<tag>.sqlite — cached ItemCorpus SQLite database
-  log_dir: "experiments/logs"       # <run_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
+  filtered_dir: "resource/filtered"  # <dataset_tag>/interactions.parquet (stage 2; tag = resolve_dataset_tag(--domain))
+  mapped_dir: "resource/mapped"      # <dataset_tag>/{user2id,item2id}.json (stage 3)
+  splits_dir: "resource/splits"      # <dataset_tag>/{train,validation,test}.parquet (stage 3)
+  item_knn_dir: "resource/item_knn"  # <dataset_tag>/item_knn_<tag>_<eval_on>.npz — cached ItemKNN similarity matrix
+  corpus_dir: "resource/corpus"      # <dataset_tag>/corpus_<tag>.sqlite — cached ItemCorpus SQLite database
+  log_dir: "experiments/logs"       # <dataset_tag>/*.log — log của pipeline/tool (vd run_tools.log, stage logs)
   experiments_dir: "experiments"     # exp_NNN/… và mọi output dir con — xem outputs:
 
 # Output dirs — NGUỒN DUY NHẤT cho mọi thư mục kết quả được ghi ra.

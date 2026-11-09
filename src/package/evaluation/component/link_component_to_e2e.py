@@ -1,4 +1,9 @@
-"""Link component benchmark results with end-to-end trajectory results."""
+"""Link component benchmark results with end-to-end trajectory results.
+
+PLACEHOLDER: extracts per-component mean metrics but does NOT compute real
+correlations — `correlation` only documents the intended method. Request-ID
+matching between component and e2e results is not implemented.
+"""
 
 from __future__ import annotations
 
@@ -56,6 +61,7 @@ def link_component_to_e2e(
     # Simple correlation analysis (placeholder)
     # In real usage, this would use statistical correlation
     analysis["correlation"] = {
+        "status": "placeholder_not_computed",
         "note": "Correlation analysis requires matching request IDs between component and e2e results",
         "method": "Pearson correlation on matched request IDs",
     }

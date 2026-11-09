@@ -56,22 +56,12 @@ def test_sql_applied_filters_store_is_normalised(corpus):
     assert result.data["applied_filters"]["store"] == ["ACME"]
 
 
-@pytest.mark.skip(reason="Config patching needs refactoring after corpus moved to package/corpus")
 def test_corpus_select_times_out(corpus, monkeypatch):
     from package.corpus import item_corpus as mod
     from package.corpus._error import SQLTimeOutError
-    import package.config.load_config
 
-    original_load = package.config.load_config.load_config
-
-    def patched_load(config_path):
-        cfg = original_load(config_path)
-        if config_path == "agent/tools":
-            cfg["tools"]["sql_time_budget_seconds"] = 0.0
-        return cfg
-
-    monkeypatch.setattr(package.config.load_config, "load_config", patched_load)
-    mod._get_corpus_limits.cache_clear()
+    real_limits = mod._get_corpus_limits()
+    monkeypatch.setattr(mod, "_get_corpus_limits", lambda: (real_limits[0], 0.0))
 
     sql = "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM t) SELECT COUNT(*) FROM t"
     with pytest.raises(SQLTimeOutError):

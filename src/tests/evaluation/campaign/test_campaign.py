@@ -416,3 +416,208 @@ def test_load_experiment_metrics_from_stdout(tmp_path: Path):
     # No 'saved ->' line or missing file -> empty dict, not an exception
     assert runner._load_experiment_metrics("no save line") == {}
     assert runner._load_experiment_metrics(f"saved -> {tmp_path / 'nope'}") == {}
+
+
+def test_auto_comparison_pairs_are_actually_used(tmp_path: Path):
+    """parameter_grid + empty comparison_pairs -> auto-generated pairs must reach _run_comparisons."""
+    campaign = CampaignConfig(
+        campaign_id="grid_campaign",
+        dataset={"path": "data/test.jsonl"},
+        parameter_grid={"inference_mode": ["template", "llm"]},
+        comparison_pairs=[],
+        output_dir=str(tmp_path / "out"),
+    )
+
+    original_run = CampaignRunner._run_experiment
+
+    def fake_run(self, experiment, run_number, output_dir):
+        return ExperimentRun(
+            experiment_name=experiment.name,
+            run_number=run_number,
+            output_dir=str(output_dir / experiment.name / f"run_{run_number}"),
+            success=True,
+            metrics={"task_success_rate": 0.8},
+        )
+
+    CampaignRunner._run_experiment = fake_run
+    try:
+        result = CampaignRunner(campaign).run_campaign()
+    finally:
+        CampaignRunner._run_experiment = original_run
+
+    assert result.comparisons, "auto-generated comparison pairs were dropped"
+    (pair_key,) = result.comparisons.keys()
+    assert pair_key.endswith("_vs_" + pair_key.split("_vs_")[-1])
+    assert result.comparisons[pair_key]["status"] == "success"
+
+
+def test_build_config_overlay_includes_campaign_id():
+    """campaign_id must reach the per-experiment config overlay for traceability."""
+    runner = CampaignRunner(CampaignConfig(campaign_id="camp_trace"))
+    ov = runner._build_config_overlay(ExperimentConfig(name="e"), 1)
+    assert ov["agent/agent_eval"]["agent_eval"]["campaign_id"] == "camp_trace"
+
+
+def test_load_experiment_metrics_excludes_sample_count(tmp_path: Path):
+    """'n' (sample count) must not leak into comparison metrics."""
+    exp_dir = tmp_path / "exp_n"
+    exp_dir.mkdir()
+    (exp_dir / "metrics.json").write_text(json.dumps({
+        "k": 10,
+        "summary": {"planner": {"similar": {"all": {"task_success": 0.9, "n": 20}}}},
+    }), encoding="utf-8")
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    metrics = runner._load_experiment_metrics(f"saved -> {exp_dir}")
+    assert metrics["planner_similar_task_success"] == 0.9
+    assert "planner_similar_n" not in metrics
+
+
+def _stat_runs(name_a="exp_a", name_b="exp_b", n=3):
+    runs_a = [
+        ExperimentRun(
+            experiment_name=name_a, run_number=i + 1, output_dir=f"{name_a}/r{i}",
+            success=True, metrics={"task_success_rate": 0.80 + 0.01 * i},
+        )
+        for i in range(n)
+    ]
+    runs_b = [
+        ExperimentRun(
+            experiment_name=name_b, run_number=i + 1, output_dir=f"{name_b}/r{i}",
+            success=True, metrics={"task_success_rate": 0.90 + 0.01 * i},
+        )
+        for i in range(n)
+    ]
+    return runs_a, runs_b
+
+
+def test_statistical_settings_produce_ci_and_paired_delta():
+    """statistical_settings from campaign.yaml drives bootstrap CIs (Phase 4.1)."""
+    cfg = CampaignConfig(
+        campaign_id="stat_test",
+        statistical_settings={
+            "confidence_level": 0.95,
+            "bootstrap_samples": 200,
+            "paired_comparison": True,
+            "random_seed": 7,
+        },
+    )
+    runner = CampaignRunner(cfg)
+    runs_a, runs_b = _stat_runs()
+    comparison = runner._compare_experiments(runs_a, runs_b)
+
+    assert comparison["statistics"]["confidence_level"] == 0.95
+    assert comparison["statistics"]["bootstrap_samples"] == 200
+
+    tsr = comparison["deltas"]["task_success_rate"]
+    # Paired equal-length runs → delta CI + p_value present
+    assert "delta_ci" in tsr and "p_value" in tsr and "significant" in tsr
+    # B is consistently ~0.10 above A → CI excludes 0 → significant
+    assert tsr["significant"] is True
+    assert tsr["delta_ci"][0] > 0
+
+    # Per-experiment mean/std/CI across runs
+    stats = comparison["metric_stats"]["task_success_rate"]
+    assert stats["a"]["n"] == 3 and stats["b"]["n"] == 3
+    assert stats["a"]["ci"][0] <= stats["a"]["mean"] <= stats["a"]["ci"][1]
+
+
+def test_unpaired_or_disabled_statistics_skip_delta_ci():
+    """paired_comparison=false or unequal run counts → no delta_ci."""
+    cfg = CampaignConfig(
+        campaign_id="stat_test2",
+        statistical_settings={"paired_comparison": False, "bootstrap_samples": 100},
+    )
+    runner = CampaignRunner(cfg)
+    runs_a, runs_b = _stat_runs()
+    comparison = runner._compare_experiments(runs_a, runs_b)
+    assert "delta_ci" not in comparison["deltas"]["task_success_rate"]
+
+    # Unequal lengths with paired enabled → also no delta_ci
+    cfg2 = CampaignConfig(
+        campaign_id="stat_test3",
+        statistical_settings={"paired_comparison": True, "bootstrap_samples": 100},
+    )
+    runner2 = CampaignRunner(cfg2)
+    comparison2 = runner2._compare_experiments(runs_a, runs_b[:2])
+    assert "delta_ci" not in comparison2["deltas"]["task_success_rate"]
+
+
+def test_repo_campaign_yaml_still_loads_via_config_system():
+    """Regression: configs/evaluation/campaign.yaml parses identically through load_config."""
+    from package.config import CONFIG_DIR
+
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+
+    assert campaign.campaign_id == "campaign_001_parameter_grid"
+    assert campaign.statistical_settings["confidence_level"] == 0.95
+    assert len(campaign.expand_parameter_grid()) == 12  # 3 agents x 2 modes x 2 reflect_rounds
+
+
+def test_campaign_config_rejects_unknown_keys(tmp_path):
+    """configs/-style campaign files are schema-validated with extra=forbid."""
+    from package.config.load_config import ConfigError, load_config
+
+    cfg_dir = tmp_path / "evaluation"
+    cfg_dir.mkdir()
+    (cfg_dir / "campaign.yaml").write_text('campaign_id: "x"\nbogus_key: 1\n', encoding="utf-8")
+
+    with pytest.raises(ConfigError):
+        load_config("evaluation/campaign", config_dir=tmp_path)
+
+
+def test_campaign_config_overlay_is_honored(tmp_path, monkeypatch):
+    """CampaignConfig.from_yaml routes configs/ paths through load_config (CONFIG_OVERLAY_PATH applies)."""
+    from package.config import CONFIG_DIR
+
+    overlay = tmp_path / "overlay.yaml"
+    overlay.write_text(
+        'evaluation/campaign:\n  output_dir: "agent_eval/campaigns/overlaid_test"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
+
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+
+    assert campaign.output_dir == "agent_eval/campaigns/overlaid_test"
+
+
+def test_run_experiment_builds_domain_cmd_and_runs_subprocess(tmp_path, monkeypatch):
+    """_run_experiment (non-dry-run) must reach subprocess.run: cmd carries --domain
+    (no --tag) and traj-path resolution works — regression for the UnboundLocalError
+    caused by a stray function-local 'from package.config import get_data_paths'."""
+    import subprocess as sp
+
+    exp_dir = tmp_path / "exp_out"
+    exp_dir.mkdir()
+    (exp_dir / "metrics.json").write_text(json.dumps({"summary": {}}), encoding="utf-8")
+
+    campaign = CampaignConfig(
+        campaign_id="c",
+        dataset={"split": "validation", "filters": {"domains": ["Video_Games", "Electronics", "Toys_and_Games"]}},
+        experiments=[ExperimentConfig(name="exp1")],
+        output_dir=str(tmp_path / "campaign_output"),
+    )
+    runner = CampaignRunner(campaign, git_sha="test_sha")
+
+    captured = {}
+
+    class _Result:
+        returncode = 0
+        stdout = f"noise\nsaved -> {exp_dir}\n"
+        stderr = ""
+
+    def fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        return _Result()
+
+    monkeypatch.setattr(sp, "run", fake_run)
+
+    run = runner._run_experiment(campaign.experiments[0], 1, tmp_path / "out")
+
+    assert run.success is True
+    assert run.error is None
+    cmd = captured["cmd"]
+    assert "--tag" not in cmd
+    assert cmd.count("--domain") == 3
+    assert "scripts/evaluation/run_agent_eval.py" in " ".join(cmd)

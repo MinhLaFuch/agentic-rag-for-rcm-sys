@@ -5,8 +5,26 @@ component_benchmarks:
   runs: 1   # số lần chạy mỗi case để lấy trung bình (tăng khi cần ổn định số đo)
   # Config từng evaluator (truyền cho ComponentEvaluator). Component không có entry → config rỗng.
   # LLM của planner benchmark tự đọc configs/agent/llm.yaml — không lặp lại ở đây.
+  # Component -> dataset path (src-relative). Read by _run_all.py.
+  datasets:
+    memory: "package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl"
+    planner: "package/evaluation/component/benchmarks/planner_dataset.jsonl"
+    executor: "package/evaluation/component/benchmarks/executor_dataset.jsonl"
+    grounding: "package/evaluation/component/benchmarks/grounding_dataset.jsonl"
+    integration: "package/evaluation/component/benchmarks/integration_dataset.jsonl"
   configs:
-    executor:
-      reflect_rounds: 2
     grounding:
       use_jev: true
+    # Quality gate (Phase 2.1): evaluated in ComponentEvaluator.run_benchmark and
+    # stored as thresholds_result in the result JSON. "min" = metric >= bound,
+    # "max" = metric <= bound. Components without thresholds → passed=null
+    # ("not_evaluated"), never an implicit PASS.
+    # Only memory has thresholds for now — it is oracle-verified. Grounding /
+    # integration / planner stay unset until Phase 4 (real outputs).
+    memory:
+      thresholds:
+        min:
+          all_fields_match_mean: 0.95
+          success_rate: 1.0
+        max:
+          future_leakage_max: 0.0

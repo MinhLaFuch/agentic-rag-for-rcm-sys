@@ -1,4 +1,10 @@
-"""Example complete campaign report generation."""
+"""Example complete campaign report generation.
+
+SYNTHETIC DEMO ONLY — `example_results`/`example_comparison` are hardcoded
+fabricated numbers, not real evaluation output. This script is not wired into
+any pipeline; it exists to demonstrate the reporting API surface. Output goes
+to data_paths.outputs.example_report and must not be cited as results.
+"""
 
 from pathlib import Path
 from package.evaluation.reporting import (

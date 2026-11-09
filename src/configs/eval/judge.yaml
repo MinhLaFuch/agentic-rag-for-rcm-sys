@@ -15,9 +15,6 @@ enable_long_context: false
 evaluation:
   # Faithfulness axis: evaluate each claim against item data
   faithfulness:
-    # Type of claim extraction: "llm" (use LLM planner) or "rule" (simple heuristics)
-    claim_extraction: "rule"
-
     # Threshold for considering a claim "supported" (noul probability >= this value)
     support_threshold: 0.7
 

@@ -130,6 +130,9 @@ class BenchmarkSummary:
     git_sha: str = ""
     tags_summary: dict[str, dict[str, float]] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
+    # Quality gate vs configs/eval/component_benchmarks.yaml thresholds.
+    # None = component has no thresholds configured ("not_evaluated").
+    thresholds_result: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dict for JSON serialization."""
@@ -147,6 +150,7 @@ class BenchmarkSummary:
             "git_sha": self.git_sha,
             "tags_summary": self.tags_summary,
             "metadata": self.metadata,
+            "thresholds_result": self.thresholds_result,
         }
 
     def to_json(self) -> str:
@@ -170,6 +174,7 @@ class BenchmarkSummary:
             git_sha=data.get("git_sha", ""),
             tags_summary=data.get("tags_summary", {}),
             metadata=data.get("metadata", {}),
+            thresholds_result=data.get("thresholds_result"),
         )
 
     def compute_hash(self) -> str:

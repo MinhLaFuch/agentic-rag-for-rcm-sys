@@ -146,7 +146,9 @@ class TestEvaluateProductReplyWithJev:
 
             assert result["evaluation_state"] == "success"
             assert result["total_claims"] >= 0
-            assert result["usage"]["input_tokens"] == 10
+            # faithfulness + communication both consume the mocked usage (10+10);
+            # previously faithfulness crashed on the tuple unpack and contributed 0
+            assert result["usage"]["input_tokens"] == 20
             mock_provider.close.assert_called_once()
 
     def test_evaluate_with_provider_error(self):

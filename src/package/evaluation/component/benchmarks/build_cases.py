@@ -43,6 +43,14 @@ def build_cases() -> list[dict]:
             if as_of is not None:
                 expected["leakage_probe"] = leakage_probe(
                     inter_for_case, uid, user2id, item2id, as_of, expected["n_interactions"])
+        case_meta = {"description": desc, "difficulty": difficulty, "tier": tier}
+        if mode == "tool_side_asof":
+            # Isolation test for the execute()-level ts<=as_of filter: the
+            # constructor guard is bypassed on purpose, so this is NOT a
+            # production path — it exists because that filter is otherwise
+            # unreachable (evaluator pretruncates + guard rejects future rows).
+            case_meta["isolation"] = "tool_side_filter"
+            case_meta["production_path"] = False
         cases.append({"case_id": cid, "input": inp, "expected": expected,
-                      "tags": ["correctness", *tags], "metadata": {"description": desc, "difficulty": difficulty, "tier": tier}})
+                      "tags": ["correctness", *tags], "metadata": case_meta})
     return cases

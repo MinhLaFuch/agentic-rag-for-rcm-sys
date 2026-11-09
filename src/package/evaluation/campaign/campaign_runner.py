@@ -11,9 +11,11 @@ from typing import Any
 from datetime import datetime, timezone
 
 from ._schema import CampaignConfig, CampaignResult, ExperimentRun
+from ..statistics import bootstrap_confidence_interval, paired_bootstrap_difference
 from package.config import get_data_paths
 
 import yaml
+from statistics import stdev
 
 
 class CampaignRunner:
@@ -68,7 +70,7 @@ class CampaignRunner:
         # Perform comparisons if configured
         comparisons = {}
         if comparison_pairs:
-            comparisons = self._run_comparisons(runs, output_dir)
+            comparisons = self._run_comparisons(runs, output_dir, comparison_pairs)
 
         # Generate summary
         summary = self._generate_summary(runs)
@@ -123,28 +125,25 @@ class CampaignRunner:
                 yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
             )
 
-            tag = self.config.dataset.get("tag", "default")
+            # dataset.filters.domains selects the data bundle: run_agent_eval derives
+            # the artifact tag from it (one domain -> its name, all/none -> merged_name).
+            domains = self.config.dataset.get("filters", {}).get("domains", [])
             cmd = [
                 sys.executable,
                 "scripts/evaluation/run_agent_eval.py",
-                "--tag", tag,
                 "--eval-on", self.config.dataset.get("split", "validation"),
             ]
-
-            # Add domain filters if specified
-            domains = self.config.dataset.get("filters", {}).get("domains", [])
             for domain in domains:
                 cmd.extend(["--domain", domain])
 
             # Re-running a campaign reuses the same trajectory file name; resume it
             # (run_agent_eval validates the protocol hash and refuses mismatched logs).
             trajectory_file = overlay["agent/agent_eval"]["agent_eval"]["trajectory_file"]
-            traj_path = get_data_paths(tag).log_dir / trajectory_file
+            traj_path = get_data_paths(domains=domains or None).log_dir / trajectory_file
             if traj_path.exists():
                 cmd.append("--resume")
 
             # Set environment variables
-            from package.config import get_data_paths
             env = dict(subprocess.os.environ)
             env["PYTHONPATH"] = str(get_data_paths().src_root)
             env["CONFIG_OVERLAY_PATH"] = str(overlay_path)
@@ -216,6 +215,7 @@ class CampaignRunner:
             "agents": experiment.agent_config.get("agents", list(self.config.default_agents)),
             "allow_missing_corpus_sources": self.config.allow_missing_corpus_sources,
             "trajectory_file": f"{self.config.campaign_id}_{experiment.name}_run{run_number}_trajectories.jsonl",
+            "campaign_id": self.config.campaign_id,
         }
         per_segment = experiment.evaluation_config.get("per_segment")
         if per_segment is not None:
@@ -271,13 +271,17 @@ class CampaignRunner:
         # metrics.json = save_experiment(metrics=...) = {"k": 10, "summary": {agent: {kind: {segment: {...}}}}}
         summary = data.get("summary", data.get("metrics", {}).get("summary", {}))
 
-        # Flatten to get overall averages across all agents/kinds/segments
+        # Flatten to get overall averages across all agents/kinds/segments.
+        # Skip bookkeeping keys that are not metrics (e.g. "n" = sample count).
+        _NON_METRIC_KEYS = {"n"}
         all_metrics = {}
         for agent, kinds in summary.items():
             for kind, segments in kinds.items():
                 for segment, metrics in segments.items():
                     if segment == "all":  # Use the aggregated "all" segment
                         for key, value in metrics.items():
+                            if key in _NON_METRIC_KEYS:
+                                continue
                             if isinstance(value, (int, float)):
                                 metric_key = f"{agent}_{kind}_{key}"
                                 all_metrics[metric_key] = value
@@ -288,19 +292,24 @@ class CampaignRunner:
         self,
         runs: list[ExperimentRun],
         output_dir: Path,
+        comparison_pairs: list[tuple[str, str]] | None = None,
     ) -> dict[str, Any]:
         """Run comparisons between experiment pairs.
 
         Args:
             runs: List of experiment runs
             output_dir: Output directory
+            comparison_pairs: Pairs to compare; defaults to config.comparison_pairs.
+                Callers that auto-generate pairs (parameter grid) MUST pass them here —
+                reading self.config.comparison_pairs would silently drop auto-generated pairs.
 
         Returns:
             Dict of comparison results
         """
         comparisons = {}
+        pairs = comparison_pairs if comparison_pairs is not None else self.config.comparison_pairs
 
-        for exp_a, exp_b in self.config.comparison_pairs:
+        for exp_a, exp_b in pairs:
             # Find runs for each experiment
             runs_a = [r for r in runs if r.experiment_name == exp_a and r.success]
             runs_b = [r for r in runs if r.experiment_name == exp_b and r.success]
@@ -345,16 +354,66 @@ class CampaignRunner:
             "deltas": {},
         }
 
+        # statistical_settings from campaign.yaml drives bootstrap CIs.
+        # Note: ablation/_statistics.py has a separate bootstrap_ci + McNemar
+        # for per-case paired diffs — different semantics (run-level vs
+        # case-level pairing); kept separate intentionally.
+        stats_cfg = self.config.statistical_settings or {}
+        confidence = float(stats_cfg.get("confidence_level", 0.95))
+        n_bootstrap = int(stats_cfg.get("bootstrap_samples", 1000))
+        paired = bool(stats_cfg.get("paired_comparison", True))
+        seed = stats_cfg.get("random_seed")
+        comparison["statistics"] = {
+            "confidence_level": confidence,
+            "bootstrap_samples": n_bootstrap,
+            "paired_comparison": paired,
+        }
+
         # Compute deltas
+        metric_stats: dict[str, Any] = {}
         for key in set(avg_a.keys()) | set(avg_b.keys()):
             val_a = avg_a.get(key, 0)
             val_b = avg_b.get(key, 0)
-            comparison["deltas"][key] = {
+            delta_entry: dict[str, Any] = {
                 "a": val_a,
                 "b": val_b,
                 "delta": val_b - val_a,
                 "relative_delta": (val_b - val_a) / val_a if val_a != 0 else 0,
             }
+
+            # Per-experiment mean/std/CI across repeated runs + paired delta CI.
+            values_a = [r.metrics[key] for r in runs_a if key in r.metrics]
+            values_b = [r.metrics[key] for r in runs_b if key in r.metrics]
+            if len(values_a) >= 2 or len(values_b) >= 2:
+                stat: dict[str, Any] = {}
+                for side, values in (("a", values_a), ("b", values_b)):
+                    if len(values) >= 2:
+                        mean, lo, hi = bootstrap_confidence_interval(
+                            values, confidence, n_bootstrap, seed
+                        )
+                        stat[side] = {
+                            "mean": mean,
+                            "std": float(stdev(values)),
+                            "ci": [lo, hi],
+                            "n": len(values),
+                        }
+                if stat:
+                    metric_stats[key] = stat
+            if (
+                paired
+                and len(values_a) >= 2
+                and len(values_a) == len(values_b)
+            ):
+                mean_diff, dlo, dhi, p_value = paired_bootstrap_difference(
+                    values_a, values_b, confidence, n_bootstrap, seed
+                )
+                delta_entry["delta_ci"] = [dlo, dhi]
+                delta_entry["p_value"] = p_value
+                delta_entry["significant"] = bool(dlo > 0 or dhi < 0)
+            comparison["deltas"][key] = delta_entry
+
+        if metric_stats:
+            comparison["metric_stats"] = metric_stats
 
         return comparison
 

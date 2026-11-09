@@ -51,6 +51,44 @@ def _cached_agent_limits() -> AgentLimits:
     return limits
 
 
+@dataclass(frozen=True)
+class SessionLimits:
+    """Multi-turn Session limits from configs/agent/memory.yaml (memory.session)."""
+
+    max_turns: int
+    max_shown_items: int
+    max_candidates: int
+    max_turn_chars: int
+
+
+@lru_cache(maxsize=1)
+def _cached_session_limits() -> SessionLimits:
+    cfg = load_config("agent/memory")["memory"]["session"]
+    limits = SessionLimits(
+        max_turns=int(cfg["max_turns"]),
+        max_shown_items=int(cfg["max_shown_items"]),
+        max_candidates=int(cfg["max_candidates"]),
+        max_turn_chars=int(cfg["max_turn_chars"]),
+    )
+    for name, value in vars(limits).items():
+        if value <= 0:
+            raise ConfigError(f"configs/agent/memory.yaml: session.{name} must be > 0, got {value!r}")
+    return limits
+
+
+_session_limits_signature: tuple | None = None
+
+
+def get_session_limits() -> SessionLimits:
+    """Session limits, refreshed when configs/agent/memory.yaml or the config overlay changes."""
+    global _session_limits_signature
+    signature = config_signature("agent/memory")
+    if signature != _session_limits_signature:
+        _session_limits_signature = signature
+        _cached_session_limits.cache_clear()
+    return _cached_session_limits()
+
+
 _limits_signature: tuple | None = None
 
 
@@ -67,4 +105,5 @@ def get_agent_limits() -> AgentLimits:
 def clear_agent_limits_cache() -> None:
     """Clear the agent limits cache when config files change."""
     _cached_agent_limits.cache_clear()
+    _cached_session_limits.cache_clear()
 

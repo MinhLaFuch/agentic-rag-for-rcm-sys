@@ -2,7 +2,7 @@
 
 Example:
     PYTHONPATH=. python scripts/evaluation/tune_baselines.py
-    PYTHONPATH=. python scripts/evaluation/tune_baselines.py --tag vg_toys
+    PYTHONPATH=. python scripts/evaluation/tune_baselines.py --domain Video_Games
 
 Mọi tham số đọc từ configs/eval/tuning.yaml, baselines.yaml, recommendation_metrics.yaml
 và output dir từ data_paths.yaml — không có override flag. Đánh giá test một lần
@@ -22,14 +22,16 @@ from package.data.split import infer_matrix_shape, load_splits
 from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import merge_model_params, parameter_grid
-from package.tools.recommenders import build_interaction_matrix, build_model
+from package.recommenders.shared import build_interaction_matrix, build_model
 from package.utils import ensure_utf8_stdout
 
 
 def main() -> None:
     ensure_utf8_stdout()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", help="Tên lần chạy (mặc định: tag trong run_tag.yaml).")
+    parser.add_argument("--domain", action="append",
+                        help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'; "
+                             "1 domain -> bundle tên domain; tập con khác bị từ chối.")
     args = parser.parse_args()
 
     base_config = load_config("eval/baselines")["baselines"]
@@ -46,7 +48,7 @@ def main() -> None:
     if unknown:
         raise ValueError(f"Tuning supports only {sorted(allowed)}, got {sorted(unknown)}")
 
-    paths = get_data_paths(args.tag)
+    paths = get_data_paths(domains=args.domain)
     splits_dir = str(paths.splits_dir)
     run_final_test = bool(tuning_config.get("run_final_test", False))
     train, validation, test = load_splits(splits_dir)

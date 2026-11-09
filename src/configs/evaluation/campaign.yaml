@@ -2,10 +2,11 @@ campaign_id: "campaign_001_parameter_grid"
 description: "Parameter grid search: agents x inference_mode x reflect_rounds"
 
 dataset:
-  tag: "default"  # Data tag for resource paths (matches resource/splits/default/)
   split: "validation"  # validation or test
   filters:
-    domains: ["Video_Games", "Electronics", "Toys_and_Games"]  # All 3 domains
+    # Chọn data bundle (stage 2-4 artifacts): đúng 1 domain -> bundle tên domain;
+    # tất cả -> bundle merged_name ("multi_domain"); tập con khác bị từ chối.
+    domains: ["Video_Games", "Electronics", "Toys_and_Games"]  # All 3 domains -> multi_domain
 
 # Parameter grid: auto-generate all combinations
 # This will create 3 agents x 2 inference_modes x 2 reflect_rounds = 12 experiments
@@ -42,8 +43,3 @@ statistical_settings:
 
 # Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
 output_dir: "agent_eval/campaigns/campaign_001"
-
-metadata:
-  author: "evaluation team"
-  created: "2026-11-03"
-  purpose: "Parameter grid search for agents, inference modes, and reflection rounds"

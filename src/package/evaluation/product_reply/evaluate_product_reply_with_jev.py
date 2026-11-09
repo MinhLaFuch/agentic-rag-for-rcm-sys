@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
 from typing import Any
 
 from package.api import JevProvider
@@ -23,7 +22,6 @@ def evaluate_product_reply_with_jev(
     request: str,
     items: list[dict[str, Any]],
     answer: str,
-    config_path: Path | None = None,
 ) -> dict[str, Any]:
     """
     Evaluate a product recommendation reply using Jev for judgments.
@@ -33,29 +31,47 @@ def evaluate_product_reply_with_jev(
         items: List of selected products, each with fields: item_id, domain, title, store, price,
                average_rating, rating_number, main_category. Null fields mean information unavailable.
         answer: The assistant's reply to evaluate.
-        config_path: Path to judge.yaml config. If None, uses default configs/eval/judge.yaml.
 
     Returns:
         JSON object with evaluation results containing:
-        - claims: list of claim evaluations with Jev's noul probability and confidence
+        - claims: list of claim evaluations with Jev's noul probability and confidence;
+          verdict is one of "supported" | "unsupported" | "judge_error" (Jev call failed —
+          NOT counted as unsupported)
         - unsupported_count: number of unsupported claims (noul < threshold)
+        - supported_count: number of supported claims
+        - judge_error_count: number of claims that could not be judged (Jev error)
         - total_claims: total number of claims
         - lists_all_items_in_order: whether all items appear exactly once in order
         - communication: scores from Jev Score questions
         - summary: brief summary of main strength and flaw
         - usage: Jev API token usage
-        - evaluation_state: "success" or "provider_error"
+        - evaluation_state: "success" | "partial_error" (some judge calls failed) |
+          "provider_error" (evaluation could not run at all)
     """
     # Load config using project loader (env var expansion, overlay support)
     config = load_config("eval/judge")
 
-    # Initialize Jev provider
-    jev = JevProvider(
-        api_key=config.get("api_key"),
-        model=config.get("model", "jev-latest"),
-        base_url=config.get("base_url", "https://api.typesafe.ai"),
-        timeout=config.get("timeout_seconds", 30.0),
-    )
+    # Initialize Jev provider — a missing key must not escape the "always returns dict" contract
+    try:
+        jev = JevProvider(
+            api_key=config.get("api_key"),
+            model=config.get("model", "jev-latest"),
+            base_url=config.get("base_url", "https://api.typesafe.ai"),
+            timeout=config.get("timeout_seconds", 30.0),
+        )
+    except Exception as e:
+        return {
+            "claims": [],
+            "unsupported_count": 0,
+            "supported_count": 0,
+            "judge_error_count": 0,
+            "total_claims": 0,
+            "lists_all_items_in_order": False,
+            "communication": None,
+            "summary": f"Evaluation failed: {str(e)}",
+            "usage": {"input_tokens": 0, "output_tokens": 0},
+            "evaluation_state": "provider_error",
+        }
 
     try:
         # Extract claims (rule-based for now)
@@ -70,6 +86,14 @@ def evaluate_product_reply_with_jev(
             1 for c in evaluated_claims
             if c["verdict"] == "unsupported"
         )
+        supported_count = sum(
+            1 for c in evaluated_claims
+            if c["verdict"] == "supported"
+        )
+        judge_error_count = sum(
+            1 for c in evaluated_claims
+            if c["verdict"] == "judge_error"
+        )
         total_claims = len(evaluated_claims)
 
         # Check if all items are listed in order
@@ -80,8 +104,12 @@ def evaluate_product_reply_with_jev(
             request, answer, jev, config
         )
 
-        # Generate summary
-        summary = _generate_summary(evaluated_claims, communication)
+        # Generate summary over judged claims only — judge_error is not a quality verdict
+        judged_claims = [c for c in evaluated_claims if c["verdict"] != "judge_error"]
+        if not judged_claims and judge_error_count:
+            summary = f"All {judge_error_count} claim(s) could not be judged (Jev error)"
+        else:
+            summary = _generate_summary(judged_claims, communication)
 
         # Combine usage
         total_usage = {
@@ -92,18 +120,22 @@ def evaluate_product_reply_with_jev(
         return {
             "claims": evaluated_claims,
             "unsupported_count": unsupported_count,
+            "supported_count": supported_count,
+            "judge_error_count": judge_error_count,
             "total_claims": total_claims,
             "lists_all_items_in_order": lists_all_items_in_order,
             "communication": communication,
             "summary": summary,
             "usage": total_usage,
-            "evaluation_state": "success",
+            "evaluation_state": "partial_error" if judge_error_count > 0 else "success",
         }
     except Exception as e:
         # Provider error: return explicit state instead of mid-range fallback scores
         return {
             "claims": [],
             "unsupported_count": 0,
+            "supported_count": 0,
+            "judge_error_count": 0,
             "total_claims": 0,
             "lists_all_items_in_order": False,
             "communication": None,
@@ -266,7 +298,9 @@ def _evaluate_faithfulness_with_jev(
                     "instructions": instructions,
                 }
 
-            result = jev.evaluate(
+            # JevProvider.evaluate returns (data, usage) — unpack like the
+            # communication path does, otherwise .get() on the tuple always fails.
+            result, usage = jev.evaluate(
                 state=state,
                 questions=questions,
                 enable_long_context=enable_long_context,
@@ -274,7 +308,6 @@ def _evaluate_faithfulness_with_jev(
 
             # Extract results and fill evaluated_claims
             answers = result.get("answers", {})
-            usage = result.get("usage", {"input_tokens": 0, "output_tokens": 0})
 
             for i, claim_context in enumerate(batch_claims):
                 answer_key = f"claim_{i}"
@@ -296,16 +329,17 @@ def _evaluate_faithfulness_with_jev(
                 }
 
         except Exception as e:
-            # Fallback: mark all batched claims as unsupported
+            # Judge failure is NOT an unsupported claim: mark verdict "judge_error" so
+            # callers can separate infrastructure errors from real hallucinations.
             for i, claim_context in enumerate(batch_claims):
                 original_index = claim_indices[i]
                 evaluated_claims[original_index] = {
                     "text": claim_context["claim"],
                     "item_id": claim_context["item_id"],
-                    "verdict": "unsupported",
+                    "verdict": "judge_error",
                     "why": f"Jev error: {str(e)}",
-                    "noul": 0.0,
-                    "confidence": 0.0,
+                    "noul": None,
+                    "confidence": None,
                 }
             usage = {"input_tokens": 0, "output_tokens": 0}
     else:

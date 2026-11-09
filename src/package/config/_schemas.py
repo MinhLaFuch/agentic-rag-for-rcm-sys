@@ -73,6 +73,7 @@ class AgentEvalConfig(BaseModel):
     metadata_policy: str = Field(default="historical_static_catalog", description="Metadata masking policy")
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
+    campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
 
     @field_validator("agents")
     @classmethod
@@ -403,22 +404,6 @@ class TuningConfig(BaseModel):
     bpr_mf: TuningBprMfGrid = Field(description="BPR-MF tuning grid")
 
 
-class BenchmarkQuery(BaseModel):
-    model_config = _BASE_CONFIG
-    query: str = Field(description="Search query text")
-    category: str = Field(description="Expected category")
-
-
-class CategoriesAnyBenchmarkConfig(BaseModel):
-    """Benchmark config from configs/eval/categories_any_benchmark.yaml."""
-
-    model_config = _BASE_CONFIG
-
-    iterations: int = Field(ge=1, description="Runs per query for median latency")
-    limit: int = Field(gt=0, description="limit passed to the tool")
-    queries: list[BenchmarkQuery] = Field(description="Benchmark query set")
-
-
 class ComponentBenchmarksConfig(BaseModel):
     """Component benchmarks config from configs/eval/component_benchmarks.yaml."""
 
@@ -427,6 +412,10 @@ class ComponentBenchmarksConfig(BaseModel):
     runs: int = Field(ge=1, description="Runs per case to average")
     configs: dict[str, dict[str, Any]] = Field(
         default_factory=dict, description="Per-component evaluator config maps"
+    )
+    datasets: dict[str, str] = Field(
+        default_factory=dict,
+        description="Component name -> benchmark dataset path (src-relative), used by _run_all.py",
     )
 
 
@@ -495,6 +484,93 @@ class DemoConfig(BaseModel):
         return v
 
 
+class CampaignExperimentFileConfig(BaseModel):
+    """One experiment entry inside configs/evaluation/campaign.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    name: str = Field(description="Unique experiment name")
+    description: str = ""
+    agent_config: dict[str, Any] = Field(default_factory=dict)
+    evaluation_config: dict[str, Any] = Field(default_factory=dict)
+    dataset: dict[str, Any] = Field(default_factory=dict)
+    repetition_count: int = 1
+    random_seed: int = 42
+    tags: list[str] = Field(default_factory=list)
+
+
+class CampaignFileConfig(BaseModel):
+    """configs/evaluation/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
+
+    model_config = _BASE_CONFIG
+
+    campaign_id: str = Field(description="Unique campaign identifier")
+    description: str = ""
+    dataset: dict[str, Any] = Field(default_factory=dict)
+    parameter_grid: dict[str, Any] = Field(default_factory=dict)
+    experiments: list[CampaignExperimentFileConfig] = Field(default_factory=list)
+    evaluation_config: dict[str, Any] = Field(default_factory=dict)
+    output_dir: str = ""
+    comparison_pairs: list[list[str]] = Field(default_factory=list)
+    statistical_settings: dict[str, Any] = Field(default_factory=dict)
+    default_agents: list[str] = Field(
+        default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
+    )
+    allow_missing_corpus_sources: bool = True
+    experiment_timeout_seconds: int = 3600
+
+
+class JudgeFaithfulnessConfig(BaseModel):
+    """Faithfulness axis of configs/eval/judge.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    support_threshold: float = Field(ge=0.0, le=1.0, description="noul probability >= this counts as supported")
+    instructions: str = Field(description="Jev question instructions for faithfulness")
+
+
+class JudgeCommunicationCriterionConfig(BaseModel):
+    """One communication criterion (relevance, clarity, language, honesty_about_gaps)."""
+
+    model_config = _BASE_CONFIG
+
+    instructions: str = Field(description="Jev Score question instructions")
+    rubric: list[str] = Field(min_length=1, description="5-point rubric, poor -> excellent")
+
+
+class JudgeCommunicationConfig(BaseModel):
+    """Communication axis: dynamic set of criteria."""
+
+    model_config = _BASE_CONFIG
+
+    criteria: dict[str, JudgeCommunicationCriterionConfig] = Field(
+        description="Criterion name -> instructions + rubric"
+    )
+
+
+class JudgeEvaluationConfig(BaseModel):
+    """Evaluation section of configs/eval/judge.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    faithfulness: JudgeFaithfulnessConfig
+    communication: JudgeCommunicationConfig
+
+
+class JudgeConfig(BaseModel):
+    """Jev judge config from configs/eval/judge.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    provider: str = Field(description="Judgment provider to use (jev)")
+    api_key: str = Field(default="", description="TypeSafe API key; filled by env interpolation")
+    model: str = Field(description="Jev model name")
+    base_url: str = Field(description="TypeSafe API base URL")
+    timeout_seconds: float = Field(gt=0, description="Per-request timeout")
+    enable_long_context: bool = Field(default=False, description="Long-context header for large states")
+    evaluation: JudgeEvaluationConfig
+
+
 def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
     """
     Validate a config dict against its Pydantic schema.
@@ -527,10 +603,11 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/tool_validation": ("tool_validation", ToolValidationConfig),
         "eval/memory_utility": ("memory_utility", MemoryUtilityConfig),
         "eval/tuning": ("tuning", TuningConfig),
-        "eval/categories_any_benchmark": ("categories_any_benchmark", CategoriesAnyBenchmarkConfig),
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
+        "eval/judge": (None, JudgeConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),
+        "evaluation/campaign": (None, CampaignFileConfig),  # No key wrapper
     }
 
     if name not in config_map:

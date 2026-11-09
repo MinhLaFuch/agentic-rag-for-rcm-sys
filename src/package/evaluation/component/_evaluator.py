@@ -11,6 +11,47 @@ import numpy as np
 from ._schema import BenchmarkCase, BenchmarkResult, BenchmarkSummary
 
 
+def evaluate_thresholds(
+    metrics: dict[str, float], thresholds: dict[str, Any] | None
+) -> dict[str, Any] | None:
+    """Evaluate aggregated metrics against configured thresholds.
+
+    ``thresholds`` shape (from component_benchmarks.yaml ``configs.<component>.thresholds``)::
+
+        thresholds:
+          min: {all_fields_match_mean: 0.95, success_rate: 1.0}   # metric >= bound
+          max: {future_leakage_max: 0.0}                        # metric <= bound
+
+    Returns None when no thresholds are configured ("not_evaluated" — never
+    defaults to pass). Otherwise::
+
+        {"passed": True|False|None, "checks": {metric: "pass"|"fail"|"missing"}}
+
+    ``passed`` is None when a thresholded metric is absent from ``metrics``
+    (cannot evaluate); False when any check fails; True when all pass.
+    """
+    if not thresholds:
+        return None
+
+    checks: dict[str, str] = {}
+    for name, bound in (thresholds.get("min") or {}).items():
+        value = metrics.get(name)
+        checks[f"min:{name}"] = "missing" if value is None else ("pass" if value >= bound else "fail")
+    for name, bound in (thresholds.get("max") or {}).items():
+        value = metrics.get(name)
+        checks[f"max:{name}"] = "missing" if value is None else ("pass" if value <= bound else "fail")
+
+    if not checks:
+        return None
+    if any(v == "fail" for v in checks.values()):
+        passed = False
+    elif any(v == "missing" for v in checks.values()):
+        passed = None
+    else:
+        passed = True
+    return {"passed": passed, "checks": checks}
+
+
 class ComponentEvaluator(ABC):
     """Base class for component evaluators.
 
@@ -128,6 +169,7 @@ class ComponentEvaluator(ABC):
         metrics = self._aggregate_metrics(per_case_results)
         latency = self._aggregate_latency(per_case_results)
         tags_summary = self._aggregate_by_tags(per_case_results, cases)
+        thresholds_result = evaluate_thresholds(metrics, self.config.get("thresholds"))
 
         return BenchmarkSummary(
             component=component_name,
@@ -138,6 +180,7 @@ class ComponentEvaluator(ABC):
             latency=latency,
             tags_summary=tags_summary,
             git_sha=git_sha,
+            thresholds_result=thresholds_result,
         )
 
     def _average_results(self, results: list[BenchmarkResult]) -> BenchmarkResult:
