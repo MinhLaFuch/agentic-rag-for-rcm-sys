@@ -65,7 +65,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
         )
         conn.execute(
             "CREATE TEMP VIEW item_categories AS "
-            "SELECT c.item_id, c.category FROM main.item_categories AS c "
+            "SELECT c.rowid AS rowid, c.item_id, c.category FROM main.item_categories AS c "
             "JOIN temp.items AS i ON i.item_id = c.item_id"
         )
         temp_fts_schema = FTS_TABLE_SCHEMA.replace(

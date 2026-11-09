@@ -288,7 +288,7 @@ def main() -> None:
     knn_artifact_status = "fit_fresh_no_prebuilt"
     if not use_prebuilt:
         print("Build corpus in RAM (agent_eval.use_prebuilt_corpus: false)")
-        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
+        first_seen_ts = build_first_seen_timestamps([(d, data_paths.cleaned_path(d)) for d, _ in meta_files])
         corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True, first_seen_ts=first_seen_ts)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:

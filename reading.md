@@ -226,6 +226,8 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 `git fetch` xác nhận `origin/tools-building-2` vẫn = `0a0d20a` (không đổi kể từ G5). **Chờ user xác nhận với đồng đội trước khi merge-ours.**
 
 ### Bảng phủ 11 commit nguồn → nhóm → trạng thái
+Bằng chứng: `git merge-base origin/tools-building origin/tools-building-2` = `6b0c740`; `git log --oneline 6b0c740..origin/tools-building-2` = đúng 11 commit (5 merge + 6 content).
+
 | Source commit | Nội dung | Nhóm | Trạng thái |
 |---|---|---|---|
 | `4871743` | Merge PR#6 | — | skipped (merge commit, không content riêng; `merge -s ours` ghi nhận ancestry) |
@@ -241,6 +243,8 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 | `0a0d20a` | Type1 tool-call + scorer | G2 + G5 | **ported/adapted**: HybridScorer/scoring.yaml (`ddecf1e`); Type1Agent.last_tool_calls + run_type1 trajectory (`4b310ac`) |
 
 ### Còn lại cho G6
-- `test_agent_scorer_cli.py`: **adapted-test-pending** — test source viết trên kiến trúc run_agent_eval của source (`--agents`, `build_core_model`, `verify_tag_manifest`, `--trajectory-file`) không tồn tại ở TB; cần viết lại test tương đương hoặc quyết định skip có lý do.
-- `merge -s ours origin/tools-building-2` sau khi user xác nhận source không đổi.
+- `test_agent_scorer_cli.py`: **SKIP có lý do + adapted coverage** — source test kiểm cờ `--scorer`/`--hybrid-popularity-weight` đã bị G2 chủ động loại (Phase 5: tunables chỉ trong yaml). Test thay thế: `tests/evaluation/agent/test_scorer_yaml_cli.py` — inject `agent/scoring` qua `CONFIG_OVERLAY_PATH`, chạy `run_agent_eval.main()` end-to-end trên fixture, assert `config["scorer"]["mode"]`, `config["protocol"]["scorer"]`, `history_splits`, `knn_cache_used`, type1 `steps`/`tool_calls`, và hybrid seen-exclusion trên baseline recommendations. **Test này bắt được 2 latent bug** (xem dưới).
+- **Latent bug #4 (G1 `3fc6d97`)**: `run_agent_eval.py:291` dùng `paths.cleaned_path` thay `data_paths.cleaned_path` → `NameError` trên mọi run `use_prebuilt_corpus: false` (default true nên chưa ai chạy). Fix riêng, FAIL (NameError) → PASS.
+- **Latent bug #5 (G1 policy × TB helper)**: `apply_metadata_policy` tạo `TEMP VIEW item_categories` không có `rowid` → `_deepest_category` (`ORDER BY rowid DESC`, TB pre-existing) crash `OperationalError` khi build constrained/cold_text/exclusion requests trên corpus đã apply policy. Fix: view expose `c.rowid AS rowid` (cùng pattern `items` view). FAIL (OperationalError) → PASS; 577 corpus/evaluation/demo/data tests không regression.
+- `merge -s ours origin/tools-building-2` sau khi user xác nhận source không đổi — lệnh chuẩn bị sẵn: `git merge -s ours origin/tools-building-2 -m "Merge origin/tools-building-2 (manual port complete G1-G6)"` — **CHƯA CHẠY**.
 - Multi-turn `_run_all` wiring: **tách riêng**, không thuộc G6.
