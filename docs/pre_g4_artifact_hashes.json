@@ -1,0 +1,26 @@
+{
+  "commit": "f1f17d7 (pre-G4 artifact baseline)",
+  "algorithm": "sha256",
+  "files": {
+    "src/resource/mapped/multi_domain/user2id.json": {
+      "sha256": "7f7f6a6947091803f2312a9fec6abeb61c9a2726e74f4982ec930705847d16fd",
+      "size_bytes": 111930259
+    },
+    "src/resource/mapped/multi_domain/item2id.json": {
+      "sha256": "31435bd4c0fb5f8e52cbd4ca7dc0b48f91dff159564e0780f4ae29432b031428",
+      "size_bytes": 24305495
+    },
+    "src/resource/splits/multi_domain/train.parquet": {
+      "sha256": "3f47fb43cbb17a6ee820b5add26339f8c4d5a1af2c61be2f04603c485f38c0f7",
+      "size_bytes": 2131392901
+    },
+    "src/resource/splits/multi_domain/validation.parquet": {
+      "sha256": "b981e4b84b8817d63817794c3d104eb2cb98fca21cdbbaa69a9165a6d0697334",
+      "size_bytes": 298562345
+    },
+    "src/resource/splits/multi_domain/test.parquet": {
+      "sha256": "8b315d03afdd82e8159563e2e832b6f7ce2fdeef5335384ab420194511e90a1f",
+      "size_bytes": 296008351
+    }
+  }
+}

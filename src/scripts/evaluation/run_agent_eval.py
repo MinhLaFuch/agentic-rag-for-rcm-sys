@@ -55,17 +55,20 @@ from package.evaluation import (
 from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.trajectory import score_trajectory, summarize
 from package.evaluation.provenance import build_run_provenance
-from package.config import get_data_paths, load_config
+from package.config import get_data_paths, get_domains, load_config
 from package.config.load_config import ConfigError
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.leakage import check_profile_snapshot
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
-from package.tools import BaselineScorer, ToolCallLogger
+from package.tools import BaselineScorer, HybridScorer, ToolCallLogger
+from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
@@ -76,6 +79,7 @@ from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -195,7 +199,20 @@ def run_type1(
     """One type1 trajectory (fixed plan, no LLM for the recommendation); `answerer` as in run_planner."""
     traj = empty_trajectory(request, "type1", [])
     started = time.perf_counter()
-    out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    try:
+        out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    except Exception as exc:
+        out = {"ok": False, "stage": "exception", "error": f"{type(exc).__name__}: {exc}"}
+    calls = list(getattr(runner, "last_tool_calls", []))
+    traj["tools_available"] = ["SimilarTool", "RankTool", "LookupTool"]
+    traj["tool_calls"] = calls
+    traj["steps"] = [dict(tool=c["tool"], ok=c["output"]["ok"],
+                          args=c.get("input"), input_hash=c.get("input_hash"),
+                          timestamp=c.get("timestamp"), action=c.get("action"),
+                          latency_seconds=c["latency_seconds"], output_summary=c["output"],
+                          data=c.get("data") or {}, error=c["output"].get("error"),
+                          invented_ids=[], error_kind=None if c["output"]["ok"] else "tool_error")
+                     for c in calls]
     if out["ok"]:
         traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
     else:
@@ -219,6 +236,11 @@ def main() -> None:
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
+    scoring_cfg = load_config("agent/scoring")["scoring"]
+    scorer_mode = scoring_cfg["mode"]
+    scorer_weight = float(scoring_cfg["hybrid_popularity_weight"])
+    if scorer_mode not in ("baseline", "hybrid") or not np.isfinite(scorer_weight) or scorer_weight < 0:
+        raise SystemExit("agent/scoring.yaml: mode must be baseline/hybrid and hybrid_popularity_weight finite and nonnegative")
     k, seed = int(cfg["k"]), int(baselines["seed"])
     agents = [str(a) for a in cfg["agents"]]
     if set(agents) - set(AGENTS):
@@ -234,6 +256,11 @@ def main() -> None:
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
     data_paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(data_paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
@@ -261,7 +288,8 @@ def main() -> None:
     knn_artifact_status = "fit_fresh_no_prebuilt"
     if not use_prebuilt:
         print("Build corpus in RAM (agent_eval.use_prebuilt_corpus: false)")
-        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
+        first_seen_ts = build_first_seen_timestamps([(d, data_paths.cleaned_path(d)) for d, _ in meta_files])
+        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True, first_seen_ts=first_seen_ts)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:
         corpus_path = data_paths.corpus_path
@@ -284,7 +312,8 @@ def main() -> None:
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
-        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent")
+        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent",
+        cohort_policy=cohort_policy_for_paths(data_paths))
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
@@ -303,7 +332,25 @@ def main() -> None:
     print(f"ItemKNN: fitted in {fit_time:.1f}s")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
-    tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
+    scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
+    baseline_model = knn
+    if scorer_mode == "hybrid":
+        cf = ItemKNNMatrixRecommender(k=knn_k)
+        cf.train_matrix = knn.user_items
+        cf.num_users, cf.num_items = knn.user_items.shape
+        cf.similarity = knn.similarity.T.tocsr()
+        baseline_model = HybridItemKNNRecommender(cf, knn.user_items, scorer_weight)
+    scorer_provenance = {
+        "mode": scorer_mode, "name": scorer.name,
+        "popularity_weight": scorer_weight if scorer_mode == "hybrid" else scorer.popularity_weight,
+        "popularity_source": "full pre-target unique user-item history" if scorer_mode == "hybrid" else "CF fit popularity",
+        "cf_normalization": "per-user full-catalog max before exclusion" if scorer_mode == "hybrid" else "none",
+        "cf_provenance": protocol_manifest["item_knn"],
+        "history_splits": ["train"] if args.eval_on == "validation" else ["train", "validation"],
+        "candidate_ties": "input order (RecoModelTool)", "baseline_ties": "global item index",
+    }
+    protocol_manifest["scorer"] = scorer_provenance
+    tools = build_tools(knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
 
     runners: dict[str, Any] = {}
     if "type1" in agents:
@@ -402,7 +449,9 @@ def main() -> None:
                 else:
                     traj = empty_trajectory(request, agent, [])
                     started = time.perf_counter()
-                    traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
+                    predicted = (baseline_model.recommend(request.user_idx, k, exclude=knn.user_items)
+                                 if scorer_mode == "hybrid" else baseline_model.recommend(request.user_idx, k))
+                    traj["recommended"] = [id2item[i] for i in predicted[:k] if i in id2item]
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
                 traj["evaluation_protocol_hash"] = protocol_hash
@@ -437,7 +486,8 @@ def main() -> None:
         }
         for domain, path in meta_files
     }
-    exp_config = {"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+    exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,
@@ -445,7 +495,8 @@ def main() -> None:
                 "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_used": False,
+                "knn_cache_used": knn_artifact_status == "validated_train_core_cache",
+                "scorer": scorer_provenance,
                 "eval_schema_version": EVAL_SCHEMA_VERSION,
                 "provenance": provenance,
                 "corpus_artifacts": {

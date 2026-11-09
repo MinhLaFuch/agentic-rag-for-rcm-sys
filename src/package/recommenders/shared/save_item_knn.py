@@ -20,7 +20,7 @@ def save_item_knn(
     path: Path,
     k: int,
     fit_pairs: pd.DataFrame,
-    *, user2id=None, item2id=None, eval_on=None, tag=None,
+    *, user2id=None, item2id=None, eval_on=None, tag=None, fit_splits=None,
 ) -> None:
     """Save ItemKNNRecommender model to NPZ file with metadata.
 
@@ -42,7 +42,8 @@ def save_item_knn(
         raise ValueError("fit_pairs must have user_idx and item_idx columns")
 
     data_hash = item_knn_data_hash(fit_pairs)
-    provenance = fit_provenance(fit_pairs, user2id=user2id, item2id=item2id, eval_on=eval_on, tag=tag)
+    provenance = fit_provenance(fit_pairs, user2id=user2id, item2id=item2id, eval_on=eval_on, tag=tag,
+                                fit_splits=fit_splits)
     if int(k) != model.neighbors:
         raise ValueError("k mismatch with fitted model")
     expected_items = int(fit_pairs.item_idx.max()) + 1 if len(fit_pairs) else 0

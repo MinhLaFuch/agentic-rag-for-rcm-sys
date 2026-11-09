@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -65,6 +65,10 @@ class AgentEvalConfig(BaseModel):
     price_slack: float = Field(gt=0.0, description="Price slack multiplier for constrained requests")
     price_round_to: int = Field(gt=0, description="Price rounding multiple in USD")
     min_metadata_coverage: float = Field(ge=0.0, le=1.0, description="Minimum metadata coverage threshold")
+    min_metadata_coverage_by_domain: dict[str, float] = Field(
+        default_factory=dict,
+        description="Per-domain metadata coverage overrides; unlisted domains inherit min_metadata_coverage",
+    )
     trajectory_error_chars: int = Field(gt=0, description="Max chars for error messages in trajectory")
     max_consecutive_llm_errors: int = Field(gt=0, description="Max consecutive LLM errors before aborting")
     trajectory_file: str = Field(description="Trajectory file name")
@@ -231,6 +235,12 @@ class BaselinesConfig(BaseModel):
     seed: int = Field(description="Random seed for sampling/scoring")
     models: list[str] = Field(description="Baseline model names")
     popularity_fallback: bool = Field(description="Use popularity fallback for item_knn")
+    popularity_source: Literal["train_core", "full_history"] = Field(
+        default="train_core",
+        description="Popularity fit source: train_core pairs or full pre-target history")
+    item_knn_hybrid_weight: float | None = Field(
+        default=None, ge=0.0, allow_inf_nan=False,
+        description="Opt-in HybridItemKNNRecommender weight (CF + full pre-target-history popularity)")
     item_knn: ItemKnnBaselineConfig = Field(description="ItemKNN baseline params")
     bpr_mf: BprMfBaselineConfig = Field(description="BPR-MF baseline params")
 
@@ -261,6 +271,8 @@ class RankingEvalConfig(BaseModel):
 
     model_config = _BASE_CONFIG
 
+    all_users: bool = Field(default=False, description="Evaluate all target-bearing users after exclusions")
+    exclude_users_from: list[str] = Field(default_factory=list, description="Prior experiment config.yaml paths whose sampled users are excluded")
     per_segment: int = Field(gt=0, description="Max sampled users per segment")
     candidate_budget: int = Field(gt=0, description="Max candidates per source")
     seed_items: int = Field(gt=0, description="Recent fit items seeding ItemCF")
@@ -428,6 +440,15 @@ class RankingDiagnosticsConfig(BaseModel):
     bootstrap_samples: int = Field(gt=0, description="Resamples for the 95% paired-delta CI")
 
 
+class TemporalTrainCoreConfig(BaseModel):
+    """Fixed cutoffs for the opt-in temporal_train_core data protocol."""
+
+    model_config = _BASE_CONFIG
+
+    train_end_inclusive_ms: int = Field(description="Train cutoff, inclusive (ms)")
+    validation_end_inclusive_ms: int = Field(description="Validation cutoff, inclusive (ms)")
+
+
 class SplitConfig(BaseModel):
     """Split config from configs/data/split.yaml."""
 
@@ -437,6 +458,10 @@ class SplitConfig(BaseModel):
     validation_ratio: float = Field(ge=0.0, lt=1.0)
     test_ratio: float = Field(ge=0.0, lt=1.0)
     item_knn_splits: list[str] = Field(description="Splits the ItemKNN stage builds for")
+    data_protocol: str = Field(default="legacy_kcore_before_split",
+                               description="Stage 2/3 protocol: legacy_kcore_before_split | temporal_train_core")
+    temporal_train_core: TemporalTrainCoreConfig = Field(
+        description="Fixed cutoffs used only when data_protocol=temporal_train_core")
 
     @field_validator("item_knn_splits")
     @classmethod
@@ -444,6 +469,13 @@ class SplitConfig(BaseModel):
         unknown = [s for s in v if s not in EVAL_SPLIT_NAMES]
         if unknown:
             raise ValueError(f"item_knn_splits must be drawn from {list(EVAL_SPLIT_NAMES)}; got {unknown}")
+        return v
+
+    @field_validator("data_protocol")
+    @classmethod
+    def validate_data_protocol(cls, v: str) -> str:
+        if v not in {"legacy_kcore_before_split", "temporal_train_core"}:
+            raise ValueError("data_protocol must be 'legacy_kcore_before_split' or 'temporal_train_core'")
         return v
 
     @model_validator(mode="after")
@@ -468,6 +500,7 @@ class DemoConfig(BaseModel):
     eval_on: str = Field(description="validation | test — split loaded by LiveBackend")
     use_prebuilt_corpus: bool = Field(description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(description="Accept prebuilt corpus when raw meta files are missing")
+    intent_path_enabled: bool = Field(default=False, description="Type1 intent search path (keyword + filters); default off")
 
     @field_validator("default_language")
     @classmethod
@@ -557,6 +590,15 @@ class JudgeEvaluationConfig(BaseModel):
     communication: JudgeCommunicationConfig
 
 
+class ScoringConfig(BaseModel):
+    """Agent scorer config from configs/agent/scoring.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    mode: str = Field(default="baseline", description="baseline | hybrid")
+    hybrid_popularity_weight: float = Field(default=4.0, ge=0, description="Hybrid scorer popularity weight")
+
+
 class JudgeConfig(BaseModel):
     """Jev judge config from configs/eval/judge.yaml (no wrapper key)."""
 
@@ -595,6 +637,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "agent/memory": ("memory", MemoryConfig),
         "agent/tools": ("tools", ToolsConfig),
         "agent/inference": ("inference", InferenceConfig),
+        "agent/scoring": ("scoring", ScoringConfig),
         "agent/ablation": ("ablation", AblationConfig),
         "agent/reference_plans": (None, ReferencePlansConfig),  # No key wrapper
         "eval/baselines": ("baselines", BaselinesConfig),

@@ -1,0 +1,14 @@
+# Development protocol: same users, model, ranker, budget and ground truth.
+sparse_seed_eval:
+  seed_counts: [1, 2, 4]
+  k: 10
+  ks: [5, 10]
+  primary_metric: ndcg@10
+  comparisons: 2
+  family_alpha: 0.05
+  ndcg_absolute_min: 0.0005
+  ndcg_relative_min: 0.10
+  recall_hit_retention_min: 0.95
+  coverage_retention_min: 0.80
+  chain_p95_ratio_max: 1.10
+  qualification: development_only_until_untouched_confirmation

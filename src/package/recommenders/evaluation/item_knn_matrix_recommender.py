@@ -57,5 +57,15 @@ class ItemKNNMatrixRecommender(Recommender):
     def score_batch(self, user_idxs: np.ndarray) -> np.ndarray:
         assert self.similarity is not None and self.train_matrix is not None
         # score(u, i) = sum_{j in history(u)} sim(i, j), với sim đã cắt top-k
-        history = self.train_matrix[user_idxs]
+        history = getattr(self, "history_matrix", self.train_matrix)[user_idxs]
         return (history @ self.similarity.T).toarray().astype(np.float32)
+
+    def _recommend_sparse(self, user_idxs, k, exclude):
+        if type(self) is not ItemKNNMatrixRecommender:
+            return None
+        from ..shared.sparse_topk import sparse_topk
+        history = getattr(self, "history_matrix", self.train_matrix)[user_idxs]
+        scores = (history @ self.similarity.T).tocsr()
+        scores.sum_duplicates()
+        return sparse_topk(user_idxs, k, exclude, self.num_items,
+                           self._get_popularity_order(), scores)

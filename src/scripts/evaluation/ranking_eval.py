@@ -25,7 +25,8 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
@@ -41,6 +42,9 @@ from package.tools.scoring import BaselineScorer
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.build_core_model import build_core_model
+from package.evaluation.recommender.analysis.confirmation_cohort import confirmation_cohort
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
 from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
@@ -108,6 +112,25 @@ from package.recommenders.shared.save_item_knn import save_item_knn
 from package.recommenders.shared.load_item_knn import load_item_knn
 
 
+def _load_eval_splits(paths, eval_on: str):
+    """Load only frames required by this temporal evaluation.
+
+    Validation does not need the test rows in memory. Test evaluation still
+    loads train+validation for fitting and test as its target.
+    """
+    columns = ["user_idx", "item_idx", "timestamp"]
+    train = pd.read_parquet(paths.split_path("train"), columns=columns)
+    if eval_on == "validation":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.DataFrame(columns=columns)
+    elif eval_on == "test":
+        validation = pd.read_parquet(paths.split_path("validation"), columns=columns)
+        test = pd.read_parquet(paths.split_path("test"), columns=columns)
+    else:
+        raise ValueError(f"unsupported evaluation split: {eval_on}")
+    return train, validation, test
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser(description=__doc__)
@@ -123,6 +146,8 @@ def main() -> None:
     # Mọi tham số đánh giá đọc từ configs/eval/ranking_eval.yaml (+ baselines/segment_thresholds/tools).
     cfg = load_config("eval/ranking_eval")["ranking_eval"]
     baselines = load_config("eval/baselines")["baselines"]
+    args.all_users = bool(cfg.get("all_users", False))
+    args.exclude_users_from = [str(p) for p in cfg.get("exclude_users_from", [])]
     args.per_segment = int(cfg["per_segment"])
     args.seed = int(baselines["seed"])  # single seed source: eval/baselines.baselines.seed
     args.candidate_budget = int(cfg["candidate_budget"])
@@ -158,6 +183,11 @@ def main() -> None:
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
         raise SystemExit("candidate-budget exceeds tools.max_candidates")
     paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = [(d, str(paths.meta_path(d))) for d in (args.domain or get_domains())]
     exp_root = paths.output_dir("ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
@@ -175,6 +205,9 @@ def main() -> None:
     }
     if not identity["mapping_files"]:
         raise ValueError("no mapping JSON files found")
+    identity["exclusion_manifests"] = [{"path": str(p.resolve()), "sha256": file_hash(p)}
+                                       for p in map(Path, args.exclude_users_from)]
+    identity["parameters"]["exclude_users_from"] = [str(Path(p).resolve()) for p in args.exclude_users_from]
     if args.candidates_from:
         identity["frozen_artifacts"] = {name:file_hash(args.candidates_from/name) for name in ("config.yaml","metrics.json","candidate_lists.jsonl","scored.jsonl")}
     variants = {("baseline" if np.isclose(w,1e-6,rtol=0,atol=1e-15) else f"popularity_weight_{w:g}"):w for w in weights}
@@ -203,13 +236,13 @@ def main() -> None:
             return
         store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
         if not store.get("scoring_complete"):
-            _run_stages(args, paths, meta_files, store, ks, variants)
+            _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest)
         _finalize(args, paths, store, ks, variants, exp_root)
 
 
-def _run_stages(args, paths, meta_files, store, ks, variants):
+def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     print("[splits] loading and sampling; ETA unknown", flush=True)
-    train, validation, test = load_splits(paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    train, validation, test = _load_eval_splits(paths, args.eval_on)
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
     user2id, item2id = load_mappings(paths.mapped_dir)
     id2user = {v: k for k, v in user2id.items()}
@@ -222,7 +255,14 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     history_sizes = np.diff(fit_matrix.indptr)
     sparse_max = int(load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"])
     segments_by_user = segment_users_by_history(list(target_by_user), history_sizes, sparse_max)
-    sampled = sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed))
+    excluded = confirmation_cohort(args.exclude_users_from, tag=paths.tag,
+                                   split=args.eval_on, user_hash=mapping_hash(user2id),
+                                   item_hash=mapping_hash(item2id))
+    segments_by_user = {u: s for u, s in segments_by_user.items() if u not in excluded}
+    sampled = ({segment: sorted(u for u, s in segments_by_user.items() if s == segment) for segment in SEGMENTS}
+               if args.all_users else sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed)))
+    if excluded and not args.all_users and any(len(group) != args.per_segment for group in sampled.values()):
+        raise ValueError("insufficient untouched users for requested per-segment sample")
     users = {u for group in sampled.values() for u in group}
     sampled_fit = fit_df[fit_df["user_idx"].isin(users)]
     sampled_fit = sampled_fit.sort_values("timestamp")
@@ -237,23 +277,33 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
             allow_missing_sources=args.allow_missing_corpus_sources,
         )
     else:
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
         corpus, _, coverage = build_corpus(
             meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+            first_seen_ts=first_seen_ts,
         )
 
     metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=segments_by_user,
-        sampled=sampled, metadata_policy=metadata_policy)
+        sampled=sampled, metadata_policy=metadata_policy,
+        cohort_policy=cohort_policy_for_paths(paths))
 
     protocol_manifest["query_normalization"] = args.query_normalization
+    protocol_manifest["sampling"] = ("all target-bearing users after declared exclusions; no segment cap"
+                                     if args.all_users else protocol_manifest["sampling"])
 
     neighbors = args.neighbors
     knn_started = time.perf_counter()
     local_knn = store.path / "fit_item_knn.npz"
     context = dict(user2id=user2id, item2id=item2id, eval_on=args.eval_on, tag=paths.tag)
-    if local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
+    knn = build_core_model(paths, args.eval_on, neighbors, fit_df, user2id, item2id)
+    if knn is not None:
+        knn_hash = knn._fit_data_hash
+        protocol_manifest["item_knn"] = knn._evaluation_fit_provenance
+        protocol_manifest["cf_history"] = "all pre-target history; similarity and popularity frozen on train_core"
+    elif local_knn.exists() and local_knn.with_suffix(".meta.json").exists():
         print("[ItemKNN] validating local checkpoint model", flush=True)
         knn = load_item_knn(local_knn, neighbors, fit_df[["user_idx", "item_idx"]], **context)
         knn_hash = knn._fit_data_hash
@@ -269,7 +319,9 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     semantic = SearchTool(corpus, logger=ToolCallLogger())
     query_tool = LookupTool(corpus, logger=ToolCallLogger())
     get_text = item_text_tables(corpus, namespaced)
-    popular_order = np.argsort(-np.asarray(fit_matrix.sum(axis=0)).ravel(), kind="stable")
+    popularity = (knn.scores if hasattr(knn, "_evaluation_fit_provenance")
+                  else np.asarray(fit_matrix.sum(axis=0)).ravel())
+    popular_order = np.argsort(-popularity, kind="stable")
     max_candidates = int(load_config("agent/tools")["tools"]["max_candidates"])
 
     max_sampled_user = max(users) if users else 0
@@ -285,8 +337,12 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         },
     }
     config = {
+        "manifest_status": tag_manifest["status"],
+        "manifest_sha256": tag_manifest["manifest_sha256"],
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
+        "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),
+                              "scope": "disjoint from declared manifests only; not proof of never-inspected users"},
         "candidate_budget_per_source": args.candidate_budget, "candidate_merges": list(MERGES),
         "retrieval": {"sources": ["popularity", "item_cf", "semantic"], "seed_items": args.seed_items,
                       "query_items": args.query_items, "semantic_query_mode": "titles_from_fit_history",

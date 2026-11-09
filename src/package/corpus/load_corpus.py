@@ -72,6 +72,8 @@ def load_corpus(
             f"Logic version mismatch: saved {metadata['logic_version']}, current {CORPUS_LOGIC_VERSION}. "
             "Re-build with --save-corpus."
         )
+    if metadata.get("first_seen_protocol") != "minimum_timestamp_per_namespaced_item_in_all_cleaned_interactions_v1":
+        raise ValueError("Corpus lacks the cleaned-interaction first_seen_ts provenance; rebuild corpus.")
 
     # Validate min_coverage
     if metadata["min_coverage"] != min_coverage:
@@ -84,7 +86,7 @@ def load_corpus(
     if version == 2 and (metadata.get("source_hash_protocol") != "sha256_file_bytes_v1"
                          or metadata.get("mapping_hash_protocol") != "sorted_key_index_json_v1"):
         raise ValueError("Corpus provenance hash protocol mismatch")
-    if version == 2 and not allow_missing_sources and metadata.get("source_domains") != [d for d, _ in meta_files]:
+    if version == 2 and metadata.get("source_domains") != [d for d, _ in meta_files]:
         raise ValueError("Source metadata domain/order mismatch")
 
     # Validate source hashes
@@ -104,22 +106,16 @@ def load_corpus(
 
     saved_hashes = metadata["source_hashes"]
     if len(saved_hashes) != len(current_hashes):
-        if not allow_missing_sources:
-            raise ValueError("Source metadata list mismatch: rebuild corpus with the current domain set.")
-        else:
-            print("  Corpus source hash validation skipped (allow_missing_sources=True)")
+        raise ValueError("Source metadata list mismatch: rebuild corpus with the current domain set.")
     mismatched_sources = [
         index for index, current in enumerate(current_hashes)
         if current is not None and current != saved_hashes[index]
     ]
     if mismatched_sources:
-        if not allow_missing_sources:
-            raise ValueError(
-                f"Source file metadata mismatch at indexes {mismatched_sources}: meta files have changed since corpus was saved. "
-                "Re-build with --save-corpus."
-            )
-        else:
-            print(f"  Corpus source hash validation skipped for indexes {mismatched_sources} (allow_missing_sources=True)")
+        raise ValueError(
+            f"Source file metadata mismatch at indexes {mismatched_sources}: meta files have changed since corpus was saved. "
+            "Re-build with --save-corpus."
+        )
     if missing_sources:
         print("  Corpus source validation skipped for missing metadata files: " + ", ".join(missing_sources))
 
@@ -163,6 +159,12 @@ def load_corpus(
         if cur.fetchone() is None:
             raise ValueError(f"Corpus file missing required table: {table}")
 
+    first_seen_count = int(mem_conn.execute(
+        "SELECT COUNT(*) FROM items WHERE first_seen_ts IS NOT NULL"
+    ).fetchone()[0])
+    if first_seen_count != int(metadata.get("num_items_with_first_seen_ts", -1)):
+        raise ValueError("Corpus first_seen_ts coverage does not match saved provenance; rebuild corpus.")
+
     # Check indexes exist
     required_indexes = ["idx_items_id", "idx_items_domain", "idx_cat_item"]
     for idx in required_indexes:
@@ -175,7 +177,10 @@ def load_corpus(
     corpus._source_provenance = {"format_version": version,
         "source_hash_protocol": metadata.get("source_hash_protocol", "legacy_path_size_mtime"),
         "mapping_hash_protocol": metadata.get("mapping_hash_protocol", "legacy_keys_only"),
-        "missing_sources": missing_sources, "metadata_temporal_validity": "unverified"}
+        "coverage_by_domain": metadata.get("coverage_by_domain", {}),
+        "metadata_duplicates_dropped_by_domain": metadata.get("metadata_duplicates_dropped_by_domain", {}),
+        "missing_sources": missing_sources,
+        "metadata_temporal_validity": "first_seen proxy only; static metadata validity unverified"}
 
     load_time = time.perf_counter() - t0
     file_size_mb = path.stat().st_size / (1024 * 1024)

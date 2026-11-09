@@ -36,11 +36,24 @@ def test_corpus_schema_matches_schema_hint():
     assert items_schema is not None
     assert cats_schema is not None
     assert fts_schema is not None
+    assert "first_seen_ts INTEGER" in items_schema
 
     # Verify SCHEMA_HINT mentions the key tables
     assert "items(" in SCHEMA_HINT
     assert "item_categories(" in SCHEMA_HINT
     assert "items_fts(" in SCHEMA_HINT
+    assert "first_seen_ts INTEGER" in SCHEMA_HINT
+
+
+def test_corpus_fingerprints_share_canonical_schema_and_logic_version():
+    import hashlib
+    from package.corpus._fingerprint import compute_corpus_fingerprint
+    from package.corpus._sql import CORPUS_LOGIC_VERSION, get_corpus_schema_fingerprint
+
+    expected = hashlib.sha256(
+        f"{get_corpus_schema_fingerprint()}:{CORPUS_LOGIC_VERSION}".encode("utf-8")
+    ).hexdigest()
+    assert compute_corpus_fingerprint() == expected
 
 
 def test_query_tool_handles_trailing_comment_in_query(corpus):

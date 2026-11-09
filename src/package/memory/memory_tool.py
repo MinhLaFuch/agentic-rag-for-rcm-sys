@@ -73,6 +73,17 @@ class MemoryTool(Tool):
         if self.as_of_timestamp is not None and "timestamp" in user_interactions.columns:
             user_interactions = user_interactions[user_interactions["timestamp"] <= self.as_of_timestamp]
 
+        temporal_policy = getattr(self.corpus, "_evaluation_metadata_policy", None) or {}
+        if temporal_policy.get("first_seen_filter"):
+            if "timestamp" not in user_interactions.columns:
+                raise ValueError("temporal catalog policy requires timestamped interactions for MemoryTool")
+            cutoff = temporal_policy["as_of_timestamp"]
+            user_interactions = user_interactions[user_interactions["timestamp"] <= cutoff]
+            candidate_ids = [self.id2item[i] for i in user_interactions["item_idx"].unique() if i in self.id2item]
+            visible_ids = self.corpus.item_domains(candidate_ids)
+            visible_indices = {self.item2id[item_id] for item_id in visible_ids if item_id in self.item2id}
+            user_interactions = user_interactions[user_interactions["item_idx"].isin(visible_indices)]
+
         hist = user_interactions.loc[user_interactions["user_idx"] == uidx] if uidx is not None else pd.DataFrame()
         if hist.empty:
             return {
