@@ -1125,6 +1125,10 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
   - `context_retention` is all-or-nothing: every item returned by earlier
     turns must remain in `session.shown_items` at each later turn.
   - `initial_context.user_profile` was removed — Session never consumed it.
+  - Known limitation: `absent_exclusions` can penalize a CORRECT planner
+    that legitimately adds `exclude_categories` (or other listed keys) on
+    its own — it asserts absence, not wrongness. Use it only on turns
+    where carrying any such filter is genuinely a leak (iso pair).
 
 ---
 

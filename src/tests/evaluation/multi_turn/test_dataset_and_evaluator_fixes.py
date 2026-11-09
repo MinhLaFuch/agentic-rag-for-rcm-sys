@@ -203,6 +203,48 @@ def _runner_with_script(*responses):
     return runner, llm
 
 
+def test_iso_leak_shared_session_scores_zero(conversations):
+    """Experimental proof: if iso_2 runs on a session that still carries
+    iso_1's exclusion, a plan that propagates it MUST score 0 via
+    absent_exclusions. Control: same session, clean plan -> 1.0."""
+    from dataclasses import asdict
+
+    from package.agents import get_session_limits
+    from package.agents.session import Session
+
+    conv = next(c for c in conversations if c.conversation_id == "conv_session_isolation_2")
+
+    def leaked_session() -> Session:
+        s = Session(**asdict(get_session_limits()))
+        s.add_shown_items(["Video_Games::vg_b", "Video_Games::vg_e"])
+        s.add_exclusions(item_ids=["Video_Games::vg_a"])  # what iso_1 leaves behind
+        return s
+
+    leaked_plan = json.dumps({
+        "steps": [{"tool": "FilterTool", "args": {
+            "filters": {"categories_any": ["Puzzle"], "exclude_item_ids": ["Video_Games::vg_a"]},
+            "limit": 10}}],
+        "ask_user": None,
+    })
+    clean_plan = json.dumps({
+        "steps": [{"tool": "FilterTool", "args": {
+            "filters": {"categories_any": ["Puzzle"]}, "limit": 10}}],
+        "ask_user": None,
+    })
+
+    runner_leak, _ = _runner_with_script(leaked_plan)
+    evaluator = MultiTurnEvaluator()
+    evaluator._initialize_session = lambda ctx: leaked_session()
+    res = evaluator.evaluate_conversation(conv, runner_leak)
+    assert res.turn_results[0].metrics["exclusion_compliance"] == 0.0
+
+    runner_clean, _ = _runner_with_script(clean_plan)
+    evaluator2 = MultiTurnEvaluator()
+    evaluator2._initialize_session = lambda ctx: leaked_session()
+    res2 = evaluator2.evaluate_conversation(conv, runner_clean)
+    assert res2.turn_results[0].metrics["exclusion_compliance"] == 1.0
+
+
 def test_real_agent_runner_smoke_two_turns(conversations):
     """Scripted plans through the REAL executor+tools must not crash."""
     conv = next(c for c in conversations if c.conversation_id == "conv_m1_price_refinement")
@@ -216,3 +258,49 @@ def test_real_agent_runner_smoke_two_turns(conversations):
     assert all(tr.success for tr in result.turn_results)
     # t2 must show the price constraint reached the executed filter args
     assert result.turn_results[1].metrics["exclusion_compliance"] == 1.0
+
+
+def test_real_agent_runner_smoke_m2_session_reference(conversations):
+    """m2: $S.shown_items.1 must resolve and reach SimilarTool as the seed."""
+    conv = next(c for c in conversations if c.conversation_id == "conv_m2_position_reference")
+    # t1: FilterTool -> LookupTool($1.candidates.*.item_id) populates
+    # session.shown_items deterministically (LookupTool alone would trip
+    # the invented-id guard: bare ids are not in the request text).
+    plan1 = json.dumps({"steps": [
+        {"tool": "FilterTool", "args": {"filters": {"domain": "Video_Games"}, "limit": 3}},
+        {"tool": "LookupTool", "args": {"item_ids": "$1.candidates.*.item_id"}},
+    ], "ask_user": None})
+    # t2: the plan itself uses the session reference the dataset asserts
+    plan2 = json.dumps({"steps": [{"tool": "SimilarTool", "args": {
+        "items": ["$S.shown_items.1"], "top_k": 5}}], "ask_user": None})
+    runner, _ = _runner_with_script(plan1, plan2)
+    result = MultiTurnEvaluator().evaluate_conversation(conv, runner)
+    assert result.conversation_success
+    t2 = result.turn_results[1]
+    assert t2.success
+    # expected: SimilarTool seeded with the 2nd shown item (vg_b)
+    assert t2.metrics["tool_call_match_rate"] == 1.0
+    step = next(s for s in t2.trace["trace"]["steps"] if s["tool"] == "SimilarTool")
+    assert step["ok"], step.get("error")
+
+
+def test_real_agent_runner_smoke_m7_memory_then_similar(conversations):
+    """m7: MemoryTool(u_long) then SimilarTool over its recent_items."""
+    conv = next(c for c in conversations if c.conversation_id == "conv_m7_long_term_memory")
+    plan1 = json.dumps({"steps": [{"tool": "MemoryTool", "args": {"user_id": "u_long"}}],
+                        "ask_user": None})
+    # t2: MemoryTool output is NOT persisted across turns, so the real
+    # planner re-fetches memory and chains SimilarTool in the SAME plan
+    # ($1 = this turn's step 1, not the previous turn).
+    plan2 = json.dumps({"steps": [
+        {"tool": "MemoryTool", "args": {"user_id": "u_long"}},
+        {"tool": "SimilarTool", "args": {"items": "$1.recent_items", "top_k": 5}},
+    ], "ask_user": None})
+    runner, _ = _runner_with_script(plan1, plan2)
+    result = MultiTurnEvaluator().evaluate_conversation(conv, runner)
+    assert result.conversation_success
+    assert result.turn_results[0].metrics["tool_call_match_rate"] == 1.0  # MemoryTool u_long
+    t2 = result.turn_results[1]
+    assert t2.metrics["tool_call_match_rate"] == 1.0  # SimilarTool called
+    step = next(s for s in t2.trace["trace"]["steps"] if s["tool"] == "SimilarTool")
+    assert step["ok"], step.get("error")
