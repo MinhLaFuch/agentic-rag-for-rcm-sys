@@ -38,6 +38,32 @@ def _config_hash(obj: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
+def _dataset_sha256(dataset: str) -> str | None:
+    """sha256 of the dataset file bytes — enough to reproduce which data
+    produced a result. None when the file cannot be read."""
+    try:
+        return hashlib.sha256(Path(dataset).read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _save_result_json(output_path: str, result_json: str) -> None:
+    """Write the result JSON, creating missing parent directories."""
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(result_json)
+
+
+def _collect_evidence_kinds(summary: BenchmarkSummary) -> list[str]:
+    """Distinct evidence_kind values reported by per-case actual outputs."""
+    kinds = {
+        (r.actual_output or {}).get("evidence_kind")
+        for r in summary.per_case_results
+        if isinstance((r.actual_output or {}).get("evidence_kind"), str)
+    }
+    return sorted(kinds)
+
+
 def _build_provenance(component: str, evaluator_config: dict[str, Any], dataset: str) -> dict[str, Any]:
     """Provider/judge provenance for benchmark result JSON (Phase 4.5).
 
@@ -47,8 +73,13 @@ def _build_provenance(component: str, evaluator_config: dict[str, Any], dataset:
     prov: dict[str, Any] = {
         "component": component,
         "dataset": dataset,
+        "dataset_sha256": _dataset_sha256(dataset),
         "evaluator_config_sha256": _config_hash(evaluator_config),
     }
+    # answer_mode only exists for components that compose answers
+    # (integration/grounding); both default to "template" when unset.
+    if component in ("integration", "grounding"):
+        prov["answer_mode"] = evaluator_config.get("mode", "template")
     try:
         if component == "planner":
             llm_cfg = load_config("agent/llm")
@@ -153,6 +184,7 @@ def run_benchmark_cli() -> None:
     # Load dataset
     print(f"Loading dataset from {args.dataset}...")
     cases = load_cases(args.dataset)
+    total_cases = len(cases)
     print(f"Loaded {len(cases)} cases")
 
     # Filter by tags
@@ -208,15 +240,18 @@ def run_benchmark_cli() -> None:
     summary.metadata["git_sha"] = git_sha
     summary.metadata["config"] = _scrub_secrets(config)  # never write raw secrets into result JSON
     summary.metadata["provenance"] = _build_provenance(args.component, config, args.dataset)
+    summary.metadata["provenance"]["evidence_kinds"] = _collect_evidence_kinds(summary)
     summary.metadata["dataset_path"] = args.dataset
+    summary.metadata["dataset_sha256"] = summary.metadata["provenance"]["dataset_sha256"]
+    summary.metadata["cases_run"] = len(cases)
+    summary.metadata["cases_total"] = total_cases
     summary.metadata["tags_filter"] = args.tags
     summary.metadata["metadata_filter"] = args.metadata
     summary.metadata["runs"] = runs
 
     # Save results
     result_json = summary.to_json()
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(result_json)
+    _save_result_json(output_path, result_json)
     print(f"Results saved to: {output_path}")
 
     # Print summary

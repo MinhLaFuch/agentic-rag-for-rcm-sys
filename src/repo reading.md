@@ -1165,6 +1165,26 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
   sets are safe. Null-price contract (verified against the real tool):
   category-only filters do NOT exclude null-price items, price-bound
   filters DO unless `include_missing_price=true`.
+- **CLI reproducibility (Phase 6.6)**: `run_benchmark_cli` creates the
+  output directory if missing (`_save_result_json`), and result JSON now
+  records `dataset_sha256`, `answer_mode` (integration/grounding),
+  `evidence_kinds`, `cases_run`/`cases_total`, plus the existing
+  `git_sha` (empty string when git is unavailable — never an error).
+
+### Phase 6 audit — what each benchmark now measures
+
+| Benchmark | Measures (after audit) | Does NOT measure | Trust vs pre-audit |
+|---|---|---|---|
+| Memory (29 cases) | Exact profile fields vs independent oracle; tool-side `as_of` filter (case 031); future leakage | LLM-planner memory usage; production as_of path (none exists — guard makes the filter an identity) | High on fixture; oracle cross-checked by hand computation |
+| Planner (26+6) | Tool selection, args, plan validity vs hand labels | Real-LLM quality without `LLM_BASE_URL`/`LLM_API_KEY`; similarity-dependent expectations | Medium — deterministic parts verified; LLM runs unverified |
+| Multi-turn (11 convs) | Exclusions, session isolation/leak, context retention, tool-call args | Item lists for kNN/memory-dependent turns (asserted via `expected_tool_calls` instead) | Medium-high on fixture; real LLM run still pending credentials |
+| Executor (18 cases) | Step count, error kinds, reference resolution AND returned item data/order/count | Plan generation quality (needs LLM — planner benchmark covers it) | High on fixture; mutation-sensitive (3 mutations verified) |
+| Grounding (32 cases) | Jev judge on real `compose_answer` output; label agreement | Template-mode hallucination (constant — documented) | Requires `TYPESAFE_API_KEY`; unverified without it |
+| Integration (12 cases) | Real executor→outcome→compose chain; presented ids + field fidelity | `grounded_rate` in template mode (removed — was constant 1.0); kNN/FTS ordering (structural only) | High on deterministic cases; 5 mutations verified |
+
+Still needs credentials: planner (LLM), grounding (Jev), multi-turn real
+run (LLM), integration `mode="llm"`. Everything else runs on the fixture
+corpus deterministically.
 
 ---
 
