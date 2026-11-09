@@ -154,6 +154,7 @@ class MultiTurnEvaluator:
             "item_match_rate": 0.0,
             "exclusion_compliance": 0.0,
             "reference_correctness": None,  # None = not measurable this turn
+            "tool_call_match_rate": None,  # None = no expected_tool_calls
         }
 
         if turn_output is None:
@@ -165,6 +166,9 @@ class MultiTurnEvaluator:
         def _bare(item: Any) -> str:
             return str(item).rsplit("::", 1)[-1]
 
+        def _bare_set(values: Any) -> set:
+            return {_bare(v) for v in (values or [])}
+
         expected_items = {_bare(i) for i in turn_input.expected_items}
         actual_items = {_bare(i) for i in turn_output.get("items", [])}
         if expected_items:
@@ -172,16 +176,19 @@ class MultiTurnEvaluator:
         else:
             metrics["item_match_rate"] = 1.0  # No expectation
 
-        # Check exclusion compliance
+        # Check exclusion compliance. Item-id lists are compared bare-vs-bare:
+        # the dataset writes "vg_a", the runtime's filter args carry
+        # "Video_Games::vg_a" — a raw set compare can never match.
         expected_exclusions = turn_input.expected_exclusions
         actual_exclusions = turn_output.get("exclusions", {})
-        if expected_exclusions:
-            compliance = True
+        absent = set(getattr(turn_input, "absent_exclusions", []) or [])
+        if expected_exclusions or absent:
+            compliance = not any(k in actual_exclusions for k in absent)
             for key, expected in expected_exclusions.items():
                 actual = actual_exclusions.get(key)
                 # Handle both list values (item_ids, categories) and scalar values (price_max, etc.)
                 if isinstance(expected, list):
-                    if not set(expected).issubset(set(actual or [])):
+                    if not _bare_set(expected).issubset(_bare_set(actual)):
                         compliance = False
                 else:
                     # Scalar comparison
@@ -190,6 +197,15 @@ class MultiTurnEvaluator:
             metrics["exclusion_compliance"] = 1.0 if compliance else 0.0
         else:
             metrics["exclusion_compliance"] = 1.0
+
+        # Expected tool calls: verifies the agent actually invoked the right
+        # tool with the right (possibly session-referenced) arguments, even
+        # when exact recommended items cannot be predicted.
+        expected_calls = getattr(turn_input, "expected_tool_calls", None) or []
+        if expected_calls:
+            metrics["tool_call_match_rate"] = self._tool_call_match_rate(
+                expected_calls, turn_output, session_state
+            )
 
         # Reference correctness — REAL check (was a placeholder 1.0):
         # among executed steps whose args contain $N/$S references, the
@@ -211,6 +227,62 @@ class MultiTurnEvaluator:
             metrics["reference_correctness"] = (len(ref_steps) - bad) / len(ref_steps)
 
         return metrics
+
+    def _resolve_session_value(self, value: Any, session_state: dict[str, Any]) -> Any:
+        """Resolve "$S.<path>" (index into lists allowed) against session_state."""
+        if not (isinstance(value, str) and value.startswith("$S.")):
+            return value
+        node: Any = session_state
+        for part in value[3:].split("."):
+            if isinstance(node, dict):
+                node = node.get(part)
+            elif isinstance(node, list) and part.isdigit() and int(part) < len(node):
+                node = node[int(part)]
+            else:
+                return None
+        return node
+
+    def _arg_contains(self, actual: Any, expected: Any) -> bool:
+        """actual arg satisfies expected: list args must CONTAIN the expected
+        value (bare-id comparison for namespaced ids); scalars must be equal."""
+        def _bare(v: Any) -> str:
+            return str(v).rsplit("::", 1)[-1]
+        if isinstance(actual, (list, tuple)):
+            return any(_bare(a) == _bare(expected) for a in actual)
+        return actual == expected or _bare(actual) == _bare(expected)
+
+    def _tool_call_match_rate(
+        self,
+        expected_calls: list[dict[str, Any]],
+        turn_output: dict[str, Any],
+        session_state: dict[str, Any],
+    ) -> float:
+        """Fraction of expected tool calls found in the executed steps.
+
+        Each spec: {"tool": name, "args_contain": {arg: expected}} — at least
+        one executed step with that tool must satisfy every args_contain pair.
+        """
+        steps = ((turn_output.get("trace") or {}).get("steps")) or []
+        matched = 0
+        for spec in expected_calls:
+            tool_name = spec.get("tool")
+            want_args = spec.get("args_contain") or {}
+            ok = False
+            for s in steps:
+                if s.get("tool") != tool_name:
+                    continue
+                args = s.get("args") or {}
+                if all(
+                    k in args
+                    and self._arg_contains(
+                        args[k], self._resolve_session_value(v, session_state)
+                    )
+                    for k, v in want_args.items()
+                ):
+                    ok = True
+                    break
+            matched += 1 if ok else 0
+        return matched / len(expected_calls) if expected_calls else 1.0
 
     def _extract_token_usage(self, turn_output: dict[str, Any] | None) -> dict[str, int] | None:
         """Extract token usage from turn output."""
@@ -276,17 +348,25 @@ class MultiTurnEvaluator:
         else:
             metrics["exclusion_compliance"] = 1.0
 
-        # Context retention: monotonic growth of session.shown_items across
-        # turns. None when there is a single turn (nothing to retain across).
+        # Context retention: REAL check. For every turn after the first, the
+        # session's shown_items must still contain ALL items returned by
+        # earlier turns (bare-id comparison). The old monotonic-count check
+        # passed even when a session reset kept only the latest turn's items.
+        # All-or-nothing per conversation: 1.0 iff every earlier item is
+        # retained at every later turn; None for single-turn conversations.
         if len(turn_results) > 1:
-            shown_items_counts = [
-                len(tr.session_state.get("shown_items", [])) for tr in turn_results
-            ]
-            monotonic = all(
-                shown_items_counts[i] <= shown_items_counts[i + 1]
-                for i in range(len(shown_items_counts) - 1)
-            )
-            metrics["context_retention"] = 1.0 if monotonic else 0.0
+            def _bare(item: Any) -> str:
+                return str(item).rsplit("::", 1)[-1]
+
+            retained_all = True
+            seen: set[str] = set()
+            for tr in turn_results:
+                shown = {_bare(i) for i in (tr.session_state.get("shown_items") or [])}
+                if seen and not seen.issubset(shown):
+                    retained_all = False
+                    break
+                seen |= {_bare(i) for i in tr.actual_items}
+            metrics["context_retention"] = 1.0 if retained_all else 0.0
         else:
             metrics["context_retention"] = None
 
@@ -298,6 +378,16 @@ class MultiTurnEvaluator:
         ]
         metrics["reference_accuracy"] = (
             sum(ref_scores) / len(ref_scores) if ref_scores else None
+        )
+
+        # Expected tool-call match — mean over turns that specified calls
+        tool_call_scores = [
+            tr.metrics.get("tool_call_match_rate")
+            for tr in turn_results
+            if tr.metrics.get("tool_call_match_rate") is not None
+        ]
+        metrics["tool_call_match_rate"] = (
+            sum(tool_call_scores) / len(tool_call_scores) if tool_call_scores else None
         )
 
         return metrics

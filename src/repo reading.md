@@ -1109,6 +1109,22 @@ Note: `campaign.yaml` under `configs/` loads via `load_config` (`CampaignConfig.
   live in `planner_dataset_backlog.jsonl` — this is a limitation of the
   SYSTEM, not only of the benchmark. Planner benchmark now uses
   `for_planner_memory()` (matches SYSTEM_PROMPT + multi-turn runner).
+- **Multi-turn (Phase 6.3)**: `run_multi_turn_cli` is an INDEPENDENT CLI
+  (`python -m package.evaluation.multi_turn._run --dataset ...`) — it is
+  NOT wired into `_run_all`, `run_agent_eval`, or the demo. It has never
+  been run against a real LLM; a credentialed run needs `LLM_BASE_URL` +
+  `LLM_API_KEY` (RealAgentRunner fails loudly without them). Pipeline
+  correctness is covered offline by ScriptedLLM smoke tests.
+  - Expected labels that are hand-computable from the fixture are asserted
+    as item lists (`expected_items`, bare-id normalized); similarity/memory
+    outputs that cannot be predicted are asserted via
+    `expected_tool_calls` (`{tool, args_contain}`, `$S.<path>` resolves
+    against post-turn session state) instead of fake item lists.
+  - `exclusion_compliance` compares bare ids vs namespaced runtime ids;
+    `absent_exclusions` detects carried-over filters (iso_1→iso_2 leak).
+  - `context_retention` is all-or-nothing: every item returned by earlier
+    turns must remain in `session.shown_items` at each later turn.
+  - `initial_context.user_profile` was removed — Session never consumed it.
 
 ---
 
