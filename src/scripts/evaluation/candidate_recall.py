@@ -42,6 +42,7 @@ import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps, namespaced_item_id
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, SearchTool
@@ -169,6 +170,11 @@ def main() -> None:
     allow_missing = bool(cfg["allow_missing_corpus_sources"])
 
     data_paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(data_paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     experiments_dir = data_paths.output_dir("candidate_recall")
     meta_files = [(d, str(data_paths.meta_path(d))) for d in (args.domain or get_domains())]
 
@@ -385,7 +391,8 @@ def main() -> None:
     }
     exp_dir = save_experiment(
         next_experiment_dir(experiments_dir),
-        config={"protocol": protocol_manifest, "budgets": budgets, "per_segment": per_segment, "seed_items": seed_items,
+        config={"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "protocol": protocol_manifest, "budgets": budgets, "per_segment": per_segment, "seed_items": seed_items,
                 "query_items": query_items, "neighbors": neighbors, "query_modes": query_modes,
                 "evaluation_protocol": {mode: ("oracle_upper_bound" if mode == "category_oracle" else "realistic_offline_proxy") for mode in query_modes},
                 "sampled_user_ids": sampled, "sparse_max": sparse_max,

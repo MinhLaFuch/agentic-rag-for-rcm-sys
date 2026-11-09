@@ -70,6 +70,9 @@ def test_baseline_runner_uses_core_cache_and_full_history_segments(core_tag, mon
     for name, frame in (("train", train), ("validation", target), ("test", target.assign(timestamp=3))):
         frame.to_parquet(core_tag.split_path(name))
     monkeypatch.setattr(script, "get_data_paths", lambda *a, **k: core_tag)
+    monkeypatch.setattr(script, "verify_tag_manifest", lambda *a, **k: {
+        "status": "legacy_unmanifested", "manifest_sha256": "legacy_unmanifested",
+        "manifests": [], "warnings": []})
     load = script.load_config
     # Tunables live in eval/baselines.yaml (Phase 5: no CLI overrides) — the
     # monkeypatched config plays the role of that YAML for this fixture.

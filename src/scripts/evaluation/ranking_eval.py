@@ -26,6 +26,7 @@ import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
 from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
@@ -182,6 +183,11 @@ def main() -> None:
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
         raise SystemExit("candidate-budget exceeds tools.max_candidates")
     paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = [(d, str(paths.meta_path(d))) for d in (args.domain or get_domains())]
     exp_root = paths.output_dir("ranking_eval")
     work = args.work_dir or (exp_root / "_checkpoints" / (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:8]))
@@ -331,6 +337,8 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
         },
     }
     config = {
+        "manifest_status": tag_manifest["status"],
+        "manifest_sha256": tag_manifest["manifest_sha256"],
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
         "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),

@@ -440,6 +440,15 @@ class RankingDiagnosticsConfig(BaseModel):
     bootstrap_samples: int = Field(gt=0, description="Resamples for the 95% paired-delta CI")
 
 
+class TemporalTrainCoreConfig(BaseModel):
+    """Fixed cutoffs for the opt-in temporal_train_core data protocol."""
+
+    model_config = _BASE_CONFIG
+
+    train_end_inclusive_ms: int = Field(description="Train cutoff, inclusive (ms)")
+    validation_end_inclusive_ms: int = Field(description="Validation cutoff, inclusive (ms)")
+
+
 class SplitConfig(BaseModel):
     """Split config from configs/data/split.yaml."""
 
@@ -449,6 +458,10 @@ class SplitConfig(BaseModel):
     validation_ratio: float = Field(ge=0.0, lt=1.0)
     test_ratio: float = Field(ge=0.0, lt=1.0)
     item_knn_splits: list[str] = Field(description="Splits the ItemKNN stage builds for")
+    data_protocol: str = Field(default="legacy_kcore_before_split",
+                               description="Stage 2/3 protocol: legacy_kcore_before_split | temporal_train_core")
+    temporal_train_core: TemporalTrainCoreConfig = Field(
+        description="Fixed cutoffs used only when data_protocol=temporal_train_core")
 
     @field_validator("item_knn_splits")
     @classmethod
@@ -456,6 +469,13 @@ class SplitConfig(BaseModel):
         unknown = [s for s in v if s not in EVAL_SPLIT_NAMES]
         if unknown:
             raise ValueError(f"item_knn_splits must be drawn from {list(EVAL_SPLIT_NAMES)}; got {unknown}")
+        return v
+
+    @field_validator("data_protocol")
+    @classmethod
+    def validate_data_protocol(cls, v: str) -> str:
+        if v not in {"legacy_kcore_before_split", "temporal_train_core"}:
+            raise ValueError("data_protocol must be 'legacy_kcore_before_split' or 'temporal_train_core'")
         return v
 
     @model_validator(mode="after")

@@ -113,3 +113,44 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 - G2 hash hiện tại: **`ddecf1e`** (đã amend bỏ `--scorer`/`--hybrid-popularity-weight`; đọc `scoring.mode`/`scoring.hybrid_popularity_weight` từ yaml + validate).
 - G3 commit: `f1f17d7` — message `Port eval analysis modules + eval scripts + train-core baselines (G3)`, nguồn `e05879c`/`e83bf33`/`d4fe5b4`/`53eb6a1`, `Co-authored-by: Quan Anh`.
 - **Pre-G4 artifact baseline**: `docs/pre_g4_artifact_hashes.json` — sha256 đầy đủ của `user2id.json`/`item2id.json`/`train|validation|test.parquet` (multi_domain) chụp trên `f1f17d7`. Short-hash khớp listing cũ.
+
+## G4 — Data pipeline protocol (6acf144): manifests + temporal_train_core
+
+### File mới
+- `package/data/manifest/` (7 file): `__init__`, `_helper`, `check_upstream_manifests`, `pipeline_config_files`, `verify_manifest`, `verify_tag_manifest`, `write_manifest` — adapt import `sha256_file`/`file_hash` → `package.recommenders.shared.file_hash`, `get_domains`/`PROJECT_ROOT` → `package.config`.
+- `package/data/leakage/check_fit_core_subset.py` — verify train_core ⊆ train.
+- `package/data/pipeline/_streaming_temporal_stage3.py`, `build_evaluation_cohort.py`, `prepare_train_core.py`.
+- `scripts/data_pipeline/verify_tag.py` — adapt `--tag` → `--domain` (append, mặc định all → multi_domain).
+- Tests: `test_stage_manifests.py`, `test_streaming_temporal_stage3.py`, `test_train_core_protocol.py`.
+
+### Merge delta (bên nào thắng)
+| Điểm | Quyết định | Lý do |
+|---|---|---|
+| `data_protocol` | **source thắng, default `legacy_kcore_before_split`** trong `split.yaml`; `temporal_train_core` opt-in TẮT | Yêu cầu user: mặc định TẮT, legacy path giữ nguyên semantics. |
+| `temporal_train_core` cutoffs + `train_ratio/validation_ratio/test_ratio` | **source thắng**: keys mới trong `split.yaml` + schema (`SplitConfig` validate tổng ratio = 1.0, split names giới hạn eval splits) | Cần cho chronological split khi protocol bật. |
+| `cleaning.yaml` chunk/timestamp bounds | **source thắng**: `chunk_size`, `min/max_timestamp_ms`, `max_invalid_timestamp_fraction` + schema | Streaming clean + validate timestamp ms; synthetic fixtures cập nhật sang ~900000000000. |
+| `clean_domain.py` | **merge**: upsert/last-duplicate-wins cho (user_id,parent_asin,timestamp), string-dtype preserve (ASIN "0486418189"), invalid-row drop + unit-hint error khi vượt fraction | Source delta thật; giữ DataPaths/config conventions TB. |
+| `iter_reviews_dataframes` | chunked read + dtype str | +1 dòng dtype pin. |
+| `merge_filter_domains.py` | **merge**: streaming merge/filter + stage-2 manifest; `legacy_kcore_before_split` flag ghi vào manifest flags | Source delta; stage2 manifest là mắt xích chain. |
+| `map_split.py` | **merge**: đọc `split.data_protocol`; temporal → `prepare_train_core` + `check_fit_core_subset` + `build_evaluation_cohort` + fit-core mappings `mapped/<tag>/fit_core/` + `train_core.parquet` + stage-3 manifest flags/reports; legacy → y hệt cũ | Opt-in; legacy không đổi. |
+| `build_artifacts.py` | **merge**: đọc stage-3 manifest; temporal → bắt buộc train_core + fit-core mappings, ItemKNN fit trên train-core, `fit_splits=["train_core"]`; legacy → fit cũ; upstream manifest check mặc định fail-closed | `allow_manifest_mismatch` cho synthetic/legacy tests. |
+| `clean_interactions`/`merge_domains`/`tag_domain` | **merge delta nhỏ** theo source (first_seen/timestamp policy liên quan G1) | Đã review trong diff 6acf144. |
+| `data/_schema.py`, `split/load_splits.py` | **TB thắng**: giữ ITEM_COLUMNS/SCHEMA_HINT; error message không có `--tag` | Source xóa constants (layout khác) / flag `--tag` không tồn tại ở TB. |
+| `run_pipeline.py` | **merge**: +`--allow-manifest-mismatch`, `--scratch-dir`; `data_protocol` đọc từ `split.yaml` (không cờ); stage-3 pre-check thêm temporal outputs khi protocol bật | Phase 5: protocol qua yaml. |
+| `verify_tag.py` | **adapt**: `--domain` thay `--tag`; in expected/actual hashes + status | Read-only verifier. |
+| Eval scripts manifest wiring | **source delta port**: `verify_tag_manifest` + `manifest_status`/`manifest_sha256` vào candidate_recall, ranking_eval, run_agent_eval, run_baselines | Defer G3 nay đã có `package.data.manifest`; `domains=args.domain or get_domains()` theo semantics TB. Incomplete chain → ValueError (fail-closed đúng source). |
+| `memory_tool.py`, `tools/_schema.py`, `__init__.py` các package, `compare_experiments.py`, `live_backend.py`, conftest/tools_helpers | **TB thắng / skip**: source revert love-hate memory, inline schema constants, xóa exports, thêm `--config` flag — đều ngược Phase 5/TB architecture | live_backend Type1 wiring → G5. |
+
+### Lưu ý vận hành
+- `verify_tag_manifest` trả `legacy_unmanifested` khi KHÔNG có manifest nào; raise `ValueError` khi chain thiếu một phần (fail-closed). Sau khi chạy stage 2-3 riêng, multi_domain ở trạng thái incomplete → eval scripts sẽ báo lỗi cho tới khi chạy đủ stage 1 (per-domain) + 4.
+- Manifest paths tương đối project_root; absolute path bị reject khi verify.
+
+### Verify G4
+- pytest full: **1570 passed, 2 xfailed** (1549 + 21 test mới G4), 0 failed.
+- Benchmark: memory **29/29**, executor **18/18** (`step_success_rate_mean=0.6111`), integration **12/12** — y hệt baseline.
+- Legacy stage run thật (`--stages 2,3 --force --allow-manifest-mismatch`, multi_domain): stage2 486s + stage3 150s, `data_protocol=legacy_kcore_before_split` (k-core chạy ở stage 2 như cũ), leakage_check PASS, cutoffs giữ nguyên.
+- **Artifact hash so với `docs/pre_g4_artifact_hashes.json`:**
+  - `user2id.json`/`item2id.json`: **byte-identical MATCH**.
+  - 3 file parquet: **byte-hash DIFF** nhưng **content 100% identical** — đã so từng cột (decode dictionary→string, cast large_string→string, order-sensitive `Array.equals`) trên cả train (21.69M rows)/validation/test: **0 value diffs**. Nguyên nhân byte-diff: write-path source mới `_write_filtered_parquet` (chunked `ParquetWriter` + `StringDtype`→`large_string`, column order `original_item_id` trước `domain`) thay `df.to_parquet` cũ (dictionary-encoded `string`, `domain` trước). Cùng SNAPPY, cùng row counts/row groups. → Không phải data regression; là format-level delta cố ý của source.
+- `verify_tag.py` trên multi_domain sau run: stage2/3 manifests tồn tại, stage1/4 chưa → incomplete chain (fail-closed đúng thiết kế); eval scripts sẽ báo `legacy_unmanifested`→lỗi incomplete cho tới khi chạy đủ pipeline.
+- GitNexus `detect_changes --scope all`: 40 symbols/26 files, risk **critical** — do chạm hub functions (build_artifacts/map_split/merge_filter_domains/clean_domain + các `main` eval scripts); expected cho G4, mọi thay đổi additive/opt-in, verify bằng pytest + real pipeline run + benchmarks.

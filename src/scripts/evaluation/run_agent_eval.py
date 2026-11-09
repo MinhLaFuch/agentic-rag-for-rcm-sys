@@ -55,10 +55,11 @@ from package.evaluation import (
 from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.trajectory import score_trajectory, summarize
 from package.evaluation.provenance import build_run_provenance
-from package.config import get_data_paths, load_config
+from package.config import get_data_paths, get_domains, load_config
 from package.config.load_config import ConfigError
 from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.leakage import check_profile_snapshot
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
 from package.data.split import load_splits
@@ -242,6 +243,11 @@ def main() -> None:
     sparse_max = load_config("eval/segment_thresholds")["segment_thresholds"]["sparse_max_history"]
 
     data_paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(data_paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     meta_files = build_meta_files(data_paths, args.domain)
     t_start = time.time()
 
@@ -467,7 +473,8 @@ def main() -> None:
         }
         for domain, path in meta_files
     }
-    exp_config = {"protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
+    exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
                 "price_slack": cfg["price_slack"], "price_round_to": cfg["price_round_to"], "sparse_max": sparse_max,
                 "item_knn_k": baselines["item_knn"]["k"], "reflect_rounds": reflect_rounds if any(a in PLANNER_AGENTS for a in agents) else None,

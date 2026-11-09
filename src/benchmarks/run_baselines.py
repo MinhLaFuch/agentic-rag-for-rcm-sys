@@ -19,7 +19,8 @@ import argparse
 import time
 from pathlib import Path
 
-from package.config import get_data_paths, load_config
+from package.config import get_data_paths, get_domains, load_config
+from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
 from package.data.split import infer_matrix_shape, load_splits
 from package.evaluation.recommender.analysis.build_core_model import build_core_model
@@ -60,6 +61,11 @@ def main() -> None:
     popularity_source = str(model_cfg.get("popularity_source", "train_core"))
     hybrid_weight = model_cfg.get("item_knn_hybrid_weight")
     paths = get_data_paths(domains=args.domain)
+    tag_manifest = verify_tag_manifest(paths, domains=args.domain or get_domains())
+    if tag_manifest["status"] == "legacy_unmanifested":
+        print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
+    elif tag_manifest["warnings"]:
+        print(f"!!! WARNING: tag manifest chain has warnings: {tag_manifest['warnings']}", flush=True)
     splits_dir = str(paths.splits_dir)
 
     train, val, test = load_splits(splits_dir)
@@ -147,7 +153,8 @@ def main() -> None:
 
     exp_dir = save_experiment(
         next_experiment_dir(paths.output_dir("baselines")),
-        config={"models": model_names, "ks": ks, "sparse_max": sparse_max, "baselines": model_cfg,
+        config={"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
+                "models": model_names, "ks": ks, "sparse_max": sparse_max, "baselines": model_cfg,
                 "popularity_source": popularity_source,
                 "item_knn_hybrid_weight": hybrid_weight,
                 "hybrid_popularity_source": "full pre-target history" if hybrid_weight is not None else None,
