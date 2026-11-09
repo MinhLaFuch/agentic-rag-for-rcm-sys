@@ -21,7 +21,16 @@ def tools(world):
 
 @pytest.fixture
 def intent_enabled(monkeypatch):
-    monkeypatch.setattr(LiveBackend, "_intent_path_enabled", staticmethod(lambda: True))
+    """Enable the intent path through the REAL config gate (not by patching the gate itself)."""
+    from package.demo.backend import live_backend as module
+    real_load_config = module.load_config
+
+    def fake_load_config(key, *args, **kwargs):
+        if key == "agent/demo":
+            return {"demo": {"intent_path_enabled": True}}
+        return real_load_config(key, *args, **kwargs)
+
+    monkeypatch.setattr(module, "load_config", fake_load_config)
 
 
 def test_actual_search_filters_and_metadata(tools):

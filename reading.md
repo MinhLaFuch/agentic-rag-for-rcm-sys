@@ -186,8 +186,8 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 
 ### Verify G5 (bổ sung sau review)
 - `type1_agent.recommend()` output **byte-identical** với bản f1f17d7 (stub tools, diff JSON — IDENTICAL).
-- **Parity tool thật**: `build_tools` (ItemKNNRecommender + BaselineScorer + corpus/cf fixture → SimilarTool/RankTool/LookupTool/SearchTool/FilterTool/MemoryTool thật) — old `Type1Agent`@f1f17d7 vs new, 23 requests (11 users × k, + unseen user cold-start): `recommend()` outputs **identical 23/23**; `run_type1` trajectories **identical modulo field mới** (`tool_calls`, `steps`, `wall_seconds`) 23/23. Khác biệt duy nhất còn lại: `agent`/`action` trong log records (mục đích feature) — không ảnh hưởng `execute` kwargs.
-- pytest full: **1605 passed, 2 xfailed**, 0 failed (+ test cứng hóa: `**_ignored` kwargs cho cả 2 adapter, assert `data` trong tool_calls/steps).
+- **Parity tool thật**: `build_tools` (ItemKNNRecommender + BaselineScorer + corpus/cf fixture → SimilarTool/RankTool/LookupTool/SearchTool/FilterTool/MemoryTool thật) — old `Type1Agent`@f1f17d7 vs new, 23 requests (11 users × k, + unseen user cold-start): `recommend()` outputs **identical 23/23**; `run_type1` trajectories **identical modulo field mới** (`tool_calls`, `steps`, `wall_seconds`) 23/23. Khác biệt duy nhất còn lại: `agent`/`action` trong log records (mục đích feature) — không ảnh hưởng `execute` kwargs. **Giới hạn**: fixture tools_helpers (5 items, 17 interactions), không phải corpus multi_domain đầy đủ — chấp nhận làm bằng chứng parity, không phải benchmark.
+- pytest full: **1605 passed, 2 xfailed** tại `4b310ac` → **1614 passed, 2 xfailed** sau hardening (`cd2686c` + smoke tests)
 - Benchmark: memory **29/29**, executor **18/18**, integration **12/12** — y hệt baseline. Planner/grounding vẫn fail do thiếu LLM_BASE_URL (môi trường, như mọi nhóm trước). Lưu ý: executor suite **không chứa Type1** — bằng chứng Type1 nằm ở parity run_type1 ở trên.
 - GitNexus `detect_changes --scope all`: 15 symbols/10 files, risk **critical** — LiveBackend/Type1Agent là hub; mọi thay đổi additive/opt-in, verify bằng pytest + benchmark + parity proof.
 
@@ -202,15 +202,45 @@ Port thủ công, merge delta vào file TB (không copy đè). Layout: `package.
 | Mutation | Test bắt được | Kết quả |
 |---|---|---|
 | `_intent_path_enabled` → `return True` | `test_intent_path_disabled_by_default` | FAIL → revert PASS |
+| `_intent_path_enabled` → `return False` | 4 enabled-path tests (`test_demo_no_history_user_can_search_without_llm`, `test_cold_free_text_...`, `test_existing_user_explicit_intent_...`, `test_known_user_without_cf_candidates_...`) | FAIL ×4 → revert PASS. **Lưu ý**: ban đầu fixture `intent_enabled` patch chính `_intent_path_enabled` → mutation `False` sống sót; đã sửa fixture patch `load_config("agent/demo")` để gate thật chạy — cả 2 chiều mutation giờ đều bị bắt. |
 | bỏ `self.last_tool_calls.append(entry)` | `test_type1_preserves_ordered_calls_and_failures_without_previous_request[None]` | FAIL → revert PASS |
 | bỏ `entry["data"] = data` | cùng test trên | FAIL → revert PASS |
 
 ### `LiveBackend.respond` — điều kiện skip LLM trước/sau G5
 - **Trước (27a8cee)**: `initialize()` không tham số; `respond()` gọi nó ở request đầu tiên bất kể mode → luôn `build_llm_provider` + `health_check()` + dựng 2 PlanExecutor. Type1+template **vẫn bắt buộc LLM sống**; thiếu creds → RuntimeError → `tool_error`.
 - **Sau (HEAD)**: `respond()` gọi `initialize(initialize_planner = request.mode != "type1" or inference_mode == "llm")` → skip LLM/planner **chỉ khi `mode=="type1"` AND `inference_mode=="template"`**; planner mode và type1+llm vẫn init đầy đủ. `_respond_planner`/`_respond_type1` gọi `_ensure_planner()` lazy khi cần. `initialize()` default `initialize_planner=True` giữ nguyên chữ ký.
-- **Đây là đổi hành vi thật** ở nhánh type1+template (trước: yêu cầu LLM; sau: không cần) — cố ý theo source, cho phép demo type1 chạy không creds; planner path không đổi.
+- **Đây là đổi hành vi thật** ở nhánh type1+template (trước: yêu cầu LLM; sau: không cần) — **ngoại lệ có chủ đích được chấp nhận**: hành vi cũ ở nhánh này thực chất là lỗi (template inference không dùng LLM nhưng vẫn bắt health-check); planner path và type1+llm không đổi.
 
 ### Còn nợ / lưu ý
-- Multi-turn vẫn chưa nối `_run_all` (đã báo từ G3, không thuộc G5).
+- Multi-turn vẫn chưa nối `_run_all` (đã báo từ G3, không thuộc G5; tách riêng, không trộn G6).
 - `filtered/interactions.parquet` vẫn là bản format mới sau G4 — **không có backup bản cũ**, không nằm trong 5/5 hash match; content tương đương chỉ verify gián tiếp qua splits đã decode-compare. Ghi nhận: artifact set hiện là hỗn hợp (splits=old bytes, filtered= new format).
 - `intent_path_enabled` hiện chỉ có tác dụng khi UI/request truyền `intent_query`/`intent_filters`; `run_demo.py`/mock backend chưa có control cho 2 field này.
+
+### Coverage debt (đo bằng coverage.py, full suite 1614 passed)
+- `scripts/data_pipeline/{run_pipeline,verify_tag}.py`: trước đây **0 test import** → đã thêm `tests/data/pipeline/test_cli_smoke.py` (7 test: stage order, precheck fail-closed, verify_tag status/MISSING/mismatch/legacy).
+- `scripts/evaluation/`: `run_agent_eval` 38%, `candidate_recall` 30%, `evaluate_with_jev` 30%, `analyze_ranking_bottlenecks` 29%, `sparse_content_replay` 19% — phần chưa chạm chủ yếu `main()`/CLI parsing và nhánh hiếm (resume, all_users, manifest-mismatch exits). Không chặn G6.
+- `package.evaluation/product_reply/evaluate_product_reply.py` 12%, `multi_turn/_reporting`+`_run` 0%, diagnostics 0% — **nợ có sẵn của TB**, không phải integration debt.
+
+## G6 — prep (chưa chạy `merge -s ours`)
+
+`git fetch` xác nhận `origin/tools-building-2` vẫn = `0a0d20a` (không đổi kể từ G5). **Chờ user xác nhận với đồng đội trước khi merge-ours.**
+
+### Bảng phủ 11 commit nguồn → nhóm → trạng thái
+| Source commit | Nội dung | Nhóm | Trạng thái |
+|---|---|---|---|
+| `4871743` | Merge PR#6 | — | skipped (merge commit, không content riêng; `merge -s ours` ghi nhận ancestry) |
+| `b88968d` | Merge main→tb2 | — | skipped (merge commit) |
+| `de64880` | Merge PR#7 | — | skipped (merge commit) |
+| `e05879c` | semantic embeddings + sparse eval tools | G3 + G5 | **ported/adapted**: 15 eval scripts + analysis modules (G3 `f1f17d7`/`ddfd205`); `recommend_from_intent`, `recent_seed_items`, `sparse_seed_eval`, demo dataclasses (G5 `4b310ac`) |
+| `fc0b8c9` | Merge PR#8 | — | skipped (merge commit) |
+| `3c7bb25` | Merge main→tb2 | — | skipped (merge commit) |
+| `6acf144` | temporal pipeline safeguards | G4 + G5 | **ported/adapted**: manifests, temporal_train_core (opt-in, default off), pipeline deltas, configs, verify_tag, manifest wiring (`27a8cee`); live_backend/sample_users deltas (`4b310ac`) |
+| `e83bf33` | full data preflight | G3 | **ported/adapted**: `full_data_preflight` script + train-core baseline wiring trong `run_baselines` (`f1f17d7`) |
+| `d4fe5b4` | new hybrid | G2 + G3 | **ported/adapted**: sparse_topk, HybridItemKNN, fit_splits, eval deltas (`ddecf1e`); eval-script phần hybrid (`f1f17d7`) |
+| `53eb6a1` | baseline test | G2 + G3 | **ported/adapted**: scorer/provenance tests + eval test ports (`ddecf1e`, `f1f17d7`) |
+| `0a0d20a` | Type1 tool-call + scorer | G2 + G5 | **ported/adapted**: HybridScorer/scoring.yaml (`ddecf1e`); Type1Agent.last_tool_calls + run_type1 trajectory (`4b310ac`) |
+
+### Còn lại cho G6
+- `test_agent_scorer_cli.py`: **adapted-test-pending** — test source viết trên kiến trúc run_agent_eval của source (`--agents`, `build_core_model`, `verify_tag_manifest`, `--trajectory-file`) không tồn tại ở TB; cần viết lại test tương đương hoặc quyết định skip có lý do.
+- `merge -s ours origin/tools-building-2` sau khi user xác nhận source không đổi.
+- Multi-turn `_run_all` wiring: **tách riêng**, không thuộc G6.
