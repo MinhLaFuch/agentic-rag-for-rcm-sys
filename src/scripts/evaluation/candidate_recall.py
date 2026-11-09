@@ -61,6 +61,7 @@ from package.recommenders.shared import item_knn_data_hash
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
 from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 from package.recommenders.shared import mapping_hash
 
@@ -220,7 +221,8 @@ def main() -> None:
     metadata_policy = apply_metadata_policy(corpus, metadata_policy_name, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
-        sampled=sampled, metadata_policy=metadata_policy, evaluation_kind="candidate")
+        sampled=sampled, metadata_policy=metadata_policy, evaluation_kind="candidate",
+        cohort_policy=cohort_policy_for_paths(data_paths))
 
     protocol_manifest["query_normalization"] = query_normalization
 

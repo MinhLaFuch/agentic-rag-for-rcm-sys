@@ -78,6 +78,7 @@ from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -292,7 +293,8 @@ def main() -> None:
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
-        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent")
+        sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent",
+        cohort_policy=cohort_policy_for_paths(data_paths))
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]

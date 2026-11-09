@@ -41,6 +41,7 @@ from package.tools.scoring import BaselineScorer
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
+from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
 from package.evaluation.recommender.utils.normalize_query_text import normalize_query_text
 
 from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, round_robin, sample_users
@@ -247,7 +248,8 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
     metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=segments_by_user,
-        sampled=sampled, metadata_policy=metadata_policy)
+        sampled=sampled, metadata_policy=metadata_policy,
+        cohort_policy=cohort_policy_for_paths(paths))
 
     protocol_manifest["query_normalization"] = args.query_normalization
 

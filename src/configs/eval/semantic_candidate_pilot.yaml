@@ -1,0 +1,39 @@
+semantic_candidate_pilot:
+  status: preflight_only_encoder_and_embeddings_not_available
+  source: src/experiments/sparse_content_eval/exp_004
+  tag: multi_domain
+  eval_on: validation
+  users: 500
+  sample: exact_source_user_ids_no_resampling
+  seed: 42
+  query: latest_fit_item_title_only
+  history_seen_filter: all_fit_items
+  document_fields: [title, store, main_category, categories]
+  document_scope: same_catalog_fields_as_BM25_explicit_text_serialization_required
+  metadata_policy: runtime_snapshot_not_historical_causal
+  encoder_candidate: sentence-transformers/all-MiniLM-L6-v2
+  encoder_revision: required_immutable_revision_before_build
+  encoder_validation: candidate_only_not_locally_tested
+  dimensions: 384
+  dtype: float32
+  similarity: cosine_with_normalized_vectors
+  search: exact_blocked_search_before_ANN
+  standalone_budget: 25
+  union_budget: 50
+  cf_quota: 25
+  content_quota: 25
+  merge: cf_first_stable_dedup_no_refill
+  controls: [cf_one_seed, bm25_latest_title]
+  candidates: [dense_latest_title, cf_plus_dense]
+  primary_comparison: cf_plus_dense_vs_cf_plus_bm25_same_users
+  primary_metric: candidate_recall
+  secondary_metrics: [hit_rate, catalog_coverage, candidate_set_size, source_overlap, latency_p50, latency_p95, errors]
+  segments: [history_1, history_2, history_3, history_4, target_train_support_0, target_train_support_1_4, target_train_support_5_19, target_train_support_20_plus]
+  quality_gate: paired95_lower_above_zero_and_absolute_recall_gain_at_least_0.001
+  coverage_retention_min: 0.8
+  latency_gate: original_chain_ratio_1.1_still_required_for_production_no_posthoc_relaxation
+  ranking: excluded_until_candidate_quality_gate_passes
+  embeddings_provenance: [encoder_id, immutable_revision, model_file_hashes, corpus_sha256, mapping_hash, item_id_row_order_hash, text_serialization_version, normalized, dtype, dimensions]
+  setup_environment: separate_from_baseline_venv_record_exact_resolved_versions
+  qualification: inspected_development_validation_not_untouched_confirmation
+  production_changed: false

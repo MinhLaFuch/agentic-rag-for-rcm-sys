@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -235,6 +235,12 @@ class BaselinesConfig(BaseModel):
     seed: int = Field(description="Random seed for sampling/scoring")
     models: list[str] = Field(description="Baseline model names")
     popularity_fallback: bool = Field(description="Use popularity fallback for item_knn")
+    popularity_source: Literal["train_core", "full_history"] = Field(
+        default="train_core",
+        description="Popularity fit source: train_core pairs or full pre-target history")
+    item_knn_hybrid_weight: float | None = Field(
+        default=None, ge=0.0, allow_inf_nan=False,
+        description="Opt-in HybridItemKNNRecommender weight (CF + full pre-target-history popularity)")
     item_knn: ItemKnnBaselineConfig = Field(description="ItemKNN baseline params")
     bpr_mf: BprMfBaselineConfig = Field(description="BPR-MF baseline params")
 
