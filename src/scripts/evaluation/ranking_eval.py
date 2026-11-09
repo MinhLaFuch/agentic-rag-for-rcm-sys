@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, LookupTool, RankTool, SearchTool
@@ -237,9 +237,11 @@ def _run_stages(args, paths, meta_files, store, ks, variants):
             allow_missing_sources=args.allow_missing_corpus_sources,
         )
     else:
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
         corpus, _, coverage = build_corpus(
             meta_files, item2id,
             float(load_config("agent/agent_eval")["agent_eval"]["min_metadata_coverage"]),
+            first_seen_ts=first_seen_ts,
         )
 
     metadata_policy = apply_metadata_policy(corpus, args.metadata_policy, as_of_timestamp=int(target_df.timestamp.min()))

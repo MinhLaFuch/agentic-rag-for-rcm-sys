@@ -41,7 +41,7 @@ import numpy as np
 import pandas as pd
 
 from package.config import get_data_paths, get_domains, load_config
-from package.data import ITEM_ID_SEPARATOR, namespaced_item_id
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps, namespaced_item_id
 from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.tools import SimilarTool, SearchTool
@@ -211,7 +211,8 @@ def main() -> None:
     else:
         if not use_prebuilt:
             print("  Bypassing cached corpus; building from configured metadata in memory")
-        corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]))
+        first_seen_ts = build_first_seen_timestamps([(d, data_paths.cleaned_path(d)) for d, _ in meta_files])
+        corpus, _, coverage = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), first_seen_ts=first_seen_ts)
     corpus_load_seconds = time.perf_counter() - corpus_started
     item_text = item_text_tables(corpus, namespaced)
     print(f"  metadata covers {coverage:.1%} of mapped items")

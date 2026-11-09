@@ -57,7 +57,7 @@ from package.evaluation.trajectory import score_trajectory, summarize
 from package.evaluation.provenance import build_run_provenance
 from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
-from package.data import ITEM_ID_SEPARATOR
+from package.data import ITEM_ID_SEPARATOR, build_first_seen_timestamps
 from package.data.leakage import check_profile_snapshot
 from package.data.mapping import load_mappings
 from package.data.pipeline import build_meta_files
@@ -261,7 +261,8 @@ def main() -> None:
     knn_artifact_status = "fit_fresh_no_prebuilt"
     if not use_prebuilt:
         print("Build corpus in RAM (agent_eval.use_prebuilt_corpus: false)")
-        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True)
+        first_seen_ts = build_first_seen_timestamps([(d, paths.cleaned_path(d)) for d, _ in meta_files])
+        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, float(cfg["min_metadata_coverage"]), timing=True, first_seen_ts=first_seen_ts)
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
     else:
         corpus_path = data_paths.corpus_path

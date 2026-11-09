@@ -65,6 +65,10 @@ class AgentEvalConfig(BaseModel):
     price_slack: float = Field(gt=0.0, description="Price slack multiplier for constrained requests")
     price_round_to: int = Field(gt=0, description="Price rounding multiple in USD")
     min_metadata_coverage: float = Field(ge=0.0, le=1.0, description="Minimum metadata coverage threshold")
+    min_metadata_coverage_by_domain: dict[str, float] = Field(
+        default_factory=dict,
+        description="Per-domain metadata coverage overrides; unlisted domains inherit min_metadata_coverage",
+    )
     trajectory_error_chars: int = Field(gt=0, description="Max chars for error messages in trajectory")
     max_consecutive_llm_errors: int = Field(gt=0, description="Max consecutive LLM errors before aborting")
     trajectory_file: str = Field(description="Trajectory file name")

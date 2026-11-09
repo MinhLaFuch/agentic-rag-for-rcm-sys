@@ -19,10 +19,14 @@ from scripts.evaluation import ranking_eval as script
 @pytest.fixture
 def environment(tmp_path, monkeypatch):
     paths = replace(get_data_paths("toy"), raw_dir=tmp_path/"raw", mapped_dir=tmp_path/"mapped",
-                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus")
+                    splits_dir=tmp_path/"splits", corpus_dir=tmp_path/"corpus",
+                    cleaned_dir=tmp_path/"cleaned")
     paths.raw_dir.mkdir()
     paths.mapped_dir.mkdir()
     paths.splits_dir.mkdir()
+    (paths.cleaned_dir/"D").mkdir(parents=True)
+    pd.DataFrame({"user_id": ["u0"], "parent_asin": ["i0"], "timestamp": [1]}).to_parquet(
+        paths.cleaned_path("D"), index=False)
     (paths.raw_dir/"meta_D.jsonl.gz").write_text("fixture metadata")
     user2id = {"u0":0,"u1":1,"u2":2}
     item2id = {f"D::i{i}":i for i in range(7)}
@@ -34,6 +38,7 @@ def environment(tmp_path, monkeypatch):
     for name,df in (("train",train),("validation",val),("test",test)):
         df.to_parquet(paths.split_path(name))
     meta = pd.DataFrame({"parent_asin":[f"i{i}" for i in range(7)],"domain":["D"]*7,
+                         "first_seen_ts":[1]*7,
                          "title":["Pok\u00e9mon keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a,**k:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])

@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 
 from ...config import DataPaths, load_config
+from ...data import build_first_seen_timestamps
 from ...data.split import load_splits
 from ...data.mapping import load_mappings
 from .._shared.select_fit_target import select_fit_target
@@ -45,6 +46,10 @@ def build_artifacts(
     agent_cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines_cfg = load_config("eval/baselines")["baselines"]
     min_coverage = float(agent_cfg["min_metadata_coverage"])
+    min_coverage_by_domain = {
+        str(domain): float(value)
+        for domain, value in agent_cfg.get("min_metadata_coverage_by_domain", {}).items()
+    }
     knn_k = int(baselines_cfg["item_knn"]["k"])
 
     # Check input dependencies
@@ -69,13 +74,26 @@ def build_artifacts(
             raise FileExistsError(f"{corpus_path} đã tồn tại. Dùng --force để ghi đè.")
 
         print("Build corpus")
-        corpus, meta, coverage, build_times = build_corpus(meta_files, item2id, min_coverage, timing=True)
+        first_seen_ts = build_first_seen_timestamps(
+            [(domain, paths.cleaned_path(domain)) for domain, _ in meta_files]
+        )
+        corpus, meta, coverage, build_times = build_corpus(
+            meta_files, item2id, min_coverage, timing=True, first_seen_ts=first_seen_ts,
+            min_coverage_by_domain=min_coverage_by_domain,
+        )
         print(f"Corpus: built in {sum(build_times.values()):.2f}s")
 
-        save_time = save_corpus(corpus, corpus_path, meta_files, item2id, min_coverage, coverage, build_times)
+        duplicate_counts = meta.attrs.get("duplicates_dropped_by_domain", {})
+        save_time = save_corpus(
+            corpus, corpus_path, meta_files, item2id, min_coverage, coverage, build_times,
+            coverage_by_domain=coverage.by_domain,
+            duplicates_dropped_by_domain=duplicate_counts,
+        )
         corpus_report = {
             "num_items": len(item2id),
             "coverage": coverage,
+            "coverage_by_domain": coverage.by_domain,
+            "metadata_duplicates_dropped_by_domain": duplicate_counts,
             "build_time": sum(build_times.values()),
             "save_time": save_time,
         }
