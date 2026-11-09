@@ -1,0 +1,386 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "grounding",
+  "config": {
+    "use_jev": true
+  },
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "grounding_001",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.11848080000345362,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_002",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0030624999999417923,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_003",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.003007199997227872,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_004",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028875999996671453,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_005",
+      "actual_output": null,
+      "success": false,
+      "error": "Grounding benchmark requires use_jev=true and non-empty evidence; there is nothing to ground otherwise.",
+      "metrics": {},
+      "latency_seconds": 2.4000000848900527e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_006",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0030756000014662277,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_007",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.003201300001819618,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_008",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002989000000525266,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_009",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002949199999420671,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_010",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002884300000005169,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_011",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0027516999980434775,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_012",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002925200002209749,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_013",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0029104999994160607,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_014",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002863099998648977,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_015",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028582000013557263,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_016",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002827399999659974,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_017",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028043999991496094,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_018",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028363000019453466,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_019",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002841099998477148,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_020",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028406999990693294,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_021",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002848600001016166,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_022",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002823700000590179,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_023",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002843499998562038,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_024",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.00286710000000312,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_025",
+      "actual_output": null,
+      "success": false,
+      "error": "Grounding benchmark requires use_jev=true and non-empty evidence; there is nothing to ground otherwise.",
+      "metrics": {},
+      "latency_seconds": 2.0000006770715117e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_026",
+      "actual_output": null,
+      "success": false,
+      "error": "Grounding benchmark requires use_jev=true and non-empty evidence; there is nothing to ground otherwise.",
+      "metrics": {},
+      "latency_seconds": 1.2000018614344299e-06,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_027",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002893599998060381,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_028",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.002830100002029212,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_029",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028562000006786548,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_030",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0027771999994001817,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_031",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0028334000016911887,
+      "token_usage": null
+    },
+    {
+      "case_id": "grounding_032",
+      "actual_output": null,
+      "success": false,
+      "error": "Jev grounding evaluation failed: Evaluation failed: TYPESAFE_API_KEY not set. Set it via api_key parameter or TYPESAFE_API_KEY environment variable.",
+      "metrics": {},
+      "latency_seconds": 0.0027783999976236373,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "success_rate": 0.0
+  },
+  "latency": {
+    "mean": 0.006229796875118154,
+    "std": 0.020178572168678213,
+    "min": 1.2000018614344299e-06,
+    "max": 0.11848080000345362,
+    "p50": 0.0028524000008474104,
+    "p95": 0.0031321650016252534,
+    "p99": 0.08274415500294724
+  },
+  "token_cost": null,
+  "timestamp": "2026-11-08T18:58:34.608873+00:00",
+  "git_sha": "",
+  "tags_summary": {
+    "grounding": {
+      "success_rate": 0.0,
+      "mean": 0.006229796875118154,
+      "std": 0.020178572168678213,
+      "min": 1.2000018614344299e-06,
+      "max": 0.11848080000345362,
+      "p50": 0.0028524000008474104,
+      "p95": 0.0031321650016252534,
+      "p99": 0.08274415500294724
+    },
+    "grounded-normal": {
+      "success_rate": 0.0,
+      "mean": 0.010122856250518453,
+      "std": 0.027977989348411534,
+      "min": 0.002823700000590179,
+      "max": 0.11848080000345362,
+      "p50": 0.0028757000000041444,
+      "p95": 0.03192690000196308,
+      "p99": 0.10117002000315548
+    },
+    "hallucination-bait": {
+      "success_rate": 0.0,
+      "mean": 0.0028833999994359065,
+      "std": 0.0001271583130557963,
+      "min": 0.0027516999980434775,
+      "max": 0.003201300001819618,
+      "p50": 0.0028406999990693294,
+      "p95": 0.003131900000880705,
+      "p99": 0.0031874200016318356
+    },
+    "conflicting-evidence": {
+      "success_rate": 0.0,
+      "mean": 0.0028875999996671453,
+      "std": 0.0,
+      "min": 0.0028875999996671453,
+      "max": 0.0028875999996671453,
+      "p50": 0.0028875999996671453,
+      "p95": 0.0028875999996671453,
+      "p99": 0.0028875999996671453
+    },
+    "prompt-injection": {
+      "success_rate": 0.0,
+      "mean": 0.0006957000005058944,
+      "std": 0.0012017546623438106,
+      "min": 1.2000018614344299e-06,
+      "max": 0.0027771999994001817,
+      "p50": 2.200000380980782e-06,
+      "p95": 0.0023609799995028867,
+      "p99": 0.0026939559994207224
+    }
+  },
+  "metadata": {
+    "git_sha": "98c77ce4d7747ba71caa3895c603e8591eca209b",
+    "config": {
+      "use_jev": true
+    },
+    "provenance": {
+      "component": "grounding",
+      "dataset": "package/evaluation/component/benchmarks/grounding_dataset.jsonl",
+      "evaluator_config_sha256": "77d0425002423eff",
+      "judge": {
+        "model": "jev-latest",
+        "config_sha256": "a6337126dffb1f6d"
+      }
+    },
+    "dataset_path": "package/evaluation/component/benchmarks/grounding_dataset.jsonl",
+    "tags_filter": null,
+    "metadata_filter": null,
+    "runs": 1
+  },
+  "thresholds_result": null
+}
