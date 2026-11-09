@@ -20,11 +20,21 @@ class Type1Agent:
         self.itemcf_tool = itemcf_tool
         self.reco_tool = reco_tool
         self.query_tool = query_tool
+        self.last_tool_calls: list[dict[str, Any]] = []
 
     def recommend(self, user_id: str, seed_items: list[str], top_k: int = 10) -> dict[str, Any]:
+        self.last_tool_calls = []
+
+        def call(tool, action, **kwargs):
+            start = len(tool.logger.records)
+            try:
+                return tool(agent="type1", action=action, **kwargs)
+            finally:
+                self.last_tool_calls.extend(dict(row) for row in tool.logger.records[start:])
+
         # 1. Retrieve — candidate quanh các item user vừa tương tác (seed_items)
         limits = get_agent_limits()
-        retrieved = self.itemcf_tool(
+        retrieved = call(self.itemcf_tool, "retrieve",
             items=seed_items, top_k=max(top_k * limits.type1_candidate_multiplier, limits.type1_min_candidates)
         )
         if not retrieved.ok:
@@ -34,7 +44,7 @@ class Type1Agent:
             return {"ok": False, "stage": "retrieve", "error": "no candidates returned"}
 
         # 2. Rank — RecoModelTool xếp hạng lại candidate bằng model (không LLM)
-        ranked = self.reco_tool(user_id=user_id, candidates=candidates, top_k=top_k)
+        ranked = call(self.reco_tool, "rank", user_id=user_id, candidates=candidates, top_k=top_k)
         if not ranked.ok:
             return {"ok": False, "stage": "rank", "error": ranked.error}
         top_ids = [r["item_id"] for r in ranked.data["ranked"]]
@@ -42,7 +52,7 @@ class Type1Agent:
             return {"ok": True, "items": [], "cold_start": ranked.data["cold_start"]}
 
         # 3. Fetch — title/metadata cho output cuối
-        fetched = self.query_tool(item_ids=top_ids)
+        fetched = call(self.query_tool, "fetch", item_ids=top_ids)
         if not fetched.ok:
             return {"ok": False, "stage": "fetch", "error": fetched.error}
 

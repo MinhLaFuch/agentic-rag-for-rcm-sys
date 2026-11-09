@@ -1,0 +1,214 @@
+run:
+  timestamp: '2026-11-07T18:19:25.390926+00:00'
+  seed: 42
+  git_commit: null
+  source_fingerprint: f92f7a4cb5fc043c1893044d3e328545fdf902f9d2cb620c4902439d3f52bfc4
+  environment:
+    numpy: 2.5.4
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.2
+  hardware:
+    platform: Windows-11-10.0.26300-SP0
+    python: 3.12.2
+    cpu_count: 20
+  runtime_seconds: 439.14
+  dataset:
+    tag: multi_domain_v2_audit_20261030
+    splits_dir: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain_v2_audit_20261030
+    eval_on: validation
+    num_users: 23332162
+    num_items: 2637776
+    metadata_coverage: 1.0
+    n_requests: 14
+    profile_as_of_timestamp: 1617737606549
+    mapping_hash: 5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d
+    user_mapping_hash: e9523cde0c00fd1093ff7b026fe9fb50ec88584ca6489c4647a370fffa029504
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain_v2_audit_20261030\train.parquet
+        size_bytes: 1607020531
+        mtime_ns: 1793461553171632700
+        sha256: 7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467
+      validation:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain_v2_audit_20261030\validation.parquet
+        size_bytes: 309812597
+        mtime_ns: 1793461553187121100
+        sha256: b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81
+      test:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain_v2_audit_20261030\test.parquet
+        size_bytes: 293320171
+        mtime_ns: 1793461553187121100
+        sha256: 52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2
+config:
+  manifest_status: match
+  manifest_sha256: 7398ba4328da6fe506404eb1bf4a49109729fd6937178b45419d1acdf6b2a0f4
+  protocol:
+    version: 2
+    evaluation_kind: agent
+    item_knn:
+      scope: dataset_bound
+      user_mapping_hash: d38373ff5cac4820a6005d71a244d7c02cf6f13c09e87a344b8785cdefea509c
+      item_mapping_hash: 70c8a3c68264b57c54877a39f69a3250d72270dbfac180e1068d0e26bcdd812b
+      eval_on: validation
+      fit_splits:
+      - train_core
+      tag: multi_domain_v2_audit_20261030
+    fit_timestamp_max: 1617737606134
+    target_timestamp_min: 1617737606549
+    metadata_policy:
+      name: historical_static_catalog
+      version: 2
+      as_of_timestamp: 1617737606549
+      masked_fields:
+      - price
+      - average_rating
+      - rating_number
+      first_seen_filter: true
+      first_seen_proxy: minimum timestamp per item in all cleaned interactions; not
+        an actual launch/availability date
+      aggregate_observed_at: null
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified
+      catalog_assumption: visible items satisfy first_seen_ts <= as_of_timestamp;
+        first_seen_ts is a cleaned-interaction proxy, not launch date; title/taxonomy/store
+        values remain static metadata with historical validity unverified
+      historical_causal_claim: false
+      snapshot_mutable_fields_used: false
+    label_policy: all observed review user-item pairs are binary positives, independent
+      of stars
+    cohort_policy: all target-bearing users; segment by unique pre-cutoff train history;
+      fit-core does not filter cohort
+    history_size: unique fit items, consistent with binary CSR
+    segment_population_users:
+      sparse: 1919045
+      warm: 705938
+      cold: 2471043
+    segment_sample_users: {}
+    sampling: seeded per-kind/segment cap; eligible request population only
+    item_warm_definition: any user interacted in fit; distinct from same-user repeat
+    candidate_target_denominator: all unique target items per user; seen filtering
+      may make repeat targets unretrievable
+    ranking_target_denominator: request.targets; ambiguous requests have no quality
+      ground truth
+    query_provenance: fit-history title proxy, not observed user query; target-metadata
+      queries must be oracle
+    cf_history: all pre-target history; similarity and popularity frozen on train_core
+    request_ids:
+    - similar-sparse-0
+    - similar-sparse-1
+    - similar-warm-0
+    - similar-warm-1
+    - personalized-sparse-0
+    - personalized-sparse-1
+    - personalized-warm-0
+    - personalized-warm-1
+    - ambiguous-none-0
+    - ambiguous-none-1
+    - ambiguous-none-2
+    - ambiguous-none-3
+    - ambiguous-none-4
+    - ambiguous-none-5
+    request_scope: realistic
+    request_content_sha256: 456de69180495bc013f6822092357c4101fbb06ce9f76d5916b88d96adaef636
+    resume_identity_sha256: b715a866acb803a64725df09d40d9a295acfff816e91b7ec97f9bc826ab4751b
+  agents:
+  - baseline
+  - type1
+  k: 10
+  per_segment: 2
+  n_ambiguous: 6
+  language: vi
+  request_scope: realistic
+  price_slack: 1.25
+  price_round_to: 5
+  sparse_max: 4
+  item_knn_k: 20
+  reflect_rounds: null
+  inference_mode: template
+  trajectory_log: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\experiments\logs\multi_domain_v2_audit_20261030\smoke_tools_20261108.jsonl
+  llm_model: gpt-5.4
+  knn_artifact_status: validated_train_core_cache
+  knn_fit_data_hash: b4139263cc2aff4a26134d5b556249184af1537919c72cf969327148a98f2be3
+  knn_cache_data_hash: b4139263cc2aff4a26134d5b556249184af1537919c72cf969327148a98f2be3
+  knn_cache_used: false
+  eval_schema_version: 2
+  provenance:
+    planner_prompt_sha256: f62042348f0cfef22fd2a1bf7033ca51e23bb186e639e873bb8c6c87254bd438
+    planner_memory_prompt_sha256: null
+    inference_prompt_sha256: 94eec36e05866d1c8bdb49c6e58ab55a968d7733450b3f2dd2c966639fc77af1
+    tool_schema_sha256: a42b16f5e75369bfbc514b67a256036a6c0bbdf110eca3ecb7402f1d89601ec0
+    git_commit: null
+    git_dirty: false
+    agent_limits:
+      temperature: 0.0
+      max_tokens: 2048
+      max_steps: 8
+      plan_retries: 1
+      reflect_rounds: 1
+      llm_retries: null
+    inference_limits:
+      temperature: 0.0
+      max_tokens: 2048
+      llm_retries: 1
+      check_numbers: true
+      price_tolerance: 0.5
+  corpus_artifacts:
+    mode: loaded_prebuilt
+    metadata_sources:
+      Video_Games:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Video_Games.jsonl
+        exists: true
+        size_bytes: 437375785
+        sha256: 3ad94dfaa8dfed23c5f420aa9ddec415d00f2b8ec9f2d796f487b4b2c4d256de
+      Toys_and_Games:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Toys_and_Games.jsonl
+        exists: true
+        size_bytes: 2637909430
+        sha256: caca4bc34518426d45e2924d1042923d9d3cd89eb69f4daeb0b3a9c87e278a9a
+      Electronics:
+        path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\metadata\meta_Electronics.jsonl
+        exists: true
+        size_bytes: 5246144134
+        sha256: 5eb4dabd539586c49654297319ef178b62a2fe8e43108376feda125f04455d93
+    sqlite_path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain_v2_audit_20261030\corpus_multi_domain_v2_audit_20261030.sqlite
+    sqlite_sha256: 004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8
+    manifest_path: D:\DACNTT\src\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain_v2_audit_20261030\corpus_multi_domain_v2_audit_20261030.meta.json
+    manifest_sha256: 1ef02ecb9c6bb88dbbd1ea29f6114abd71581c526ab333b3301e9004bf048019
+    source_hash_semantics:
+      format_version: 2
+      source_hash_protocol: sha256_file_bytes_v1
+      mapping_hash_protocol: sorted_key_index_json_v1
+      coverage_by_domain:
+        Electronics:
+          mapping_items: 1609860
+          metadata_items: 1609860
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Toys_and_Games:
+          mapping_items: 890667
+          metadata_items: 890667
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Video_Games:
+          mapping_items: 137249
+          metadata_items: 137249
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+      metadata_duplicates_dropped_by_domain:
+        Video_Games: 0
+        Toys_and_Games: 0
+        Electronics: 0
+      missing_sources: []
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified
+    missing_sources: []
+    allow_missing_sources: false

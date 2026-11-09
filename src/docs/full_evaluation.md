@@ -154,3 +154,44 @@ resume. An interrupted run must not be presented as a completed quality result.
 
 Data preparation status and the criteria for finishing validation are tracked
 in [data_readiness_status.md](data_readiness_status.md).
+
+## Agent scorer selection and Type1 audit (2026-11-09)
+
+`configs/agent/scoring.yaml` selects `baseline` or `hybrid` and the hybrid
+popularity weight. The default remains `baseline` so existing comparisons do not
+silently change models. Use `--scorer hybrid --hybrid-popularity-weight 4` for
+an explicit hybrid run. This config is separate from pipeline-manifest inputs;
+the immutable dataset does not need rebuilding.
+
+Hybrid candidate scoring uses the same formula as the baseline hybrid: full
+pre-target unique-pair popularity, CF trained on train-core, and full-catalog
+per-user max normalization before exclusion or candidate filtering. ItemCFTool
+continues to retrieve from the unchanged core similarity. Candidate rank ties
+retain input order in RecoModelTool; full-catalog baseline ties use global item
+indices. The baseline agent uses the selected full-catalog hybrid too, excluding
+all seen items. Hybrid ranking cannot recover targets absent from retrieved
+candidates, so baseline quality gains do not imply equal gains for the agent.
+
+Scorer mode, weight, normalization, popularity/history source and CF provenance
+are saved both in config.scorer and protocol.scorer. They participate in resume
+identity. Use a new trajectory filename after source/config changes; do not
+resume the historical exp_014 log with this implementation. Historical reports
+remain unchanged, including exp_014's incorrectly hardcoded cache boolean.
+New results derive knn_cache_used from the validated artifact status.
+
+Type1 stores request-local tool_calls and steps in execution order, including
+timestamp, type1 agent/action, input summary/hash, output summary, latency and
+errors. Calls after a failed stage are not fabricated. Unexpected tool exceptions
+are retained as failed trajectories with the available audit records. The shared
+logger does not add calls from earlier requests to the Type1 trajectory.
+
+Run the new no-LLM smoke on validation:
+
+```powershell
+$env:PYTHONPATH = "."
+.venv-baseline/Scripts/python.exe -u scripts/evaluation/run_agent_eval.py --tag multi_domain_v2_audit_20261030 --eval-on validation --agents baseline,type1 --per-segment 2 --request-scope realistic --inference-mode template --scorer hybrid --hybrid-popularity-weight 4 --trajectory-file smoke_hybrid_audit_20261109.jsonl
+```
+
+This does not configure the demo backend or change previously frozen baseline
+test results. The same selected scorer is shared by Type1, planner and
+planner_memory in this agent-evaluation runner.

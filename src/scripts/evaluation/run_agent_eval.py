@@ -67,6 +67,9 @@ from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.inference import MODES
 from package.tools import BaselineScorer, ToolCallLogger
+from package.tools.score.hybrid_scorer import HybridScorer
+from package.tools.recommenders.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.tools.recommenders.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.tools.corpus.build_corpus import build_corpus
 from package.tools.corpus.load_corpus import load_corpus
 from package.tools.evaluation import next_experiment_dir, save_experiment, segment_users_by_history, select_fit_target, sha256_file
@@ -171,7 +174,19 @@ def run_type1(
     """One type1 trajectory (fixed plan, no LLM for the recommendation); `answerer` as in run_planner."""
     traj = empty_trajectory(request, "type1", [])
     started = time.perf_counter()
-    out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    try:
+        out = runner.recommend(request.user_id, [request.seed_item_id], top_k=k)
+    except Exception as exc:
+        out = {"ok": False, "stage": "exception", "error": f"{type(exc).__name__}: {exc}"}
+    calls = list(getattr(runner, "last_tool_calls", []))
+    traj["tools_available"] = ["ItemCFTool", "RecoModelTool", "QueryTool"]
+    traj["tool_calls"] = calls
+    traj["steps"] = [dict(tool=c["tool"], ok=c["output"]["ok"],
+                          args=c.get("input"), input_hash=c.get("input_hash"),
+                          timestamp=c.get("timestamp"), action=c.get("action"),
+                          latency_seconds=c["latency_seconds"], output_summary=c["output"],
+                          error=c["output"].get("error"), invented_ids=[])
+                     for c in calls]
     if out["ok"]:
         traj["recommended"] = [it["item_id"] for it in out["items"]][:k]
     else:
@@ -207,6 +222,8 @@ def main() -> None:
     )
     ap.add_argument("--metadata-policy", choices=POLICIES, default="historical_static_catalog",
                     help="Default masks unversioned price/rating aggregates; snapshot is a non-causal comparison.")
+    ap.add_argument("--scorer", choices=("baseline", "hybrid"), help="Agent candidate scorer; default agent/scoring.yaml")
+    ap.add_argument("--hybrid-popularity-weight", type=float, help="Override configured hybrid weight")
     args = ap.parse_args()
     if args.reflect_rounds is not None and args.reflect_rounds < 0:
         ap.error("--reflect-rounds must be >= 0")
@@ -215,6 +232,13 @@ def main() -> None:
 
     cfg = load_config("agent/agent_eval")["agent_eval"]
     baselines = load_config("eval/baselines")["baselines"]
+    scoring_cfg = load_config("agent/scoring")["scoring"]
+    scorer_mode = args.scorer or scoring_cfg["mode"]
+    scorer_weight = args.hybrid_popularity_weight if args.hybrid_popularity_weight is not None else float(scoring_cfg["hybrid_popularity_weight"])
+    if scorer_mode not in ("baseline", "hybrid") or not np.isfinite(scorer_weight) or scorer_weight < 0:
+        ap.error("scorer must be baseline/hybrid and hybrid weight finite and nonnegative")
+    if args.hybrid_popularity_weight is not None and scorer_mode != "hybrid":
+        ap.error("--hybrid-popularity-weight requires --scorer hybrid")
     k, seed = int(cfg["k"]), int(baselines["seed"])
     agents = [a.strip() for a in (args.agents or ",".join(cfg["agents"])).split(",") if a.strip()]
     if set(agents) - set(AGENTS):
@@ -314,7 +338,25 @@ def main() -> None:
     print(f"ItemKNN: fitted in {fit_time:.1f}s")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
-    tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
+    scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
+    baseline_model = knn
+    if scorer_mode == "hybrid":
+        cf = ItemKNNMatrixRecommender(k=knn_k)
+        cf.train_matrix = knn.user_items
+        cf.num_users, cf.num_items = knn.user_items.shape
+        cf.similarity = knn.similarity.T.tocsr()
+        baseline_model = HybridItemKNNRecommender(cf, knn.user_items, scorer_weight)
+    scorer_provenance = {
+        "mode": scorer_mode, "name": scorer.name,
+        "popularity_weight": scorer_weight if scorer_mode == "hybrid" else scorer.popularity_weight,
+        "popularity_source": "full pre-target unique user-item history" if scorer_mode == "hybrid" else "CF fit popularity",
+        "cf_normalization": "per-user full-catalog max before exclusion" if scorer_mode == "hybrid" else "none",
+        "cf_provenance": protocol_manifest["item_knn"],
+        "history_splits": ["train"] if args.eval_on == "validation" else ["train", "validation"],
+        "candidate_ties": "input order (RecoModelTool)", "baseline_ties": "global item index",
+    }
+    protocol_manifest["scorer"] = scorer_provenance
+    tools = build_tools(knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
 
     runners: dict[str, Any] = {}
     if "type1" in agents:
@@ -410,7 +452,9 @@ def main() -> None:
                 else:
                     traj = empty_trajectory(request, agent, [])
                     started = time.perf_counter()
-                    traj["recommended"] = [id2item[i] for i in knn.recommend(request.user_idx, k)[:k] if i in id2item]
+                    predicted = (baseline_model.recommend(request.user_idx, k, exclude=knn.user_items)
+                                 if scorer_mode == "hybrid" else baseline_model.recommend(request.user_idx, k))
+                    traj["recommended"] = [id2item[i] for i in predicted[:k] if i in id2item]
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
                 traj["evaluation_protocol_hash"] = protocol_hash
@@ -456,7 +500,8 @@ def main() -> None:
                 "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_used": False,
+                "knn_cache_used": knn_artifact_status == "validated_train_core_cache",
+                "scorer": scorer_provenance,
                 "eval_schema_version": EVAL_SCHEMA_VERSION,
                 "provenance": provenance,
                 "corpus_artifacts": {
