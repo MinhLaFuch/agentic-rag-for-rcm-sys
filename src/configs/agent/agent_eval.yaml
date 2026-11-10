@@ -36,5 +36,10 @@ agent_eval:
                        # set (abs path, or rel to experiments/) to redirect —
                        # campaign sets campaigns/<id>/multi_turn/ so the file
                        # lives in exactly one place.
-    limits: {}         # Phase-C limit knobs reserved (max turns/steps/budget); nothing enforced yet
-    timeout_seconds: 1800  # wall-clock cap for the multi-turn subprocess; timeout -> status "timeout"
+    limits: {}         # Phase-C per-turn/conversation limit knobs (max_turns, turn_timeout_seconds,
+                       # token budget...); nothing enforced yet. NOTE: keys here are PER-TURN/PER-CONVERSATION
+                       # limits inside the eval — distinct from timeout_seconds below, which caps the WHOLE
+                       # multi-turn subprocess. Don't confuse limits.turn_timeout_seconds (per turn) with
+                       # timeout_seconds (whole step).
+    timeout_seconds: 1800  # wall-clock cap for the ENTIRE multi-turn subprocess; timeout -> status "timeout".
+                           # Per-turn limits belong under limits.* (Phase C), not here.
