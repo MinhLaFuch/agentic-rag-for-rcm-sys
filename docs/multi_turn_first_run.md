@@ -5,6 +5,11 @@ Evaluates planner+Session behavior across multi-turn conversations
 `PlanExecutor` + `Session` over the fixture corpus and fails loudly without
 credentials — it never produces fake scores.
 
+> **Status: chưa chạy thật.** The real end-to-end run (standalone CLI or via
+> `_run_all`) has NOT been executed yet — it needs `LLM_BASE_URL`/`LLM_API_KEY`
+> for a reachable OpenAI-compatible endpoint. All verification so far is
+> offline unit tests with fakes/mocks at the test layer only.
+
 ## Prerequisites
 
 - `LLM_BASE_URL` and `LLM_API_KEY` (resolved by `configs/agent/llm.yaml`), or
