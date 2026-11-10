@@ -422,10 +422,13 @@ def test_resume_agent_config_excludes_multi_turn():
         dict(base, multi_turn={"enabled": True, "dataset": "d.jsonl",
                                "output_dir": "/tmp/x", "limits": {"max_turns": 3},
                                "timeout_seconds": 60}),
+        dict(base, campaign_id="campaign_a"),
+        dict(base, campaign_id="campaign_b",
+             multi_turn={"enabled": True, "limits": {"max_turns": 9}}),
     ]
     hashed = [script._resume_agent_config(cfg) for cfg in variants]
-    assert hashed[0] == hashed[1] == hashed[2]
-    assert all("multi_turn" not in h for h in hashed)
+    assert hashed[0] == hashed[1] == hashed[2] == hashed[3] == hashed[4]
+    assert all("multi_turn" not in h and "campaign_id" not in h for h in hashed)
 
 
 def test_run_optional_multi_turn_disabled_returns_none(tmp_path):

@@ -10,6 +10,9 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
+
+from package.config.load_config import load_config
 
 from package.evaluation.campaign import (
     CampaignConfig,
@@ -178,3 +181,34 @@ class TestCampaignResultMultiTurn:
         )
         restored = CampaignResult.from_dict(result.to_dict())
         assert restored.multi_turn == result.multi_turn
+
+
+class TestOverlayPassesConfigCheck:
+    """Regression for the real-run bug: every key the campaign overlay sets
+    must exist in configs/agent/agent_eval.yaml, or _check_overlay_keys
+    rejects the whole run before it starts (campaign_id was missing)."""
+
+    def test_real_campaign_overlay_loads_via_config_system(self, tmp_path, monkeypatch):
+        runner = CampaignRunner(_campaign(tmp_path))
+        experiment = ExperimentConfig(
+            name="exp_x",
+            agent_config={"agents": ["baseline"]},
+            evaluation_config={"per_segment": 3},
+            repetition_count=1,
+        )
+        # The designated multi-turn run AND a regular run — both overlays
+        # must survive the fail-closed overlay key check.
+        for mt_dir in (tmp_path / "campaign_output" / "multi_turn", None):
+            overlay = runner._build_config_overlay(
+                experiment, 1, multi_turn_output_dir=mt_dir
+            )
+            overlay_path = tmp_path / f"overlay_{mt_dir is not None}.yaml"
+            overlay_path.write_text(
+                yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True),
+                encoding="utf-8",
+            )
+            monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+            cfg = load_config("agent/agent_eval")["agent_eval"]
+            assert cfg["campaign_id"] == "mt_campaign"
+            assert cfg["agents"] == ["baseline"]
+            assert cfg["multi_turn"]["enabled"] is (mt_dir is not None)
