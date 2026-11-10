@@ -14,9 +14,10 @@ def test_data_paths_layout_is_under_resource():
     assert paths.tag == "multi_domain"
     assert paths.raw_dir == PROJECT_ROOT / "resource" / "raw"
     assert paths.review_path("Video_Games").is_relative_to(paths.raw_dir)
-    # meta_path has fallback logic: checks resource/metadata/ first, then resource/raw/meta_*.jsonl, then resource/raw/meta_*.jsonl.gz
-    # Since resource/metadata/meta_Video_Games.jsonl doesn't exist, it falls back to resource/raw/meta_Video_Games.jsonl.gz
-    assert paths.meta_path("Video_Games") == PROJECT_ROOT / "resource" / "raw" / "meta_Video_Games.jsonl.gz"
+    # The current layout stores product metadata separately from review dumps.
+    # DataPaths prefers resource/metadata/meta_<domain>.jsonl and keeps raw as a
+    # legacy fallback when that file is unavailable.
+    assert paths.meta_path("Video_Games") == PROJECT_ROOT / "resource" / "metadata" / "meta_Video_Games.jsonl"
     assert paths.cleaned_path("Electronics") == PROJECT_ROOT / "resource/cleaned/Electronics/interactions.parquet"
     assert paths.filtered_path == PROJECT_ROOT / "resource/filtered/multi_domain/interactions.parquet"
     assert paths.mapped_dir == PROJECT_ROOT / "resource/mapped/multi_domain"
@@ -67,7 +68,7 @@ def test_config_cli_resolves_paths_from_datapaths_for_shell_scripts():
     assert run("--domain", "Video_Games", "path:log_dir") == (0, ["experiments/logs/Video_Games"])
     assert run("path:experiments_dir") == (0, ["experiments"])
     assert run("path:review_path:Video_Games") == (0, [get_data_paths().review_path("Video_Games").relative_to(PROJECT_ROOT).as_posix()])
-    assert run("path:meta_path:Video_Games") == (0, ["resource/raw/meta_Video_Games.jsonl.gz"])
+    assert run("path:meta_path:Video_Games") == (0, ["resource/metadata/meta_Video_Games.jsonl"])
     assert run("path:cleaned_path:Electronics") == (0, ["resource/cleaned/Electronics/interactions.parquet"])
     assert run("--domain", "Electronics", "path:split_path:train") == (0, ["resource/splits/Electronics/train.parquet"])
     # shell and Python must agree: the CLI is just a view of DataPaths

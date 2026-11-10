@@ -7,6 +7,9 @@ resource
 # Durable local evaluation checkpoints include models and full candidate payloads.
 src/src.zip
 
+# Ignore all data/output JSON files
+*.jsonl
+
 # Virtual environment
 .venv/
 src/.venv/
