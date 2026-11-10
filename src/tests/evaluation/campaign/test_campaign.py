@@ -659,3 +659,47 @@ def test_real_campaign_overlay_loads_via_config_system(tmp_path, monkeypatch):
         assert inference["mode"] == "template"
         baselines = load_config("eval/baselines")["baselines"]
         assert baselines["seed"] == 7
+
+
+def test_build_config_overlay_relocates_agent_eval_output(tmp_path, monkeypatch):
+    """campaign_dir moves exp_NNN under <campaign>/experiments via path/data_paths overlay."""
+    import os
+    import yaml
+    from package.config import get_data_paths
+    from package.config.load_config import load_config
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    campaign_dir = tmp_path / "campaigns" / "c1"
+
+    ov = runner._build_config_overlay(ExperimentConfig(name="e"), 1, campaign_dir=campaign_dir)
+    rel = ov["path/data_paths"]["outputs"]["agent_eval"]
+    resolved = Path(os.path.normpath(get_data_paths().experiments_dir / rel))
+    assert resolved == Path(os.path.normpath(campaign_dir / "experiments"))
+
+    # The fragment must survive the real overlay path: load_config merges it
+    # into path/data_paths and output_dir() resolves inside the campaign dir.
+    overlay_path = tmp_path / "config_overlay.yaml"
+    overlay_path.write_text(yaml.safe_dump(ov, sort_keys=False), encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+    out = get_data_paths().output_dir("agent_eval")
+    assert Path(os.path.normpath(out)) == Path(os.path.normpath(campaign_dir / "experiments"))
+    _ = load_config("path/data_paths")  # must not raise on the extra fragment
+
+    # Without campaign_dir the shared experiments/agent_eval pool is untouched.
+    ov_default = runner._build_config_overlay(ExperimentConfig(name="e"), 1)
+    assert "path/data_paths" not in ov_default
+
+
+def test_experiment_run_roundtrip_includes_experiment_dir():
+    run = ExperimentRun(
+        experiment_name="e",
+        run_number=1,
+        output_dir="/x",
+        experiment_dir="/x/experiments/exp_001",
+        success=True,
+    )
+    assert ExperimentRun.from_dict(run.to_dict()).experiment_dir == "/x/experiments/exp_001"
+    # Old campaign_result.json files without the key still load.
+    old = run.to_dict()
+    del old["experiment_dir"]
+    assert ExperimentRun.from_dict(old).experiment_dir == ""

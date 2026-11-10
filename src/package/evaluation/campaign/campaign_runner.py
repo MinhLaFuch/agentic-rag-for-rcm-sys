@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -127,12 +128,13 @@ class CampaignRunner:
         success = True
         error = None
         metrics = {}
+        experiment_dir = ""
 
         try:
             # Per-experiment tunables go through a CONFIG_OVERLAY_PATH YAML (merged over
             # configs/ by load_config) — run_agent_eval.py itself only takes runtime selectors.
             overlay = self._build_config_overlay(
-                experiment, run_number, multi_turn=multi_turn
+                experiment, run_number, multi_turn=multi_turn, campaign_dir=output_dir
             )
             overlay_path = exp_output_dir / "config_overlay.yaml"
             overlay_path.write_text(
@@ -182,6 +184,8 @@ class CampaignRunner:
             else:
                 print(result.stdout)
                 # run_agent_eval prints "saved -> <exp_dir>"; that is the deterministic handoff
+                exp_dir = self._experiment_dir_from_stdout(result.stdout)
+                experiment_dir = str(exp_dir) if exp_dir is not None else ""
                 metrics = self._load_experiment_metrics(result.stdout)
 
         except subprocess.TimeoutExpired:
@@ -197,6 +201,7 @@ class CampaignRunner:
             experiment_name=experiment.name,
             run_number=run_number,
             output_dir=str(exp_output_dir),
+            experiment_dir=experiment_dir,
             success=success,
             error=error,
             duration_seconds=duration,
@@ -295,6 +300,7 @@ class CampaignRunner:
         experiment: Any,
         run_number: int,
         multi_turn: dict[str, Any] | None = None,
+        campaign_dir: Path | None = None,
     ) -> dict[str, Any]:
         """Build a CONFIG_OVERLAY_PATH YAML fragment for one experiment run.
 
@@ -329,6 +335,15 @@ class CampaignRunner:
         agent_eval["multi_turn"] = multi_turn if multi_turn is not None else {"enabled": False}
 
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
+
+        # Keep experiment artifacts inside the campaign dir: run_agent_eval picks
+        # exp_NNN under data_paths.outputs.agent_eval, which defaults to the
+        # shared experiments/agent_eval pool. Relocate it per campaign; ".."
+        # segments keep this working when output_dir lives outside experiments/.
+        if campaign_dir is not None:
+            experiments_dir = get_data_paths().experiments_dir
+            exp_root = os.path.relpath(campaign_dir / "experiments", experiments_dir)
+            overlay["path/data_paths"] = {"outputs": {"agent_eval": Path(exp_root).as_posix()}}
 
         inference_mode = experiment.agent_config.get("inference_mode")
         if inference_mode is not None:

@@ -278,6 +278,7 @@ class ExperimentRun:
         experiment_name: Name of the experiment
         run_number: Repetition number (1-indexed)
         output_dir: Directory where results were saved
+        experiment_dir: exp_NNN dir reported by run_agent_eval ("" if unknown)
         success: Whether the run succeeded
         error: Error message if failed
         timestamp: ISO timestamp
@@ -287,6 +288,7 @@ class ExperimentRun:
     experiment_name: str
     run_number: int
     output_dir: str
+    experiment_dir: str = ""
     success: bool = True
     error: str | None = None
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -298,6 +300,7 @@ class ExperimentRun:
             "experiment_name": self.experiment_name,
             "run_number": self.run_number,
             "output_dir": self.output_dir,
+            "experiment_dir": self.experiment_dir,
             "success": self.success,
             "error": self.error,
             "timestamp": self.timestamp,
@@ -311,6 +314,7 @@ class ExperimentRun:
             experiment_name=data["experiment_name"],
             run_number=data["run_number"],
             output_dir=data["output_dir"],
+            experiment_dir=data.get("experiment_dir", ""),
             success=data.get("success", True),
             error=data.get("error"),
             timestamp=data.get("timestamp"),
