@@ -621,3 +621,41 @@ def test_run_experiment_builds_domain_cmd_and_runs_subprocess(tmp_path, monkeypa
     assert "--tag" not in cmd
     assert cmd.count("--domain") == 3
     assert "scripts/evaluation/run_agent_eval.py" in " ".join(cmd)
+
+
+def test_real_campaign_overlay_loads_via_config_system(tmp_path, monkeypatch):
+    """Regression: a real CampaignRunner overlay must pass _check_overlay_keys.
+
+    campaign_id was set by the overlay but absent from agent_eval.yaml, so every
+    campaign experiment died at startup (ConfigError: unknown key). This drives
+    the actual overlay through CONFIG_OVERLAY_PATH + load_config.
+    """
+    import yaml
+    from package.config.load_config import load_config
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="mt_campaign"))
+    exp = ExperimentConfig(
+        name="exp_a",
+        agent_config={"agents": ["baseline"], "inference_mode": "template"},
+        evaluation_config={"per_segment": 5},
+        random_seed=7,
+    )
+
+    for run_number in (1, 2):
+        overlay = runner._build_config_overlay(exp, run_number)
+        overlay_path = tmp_path / f"overlay_{run_number}.yaml"
+        overlay_path.write_text(
+            yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
+        )
+        monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+
+        cfg = load_config("agent/agent_eval")["agent_eval"]
+        assert cfg["campaign_id"] == "mt_campaign"
+        assert cfg["agents"] == ["baseline"]
+        assert cfg["per_segment"] == 5
+        assert cfg["trajectory_file"] == f"mt_campaign_exp_a_run{run_number}_trajectories.jsonl"
+
+        inference = load_config("agent/inference")["inference"]
+        assert inference["mode"] == "template"
+        baselines = load_config("eval/baselines")["baselines"]
+        assert baselines["seed"] == 7
