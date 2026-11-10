@@ -12,6 +12,9 @@ resource
 /src/experiments/ranking_eval/_checkpoints/
 src/src.zip
 
+# Ignore all data/output JSON files
+*.jsonl
+
 # Virtual environment
 .venv/
 src/.venv/
