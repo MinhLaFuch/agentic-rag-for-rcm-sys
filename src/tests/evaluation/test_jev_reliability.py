@@ -66,16 +66,16 @@ class TestJevProviderFake:
 
     def test_jev_provider_missing_api_key(self):
         """Test that missing API key raises ValueError."""
-        # Clear env var
-        original = os.environ.get("TYPESAFE_API_KEY")
-        os.environ.pop("TYPESAFE_API_KEY", None)
+        # Clear env vars
+        saved = {k: os.environ.pop(k, None) for k in ("TYPESAFE_API_KEY", "OPENROUTER_API_KEY")}
 
         try:
-            with pytest.raises(ValueError, match="TYPESAFE_API_KEY not set"):
+            with pytest.raises(ValueError, match="No judge API key"):
                 JevProvider(api_key=None)
         finally:
-            if original is not None:
-                os.environ["TYPESAFE_API_KEY"] = original
+            for k, v in saved.items():
+                if v is not None:
+                    os.environ[k] = v
 
     def test_env_var_expansion(self):
         """Test that env var is used when api_key is None."""

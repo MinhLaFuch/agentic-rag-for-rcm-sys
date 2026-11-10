@@ -2,10 +2,15 @@
 # Used to evaluate product recommendation assistant replies for faithfulness and communication quality.
 
 # Jev API configuration
+# Provider: TypeSafe trực tiếp (api.typesafe.ai) HOẶC OpenRouter System One
+# (https://openrouter.ai/api — cùng protocol /v1/systemone, auth = OpenRouter key).
+# OpenRouter: đặt JUDGE_API_KEY=sk-or-..., JUDGE_BASE_URL=https://openrouter.ai/api,
+# JUDGE_MODEL=typesafe/jev-1.14 (hoặc alias jev-latest).
 provider: "jev"                  # Judgment provider to use (jev)
-api_key: ${TYPESAFE_API_KEY:-}   # TypeSafe API key; set via env var or fill directly
-model: "jev-latest"              # Model to use (jev-latest, jev-1.14.0, jev-1.13.0)
-base_url: "https://api.typesafe.ai"
+api_key: ${JUDGE_API_KEY:-}      # judge credential (TypeSafe key hoặc OpenRouter key);
+                                 # trống -> JevProvider fallback TYPESAFE_API_KEY/OPENROUTER_API_KEY env
+base_url: ${JUDGE_BASE_URL:-https://api.typesafe.ai}
+model: ${JUDGE_MODEL:-jev-latest}  # jev-latest, jev-1.14.0, jev-1.13.0 (OpenRouter: typesafe/jev-1.14)
 timeout_seconds: 30.0
 
 # Long context: set to true for large states (requires TypeSafe-Danger-Zone-Long-Context header)
