@@ -22,6 +22,11 @@ parameter_grid:
     - 0  # No reflection
     - 1  # 1 reflection round
     # - 2  # 2 reflection rounds
+  multi_turn:
+    - true   # mọi experiment opt-in multi-turn eval; policy "all" bên dưới chạy hết
+    # Để A/B (có/không multi-turn eval) thì dùng [false, true] — nhân đôi số experiment.
+    # Lưu ý: multi_turn là eval add-on, metrics của nó KHÔNG vào comparisons;
+    # sweep [false, true] chỉ khác nhau ở coverage eval, không phải agent behavior.
 
 # Optional: Add per_segment (applies to all experiments)
 evaluation_config:
@@ -49,7 +54,9 @@ output_dir: "agent_eval/campaigns/campaign_001"
 # Campaign policy caps how many runs may execute it:
 #   "never" = nothing runs; "once" = at most one run (first opt-in, else first
 #   experiment's first repetition — legacy default); "all" = every opt-in run.
+#   Ở đây mọi experiment opt-in qua parameter_grid nên "all" = multi-turn eval
+#   cho cả 12 experiment (tốn LLM calls tương ứng — mỗi conversation nhiều turn).
 # Artifacts land at <output_dir>/multi_turn/<exp>_run<N>/multi_turn.json;
 # statuses are reported in campaign_result.json.multi_turn.runs but metrics
 # never enter paired comparisons.
-multi_turn: "once"
+multi_turn: "all"
