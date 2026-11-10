@@ -26,6 +26,8 @@ agent_eval:
   use_prebuilt_corpus: true      # false = build corpus trong RAM thay vì đọc corpus prebuilt (debug/tag nhỏ)
   allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô (schema + item mapping vẫn được kiểm)
   campaign_id: null         # campaign runner điền vào qua CONFIG_OVERLAY_PATH khi chạy trong campaign (traceability exp -> campaign); null khi chạy riêng
+  experiment_dir: null      # null = tự cấp exp_NNN/ dưới outputs.agent_eval; campaign overlay set đường tuyệt đối
+                            # tới campaigns/<id>/<exp>/run_N/ để config.yaml/metrics.json nằm chung run dir
   item_knn_reuse_cache: false  # true = load ItemKNN từ cache đã validate (data_hash + provenance + checksum)
                               # thay vì fit lại; cache miss/invalid -> fit fresh rồi save để các run sau dùng lại.
                               # Campaign overlay bật cái này + trỏ item_knn_dir vào <campaign>/item_knn/ để

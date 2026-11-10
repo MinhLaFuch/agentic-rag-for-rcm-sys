@@ -566,7 +566,13 @@ def main() -> None:
     # campaign overlay sets campaigns/<id>/multi_turn/) writes there instead,
     # so the artifact exists in exactly one place. Disabled -> mt_info is None
     # and nothing below changes (metrics.json stays byte-identical).
-    exp_dir_candidate = next_experiment_dir(data_paths.output_dir("agent_eval"))
+    # experiment_dir override (campaign overlay) pins artifacts to the run dir;
+    # otherwise allocate the next exp_NNN under outputs.agent_eval.
+    exp_dir_override = cfg.get("experiment_dir")
+    exp_dir_candidate = (
+        Path(exp_dir_override) if exp_dir_override
+        else next_experiment_dir(data_paths.output_dir("agent_eval"))
+    )
     mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
 
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
@@ -617,7 +623,7 @@ def main() -> None:
                                              "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns, "sha256": sha256_file(data_paths.split_path(name))}
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
-        exist_ok=mt_info is not None,
+        exist_ok=mt_info is not None or bool(exp_dir_override),
         notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "
                "Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting."),

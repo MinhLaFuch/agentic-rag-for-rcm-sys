@@ -336,14 +336,12 @@ class CampaignRunner:
 
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
 
-        # Keep experiment artifacts inside the campaign dir: run_agent_eval picks
-        # exp_NNN under data_paths.outputs.agent_eval, which defaults to the
-        # shared experiments/agent_eval pool. Relocate it per campaign; ".."
-        # segments keep this working when output_dir lives outside experiments/.
+        # Pin artifacts to the run dir itself: run_agent_eval writes
+        # config.yaml/metrics.json/trajectories.jsonl into agent_eval.
+        # experiment_dir, so campaigns/<id>/<exp>/run_N/ is self-contained.
         if campaign_dir is not None:
-            experiments_dir = get_data_paths().experiments_dir
-            exp_root = os.path.relpath(campaign_dir / "agent_eval", experiments_dir)
-            overlay["path/data_paths"] = {"outputs": {"agent_eval": Path(exp_root).as_posix()}}
+            run_dir = campaign_dir / experiment.name / f"run_{run_number}"
+            agent_eval["experiment_dir"] = str(run_dir)
 
             # Fit ItemKNN once per campaign: item_knn_reuse_cache lets the first
             # run save a provenance-validated artifact and siblings load it
@@ -352,7 +350,7 @@ class CampaignRunner:
             # pool — so a campaign cannot clobber pipeline artifacts.
             src_root = Path(get_data_paths().src_root)
             knn_root = os.path.relpath(campaign_dir / "item_knn", src_root)
-            overlay["path/data_paths"]["paths"] = {"item_knn_dir": Path(knn_root).as_posix()}
+            overlay["path/data_paths"] = {"paths": {"item_knn_dir": Path(knn_root).as_posix()}}
             agent_eval["item_knn_reuse_cache"] = True
 
         inference_mode = experiment.agent_config.get("inference_mode")
