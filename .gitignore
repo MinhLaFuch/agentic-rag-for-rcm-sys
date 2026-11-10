@@ -30,3 +30,10 @@ src/resource/corpus/
 # Graphify output
 src/graphify-out/
 nul
+
+# Evaluation run artifacts — regenerated locally on each run.
+# Historically committed files under these paths stay tracked.
+/src/experiments/agent_eval/exp_*/
+/src/experiments/agent_eval/campaigns/
+/src/experiments/test_logs/
+/src/experiments/agent_eval/component_benchmarks/pytest.log
