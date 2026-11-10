@@ -223,6 +223,16 @@ def run_type1(
     return traj
 
 
+def _resume_agent_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    """agent_eval config as hashed into resume_identity.
+
+    ``campaign_id`` is excluded: it is provenance (already carried in the
+    trajectory_file name), not protocol — hashing it would give every
+    campaign a different resume hash.
+    """
+    return {k: v for k, v in cfg.items() if k != "campaign_id"}
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
@@ -396,7 +406,8 @@ def main() -> None:
         "protocol": protocol_manifest, "fit_data_hash": knn_fit_data_hash,
         "source_fingerprint": _source_fingerprint(), "seed": seed, "neighbors": knn_k,
         "k": k, "reflect_rounds": reflect_rounds, "inference_mode": inference_mode,
-        "agent_config": cfg, "llm_config": load_config("agent/llm"),
+        "agent_config": _resume_agent_config(cfg),
+        "llm_config": load_config("agent/llm"),
         "metadata_content_hashes": {d: sha256_file(p) if Path(p).exists() else None for d,p in meta_files},
         "requests": [r.to_dict() for r in requests],
     }

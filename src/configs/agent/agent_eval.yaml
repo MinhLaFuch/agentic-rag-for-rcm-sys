@@ -25,3 +25,4 @@ agent_eval:
   metadata_policy: "historical_static_catalog"  # historical_static_catalog | snapshot — default mask aggregate price/rating không có version; snapshot là so sánh non-causal
   use_prebuilt_corpus: true      # false = build corpus trong RAM thay vì đọc corpus prebuilt (debug/tag nhỏ)
   allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô (schema + item mapping vẫn được kiểm)
+  campaign_id: null         # campaign runner điền vào qua CONFIG_OVERLAY_PATH khi chạy trong campaign (traceability exp -> campaign); null khi chạy riêng

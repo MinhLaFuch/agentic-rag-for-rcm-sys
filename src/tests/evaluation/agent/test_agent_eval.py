@@ -393,3 +393,18 @@ def test_resume_drops_planner_records_made_with_another_reflect_setting():
     assert keep(old, text_of, ["planner"], 0) and not keep(old, text_of, ["planner"], 1)
     assert not keep({**rec, "text": "changed"}, text_of, ["planner"], 1) and not keep(rec, text_of, ["baseline"], 1)
     assert keep({"request_id": "r0", "agent": "baseline", "text": "hello"}, text_of, ["baseline"], 1)  # no LLM, no setting
+
+
+def test_resume_agent_config_excludes_campaign_id():
+    """campaign_id is provenance, not protocol: it must not change the resume hash."""
+    script = _load_run_agent_eval()
+    base = {"agents": ["baseline"], "per_segment": 3, "trajectory_file": "t.jsonl"}
+    variants = [
+        dict(base),
+        {**base, "campaign_id": None},
+        {**base, "campaign_id": "campaign_a"},
+        {**base, "campaign_id": "campaign_b"},
+    ]
+    normalized = [script._resume_agent_config(v) for v in variants]
+    assert all(n == normalized[0] for n in normalized)
+    assert "campaign_id" not in normalized[0]
