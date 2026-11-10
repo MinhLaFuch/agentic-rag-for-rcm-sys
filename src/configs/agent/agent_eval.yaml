@@ -26,3 +26,14 @@ agent_eval:
   use_prebuilt_corpus: true      # false = build corpus trong RAM thay vì đọc corpus prebuilt (debug/tag nhỏ)
   allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô (schema + item mapping vẫn được kiểm)
   campaign_id: null         # campaign runner điền vào qua CONFIG_OVERLAY_PATH khi chạy trong campaign (traceability exp -> campaign); null khi chạy riêng
+  # Multi-turn conversation evaluation — runs once per run_agent_eval invocation,
+  # after the main eval. Disabled by default; the campaign overlay enables it for
+  # exactly one run (first experiment, first repetition) per campaign.
+  multi_turn:
+    enabled: false
+    dataset: "package/evaluation/multi_turn/conversations.jsonl"  # src/-relative
+    output_dir: null   # null = write multi_turn.json into the experiment dir;
+                       # set (abs path, or rel to experiments/) to redirect —
+                       # campaign sets campaigns/<id>/multi_turn/ so the file
+                       # lives in exactly one place.
+    limits: {}         # Phase-C limit knobs reserved (max turns/steps/budget); nothing enforced yet

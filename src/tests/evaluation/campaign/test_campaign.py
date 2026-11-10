@@ -178,7 +178,7 @@ def test_campaign_runner_simulation(tmp_path: Path):
 
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn_output_dir=None):
         return ExperimentRun(
             experiment_name=experiment.name,
             run_number=run_number,
@@ -225,7 +225,7 @@ def test_campaign_runner_with_failed_experiment(tmp_path: Path):
     # Override _run_experiment (the per-experiment unit) so no subprocess runs
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn_output_dir=None):
         success = experiment.name != "exp_fail"
         return ExperimentRun(
             experiment_name=experiment.name,
@@ -430,7 +430,7 @@ def test_auto_comparison_pairs_are_actually_used(tmp_path: Path):
 
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn_output_dir=None):
         return ExperimentRun(
             experiment_name=experiment.name,
             run_number=run_number,

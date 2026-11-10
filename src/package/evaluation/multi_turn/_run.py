@@ -71,7 +71,9 @@ def run_multi_turn_cli() -> None:
         output_path = output_dir / f"multi_turn_{Path(args.dataset).stem}_{ts}.json"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(summary.to_dict(), indent=2, default=str), encoding="utf-8")
+    payload = summary.to_dict()
+    payload["status"] = "success"
+    output_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
     print(f"Results saved to: {output_path}")
     print(
         f"conversations={summary.total_conversations} "

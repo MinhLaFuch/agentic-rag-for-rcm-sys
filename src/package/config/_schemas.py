@@ -52,6 +52,35 @@ class Type1Config(BaseModel):
     min_candidates: int = Field(gt=0, description="Minimum candidates required")
 
 
+class AgentEvalMultiTurnConfig(BaseModel):
+    """Multi-turn conversation evaluation block inside agent_eval.yaml.
+
+    Runs package.evaluation.multi_turn once per run_agent_eval invocation,
+    after the main agent evaluation. ``output_dir=None`` writes
+    ``multi_turn.json`` into the experiment dir; a path (absolute, or
+    relative to experiments_dir) redirects it — the campaign overlay points
+    it at ``campaigns/<id>/multi_turn/`` so the artifact lives in exactly
+    one place. ``limits`` reserves Phase-C knobs (max turns/steps/token
+    budget); empty until semantics are decided — nothing is enforced yet.
+    """
+
+    model_config = _BASE_CONFIG
+
+    enabled: bool = Field(default=False, description="Run multi-turn eval after agent eval")
+    dataset: str = Field(
+        default="package/evaluation/multi_turn/conversations.jsonl",
+        description="Conversation dataset path, src/-relative",
+    )
+    output_dir: str | None = Field(
+        default=None,
+        description="Directory for multi_turn.json (artifact is always <dir>/multi_turn.json); null = experiment dir",
+    )
+    limits: dict[str, Any] | None = Field(
+        default=None,
+        description="Reserved for Phase-C limit knobs (unset = no limits enforced)",
+    )
+
+
 class AgentEvalConfig(BaseModel):
     """Agent evaluation config from configs/agent/agent_eval.yaml."""
 
@@ -78,6 +107,10 @@ class AgentEvalConfig(BaseModel):
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
     campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
+    multi_turn: AgentEvalMultiTurnConfig = Field(
+        default_factory=AgentEvalMultiTurnConfig,
+        description="Optional multi-turn conversation evaluation step",
+    )
 
     @field_validator("agents")
     @classmethod
@@ -551,6 +584,14 @@ class CampaignFileConfig(BaseModel):
     )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
+    multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never")
+
+    @field_validator("multi_turn")
+    @classmethod
+    def validate_multi_turn(cls, v: str) -> str:
+        if v not in ("once", "never"):
+            raise ValueError("multi_turn must be 'once' or 'never'")
+        return v
 
 
 class JudgeFaithfulnessConfig(BaseModel):

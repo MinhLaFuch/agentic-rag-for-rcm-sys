@@ -62,9 +62,16 @@ class CampaignRunner:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Execute each experiment
-        for experiment in experiments:
+        for exp_idx, experiment in enumerate(experiments):
             for run_num in range(1, experiment.repetition_count + 1):
-                run = self._run_experiment(experiment, run_num, output_dir)
+                run = self._run_experiment(
+                    experiment,
+                    run_num,
+                    output_dir,
+                    multi_turn_output_dir=self._multi_turn_dir_for(
+                        exp_idx, run_num, output_dir
+                    ),
+                )
                 runs.append(run)
 
         # Perform comparisons if configured
@@ -82,6 +89,7 @@ class CampaignRunner:
             comparisons=comparisons,
             summary=summary,
             git_sha=self.git_sha,
+            multi_turn=self._collect_multi_turn_result(output_dir, experiments, runs),
         )
 
         # Save campaign result
@@ -97,6 +105,7 @@ class CampaignRunner:
         experiment: Any,
         run_number: int,
         output_dir: Path,
+        multi_turn_output_dir: Path | None = None,
     ) -> ExperimentRun:
         """Run a single experiment by calling run_agent_eval.py.
 
@@ -119,7 +128,9 @@ class CampaignRunner:
         try:
             # Per-experiment tunables go through a CONFIG_OVERLAY_PATH YAML (merged over
             # configs/ by load_config) — run_agent_eval.py itself only takes runtime selectors.
-            overlay = self._build_config_overlay(experiment, run_number)
+            overlay = self._build_config_overlay(
+                experiment, run_number, multi_turn_output_dir=multi_turn_output_dir
+            )
             overlay_path = exp_output_dir / "config_overlay.yaml"
             overlay_path.write_text(
                 yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
@@ -193,7 +204,12 @@ class CampaignRunner:
     _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds"}
     _EVALUATION_CONFIG_KEYS = {"per_segment"}
 
-    def _build_config_overlay(self, experiment: Any, run_number: int) -> dict[str, Any]:
+    def _build_config_overlay(
+        self,
+        experiment: Any,
+        run_number: int,
+        multi_turn_output_dir: Path | None = None,
+    ) -> dict[str, Any]:
         """Build a CONFIG_OVERLAY_PATH YAML fragment for one experiment run.
 
         Shape mirrors configs/: top-level keys are config names, values are the
@@ -220,6 +236,14 @@ class CampaignRunner:
         per_segment = experiment.evaluation_config.get("per_segment")
         if per_segment is not None:
             agent_eval["per_segment"] = per_segment
+
+        # Multi-turn runs exactly once per campaign (first experiment, first
+        # repetition) and writes straight into the campaign folder — never
+        # into an exp_dir. Every other run gets enabled=false explicitly so
+        # a base-yaml enabled=true cannot leak into the whole grid.
+        agent_eval["multi_turn"] = {"enabled": multi_turn_output_dir is not None}
+        if multi_turn_output_dir is not None:
+            agent_eval["multi_turn"]["output_dir"] = str(multi_turn_output_dir)
 
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
 
@@ -287,6 +311,72 @@ class CampaignRunner:
                                 all_metrics[metric_key] = value
 
         return all_metrics
+
+    def _multi_turn_dir_for(
+        self, exp_index: int, run_number: int, output_dir: Path
+    ) -> Path | None:
+        """Return the campaign multi-turn dir for the one run allowed to execute it.
+
+        ``multi_turn: once`` (default) -> only experiment[0] repetition 1.
+        ``multi_turn: never`` -> None for every run.
+        """
+        if getattr(self.config, "multi_turn", "once") != "once":
+            return None
+        if exp_index == 0 and run_number == 1:
+            return output_dir / "multi_turn"
+        return None
+
+    def _collect_multi_turn_result(
+        self,
+        output_dir: Path,
+        experiments: list[Any],
+        runs: list[ExperimentRun],
+    ) -> dict[str, Any]:
+        """Summarize the campaign-level multi_turn.json for campaign_result.json.
+
+        The file lives at ``<campaign_output>/multi_turn/multi_turn.json`` —
+        written directly there by run_agent_eval via the overlay's
+        ``agent_eval.multi_turn.output_dir`` (no copying). Statuses:
+        ``success`` | ``skipped_no_credentials`` | ``failed`` | ``error`` |
+        ``not_run`` (first experiment never reached the step) | ``disabled``.
+        Metrics here are informational only — never fed into comparisons.
+        """
+        mode = getattr(self.config, "multi_turn", "once")
+        if mode != "once":
+            return {"status": "disabled", "mode": mode}
+
+        mt_file = output_dir / "multi_turn" / "multi_turn.json"
+        if mt_file.exists():
+            try:
+                data = json.loads(mt_file.read_text(encoding="utf-8"))
+            except Exception as exc:
+                return {"status": "error", "path": str(mt_file), "error": str(exc)}
+            status = data.get("status")
+            if status is None and "total_conversations" in data:
+                status = "success"  # summary files predating the status field
+            from package.evaluation.multi_turn import extract_multi_turn_metrics
+
+            return {
+                "status": status or "unknown",
+                "path": str(mt_file),
+                "metrics": extract_multi_turn_metrics(data),
+            }
+
+        first = next(
+            (
+                r
+                for r in runs
+                if r.experiment_name == experiments[0].name and r.run_number == 1
+            ),
+            None,
+        )
+        if first is not None and not first.success and first.error:
+            reason = f"first experiment failed before multi-turn step: {first.error[:300]}"
+        elif first is not None:
+            reason = "first experiment completed but produced no multi_turn.json"
+        else:
+            reason = "first experiment run not found"
+        return {"status": "not_run", "reason": reason}
 
     def _run_comparisons(
         self,

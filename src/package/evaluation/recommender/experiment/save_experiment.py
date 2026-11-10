@@ -56,10 +56,16 @@ def save_experiment(
     runtime_seconds: float,
     notes: str = "",
     write_readme: bool = True,
+    exist_ok: bool = False,
 ) -> Path:
-    """Save experiment results to directory with config, metrics, and README."""
+    """Save experiment results to directory with config, metrics, and README.
+
+    ``exist_ok=True`` is for callers that legitimately pre-create the dir —
+    run_agent_eval does this when the multi-turn step writes
+    ``multi_turn.json`` into the experiment dir before save_experiment runs.
+    """
     out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=False)
+    out.mkdir(parents=True, exist_ok=exist_ok)
 
     record = {
         "timestamp": datetime.now(timezone.utc).isoformat(),

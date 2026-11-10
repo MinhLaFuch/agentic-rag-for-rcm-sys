@@ -64,6 +64,34 @@ report step after the component benchmarks:
   fixture corpus** (`create_test_*`), not recommendation quality on the real
   catalog — do not read them as real-data metrics.
 
-Known debt (tracked separately): campaign reporting consumes a `"multi_turn"`
-key, Opik tracing is minimal, and some eval CLIs still have untested
-`main()` paths.
+## Via `run_agent_eval` / campaign (Phase B wiring)
+
+`agent_eval.multi_turn` in `configs/agent/agent_eval.yaml` gates an optional
+step that runs after the main agent eval:
+
+- `enabled: false` (default) → nothing runs; `metrics.json`/`config.yaml`
+  are byte-identical to before.
+- `enabled: true`, `output_dir: null` → writes `multi_turn.json` into the
+  experiment dir (`experiments/agent_eval/exp_NNN/`).
+- `output_dir: <dir>` → writes `<dir>/multi_turn.json` instead — exactly one
+  location, no copying. Relative dirs resolve under `experiments/`.
+- Missing LLM credentials → the file records
+  `{"status": "skipped_no_credentials", "reason": ...}`; no metrics are
+  fabricated. An existing file with `status: "success"` is reused as-is
+  (resume — the eval has no incremental state).
+
+`exp_config` (config.yaml in the exp dir) records
+`multi_turn: {enabled, status, output_path, dataset}` when the step ran.
+
+Campaigns (`configs/evaluation/campaign.yaml` → `multi_turn: once|never`):
+
+- `once` (default): the overlay enables multi-turn **only** for the first
+  experiment's first repetition and points `output_dir` at
+  `campaigns/<id>/multi_turn/` — the artifact lands there directly, never in
+  an `exp_NNN/` dir.
+- `campaign_result.json` gains a top-level `multi_turn` entry:
+  `{status, path, metrics}` on success/skipped, `not_run` + reason when the
+  first experiment failed before the step, `disabled` when `never`.
+- Multi-turn metrics are **informational only** — they never enter paired
+  experiment comparisons (different scale: fixture conversations vs real-data
+  ranking metrics).
