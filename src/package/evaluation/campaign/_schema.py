@@ -120,6 +120,7 @@ class CampaignConfig:
     )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
+    multi_turn: str = "once"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -135,6 +136,7 @@ class CampaignConfig:
             "default_agents": self.default_agents,
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
+            "multi_turn": self.multi_turn,
         }
 
     @classmethod
@@ -152,6 +154,7 @@ class CampaignConfig:
             default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
+            multi_turn=data.get("multi_turn", "once"),
         )
 
     @classmethod
@@ -336,6 +339,7 @@ class CampaignResult:
     summary: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
+    multi_turn: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -346,6 +350,7 @@ class CampaignResult:
             "summary": self.summary,
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
+            "multi_turn": self.multi_turn,
         }
 
     @classmethod
@@ -358,4 +363,5 @@ class CampaignResult:
             summary=data.get("summary", {}),
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
+            multi_turn=data.get("multi_turn", {}),
         )

@@ -418,11 +418,14 @@ class MultiTurnEvaluator:
 
         # Calculate summary metrics
         total_conversations = len(results)
+        executed_turns = sum(len(r.turn_results) for r in results)
+        scheduled_turns = sum(len(c.turns) for c in conversations)
         turn_success_rate = (
-            sum(1 for r in results for tr in r.turn_results if tr.success) / sum(len(r.turn_results) for r in results)
-            if results and sum(len(r.turn_results) for r in results) > 0
+            sum(1 for r in results for tr in r.turn_results if tr.success) / executed_turns
+            if executed_turns > 0
             else 0.0
         )
+        failed_ids = [r.conversation_id for r in results if not r.conversation_success]
         conversation_success_rate = sum(1 for r in results if r.conversation_success) / total_conversations if total_conversations > 0 else 0.0
 
         # Aggregate conversation-level metrics
@@ -455,6 +458,16 @@ class MultiTurnEvaluator:
             total_conversations=total_conversations,
             turn_success_rate=turn_success_rate,
             conversation_success_rate=conversation_success_rate,
+            total_turns_scheduled=scheduled_turns,
+            total_turns_executed=executed_turns,
+            avg_turns_per_conversation=(
+                executed_turns / total_conversations if total_conversations > 0 else None
+            ),
+            turn_completion_ratio=(
+                executed_turns / scheduled_turns if scheduled_turns > 0 else None
+            ),
+            failed_conversation_ids=failed_ids,
+            failed_conversations=len(failed_ids),
             metrics=metrics,
             latency=latency,
             failure_distribution=dict(failure_distribution),

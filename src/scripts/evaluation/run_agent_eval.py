@@ -226,11 +226,37 @@ def run_type1(
 def _resume_agent_config(cfg: dict[str, Any]) -> dict[str, Any]:
     """agent_eval config as hashed into resume_identity.
 
-    ``campaign_id`` is excluded: it is provenance (already carried in the
-    trajectory_file name), not protocol — hashing it would give every
-    campaign a different resume hash.
+    ``multi_turn`` and ``campaign_id`` are excluded: neither affects
+    trajectories (campaign_id is provenance — the trajectory_file name
+    already carries it), so toggling them must not invalidate --resume.
     """
-    return {k: v for k, v in cfg.items() if k != "campaign_id"}
+    return {k: v for k, v in cfg.items() if k not in ("multi_turn", "campaign_id")}
+
+
+def run_optional_multi_turn(cfg: dict[str, Any], exp_dir_candidate: Path) -> dict[str, Any] | None:
+    """Run the yaml-gated multi-turn step; never let it sink the main eval.
+
+    Returns None when ``agent_eval.multi_turn.enabled`` is false (nothing
+    changes downstream — metrics.json stays byte-identical). Any failure in
+    the step itself is captured as ``status: "error"`` so the already-paid
+    agent evaluation is still saved.
+    """
+    mt_cfg = cfg.get("multi_turn") or {}
+    if not mt_cfg.get("enabled"):
+        return None
+    default_out = exp_dir_candidate / "multi_turn.json"
+    try:
+        from package.evaluation.multi_turn import run_multi_turn_for_eval
+
+        return run_multi_turn_for_eval(mt_cfg, default_out)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "resumed": False,
+            "output_path": str(default_out),
+            "summary": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def main() -> None:
@@ -497,6 +523,14 @@ def main() -> None:
         }
         for domain, path in meta_files
     }
+    # ---- optional multi-turn step (yaml-gated; runs after the main eval) ----
+    # output_dir=None -> <exp_dir>/multi_turn.json; a configured path (the
+    # campaign overlay sets campaigns/<id>/multi_turn/) writes there instead,
+    # so the artifact exists in exactly one place. Disabled -> mt_info is None
+    # and nothing below changes (metrics.json stays byte-identical).
+    exp_dir_candidate = next_experiment_dir(data_paths.output_dir("agent_eval"))
+    mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
+
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
@@ -523,8 +557,15 @@ def main() -> None:
                 }}
     if cfg.get("campaign_id"):
         exp_config["campaign_id"] = cfg["campaign_id"]
+    if mt_info is not None:
+        exp_config["multi_turn"] = {
+            "enabled": True,
+            "status": mt_info["status"],
+            "output_path": mt_info["output_path"],
+            "dataset": (cfg.get("multi_turn") or {}).get("dataset"),
+        }
     exp_dir = save_experiment(
-        next_experiment_dir(data_paths.output_dir("agent_eval")),
+        exp_dir_candidate,
         config=exp_config,
         metrics={"k": k, "summary": summary},
         seed=seed,
@@ -538,6 +579,7 @@ def main() -> None:
                                              "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns, "sha256": sha256_file(data_paths.split_path(name))}
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
+        exist_ok=mt_info is not None,
         notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "
                "Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting."),
@@ -546,6 +588,8 @@ def main() -> None:
     (exp_dir / "requests.jsonl").write_text("".join(json.dumps(r.to_dict(), ensure_ascii=False) + "\n" for r in requests), encoding="utf-8")
     (exp_dir / "scored.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     print(f"\nsaved -> {exp_dir}")
+    if mt_info is not None:
+        print(f"multi_turn -> {mt_info['output_path']} [{mt_info['status']}]")
 
 
 if __name__ == "__main__":

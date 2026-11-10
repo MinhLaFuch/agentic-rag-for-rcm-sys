@@ -43,3 +43,9 @@ statistical_settings:
 
 # Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
 output_dir: "agent_eval/campaigns/campaign_001"
+
+# Multi-turn conversation eval: "once" = run in the first experiment's first
+# repetition only, artifact at <output_dir>/multi_turn/multi_turn.json;
+# "never" = skip entirely. Metrics are reported in campaign_result.json but
+# never enter paired comparisons.
+multi_turn: "once"

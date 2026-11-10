@@ -203,6 +203,9 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
                 metrics_summary = dict(result.get("metrics") or {})
                 metrics_summary["turn_success_rate"] = result.get("turn_success_rate")
                 metrics_summary["conversation_success_rate"] = result.get("conversation_success_rate")
+                # 11 conversations is too few for a meaningful p95 — report n/a,
+                # never a fabricated 0.
+                latency_p95 = (result.get("latency") or {}).get("p95")
                 aggregated["components"][component] = {
                     "status": "success",
                     "quality_gate": "not_evaluated",
@@ -210,10 +213,15 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
                     "metrics": metrics_summary,
                     "latency": {
                         "mean": (result.get("latency") or {}).get("mean", 0) or 0,
-                        "p95": (result.get("latency") or {}).get("p95", 0) or 0,
+                        "p95": latency_p95,
                     },
                     "cases_run": result.get("total_conversations", 0),
-                    "failed_cases": 0,
+                    # failed_cases = failed CONVERSATIONS (not turns); older
+                    # result files lack the field -> None, not a fake 0.
+                    "failed_cases": result.get("failed_conversations"),
+                    "failed_conversation_ids": result.get("failed_conversation_ids") or [],
+                    "turn_completion_ratio": result.get("turn_completion_ratio"),
+                    "failure_distribution": result.get("failure_distribution") or {},
                     "success_rate": None,
                     "git_sha": result.get("git_sha"),
                 }
@@ -318,9 +326,23 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
         
         if data["status"] == "success":
             lines.append(f"- Status: ✅ Success")
-            failed = data.get("failed_cases", 0)
+            failed = data.get("failed_cases")
             cases_note = f" ({failed} failed)" if failed else ""
             lines.append(f"- Cases run: {data['cases_run']}{cases_note}")
+            failed_ids = data.get("failed_conversation_ids") or []
+            if failed_ids:
+                lines.append(f"- Failed conversations: {', '.join(failed_ids)}")
+            fd = data.get("failure_distribution") or {}
+            if fd:
+                lines.append(f"- Failure distribution: {fd}")
+            tcr = data.get("turn_completion_ratio")
+            if tcr is not None:
+                lines.append(f"- Turn completion ratio (executed/scheduled): {tcr:.2%}")
+                lines.append(
+                    "- Note: measured on the synthetic fixture corpus, not real catalog data; "
+                    "read turn_success_rate together with conversation_success_rate and "
+                    "turn_completion_ratio (turns after a failure are not executed)."
+                )
             gate = data.get("quality_gate", "not_evaluated")
             gate_icon = {"pass": "✅ PASS", "fail": "❌ FAIL", "not_evaluated": "⚪ NOT_EVALUATED"}[gate]
             lines.append(f"- Quality gate (thresholds): {gate_icon}")
@@ -334,7 +356,8 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
             lines.append("")
             lines.append("**Performance**:")
             lines.append(f"- Mean latency: {data['latency']['mean']:.4f}s")
-            lines.append(f"- P95 latency: {data['latency']['p95']:.4f}s")
+            p95 = data["latency"].get("p95")
+            lines.append(f"- P95 latency: {p95:.4f}s" if p95 is not None else "- P95 latency: n/a")
             lines.append("")
             lines.append("**Functional Correctness Metrics**:")
             for metric, value in data["metrics"].items():

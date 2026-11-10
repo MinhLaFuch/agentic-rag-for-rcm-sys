@@ -2,4 +2,6 @@
 
 from __future__ import annotations
 
-__all__ = []
+from ._run_all import main as run_component_benchmarks
+
+__all__ = ["run_component_benchmarks"]
