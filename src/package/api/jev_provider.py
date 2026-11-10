@@ -33,7 +33,7 @@ class JevProvider(JudgmentProvider):
         )
         if not self.api_key:
             raise ValueError(
-                "No judge API key. Set JUDGE_API_KEY (via config), TYPESAFE_API_KEY, "
+                "No judge API key. Set JEV_API_KEY (via config), TYPESAFE_API_KEY, "
                 "or OPENROUTER_API_KEY environment variable."
             )
 
