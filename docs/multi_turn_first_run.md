@@ -49,10 +49,20 @@ report step after the component benchmarks:
 
 - `turn_success_rate` / `conversation_success_rate`: per-turn and whole-
   conversation success against `expected_items`, `expected_exclusions`, and
-  `expected_tool_calls` in the dataset.
+  `expected_tool_calls` in the dataset. NOTE: `turn_success_rate` only counts
+  EXECUTED turns — turns after a failure never run, so an early failure makes
+  it look optimistic. Always read it together with
+  `conversation_success_rate` and `turn_completion_ratio`.
+- `total_turns_scheduled` / `total_turns_executed` /
+  `turn_completion_ratio` (= executed/scheduled): the "gave up early" signal.
+  `avg_turns_per_conversation` is executed turns / conversations.
+- `failed_conversation_ids` / `failed_conversations` / `failure_distribution`:
+  which conversations failed and at which stage.
 - `metrics.tool_call_match_rate`, `context_retention`, per-scenario metrics:
   see `ConversationSummary.metrics` in the output JSON.
-- `failure_distribution`: counts by failure stage (plan / execute / score).
+- All of the above measure planner/session behavior on the **synthetic
+  fixture corpus** (`create_test_*`), not recommendation quality on the real
+  catalog — do not read them as real-data metrics.
 
 Known debt (tracked separately): campaign reporting consumes a `"multi_turn"`
 key, Opik tracing is minimal, and some eval CLIs still have untested
