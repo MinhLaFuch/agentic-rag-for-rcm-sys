@@ -122,6 +122,62 @@ class TestRunMultiTurnEval:
         assert info["status"] == "success"
         assert info["resumed"] is True
 
+    def test_non_success_statuses_rerun_when_llm_available(self, tmp_path, monkeypatch):
+        """skipped_no_credentials / error / failed files must NOT count as done:
+        a later run with credentials has to execute for real."""
+        calls = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(cmd)
+            output = Path(cmd[cmd.index("--output") + 1])
+            output.write_text(json.dumps(_summary_payload()), encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="ok", stderr="")
+
+        monkeypatch.setattr(_eval_step.subprocess, "run", fake_run)
+        monkeypatch.setattr(_eval_step, "_llm_configured", lambda: True)
+
+        for stale_status in ("skipped_no_credentials", "error", "failed", "timeout"):
+            out = tmp_path / f"mt_{stale_status}.json"
+            out.write_text(json.dumps({"status": stale_status}), encoding="utf-8")
+            info = _eval_step.run_multi_turn_eval(dataset="d.jsonl", output_path=out)
+            assert info["status"] == "success"
+            assert info["resumed"] is False
+        assert len(calls) == 4
+
+    def test_timeout_writes_timeout_status(self, tmp_path, monkeypatch):
+        out = tmp_path / "mt.json"
+
+        def fake_run(cmd, **kwargs):
+            raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout"))
+
+        monkeypatch.setattr(_eval_step.subprocess, "run", fake_run)
+        monkeypatch.setattr(_eval_step, "_llm_configured", lambda: True)
+
+        info = _eval_step.run_multi_turn_eval(
+            dataset="d.jsonl", output_path=out, timeout_seconds=5
+        )
+        assert info["status"] == "timeout"
+        assert "timed out" in info["error"]
+        payload = json.loads(out.read_text(encoding="utf-8"))
+        assert payload["status"] == "timeout"
+
+    def test_timeout_seconds_comes_from_config_block(self, tmp_path, monkeypatch):
+        seen = {}
+
+        def fake_run(cmd, **kwargs):
+            seen["timeout"] = kwargs.get("timeout")
+            output = Path(cmd[cmd.index("--output") + 1])
+            output.write_text(json.dumps(_summary_payload()), encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(_eval_step.subprocess, "run", fake_run)
+        monkeypatch.setattr(_eval_step, "_llm_configured", lambda: True)
+
+        _eval_step.run_multi_turn_for_eval(
+            {"enabled": True, "timeout_seconds": 42}, tmp_path / "exp" / "multi_turn.json"
+        )
+        assert seen["timeout"] == 42
+
     def test_relative_output_dir_resolves_under_experiments(self, tmp_path, monkeypatch):
         fake_paths = SimpleNamespace(experiments_dir=tmp_path / "experiments", src_root=tmp_path)
         monkeypatch.setattr(_eval_step, "get_data_paths", lambda: fake_paths)

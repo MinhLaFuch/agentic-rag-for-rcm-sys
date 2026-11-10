@@ -408,3 +408,44 @@ def test_resume_agent_config_excludes_campaign_id():
     normalized = [script._resume_agent_config(v) for v in variants]
     assert all(n == normalized[0] for n in normalized)
     assert "campaign_id" not in normalized[0]
+
+
+# ---- multi_turn wiring: resume hash + error isolation
+
+def test_resume_agent_config_excludes_multi_turn():
+    """Toggling agent_eval.multi_turn must not change the resume hash input."""
+    script = _load_run_agent_eval()
+    base = {"agents": ["baseline"], "k": 10, "per_segment": 20}
+    variants = [
+        dict(base),
+        dict(base, multi_turn={"enabled": False, "dataset": "d.jsonl", "limits": {}}),
+        dict(base, multi_turn={"enabled": True, "dataset": "d.jsonl",
+                               "output_dir": "/tmp/x", "limits": {"max_turns": 3},
+                               "timeout_seconds": 60}),
+    ]
+    hashed = [script._resume_agent_config(cfg) for cfg in variants]
+    assert hashed[0] == hashed[1] == hashed[2]
+    assert all("multi_turn" not in h for h in hashed)
+
+
+def test_run_optional_multi_turn_disabled_returns_none(tmp_path):
+    script = _load_run_agent_eval()
+    assert script.run_optional_multi_turn({"agents": ["baseline"]}, tmp_path / "exp_001") is None
+    assert script.run_optional_multi_turn({"multi_turn": {"enabled": False}}, tmp_path / "exp_001") is None
+
+
+def test_run_optional_multi_turn_swallows_step_errors(tmp_path, monkeypatch):
+    """A crashing multi-turn step must not sink the already-paid agent eval:
+    it returns status=error so metrics.json still gets written."""
+    import package.evaluation.multi_turn as mt_pkg
+
+    def _boom(*a, **k):
+        raise RuntimeError("simulated multi-turn crash")
+
+    monkeypatch.setattr(mt_pkg, "run_multi_turn_for_eval", _boom)
+    script = _load_run_agent_eval()
+    info = script.run_optional_multi_turn(
+        {"multi_turn": {"enabled": True}}, tmp_path / "exp_001"
+    )
+    assert info["status"] == "error"
+    assert "simulated multi-turn crash" in info["error"]

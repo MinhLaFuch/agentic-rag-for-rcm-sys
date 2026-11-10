@@ -226,11 +226,37 @@ def run_type1(
 def _resume_agent_config(cfg: dict[str, Any]) -> dict[str, Any]:
     """agent_eval config as hashed into resume_identity.
 
-    ``campaign_id`` is excluded: it is provenance (already carried in the
-    trajectory_file name), not protocol — hashing it would give every
-    campaign a different resume hash.
+    ``multi_turn`` and ``campaign_id`` are excluded: neither affects
+    trajectories (campaign_id is provenance — the trajectory_file name
+    already carries it), so toggling them must not invalidate --resume.
     """
-    return {k: v for k, v in cfg.items() if k != "campaign_id"}
+    return {k: v for k, v in cfg.items() if k not in ("multi_turn", "campaign_id")}
+
+
+def run_optional_multi_turn(cfg: dict[str, Any], exp_dir_candidate: Path) -> dict[str, Any] | None:
+    """Run the yaml-gated multi-turn step; never let it sink the main eval.
+
+    Returns None when ``agent_eval.multi_turn.enabled`` is false (nothing
+    changes downstream — metrics.json stays byte-identical). Any failure in
+    the step itself is captured as ``status: "error"`` so the already-paid
+    agent evaluation is still saved.
+    """
+    mt_cfg = cfg.get("multi_turn") or {}
+    if not mt_cfg.get("enabled"):
+        return None
+    default_out = exp_dir_candidate / "multi_turn.json"
+    try:
+        from package.evaluation.multi_turn import run_multi_turn_for_eval
+
+        return run_multi_turn_for_eval(mt_cfg, default_out)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "resumed": False,
+            "output_path": str(default_out),
+            "summary": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def main() -> None:
@@ -503,13 +529,7 @@ def main() -> None:
     # so the artifact exists in exactly one place. Disabled -> mt_info is None
     # and nothing below changes (metrics.json stays byte-identical).
     exp_dir_candidate = next_experiment_dir(data_paths.output_dir("agent_eval"))
-    mt_info = None
-    if cfg.get("multi_turn", {}).get("enabled"):
-        from package.evaluation.multi_turn import run_multi_turn_for_eval
-
-        mt_info = run_multi_turn_for_eval(
-            cfg.get("multi_turn"), exp_dir_candidate / "multi_turn.json"
-        )
+    mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
 
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],

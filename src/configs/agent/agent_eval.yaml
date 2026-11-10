@@ -37,3 +37,4 @@ agent_eval:
                        # campaign sets campaigns/<id>/multi_turn/ so the file
                        # lives in exactly one place.
     limits: {}         # Phase-C limit knobs reserved (max turns/steps/budget); nothing enforced yet
+    timeout_seconds: 1800  # wall-clock cap for the multi-turn subprocess; timeout -> status "timeout"

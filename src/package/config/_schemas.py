@@ -79,6 +79,10 @@ class AgentEvalMultiTurnConfig(BaseModel):
         default=None,
         description="Reserved for Phase-C limit knobs (unset = no limits enforced)",
     )
+    timeout_seconds: int = Field(
+        default=1800, gt=0,
+        description="Wall-clock cap for the multi-turn subprocess",
+    )
 
 
 class AgentEvalConfig(BaseModel):

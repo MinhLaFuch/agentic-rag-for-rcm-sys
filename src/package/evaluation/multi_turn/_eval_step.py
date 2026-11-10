@@ -44,7 +44,9 @@ def _write_status(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def run_multi_turn_eval(*, dataset: str, output_path: str | Path) -> dict[str, Any]:
+def run_multi_turn_eval(
+    *, dataset: str, output_path: str | Path, timeout_seconds: int = 1800
+) -> dict[str, Any]:
     """Run the multi-turn evaluation once and return its status info.
 
     Returns ``{"status", "resumed", "output_path", "summary", "error"}`` where
@@ -90,7 +92,13 @@ def run_multi_turn_eval(*, dataset: str, output_path: str | Path) -> dict[str, A
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=False,
             cwd=str(get_data_paths().src_root),
+            timeout=timeout_seconds,
         )
+    except subprocess.TimeoutExpired:
+        error = f"multi-turn eval timed out after {timeout_seconds}s"
+        _write_status(out, {"status": "timeout", "error": error, "dataset": dataset})
+        return {"status": "timeout", "resumed": False,
+                "output_path": str(out), "summary": None, "error": error}
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
         _write_status(out, {"status": "error", "error": error, "dataset": dataset})
@@ -127,6 +135,7 @@ def run_multi_turn_for_eval(cfg_block: dict[str, Any] | None, default_output_pat
     return run_multi_turn_eval(
         dataset=str(block.get("dataset") or DEFAULT_DATASET),
         output_path=out,
+        timeout_seconds=int(block.get("timeout_seconds") or 1800),
     )
 
 
