@@ -24,7 +24,7 @@ def test_vector_store_search_and_persistence(tmp_path):
 
     store = VectorStore(item_ids=item_ids, embeddings=embeddings)
     assert len(store) == 3
-    assert store.dimension() == 3
+    assert store.dimension == 3
 
     # Query matching VG_A exactly
     results = store.search(np.array([1.0, 0.0, 0.0]), top_k=2)
@@ -139,4 +139,3 @@ def test_search_tool_hybrid_with_filters(corpus):
     assert res.ok
     for c in res.data["candidates"]:
         assert c["domain"] == "Video_Games"
-
