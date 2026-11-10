@@ -588,13 +588,13 @@ class CampaignFileConfig(BaseModel):
     )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
-    multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never")
+    multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never | all")
 
     @field_validator("multi_turn")
     @classmethod
     def validate_multi_turn(cls, v: str) -> str:
-        if v not in ("once", "never"):
-            raise ValueError("multi_turn must be 'once' or 'never'")
+        if v not in ("once", "never", "all"):
+            raise ValueError("multi_turn must be 'once', 'never' or 'all'")
         return v
 
 
