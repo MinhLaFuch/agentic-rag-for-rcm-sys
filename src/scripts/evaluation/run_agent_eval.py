@@ -76,6 +76,8 @@ from package.evaluation.recommender.config import segment_users_by_history, sele
 from package.evaluation.recommender.utils import sha256_file
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared import item_knn_data_hash, mapping_hash
+from package.recommenders.shared.load_item_knn import load_item_knn
+from package.recommenders.shared.save_item_knn import save_item_knn
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
@@ -359,13 +361,49 @@ def main() -> None:
     cache_meta_path = item_knn_path.with_suffix(".meta.json")
     if cache_meta_path.exists():
         knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
-    knn_artifact_status = "fit_fresh_cache_ignored"
-    print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
-    t0 = time.perf_counter()
-    knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
-    fit_time = time.perf_counter() - t0
-    knn._fit_time = fit_time
-    print(f"ItemKNN: fitted in {fit_time:.1f}s")
+
+    # item_knn_reuse_cache (campaign overlay): fit once per cache location, then
+    # siblings load the artifact — but only after load_item_knn validates
+    # data_hash + fit provenance (mappings/split/tag) + k + sha256. Any mismatch
+    # falls back to a fresh fit, which is always the gold standard.
+    reuse_cache = bool(cfg.get("item_knn_reuse_cache", False))
+    knn = None
+    if reuse_cache and item_knn_path.exists():
+        try:
+            t0 = time.perf_counter()
+            knn = load_item_knn(
+                item_knn_path, knn_k, fit_pairs,
+                user2id=user2id, item2id=item2id,
+                eval_on=args.eval_on, tag=data_paths.tag,
+            )
+            knn_artifact_status = "loaded_cache"
+            print(f"ItemKNN: loaded validated cache from {item_knn_path} ({time.perf_counter() - t0:.1f}s)")
+        except Exception as exc:
+            print(f"ItemKNN cache rejected ({exc}); fitting fresh")
+            knn = None
+    if knn is None:
+        if reuse_cache:
+            knn_artifact_status = "fit_fresh_cache_pending_save"
+        else:
+            print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
+            knn_artifact_status = "fit_fresh_cache_ignored"
+        t0 = time.perf_counter()
+        knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+        fit_time = time.perf_counter() - t0
+        knn._fit_time = fit_time
+        print(f"ItemKNN: fitted in {fit_time:.1f}s")
+        if reuse_cache:
+            try:
+                save_item_knn(
+                    knn, item_knn_path, knn_k, fit_pairs,
+                    user2id=user2id, item2id=item2id,
+                    eval_on=args.eval_on, tag=data_paths.tag,
+                )
+                knn_artifact_status = "fit_fresh_cache_saved"
+                print(f"ItemKNN: saved cache to {item_knn_path}")
+            except Exception as exc:
+                knn_artifact_status = "fit_fresh_cache_save_failed"
+                print(f"ItemKNN cache save failed ({exc}); siblings will refit")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
     scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
@@ -540,7 +578,7 @@ def main() -> None:
                 "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_used": knn_artifact_status == "validated_train_core_cache",
+                "knn_cache_used": knn_artifact_status == "loaded_cache",
                 "scorer": scorer_provenance,
                 "eval_schema_version": EVAL_SCHEMA_VERSION,
                 "provenance": provenance,

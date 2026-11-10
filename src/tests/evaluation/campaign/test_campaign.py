@@ -674,7 +674,7 @@ def test_build_config_overlay_relocates_agent_eval_output(tmp_path, monkeypatch)
     ov = runner._build_config_overlay(ExperimentConfig(name="e"), 1, campaign_dir=campaign_dir)
     rel = ov["path/data_paths"]["outputs"]["agent_eval"]
     resolved = Path(os.path.normpath(get_data_paths().experiments_dir / rel))
-    assert resolved == Path(os.path.normpath(campaign_dir / "experiments"))
+    assert resolved == Path(os.path.normpath(campaign_dir / "agent_eval"))
 
     # The fragment must survive the real overlay path: load_config merges it
     # into path/data_paths and output_dir() resolves inside the campaign dir.
@@ -682,8 +682,16 @@ def test_build_config_overlay_relocates_agent_eval_output(tmp_path, monkeypatch)
     overlay_path.write_text(yaml.safe_dump(ov, sort_keys=False), encoding="utf-8")
     monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
     out = get_data_paths().output_dir("agent_eval")
-    assert Path(os.path.normpath(out)) == Path(os.path.normpath(campaign_dir / "experiments"))
+    assert Path(os.path.normpath(out)) == Path(os.path.normpath(campaign_dir / "agent_eval"))
     _ = load_config("path/data_paths")  # must not raise on the extra fragment
+
+    # ItemKNN cache is campaign-scoped too, and reuse is switched on for runs.
+    knn_path = get_data_paths().item_knn_path("validation")
+    assert Path(os.path.normpath(knn_path)).is_relative_to(
+        Path(os.path.normpath(campaign_dir / "item_knn"))
+    )
+    ae = load_config("agent/agent_eval")["agent_eval"]
+    assert ae["item_knn_reuse_cache"] is True
 
     # Without campaign_dir the shared experiments/agent_eval pool is untouched.
     ov_default = runner._build_config_overlay(ExperimentConfig(name="e"), 1)

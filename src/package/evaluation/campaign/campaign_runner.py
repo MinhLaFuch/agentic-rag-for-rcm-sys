@@ -342,8 +342,18 @@ class CampaignRunner:
         # segments keep this working when output_dir lives outside experiments/.
         if campaign_dir is not None:
             experiments_dir = get_data_paths().experiments_dir
-            exp_root = os.path.relpath(campaign_dir / "experiments", experiments_dir)
+            exp_root = os.path.relpath(campaign_dir / "agent_eval", experiments_dir)
             overlay["path/data_paths"] = {"outputs": {"agent_eval": Path(exp_root).as_posix()}}
+
+            # Fit ItemKNN once per campaign: item_knn_reuse_cache lets the first
+            # run save a provenance-validated artifact and siblings load it
+            # (data_hash + mapping/split/tag + k + sha256 all checked). The cache
+            # lives under the campaign dir — never the shared resource/item_knn
+            # pool — so a campaign cannot clobber pipeline artifacts.
+            src_root = Path(get_data_paths().src_root)
+            knn_root = os.path.relpath(campaign_dir / "item_knn", src_root)
+            overlay["path/data_paths"]["paths"] = {"item_knn_dir": Path(knn_root).as_posix()}
+            agent_eval["item_knn_reuse_cache"] = True
 
         inference_mode = experiment.agent_config.get("inference_mode")
         if inference_mode is not None:

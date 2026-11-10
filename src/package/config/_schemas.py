@@ -111,6 +111,10 @@ class AgentEvalConfig(BaseModel):
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
     campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
+    item_knn_reuse_cache: bool = Field(
+        default=False,
+        description="Reuse a provenance-validated ItemKNN cache instead of refitting; cache miss/invalid falls back to a fresh fit",
+    )
     multi_turn: AgentEvalMultiTurnConfig = Field(
         default_factory=AgentEvalMultiTurnConfig,
         description="Optional multi-turn conversation evaluation step",
