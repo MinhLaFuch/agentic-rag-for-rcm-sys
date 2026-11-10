@@ -78,7 +78,62 @@ def run_all_benchmarks(
 
         results[component] = info
 
+    # Multi-turn conversation evaluation is not a component-benchmark case: it
+    # needs a real LLM (PlanExecutor + Session over the fixture corpus). Run it
+    # here so the unified report always shows an explicit status — a missing
+    # provider must surface as "skipped_no_credentials", never silently absent.
+    results["multi_turn"] = _run_multi_turn()
+
     return results
+
+
+def _llm_configured() -> bool:
+    """True when configs/agent/llm.yaml resolves a non-empty base_url."""
+    from package.config import load_config
+    try:
+        return bool(load_config("agent/llm").get("base_url"))
+    except Exception:
+        return False
+
+
+def _run_multi_turn() -> dict[str, Any]:
+    """Run the multi-turn conversation evaluation as a report-visible step.
+
+    Returns the same info shape as component runs plus ``status``:
+    ``skipped_no_credentials`` when no LLM is configured, ``failed``/``success``
+    is derived later from ``error``/``result_file`` like other components.
+    """
+    info: dict[str, Any] = {"result_file": None, "error": None, "not_implemented": False,
+                            "status": "success"}
+    if not _llm_configured():
+        info["status"] = "skipped_no_credentials"
+        info["error"] = ("multi-turn needs a real LLM: set LLM_BASE_URL/LLM_API_KEY "
+                         "(configs/agent/llm.yaml) or pass config {'llm': {...}}")
+        print("multi_turn: skipped — no LLM credentials configured")
+        return info
+
+    dataset = "package/evaluation/multi_turn/conversations.jsonl"
+    cmd = [sys.executable, "-m", "package.evaluation.multi_turn._run",
+           "--dataset", dataset]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False,
+                                cwd=str(get_data_paths().src_root))
+        print(result.stdout)
+        if result.returncode != 0:
+            info["status"] = "failed"
+            info["error"] = (result.stderr or "").strip()[-500:] or f"exit code {result.returncode}"
+            return info
+        for line in result.stdout.split("\n"):
+            if "Results saved to:" in line:
+                info["result_file"] = str(get_data_paths().src_root / line.split("Results saved to:")[-1].strip())
+                break
+        if info["result_file"] is None:
+            info["status"] = "failed"
+            info["error"] = "completed but no 'Results saved to:' line in stdout"
+    except Exception as e:
+        info["status"] = "failed"
+        info["error"] = str(e)
+    return info
 
 
 def _as_info(value: Any) -> dict[str, Any]:
@@ -88,6 +143,7 @@ def _as_info(value: Any) -> dict[str, Any]:
             "result_file": value.get("result_file"),
             "error": value.get("error"),
             "not_implemented": bool(value.get("not_implemented")),
+            "status": value.get("status"),
         }
     # Legacy shape: plain path string or None
     return {"result_file": value, "error": None, "not_implemented": False}
@@ -102,12 +158,22 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
             "total_components": len(result_files),
             "successful_components": 0,
             "failed_components": 0,
+            "skipped_components": 0,
         },
     }
 
     for component, raw_info in result_files.items():
         info = _as_info(raw_info)
         result_file = info.get("result_file")
+
+        if info.get("status") == "skipped_no_credentials":
+            aggregated["components"][component] = {
+                "status": "skipped_no_credentials",
+                "quality_gate": "not_evaluated",
+                "error": info.get("error") or "Skipped: no LLM credentials",
+            }
+            aggregated["summary"]["skipped_components"] += 1
+            continue
 
         if info.get("not_implemented"):
             aggregated["components"][component] = {
@@ -130,6 +196,29 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
         try:
             with open(result_file, "r", encoding="utf-8") as f:
                 result = json.load(f)
+
+            # multi_turn writes a ConversationSummary, not a component-benchmark
+            # result — map its fields instead of the per_case_results path.
+            if component == "multi_turn":
+                metrics_summary = dict(result.get("metrics") or {})
+                metrics_summary["turn_success_rate"] = result.get("turn_success_rate")
+                metrics_summary["conversation_success_rate"] = result.get("conversation_success_rate")
+                aggregated["components"][component] = {
+                    "status": "success",
+                    "quality_gate": "not_evaluated",
+                    "thresholds_result": None,
+                    "metrics": metrics_summary,
+                    "latency": {
+                        "mean": (result.get("latency") or {}).get("mean", 0) or 0,
+                        "p95": (result.get("latency") or {}).get("p95", 0) or 0,
+                    },
+                    "cases_run": result.get("total_conversations", 0),
+                    "failed_cases": 0,
+                    "success_rate": None,
+                    "git_sha": result.get("git_sha"),
+                }
+                aggregated["summary"]["successful_components"] += 1
+                continue
 
             # Extract metrics from per_case_results.
             # NOTE: means are computed over cases that produced metrics (successful
@@ -217,6 +306,7 @@ def generate_markdown_report(aggregated: dict[str, Any], output_path: Path) -> N
         f"- Total components: {aggregated['summary']['total_components']}",
         f"- Successful: {aggregated['summary']['successful_components']}",
         f"- Failed: {aggregated['summary']['failed_components']}",
+        f"- Skipped: {aggregated['summary'].get('skipped_components', 0)}",
         "",
         "## Component Results",
         "",

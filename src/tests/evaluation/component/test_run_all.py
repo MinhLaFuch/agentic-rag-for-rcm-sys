@@ -74,9 +74,82 @@ def test_main_returns_nonzero_on_failure(monkeypatch, tmp_path):
     assert _run_all.main() == 1
 
 
+def _write_multi_turn_result(path):
+    path.write_text(json.dumps({
+        "multi_turn_version": "1.0",
+        "total_conversations": 11,
+        "turn_success_rate": 0.8,
+        "conversation_success_rate": 0.5,
+        "metrics": {"tool_call_match_rate": 0.6},
+        "latency": {"mean": 1.2, "p95": 3.0},
+        "git_sha": "abc",
+    }), encoding="utf-8")
+    return str(path)
+
+
+def test_skipped_no_credentials_is_visible_not_failed(tmp_path):
+    agg = _run_all.aggregate_results({
+        "multi_turn": {"result_file": None, "error": "no LLM", "not_implemented": False,
+                       "status": "skipped_no_credentials"},
+        "memory": _info(_write_result(tmp_path / "m.json", success_rate=1.0)),
+    })
+    mt = agg["components"]["multi_turn"]
+    assert mt["status"] == "skipped_no_credentials"
+    assert mt["quality_gate"] == "not_evaluated"
+    assert agg["summary"]["skipped_components"] == 1
+    assert agg["summary"]["failed_components"] == 0
+    assert agg["summary"]["successful_components"] == 1
+
+
+def test_multi_turn_result_maps_conversation_summary(tmp_path):
+    f = _write_multi_turn_result(tmp_path / "mt.json")
+    agg = _run_all.aggregate_results({"multi_turn": _info(f)})
+    mt = agg["components"]["multi_turn"]
+    assert mt["status"] == "success"
+    assert mt["cases_run"] == 11
+    assert mt["metrics"]["turn_success_rate"] == 0.8
+    assert mt["metrics"]["conversation_success_rate"] == 0.5
+    assert mt["metrics"]["tool_call_match_rate"] == 0.6
+    assert mt["latency"]["mean"] == 1.2
+    assert mt["success_rate"] is None
+    assert agg["summary"]["successful_components"] == 1
+
+
+def test_run_multi_turn_skips_without_llm(monkeypatch):
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: False)
+    info = _run_all._run_multi_turn()
+    assert info["status"] == "skipped_no_credentials"
+    assert info["result_file"] is None
+
+
+def test_run_multi_turn_runs_cli_and_parses_result(monkeypatch, tmp_path):
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: True)
+    monkeypatch.setattr(_run_all, "get_data_paths", lambda: _FakePaths(tmp_path))
+    monkeypatch.setattr(
+        _run_all.subprocess, "run",
+        lambda *a, **k: type("R", (), {"returncode": 0, "stdout": "Results saved to: out/mt.json\n", "stderr": ""})(),
+    )
+    info = _run_all._run_multi_turn()
+    assert info["status"] == "success"
+    assert info["result_file"].endswith(("out/mt.json", "out\\mt.json"))
+
+
+def test_run_multi_turn_failed_exit_is_failed(monkeypatch, tmp_path):
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: True)
+    monkeypatch.setattr(_run_all, "get_data_paths", lambda: _FakePaths(tmp_path))
+    monkeypatch.setattr(
+        _run_all.subprocess, "run",
+        lambda *a, **k: type("R", (), {"returncode": 2, "stdout": "", "stderr": "boom"})(),
+    )
+    info = _run_all._run_multi_turn()
+    assert info["status"] == "failed"
+    assert info["error"] == "boom"
+
+
 class _FakePaths:
     def __init__(self, root):
         self._root = root
+        self.src_root = root
 
     def output_dir(self, key):
         d = self._root / key
