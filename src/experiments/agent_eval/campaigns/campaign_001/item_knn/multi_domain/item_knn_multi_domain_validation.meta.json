@@ -1,0 +1,24 @@
+{
+  "format_version": 2,
+  "provenance": {
+    "scope": "dataset_bound",
+    "user_mapping_hash": "9646bb6148e580f6abdd0e519ceca1f2c8cde01b15a2397fc759477d42fcf27a",
+    "item_mapping_hash": "1160c09b2971afd2507f791a3802e356627f895a2cd0b7b111d58ce581e7ff90",
+    "eval_on": "validation",
+    "fit_splits": [
+      "train"
+    ],
+    "tag": "multi_domain"
+  },
+  "algorithm": "binary_cosine_topk_v1",
+  "data_hash_protocol": "sorted_event_pairs_int64_le_v1",
+  "class_name": "ItemKNNRecommender",
+  "k": 20,
+  "num_rows": 21687358,
+  "num_users": 2757103,
+  "num_items": 678281,
+  "data_hash": "10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd",
+  "created_at": 1794320131.8435292,
+  "fit_time_seconds": 35.55638860000181,
+  "artifact_sha256": "4fbc127eae39622b4ba5b117364b380a34794244bb5b8f9c3ab8799169182c8d"
+}

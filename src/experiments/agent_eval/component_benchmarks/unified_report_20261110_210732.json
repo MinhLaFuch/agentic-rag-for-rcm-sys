@@ -1,0 +1,182 @@
+{
+  "timestamp": "2026-11-10T14:07:32.293549+00:00",
+  "components": {
+    "memory": {
+      "status": "success",
+      "quality_gate": "pass",
+      "thresholds_result": {
+        "passed": true,
+        "checks": {
+          "min:all_fields_match_mean": "pass",
+          "min:success_rate": "pass",
+          "max:future_leakage_max": "pass"
+        }
+      },
+      "metrics": {
+        "known_correct": 1.0,
+        "n_interactions_correct": 1.0,
+        "top_categories_exact": 1.0,
+        "top_categories_set_match": 1.0,
+        "price_range_exact": 1.0,
+        "recent_items_exact": 1.0,
+        "recent_items_set_match": 1.0,
+        "love_categories_exact": 1.0,
+        "love_categories_set_match": 1.0,
+        "hate_categories_exact": 1.0,
+        "hate_categories_set_match": 1.0,
+        "loved_items_exact": 1.0,
+        "loved_items_set_match": 1.0,
+        "hated_items_exact": 1.0,
+        "hated_items_set_match": 1.0,
+        "all_fields_match": 1.0,
+        "future_leakage": 0.0,
+        "error_behavior_correct": 1.0
+      },
+      "latency": {
+        "mean": 0.0037159448271769837,
+        "p95": 0.0050672000033955555
+      },
+      "cases_run": 29,
+      "failed_cases": 0,
+      "success_rate": 1.0,
+      "git_sha": ""
+    },
+    "planner": {
+      "status": "success",
+      "quality_gate": "not_evaluated",
+      "thresholds_result": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.49038461538461536,
+        "argument_correctness": 0.3841575091575091,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.7307692307692307,
+        "constraint_handling": 0.5448717948717948,
+        "clarification_precision": 0.7417571732622643,
+        "clarification_recall": 0.8461538461538461,
+        "unnecessary_clarification_rate": 1.0,
+        "refusal_to_guess": 0.5
+      },
+      "latency": {
+        "mean": 10.157134396153756,
+        "p95": 16.5102521000008
+      },
+      "cases_run": 26,
+      "failed_cases": 0,
+      "success_rate": 1.0,
+      "git_sha": ""
+    },
+    "executor": {
+      "status": "success",
+      "quality_gate": "not_evaluated",
+      "thresholds_result": null,
+      "metrics": {
+        "all_steps_ok": 1.0,
+        "step_success_rate": 0.6111111111111112,
+        "error_kind_accuracy": 1.0,
+        "reference_resolution_ok": 1.0,
+        "step_count_match": 1.0,
+        "data_correctness": 1.0
+      },
+      "latency": {
+        "mean": 0.00032660555573076836,
+        "p95": 0.0015949000007822178
+      },
+      "cases_run": 18,
+      "failed_cases": 0,
+      "success_rate": 1.0,
+      "git_sha": ""
+    },
+    "grounding": {
+      "status": "success",
+      "quality_gate": "not_evaluated",
+      "thresholds_result": null,
+      "metrics": {
+        "claims_supported": 0.9428571428571428,
+        "unsupported_count": 0.5714285714285714,
+        "judge_error_count": 0.0,
+        "total_claims": 1.5142857142857142,
+        "grounding_rate": 0.6714285714285714,
+        "hallucination_rate": 0.32857142857142857,
+        "label_agreement": 0.6571428571428571
+      },
+      "latency": {
+        "mean": 1.8119870028572873,
+        "p95": 2.5357576999995217
+      },
+      "cases_run": 35,
+      "failed_cases": 0,
+      "success_rate": 1.0,
+      "git_sha": ""
+    },
+    "integration": {
+      "status": "success",
+      "quality_gate": "not_evaluated",
+      "thresholds_result": null,
+      "metrics": {
+        "contract_valid": 1.0,
+        "no_mismatch": 1.0,
+        "presented_ids_exact": 1.0,
+        "item_fields_match": 1.0
+      },
+      "latency": {
+        "mean": 0.0006961499999912727,
+        "p95": 0.0021983999977237545
+      },
+      "cases_run": 12,
+      "failed_cases": 0,
+      "success_rate": 1.0,
+      "git_sha": ""
+    },
+    "multi_turn": {
+      "status": "success",
+      "quality_gate": "not_evaluated",
+      "thresholds_result": null,
+      "metrics": {
+        "avg_item_match_rate_mean": 0.7727272727272727,
+        "avg_item_match_rate_std": 0.3277773886785445,
+        "avg_item_match_rate_min": 0.0,
+        "avg_item_match_rate_max": 1.0,
+        "context_retention_mean": 1.0,
+        "context_retention_std": 0.0,
+        "context_retention_min": 1.0,
+        "context_retention_max": 1.0,
+        "conversation_success_mean": 1.0,
+        "conversation_success_std": 0.0,
+        "conversation_success_min": 1.0,
+        "conversation_success_max": 1.0,
+        "exclusion_compliance_mean": 0.8636363636363636,
+        "exclusion_compliance_std": 0.308287726505694,
+        "exclusion_compliance_min": 0.0,
+        "exclusion_compliance_max": 1.0,
+        "tool_call_match_rate_mean": 1.0,
+        "tool_call_match_rate_std": 0.0,
+        "tool_call_match_rate_min": 1.0,
+        "tool_call_match_rate_max": 1.0,
+        "turn_success_rate_mean": 1.0,
+        "turn_success_rate_std": 0.0,
+        "turn_success_rate_min": 1.0,
+        "turn_success_rate_max": 1.0,
+        "turn_success_rate": 1.0,
+        "conversation_success_rate": 1.0
+      },
+      "latency": {
+        "mean": 24.063759354546413,
+        "p95": null
+      },
+      "cases_run": 11,
+      "failed_cases": 0,
+      "failed_conversation_ids": [],
+      "turn_completion_ratio": 1.0,
+      "failure_distribution": {},
+      "success_rate": null,
+      "git_sha": "2bc6bc6095ca5b146997a660875e0267571359d5"
+    }
+  },
+  "summary": {
+    "total_components": 6,
+    "successful_components": 6,
+    "failed_components": 0,
+    "skipped_components": 0
+  }
+}

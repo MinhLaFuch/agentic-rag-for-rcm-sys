@@ -3,13 +3,8 @@
 !.gitmodules
 !.gitattributes
 resource
-# Keep bulky ranking-evaluation raw artifacts local; commit summaries instead.
-/src/experiments/ranking_eval/exp_*/candidate_lists.jsonl
-/src/experiments/ranking_eval/exp_*/scored.jsonl
 
 # Durable local evaluation checkpoints include models and full candidate payloads.
-/src/experiments/checkpoints/
-/src/experiments/ranking_eval/_checkpoints/
 src/src.zip
 
 # Virtual environment
@@ -30,10 +25,3 @@ src/resource/corpus/
 # Graphify output
 src/graphify-out/
 nul
-
-# Evaluation run artifacts — regenerated locally on each run.
-# Historically committed files under these paths stay tracked.
-/src/experiments/agent_eval/exp_*/
-/src/experiments/agent_eval/campaigns/
-/src/experiments/test_logs/
-/src/experiments/agent_eval/component_benchmarks/pytest.log
