@@ -206,3 +206,4 @@ def build_embedding_encoder(config: dict[str, Any] | None = None) -> BaseEmbeddi
         return SentenceTransformerEncoder(model_name_or_path=model_name)
 
     return HashEmbeddingEncoder(dim=int(config.get("dim", 128)))
+

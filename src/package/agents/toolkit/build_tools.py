@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 import pandas as pd
 
 from .agent_tools import AgentTools
@@ -10,6 +11,7 @@ from ...corpus import ItemCorpus
 from ...tools import SimilarTool, LookupTool, RankTool, SearchTool, FilterTool
 from ...tools.scoring import CandidateScorer
 from ...recommenders.shared.recommender import Recommender
+from ...embeddings import VectorStore
 
 
 def build_tools(
@@ -21,13 +23,22 @@ def build_tools(
     corpus: ItemCorpus,
     logger=None,
     as_of_timestamp: int | None = None,
+    vector_store: VectorStore | None = None,
+    query_encoder: Any | None = None,
+    rrf_k: int = 60,
 ) -> AgentTools:
     """knn: nguồn similarity cho SimilarTool; scorer: cho RankTool; as_of_timestamp: mốc chống leakage cho MemoryTool."""
     return AgentTools(
         item_cf=SimilarTool(knn, item2id, corpus=corpus, logger=logger),
         reco=RankTool(scorer, user2id, item2id, corpus=corpus, logger=logger),
         query=LookupTool(corpus, logger=logger),
-        search=SearchTool(corpus, logger=logger),
+        search=SearchTool(
+            corpus,
+            logger=logger,
+            vector_store=vector_store,
+            query_encoder=query_encoder,
+            rrf_k=rrf_k,
+        ),
         sql=FilterTool(corpus, logger=logger),
         memory=MemoryTool(interactions, user2id, item2id, corpus, logger=logger, as_of_timestamp=as_of_timestamp),
     )
