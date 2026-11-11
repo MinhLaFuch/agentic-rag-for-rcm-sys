@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -61,10 +62,20 @@ class CampaignRunner:
             output_dir = get_data_paths().experiments_dir / output_dir
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        # Multi-turn plans are resolved once up-front so the campaign policy
+        # ("once"/"never"/"all") and per-experiment opt-ins are decided before
+        # any run starts.
+        mt_plans = self._multi_turn_plans(experiments, output_dir)
+
         # Execute each experiment
-        for experiment in experiments:
+        for exp_idx, experiment in enumerate(experiments):
             for run_num in range(1, experiment.repetition_count + 1):
-                run = self._run_experiment(experiment, run_num, output_dir)
+                run = self._run_experiment(
+                    experiment,
+                    run_num,
+                    output_dir,
+                    multi_turn=mt_plans.get((exp_idx, run_num)),
+                )
                 runs.append(run)
 
         # Perform comparisons if configured
@@ -82,6 +93,7 @@ class CampaignRunner:
             comparisons=comparisons,
             summary=summary,
             git_sha=self.git_sha,
+            multi_turn=self._collect_multi_turn_result(runs),
         )
 
         # Save campaign result
@@ -97,6 +109,7 @@ class CampaignRunner:
         experiment: Any,
         run_number: int,
         output_dir: Path,
+        multi_turn: dict[str, Any] | None = None,
     ) -> ExperimentRun:
         """Run a single experiment by calling run_agent_eval.py.
 
@@ -115,11 +128,14 @@ class CampaignRunner:
         success = True
         error = None
         metrics = {}
+        experiment_dir = ""
 
         try:
             # Per-experiment tunables go through a CONFIG_OVERLAY_PATH YAML (merged over
             # configs/ by load_config) — run_agent_eval.py itself only takes runtime selectors.
-            overlay = self._build_config_overlay(experiment, run_number)
+            overlay = self._build_config_overlay(
+                experiment, run_number, multi_turn=multi_turn, campaign_dir=output_dir
+            )
             overlay_path = exp_output_dir / "config_overlay.yaml"
             overlay_path.write_text(
                 yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
@@ -168,6 +184,8 @@ class CampaignRunner:
             else:
                 print(result.stdout)
                 # run_agent_eval prints "saved -> <exp_dir>"; that is the deterministic handoff
+                exp_dir = self._experiment_dir_from_stdout(result.stdout)
+                experiment_dir = str(exp_dir) if exp_dir is not None else ""
                 metrics = self._load_experiment_metrics(result.stdout)
 
         except subprocess.TimeoutExpired:
@@ -183,6 +201,7 @@ class CampaignRunner:
             experiment_name=experiment.name,
             run_number=run_number,
             output_dir=str(exp_output_dir),
+            experiment_dir=experiment_dir,
             success=success,
             error=error,
             duration_seconds=duration,
@@ -190,10 +209,99 @@ class CampaignRunner:
         )
 
     # agent_config keys the overlay builder knows how to map; anything else is a config error
-    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds"}
+    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn"}
     _EVALUATION_CONFIG_KEYS = {"per_segment"}
 
-    def _build_config_overlay(self, experiment: Any, run_number: int) -> dict[str, Any]:
+    # agent_config.multi_turn accepts bool or a dict; these keys map onto
+    # agent_eval.multi_turn. output_dir is NOT accepted — the campaign owns
+    # artifact placement so campaign_result.json can find every file.
+    _MULTI_TURN_PARAM_KEYS = {"enabled", "dataset", "limits", "timeout_seconds"}
+
+    @classmethod
+    def _normalize_multi_turn_param(cls, value: Any) -> dict[str, Any]:
+        """agent_config.multi_turn -> agent_eval.multi_turn fragment.
+
+        ``True`` -> enabled with base-yaml defaults; ``False``/absent ->
+        disabled; a dict may set enabled/dataset/limits/timeout_seconds.
+        """
+        if value is None or value is False:
+            return {"enabled": False}
+        if value is True:
+            return {"enabled": True}
+        if isinstance(value, dict):
+            unknown = set(value) - cls._MULTI_TURN_PARAM_KEYS
+            if unknown:
+                raise ValueError(
+                    f"agent_config.multi_turn has unmapped keys {sorted(unknown)}; "
+                    f"supported: {sorted(cls._MULTI_TURN_PARAM_KEYS)} "
+                    "(output_dir is campaign-controlled)"
+                )
+            frag = dict(value)
+            frag.setdefault("enabled", True)
+            return frag if frag["enabled"] else {"enabled": False}
+        raise ValueError(
+            f"agent_config.multi_turn must be bool or dict, got {type(value).__name__}"
+        )
+
+    @staticmethod
+    def _multi_turn_run_dir(output_dir: Path, experiment: Any, run_number: int) -> Path:
+        return output_dir / "multi_turn" / f"{experiment.name}_run{run_number}"
+
+    def _multi_turn_plans(
+        self, experiments: list[Any], output_dir: Path
+    ) -> dict[tuple[int, int], dict[str, Any]]:
+        """Resolve which runs execute multi-turn and with what config.
+
+        Returns ``{(exp_index, run_number): agent_eval.multi_turn fragment}``.
+        Campaign policy (``multi_turn``):
+
+        - ``never`` -> nothing.
+        - ``once`` -> at most one run: the first experiment (grid order) that
+          opts in via ``agent_config.multi_turn``, first repetition only; if
+          NO experiment opts in, the legacy fallback enables experiment[0]
+          run 1 so existing configs keep their single multi-turn run.
+        - ``all`` -> every run whose experiment opts in (all repetitions).
+
+        Enabled runs write to ``<campaign>/multi_turn/<exp>_run<N>/`` —
+        never into an exp_dir.
+        """
+        mode = getattr(self.config, "multi_turn", "once")
+        if mode == "never":
+            return {}
+        if mode not in ("once", "all"):
+            raise ValueError(f"campaign multi_turn must be 'once', 'never' or 'all', got {mode!r}")
+
+        opted: list[tuple[int, int, dict[str, Any]]] = []
+        for exp_idx, experiment in enumerate(experiments):
+            frag = self._normalize_multi_turn_param(experiment.agent_config.get("multi_turn"))
+            for run_num in range(1, experiment.repetition_count + 1):
+                if frag.get("enabled"):
+                    opted.append((exp_idx, run_num, frag))
+
+        plans: dict[tuple[int, int], dict[str, Any]] = {}
+        if mode == "all":
+            chosen = opted
+        elif opted:
+            chosen = opted[:1]
+        else:
+            # Legacy fallback: preserve the pre-param behaviour — first
+            # experiment's first repetition runs multi-turn with defaults.
+            chosen = [(0, 1, {"enabled": True})]
+        for exp_idx, run_num, frag in chosen:
+            experiment = experiments[exp_idx]
+            plans[(exp_idx, run_num)] = {
+                **frag,
+                "output_dir": str(self._multi_turn_run_dir(output_dir, experiment, run_num)),
+            }
+        return plans
+
+    def _build_config_overlay(
+        self,
+        experiment: Any,
+        run_number: int,
+        multi_turn: dict[str, Any] | None = None,
+        campaign_dir: Path | None = None,
+    ) -> dict[str, Any]:
         """Build a CONFIG_OVERLAY_PATH YAML fragment for one experiment run.
 
         Shape mirrors configs/: top-level keys are config names, values are the
@@ -221,7 +329,29 @@ class CampaignRunner:
         if per_segment is not None:
             agent_eval["per_segment"] = per_segment
 
+        # Multi-turn fragment resolved by _multi_turn_plans; every other run
+        # gets enabled=false explicitly so a base-yaml enabled=true cannot
+        # leak into the grid.
+        agent_eval["multi_turn"] = multi_turn if multi_turn is not None else {"enabled": False}
+
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
+
+        # Pin artifacts to the run dir itself: run_agent_eval writes
+        # config.yaml/metrics.json/trajectories.jsonl into agent_eval.
+        # experiment_dir, so campaigns/<id>/<exp>/run_N/ is self-contained.
+        if campaign_dir is not None:
+            run_dir = campaign_dir / experiment.name / f"run_{run_number}"
+            agent_eval["experiment_dir"] = str(run_dir)
+
+            # Fit ItemKNN once per campaign: item_knn_reuse_cache lets the first
+            # run save a provenance-validated artifact and siblings load it
+            # (data_hash + mapping/split/tag + k + sha256 all checked). The cache
+            # lives under the campaign dir — never the shared resource/item_knn
+            # pool — so a campaign cannot clobber pipeline artifacts.
+            src_root = Path(get_data_paths().src_root)
+            knn_root = os.path.relpath(campaign_dir / "item_knn", src_root)
+            overlay["path/data_paths"] = {"paths": {"item_knn_dir": Path(knn_root).as_posix()}}
+            agent_eval["item_knn_reuse_cache"] = True
 
         inference_mode = experiment.agent_config.get("inference_mode")
         if inference_mode is not None:
@@ -287,6 +417,96 @@ class CampaignRunner:
                                 all_metrics[metric_key] = value
 
         return all_metrics
+
+    @staticmethod
+    def _run_multi_turn_fragment(run: ExperimentRun) -> dict[str, Any] | None:
+        """Read the multi_turn block this run's overlay actually applied.
+
+        The overlay file is written before the subprocess starts, so it
+        reflects what run_agent_eval saw even when the run failed early.
+        """
+        ov_path = Path(run.output_dir) / "config_overlay.yaml"
+        if not ov_path.exists():
+            return None
+        try:
+            ov = yaml.safe_load(ov_path.read_text(encoding="utf-8")) or {}
+            frag = (
+                (ov.get("agent/agent_eval") or {}).get("agent_eval") or {}
+            ).get("multi_turn")
+            return frag if isinstance(frag, dict) else None
+        except Exception:
+            return None
+
+    def _collect_multi_turn_result(
+        self,
+        runs: list[ExperimentRun],
+    ) -> dict[str, Any]:
+        """Summarize every multi_turn artifact for campaign_result.json.
+
+        Each enabled run wrote ``<its output_dir>/multi_turn.json`` where the
+        dir comes from that run's own config_overlay.yaml — no copying, one
+        artifact per run. Per-run statuses: ``success`` |
+        ``skipped_no_credentials`` | ``failed`` | ``error`` | ``timeout`` |
+        ``not_run``. Overall ``status``: ``disabled`` (policy never),
+        ``not_run`` (nothing enabled/produced), the shared status when all
+        runs agree, else ``partial``. Metrics are informational only —
+        never fed into comparisons.
+        """
+        mode = getattr(self.config, "multi_turn", "once")
+        if mode == "never":
+            return {"status": "disabled", "mode": mode, "runs": []}
+
+        from package.evaluation.multi_turn import extract_multi_turn_metrics
+
+        entries: list[dict[str, Any]] = []
+        for run in runs:
+            frag = self._run_multi_turn_fragment(run)
+            if not frag or not frag.get("enabled"):
+                continue
+            entry: dict[str, Any] = {
+                "experiment": run.experiment_name,
+                "run_number": run.run_number,
+            }
+            out_dir = frag.get("output_dir")
+            mt_file = Path(out_dir) / "multi_turn.json" if out_dir else None
+            if mt_file is not None and mt_file.exists():
+                try:
+                    data = json.loads(mt_file.read_text(encoding="utf-8"))
+                except Exception as exc:
+                    entry.update(status="error", path=str(mt_file), error=str(exc))
+                else:
+                    status = data.get("status")
+                    if status is None and "total_conversations" in data:
+                        status = "success"  # summary files predating the status field
+                    entry.update(
+                        status=status or "unknown",
+                        path=str(mt_file),
+                        metrics=extract_multi_turn_metrics(data),
+                    )
+            else:
+                if not run.success and run.error:
+                    reason = f"run failed before multi-turn step: {run.error[:300]}"
+                else:
+                    reason = "run completed but produced no multi_turn.json"
+                entry.update(status="not_run", reason=reason)
+            entries.append(entry)
+
+        if not entries:
+            return {
+                "status": "not_run",
+                "mode": mode,
+                "runs": [],
+                "reason": "no run had multi_turn enabled",
+            }
+
+        statuses = [e["status"] for e in entries]
+        if all(s == "success" for s in statuses):
+            overall = "success"
+        elif len(set(statuses)) == 1:
+            overall = statuses[0]
+        else:
+            overall = "partial"
+        return {"status": overall, "mode": mode, "runs": entries}
 
     def _run_comparisons(
         self,

@@ -1,0 +1,26 @@
+agent/agent_eval:
+  agent_eval:
+    agents:
+    - baseline
+    - type1
+    allow_missing_corpus_sources: true
+    trajectory_file: campaign_001_parameter_grid_exp_3_agents_baseline_type1_inference_mode_llm_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl
+    campaign_id: campaign_001_parameter_grid
+    per_segment: 20
+    multi_turn:
+      enabled: true
+      output_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\multi_turn\exp_3_agents_baseline_type1_inference_mode_llm_reflect_rounds_0_multi_turn_True_run1
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\exp_3_agents_baseline_type1_inference_mode_llm_reflect_rounds_0_multi_turn_True\run_1
+    item_knn_reuse_cache: true
+path/data_paths:
+  paths:
+    item_knn_dir: experiments/agent_eval/campaigns/campaign_001/item_knn
+agent/inference:
+  inference:
+    mode: llm
+agent/agent:
+  agent:
+    reflect_rounds: 0
+eval/baselines:
+  baselines:
+    seed: 42

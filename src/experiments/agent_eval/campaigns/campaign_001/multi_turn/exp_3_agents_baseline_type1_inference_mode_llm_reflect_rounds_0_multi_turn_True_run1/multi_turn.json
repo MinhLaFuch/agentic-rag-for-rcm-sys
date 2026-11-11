@@ -1,0 +1,50 @@
+{
+  "multi_turn_version": "1.0.0",
+  "total_conversations": 11,
+  "turn_success_rate": 1.0,
+  "conversation_success_rate": 1.0,
+  "total_turns_scheduled": 20,
+  "total_turns_executed": 20,
+  "avg_turns_per_conversation": 1.8181818181818181,
+  "turn_completion_ratio": 1.0,
+  "failed_conversation_ids": [],
+  "failed_conversations": 0,
+  "metrics": {
+    "avg_item_match_rate_mean": 0.8181818181818182,
+    "avg_item_match_rate_std": 0.24052284646041733,
+    "avg_item_match_rate_min": 0.5,
+    "avg_item_match_rate_max": 1.0,
+    "context_retention_mean": 1.0,
+    "context_retention_std": 0.0,
+    "context_retention_min": 1.0,
+    "context_retention_max": 1.0,
+    "conversation_success_mean": 1.0,
+    "conversation_success_std": 0.0,
+    "conversation_success_min": 1.0,
+    "conversation_success_max": 1.0,
+    "exclusion_compliance_mean": 0.9090909090909091,
+    "exclusion_compliance_std": 0.1928473039599675,
+    "exclusion_compliance_min": 0.5,
+    "exclusion_compliance_max": 1.0,
+    "tool_call_match_rate_mean": 1.0,
+    "tool_call_match_rate_std": 0.0,
+    "tool_call_match_rate_min": 1.0,
+    "tool_call_match_rate_max": 1.0,
+    "turn_success_rate_mean": 1.0,
+    "turn_success_rate_std": 0.0,
+    "turn_success_rate_min": 1.0,
+    "turn_success_rate_max": 1.0
+  },
+  "latency": {
+    "mean": 17.09898016363745,
+    "min": 7.171142700004566,
+    "max": 25.694596200009983
+  },
+  "failure_distribution": {},
+  "context_retention_metrics": {
+    "mean": 1.0
+  },
+  "timestamp": "2026-11-10T15:54:35.619918+00:00",
+  "git_sha": "77bec0156851cc422764883b0664942acc09f3b9",
+  "status": "success"
+}

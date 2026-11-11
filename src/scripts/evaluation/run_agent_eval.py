@@ -76,6 +76,8 @@ from package.evaluation.recommender.config import segment_users_by_history, sele
 from package.evaluation.recommender.utils import sha256_file
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared import item_knn_data_hash, mapping_hash
+from package.recommenders.shared.load_item_knn import load_item_knn
+from package.recommenders.shared.save_item_knn import save_item_knn
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
@@ -223,6 +225,42 @@ def run_type1(
     return traj
 
 
+def _resume_agent_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    """agent_eval config as hashed into resume_identity.
+
+    ``multi_turn`` and ``campaign_id`` are excluded: neither affects
+    trajectories (campaign_id is provenance — the trajectory_file name
+    already carries it), so toggling them must not invalidate --resume.
+    """
+    return {k: v for k, v in cfg.items() if k not in ("multi_turn", "campaign_id")}
+
+
+def run_optional_multi_turn(cfg: dict[str, Any], exp_dir_candidate: Path) -> dict[str, Any] | None:
+    """Run the yaml-gated multi-turn step; never let it sink the main eval.
+
+    Returns None when ``agent_eval.multi_turn.enabled`` is false (nothing
+    changes downstream — metrics.json stays byte-identical). Any failure in
+    the step itself is captured as ``status: "error"`` so the already-paid
+    agent evaluation is still saved.
+    """
+    mt_cfg = cfg.get("multi_turn") or {}
+    if not mt_cfg.get("enabled"):
+        return None
+    default_out = exp_dir_candidate / "multi_turn.json"
+    try:
+        from package.evaluation.multi_turn import run_multi_turn_for_eval
+
+        return run_multi_turn_for_eval(mt_cfg, default_out)
+    except Exception as exc:
+        return {
+            "status": "error",
+            "resumed": False,
+            "output_path": str(default_out),
+            "summary": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
@@ -323,13 +361,49 @@ def main() -> None:
     cache_meta_path = item_knn_path.with_suffix(".meta.json")
     if cache_meta_path.exists():
         knn_cache_data_hash = json.loads(cache_meta_path.read_text(encoding="utf-8")).get("data_hash")
-    knn_artifact_status = "fit_fresh_cache_ignored"
-    print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
-    t0 = time.perf_counter()
-    knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
-    fit_time = time.perf_counter() - t0
-    knn._fit_time = fit_time
-    print(f"ItemKNN: fitted in {fit_time:.1f}s")
+
+    # item_knn_reuse_cache (campaign overlay): fit once per cache location, then
+    # siblings load the artifact — but only after load_item_knn validates
+    # data_hash + fit provenance (mappings/split/tag) + k + sha256. Any mismatch
+    # falls back to a fresh fit, which is always the gold standard.
+    reuse_cache = bool(cfg.get("item_knn_reuse_cache", False))
+    knn = None
+    if reuse_cache and item_knn_path.exists():
+        try:
+            t0 = time.perf_counter()
+            knn = load_item_knn(
+                item_knn_path, knn_k, fit_pairs,
+                user2id=user2id, item2id=item2id,
+                eval_on=args.eval_on, tag=data_paths.tag,
+            )
+            knn_artifact_status = "loaded_cache"
+            print(f"ItemKNN: loaded validated cache from {item_knn_path} ({time.perf_counter() - t0:.1f}s)")
+        except Exception as exc:
+            print(f"ItemKNN cache rejected ({exc}); fitting fresh")
+            knn = None
+    if knn is None:
+        if reuse_cache:
+            knn_artifact_status = "fit_fresh_cache_pending_save"
+        else:
+            print("Fit ItemKNN on current fit split (prebuilt cache ignored for evaluation provenance)")
+            knn_artifact_status = "fit_fresh_cache_ignored"
+        t0 = time.perf_counter()
+        knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+        fit_time = time.perf_counter() - t0
+        knn._fit_time = fit_time
+        print(f"ItemKNN: fitted in {fit_time:.1f}s")
+        if reuse_cache:
+            try:
+                save_item_knn(
+                    knn, item_knn_path, knn_k, fit_pairs,
+                    user2id=user2id, item2id=item2id,
+                    eval_on=args.eval_on, tag=data_paths.tag,
+                )
+                knn_artifact_status = "fit_fresh_cache_saved"
+                print(f"ItemKNN: saved cache to {item_knn_path}")
+            except Exception as exc:
+                knn_artifact_status = "fit_fresh_cache_save_failed"
+                print(f"ItemKNN cache save failed ({exc}); siblings will refit")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
     scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
@@ -396,7 +470,8 @@ def main() -> None:
         "protocol": protocol_manifest, "fit_data_hash": knn_fit_data_hash,
         "source_fingerprint": _source_fingerprint(), "seed": seed, "neighbors": knn_k,
         "k": k, "reflect_rounds": reflect_rounds, "inference_mode": inference_mode,
-        "agent_config": cfg, "llm_config": load_config("agent/llm"),
+        "agent_config": _resume_agent_config(cfg),
+        "llm_config": load_config("agent/llm"),
         "metadata_content_hashes": {d: sha256_file(p) if Path(p).exists() else None for d,p in meta_files},
         "requests": [r.to_dict() for r in requests],
     }
@@ -486,6 +561,20 @@ def main() -> None:
         }
         for domain, path in meta_files
     }
+    # ---- optional multi-turn step (yaml-gated; runs after the main eval) ----
+    # output_dir=None -> <exp_dir>/multi_turn.json; a configured path (the
+    # campaign overlay sets campaigns/<id>/multi_turn/) writes there instead,
+    # so the artifact exists in exactly one place. Disabled -> mt_info is None
+    # and nothing below changes (metrics.json stays byte-identical).
+    # experiment_dir override (campaign overlay) pins artifacts to the run dir;
+    # otherwise allocate the next exp_NNN under outputs.agent_eval.
+    exp_dir_override = cfg.get("experiment_dir")
+    exp_dir_candidate = (
+        Path(exp_dir_override) if exp_dir_override
+        else next_experiment_dir(data_paths.output_dir("agent_eval"))
+    )
+    mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
+
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
@@ -495,7 +584,7 @@ def main() -> None:
                 "trajectory_log": str(traj_path),
                 "llm_model": load_config("agent/llm").get("model"), "knn_artifact_status": knn_artifact_status,
                 "knn_fit_data_hash": knn_fit_data_hash, "knn_cache_data_hash": knn_cache_data_hash,
-                "knn_cache_used": knn_artifact_status == "validated_train_core_cache",
+                "knn_cache_used": knn_artifact_status == "loaded_cache",
                 "scorer": scorer_provenance,
                 "eval_schema_version": EVAL_SCHEMA_VERSION,
                 "provenance": provenance,
@@ -512,8 +601,15 @@ def main() -> None:
                 }}
     if cfg.get("campaign_id"):
         exp_config["campaign_id"] = cfg["campaign_id"]
+    if mt_info is not None:
+        exp_config["multi_turn"] = {
+            "enabled": True,
+            "status": mt_info["status"],
+            "output_path": mt_info["output_path"],
+            "dataset": (cfg.get("multi_turn") or {}).get("dataset"),
+        }
     exp_dir = save_experiment(
-        next_experiment_dir(data_paths.output_dir("agent_eval")),
+        exp_dir_candidate,
         config=exp_config,
         metrics={"k": k, "summary": summary},
         seed=seed,
@@ -527,6 +623,7 @@ def main() -> None:
                                              "mtime_ns": data_paths.split_path(name).stat().st_mtime_ns, "sha256": sha256_file(data_paths.split_path(name))}
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
+        exist_ok=mt_info is not None or bool(exp_dir_override),
         notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "
                "Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting."),
@@ -535,6 +632,8 @@ def main() -> None:
     (exp_dir / "requests.jsonl").write_text("".join(json.dumps(r.to_dict(), ensure_ascii=False) + "\n" for r in requests), encoding="utf-8")
     (exp_dir / "scored.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     print(f"\nsaved -> {exp_dir}")
+    if mt_info is not None:
+        print(f"multi_turn -> {mt_info['output_path']} [{mt_info['status']}]")
 
 
 if __name__ == "__main__":

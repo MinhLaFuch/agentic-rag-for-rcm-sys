@@ -178,7 +178,7 @@ def test_campaign_runner_simulation(tmp_path: Path):
 
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn=None):
         return ExperimentRun(
             experiment_name=experiment.name,
             run_number=run_number,
@@ -225,7 +225,7 @@ def test_campaign_runner_with_failed_experiment(tmp_path: Path):
     # Override _run_experiment (the per-experiment unit) so no subprocess runs
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn=None):
         success = experiment.name != "exp_fail"
         return ExperimentRun(
             experiment_name=experiment.name,
@@ -430,7 +430,7 @@ def test_auto_comparison_pairs_are_actually_used(tmp_path: Path):
 
     original_run = CampaignRunner._run_experiment
 
-    def fake_run(self, experiment, run_number, output_dir):
+    def fake_run(self, experiment, run_number, output_dir, multi_turn=None):
         return ExperimentRun(
             experiment_name=experiment.name,
             run_number=run_number,
@@ -621,3 +621,96 @@ def test_run_experiment_builds_domain_cmd_and_runs_subprocess(tmp_path, monkeypa
     assert "--tag" not in cmd
     assert cmd.count("--domain") == 3
     assert "scripts/evaluation/run_agent_eval.py" in " ".join(cmd)
+
+
+def test_real_campaign_overlay_loads_via_config_system(tmp_path, monkeypatch):
+    """Regression: a real CampaignRunner overlay must pass _check_overlay_keys.
+
+    campaign_id was set by the overlay but absent from agent_eval.yaml, so every
+    campaign experiment died at startup (ConfigError: unknown key). This drives
+    the actual overlay through CONFIG_OVERLAY_PATH + load_config.
+    """
+    import yaml
+    from package.config.load_config import load_config
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="mt_campaign"))
+    exp = ExperimentConfig(
+        name="exp_a",
+        agent_config={"agents": ["baseline"], "inference_mode": "template"},
+        evaluation_config={"per_segment": 5},
+        random_seed=7,
+    )
+
+    for run_number in (1, 2):
+        overlay = runner._build_config_overlay(exp, run_number)
+        overlay_path = tmp_path / f"overlay_{run_number}.yaml"
+        overlay_path.write_text(
+            yaml.safe_dump(overlay, sort_keys=False, allow_unicode=True), encoding="utf-8"
+        )
+        monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+
+        cfg = load_config("agent/agent_eval")["agent_eval"]
+        assert cfg["campaign_id"] == "mt_campaign"
+        assert cfg["agents"] == ["baseline"]
+        assert cfg["per_segment"] == 5
+        assert cfg["trajectory_file"] == f"mt_campaign_exp_a_run{run_number}_trajectories.jsonl"
+
+        inference = load_config("agent/inference")["inference"]
+        assert inference["mode"] == "template"
+        baselines = load_config("eval/baselines")["baselines"]
+        assert baselines["seed"] == 7
+
+
+def test_build_config_overlay_pins_experiment_dir(tmp_path, monkeypatch):
+    """campaign_dir pins exp artifacts into <campaign>/<exp>/run_N via experiment_dir."""
+    import os
+    import yaml
+    from package.config import get_data_paths
+    from package.config.load_config import load_config
+
+    runner = CampaignRunner(CampaignConfig(campaign_id="c"))
+    campaign_dir = tmp_path / "campaigns" / "c1"
+    exp = ExperimentConfig(name="exp_a")
+
+    ov = runner._build_config_overlay(exp, 2, campaign_dir=campaign_dir)
+    run_dir = campaign_dir / "exp_a" / "run_2"
+    assert ov["agent/agent_eval"]["agent_eval"]["experiment_dir"] == str(run_dir)
+    # No exp_NNN relocation anymore — the run dir IS the experiment dir.
+    assert "outputs" not in ov.get("path/data_paths", {})
+
+    # The fragment must survive the real overlay path.
+    overlay_path = tmp_path / "config_overlay.yaml"
+    overlay_path.write_text(yaml.safe_dump(ov, sort_keys=False), encoding="utf-8")
+    monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
+    ae = load_config("agent/agent_eval")["agent_eval"]
+    assert ae["experiment_dir"] == str(run_dir)
+    assert ae["item_knn_reuse_cache"] is True
+
+    # ItemKNN cache is campaign-scoped and resolves under the campaign dir.
+    knn_path = get_data_paths().item_knn_path("validation")
+    assert Path(os.path.normpath(knn_path)).is_relative_to(
+        Path(os.path.normpath(campaign_dir / "item_knn"))
+    )
+    _ = load_config("path/data_paths")  # must not raise on the extra fragment
+
+    # Without campaign_dir nothing is pinned — shared pool + defaults untouched.
+    ov_default = runner._build_config_overlay(ExperimentConfig(name="e"), 1)
+    ae_default = ov_default["agent/agent_eval"]["agent_eval"]
+    assert "experiment_dir" not in ae_default
+    assert "item_knn_reuse_cache" not in ae_default
+    assert "path/data_paths" not in ov_default
+
+
+def test_experiment_run_roundtrip_includes_experiment_dir():
+    run = ExperimentRun(
+        experiment_name="e",
+        run_number=1,
+        output_dir="/x",
+        experiment_dir="/x/experiments/exp_001",
+        success=True,
+    )
+    assert ExperimentRun.from_dict(run.to_dict()).experiment_dir == "/x/experiments/exp_001"
+    # Old campaign_result.json files without the key still load.
+    old = run.to_dict()
+    del old["experiment_dir"]
+    assert ExperimentRun.from_dict(old).experiment_dir == ""

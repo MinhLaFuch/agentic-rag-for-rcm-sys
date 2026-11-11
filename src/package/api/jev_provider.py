@@ -26,11 +26,15 @@ class JevProvider(JudgmentProvider):
         import os
         import httpx
 
-        self.api_key = api_key or os.environ.get("TYPESAFE_API_KEY")
+        self.api_key = (
+            api_key
+            or os.environ.get("TYPESAFE_API_KEY")
+            or os.environ.get("OPENROUTER_API_KEY")
+        )
         if not self.api_key:
             raise ValueError(
-                "TYPESAFE_API_KEY not set. Set it via api_key parameter or "
-                "TYPESAFE_API_KEY environment variable."
+                "No judge API key. Set JEV_API_KEY (via config), TYPESAFE_API_KEY, "
+                "or OPENROUTER_API_KEY environment variable."
             )
 
         self.model = model

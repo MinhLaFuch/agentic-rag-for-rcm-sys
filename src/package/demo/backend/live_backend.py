@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import threading
 import time
+from dataclasses import asdict
 from typing import Any
 
 import pandas as pd
 
-from package.agents import PlanExecutor, Type1Agent, build_tools
+from package.agents import PlanExecutor, Type1Agent, Session, build_tools, get_session_limits
 from package.agents.type1.recommend_from_intent import recommend_from_intent
 from package.agents.type1.recent_seed_items import recent_seed_items
 from package.api import build_llm_provider
@@ -71,6 +72,7 @@ class LiveBackend:
         self._intent_query: Any = None
         self._knn_provenance = {"status": "not_initialized"}
         self._memory_tool: Any = None  # Store MemoryTool for snapshots
+        self._sessions: dict[str, Session] = {}  # session_key -> Session (multi-turn conversations)
 
     def initialize(self, *, initialize_planner: bool = True) -> None:
         """Tải dữ liệu và dựng executor (chạy một lần khi khởi động)."""
@@ -315,6 +317,12 @@ class LiveBackend:
         original_reflect = executor.reflect_rounds
         executor.reflect_rounds = request.reflect_rounds
 
+        # Multi-turn: gắn Session của conversation (nếu UI gửi session_key).
+        # PlanExecutor tự cập nhật session sau run(); executor là singleton dùng
+        # chung nên phải reset về None sau mỗi request (requests serialize bởi _lock).
+        session = self._session_for(request)
+        executor.session = session
+
         # Memory snapshots (before and after)
         memory_before = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
 
@@ -327,6 +335,7 @@ class LiveBackend:
             results = []
         finally:
             executor.reflect_rounds = original_reflect
+            executor.session = None
 
         memory_after = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
 
@@ -375,7 +384,19 @@ class LiveBackend:
 
         result = adapt_from_inference(answer, request=request, item_id_to_metadata=self._item_id_to_metadata, trace=trace)
         result.memory = memory_view
+        result.session_turns = len(session.turns) if session is not None else None
         return result
+
+    def _session_for(self, request: DemoRequest) -> Session | None:
+        """Session của conversation theo session_key; None = single-turn."""
+        key = getattr(request, "session_key", None)
+        if not key:
+            return None
+        session = self._sessions.get(key)
+        if session is None:
+            session = Session(**asdict(get_session_limits()))
+            self._sessions[key] = session
+        return session
 
     def _build_memory_view(
         self,

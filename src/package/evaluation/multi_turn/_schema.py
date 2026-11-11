@@ -271,6 +271,16 @@ class ConversationSummary:
     total_conversations: int = 0
     turn_success_rate: float = 0.0
     conversation_success_rate: float = 0.0
+    # Turn-count fields: scheduled = turns defined in the dataset; executed =
+    # turns actually run (turns after a failure are never executed). The gap
+    # between them is the "gave up early" signal. avg_turns_per_conversation
+    # uses EXECUTED turns; turn_completion_ratio = executed / scheduled.
+    total_turns_scheduled: int = 0
+    total_turns_executed: int = 0
+    avg_turns_per_conversation: float | None = None
+    turn_completion_ratio: float | None = None
+    failed_conversation_ids: list[str] = field(default_factory=list)
+    failed_conversations: int = 0
     metrics: dict[str, float] = field(default_factory=dict)
     latency: dict[str, float] = field(default_factory=dict)
     failure_distribution: dict[str, int] = field(default_factory=dict)
@@ -285,6 +295,12 @@ class ConversationSummary:
             "total_conversations": self.total_conversations,
             "turn_success_rate": self.turn_success_rate,
             "conversation_success_rate": self.conversation_success_rate,
+            "total_turns_scheduled": self.total_turns_scheduled,
+            "total_turns_executed": self.total_turns_executed,
+            "avg_turns_per_conversation": self.avg_turns_per_conversation,
+            "turn_completion_ratio": self.turn_completion_ratio,
+            "failed_conversation_ids": self.failed_conversation_ids,
+            "failed_conversations": self.failed_conversations,
             "metrics": self.metrics,
             "latency": self.latency,
             "failure_distribution": self.failure_distribution,
@@ -301,6 +317,12 @@ class ConversationSummary:
             total_conversations=data.get("total_conversations", 0),
             turn_success_rate=data.get("turn_success_rate", 0.0),
             conversation_success_rate=data.get("conversation_success_rate", 0.0),
+            total_turns_scheduled=data.get("total_turns_scheduled", 0),
+            total_turns_executed=data.get("total_turns_executed", 0),
+            avg_turns_per_conversation=data.get("avg_turns_per_conversation"),
+            turn_completion_ratio=data.get("turn_completion_ratio"),
+            failed_conversation_ids=data.get("failed_conversation_ids", []),
+            failed_conversations=data.get("failed_conversations", 0),
             metrics=data.get("metrics", {}),
             latency=data.get("latency", {}),
             failure_distribution=data.get("failure_distribution", {}),

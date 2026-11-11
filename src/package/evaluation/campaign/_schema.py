@@ -120,6 +120,7 @@ class CampaignConfig:
     )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
+    multi_turn: str = "once"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -135,6 +136,7 @@ class CampaignConfig:
             "default_agents": self.default_agents,
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
+            "multi_turn": self.multi_turn,
         }
 
     @classmethod
@@ -152,6 +154,7 @@ class CampaignConfig:
             default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
+            multi_turn=data.get("multi_turn", "once"),
         )
 
     @classmethod
@@ -275,6 +278,7 @@ class ExperimentRun:
         experiment_name: Name of the experiment
         run_number: Repetition number (1-indexed)
         output_dir: Directory where results were saved
+        experiment_dir: exp_NNN dir reported by run_agent_eval ("" if unknown)
         success: Whether the run succeeded
         error: Error message if failed
         timestamp: ISO timestamp
@@ -284,6 +288,7 @@ class ExperimentRun:
     experiment_name: str
     run_number: int
     output_dir: str
+    experiment_dir: str = ""
     success: bool = True
     error: str | None = None
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -295,6 +300,7 @@ class ExperimentRun:
             "experiment_name": self.experiment_name,
             "run_number": self.run_number,
             "output_dir": self.output_dir,
+            "experiment_dir": self.experiment_dir,
             "success": self.success,
             "error": self.error,
             "timestamp": self.timestamp,
@@ -308,6 +314,7 @@ class ExperimentRun:
             experiment_name=data["experiment_name"],
             run_number=data["run_number"],
             output_dir=data["output_dir"],
+            experiment_dir=data.get("experiment_dir", ""),
             success=data.get("success", True),
             error=data.get("error"),
             timestamp=data.get("timestamp"),
@@ -336,6 +343,7 @@ class CampaignResult:
     summary: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
+    multi_turn: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -346,6 +354,7 @@ class CampaignResult:
             "summary": self.summary,
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
+            "multi_turn": self.multi_turn,
         }
 
     @classmethod
@@ -358,4 +367,5 @@ class CampaignResult:
             summary=data.get("summary", {}),
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
+            multi_turn=data.get("multi_turn", {}),
         )

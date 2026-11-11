@@ -1,0 +1,1661 @@
+{
+  "benchmark_version": "1.0.0",
+  "component": "planner",
+  "config": {},
+  "prompt_schema_hash": null,
+  "run_count": 1,
+  "per_case_results": [
+    {
+      "case_id": "planner_001",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "price_max": 50
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 20
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 14.801236499999504,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2948,
+          "completion_tokens": 103,
+          "latency_seconds": 14.796999999998661
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 0.5,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 14.801302600000781,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_003",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "LookupTool",
+            "args": {
+              "query": "SELECT category, COUNT(*) AS item_count FROM item_categories GROUP BY category ORDER BY item_count DESC",
+              "max_rows": 100
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.605119700001524,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2949,
+          "completion_tokens": 126,
+          "latency_seconds": 8.609000000000378
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 0.0,
+        "clarification_recall": 0.0,
+        "refusal_to_guess": 0.0
+      },
+      "latency_seconds": 8.605171800001699,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_004",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "MemoryTool",
+            "args": {
+              "user_id": "user_unknown_99999"
+            }
+          },
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "min_rating": 4.0,
+                "min_rating_number": 100
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 30
+            }
+          },
+          {
+            "tool": "RankTool",
+            "args": {
+              "user_id": "user_unknown_99999",
+              "candidates": "$2.candidates",
+              "top_k": 5
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$3.ranked.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 16.58510500000193,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2949,
+          "completion_tokens": 407,
+          "latency_seconds": 16.57800000000134
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 0.0,
+        "clarification_recall": 0.0,
+        "refusal_to_guess": 0.0
+      },
+      "latency_seconds": 16.5851685000016,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_005",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "puzzle games",
+              "filters": {
+                "domain": "Video_Games",
+                "price_min": 20,
+                "price_max": 50
+              },
+              "limit": 50
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.353184899999178,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2951,
+          "completion_tokens": 65,
+          "latency_seconds": 8.35899999999674
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.75,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.353243099998508,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_006",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "action RPG games",
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "limit": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 12.499792200000229,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2947,
+          "completion_tokens": 91,
+          "latency_seconds": 12.5
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 12.499839600000996,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_007",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "min_rating": 4.0,
+                "min_rating_number": 50
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.249941499998386,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2947,
+          "completion_tokens": 143,
+          "latency_seconds": 8.25
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 0.0,
+        "clarification_recall": 0.0,
+        "refusal_to_guess": 0.0
+      },
+      "latency_seconds": 8.249991599997884,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_008",
+      "actual_output": {
+        "steps": [],
+        "question": "What type of product are you looking for?",
+        "latency_seconds": 6.772112700000434,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2944,
+          "completion_tokens": 21,
+          "latency_seconds": 6.76600000000326
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 0.46153846153846156,
+        "clarification_recall": 1.0,
+        "refusal_to_guess": 1.0
+      },
+      "latency_seconds": 6.772146499999508,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_009",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SimilarTool",
+            "args": {
+              "items": [
+                "Video_Games::vg_a",
+                "Video_Games::vg_b"
+              ],
+              "top_k": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.824106399999437,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2956,
+          "completion_tokens": 63,
+          "latency_seconds": 8.8279999999977
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 0.6666666666666666,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.824171599997499,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_010",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "strategy games",
+              "filters": {
+                "domain": "Video_Games",
+                "price_max": 30
+              },
+              "limit": 50
+            }
+          },
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "puzzle games",
+              "filters": {
+                "domain": "Video_Games",
+                "price_max": 20
+              },
+              "limit": 50
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 16.510183999998844,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2954,
+          "completion_tokens": 190,
+          "latency_seconds": 16.51599999999962
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.6666666666666666,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 16.5102521000008,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_012",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "MemoryTool",
+            "args": {
+              "user_id": "u_long"
+            }
+          },
+          {
+            "tool": "SimilarTool",
+            "args": {
+              "items": "$1.recent_items",
+              "top_k": 50,
+              "domain": "Video_Games",
+              "exclude_input": true
+            }
+          },
+          {
+            "tool": "RankTool",
+            "args": {
+              "user_id": "u_long",
+              "candidates": "$2.candidates",
+              "top_k": 10,
+              "exclude_seen": true
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$3.ranked.*.item_id",
+              "max_rows": 10
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 10.273179300002084,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 154,
+          "latency_seconds": 10.264999999999418
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 10.273234200001752,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_013",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "order_by": "price",
+              "descending": false,
+              "limit": 20
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.277976899997157,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2949,
+          "completion_tokens": 76,
+          "latency_seconds": 8.282000000002881
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 0.75,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.278031300000293,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_014",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "action games",
+              "filters": {
+                "domain": "Video_Games",
+                "price_min": 50.01,
+                "min_rating": 4.5
+              },
+              "limit": 20
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 10.50408559999778,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 113,
+          "latency_seconds": 10.5
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.25,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 10.504148199997871,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_015",
+      "actual_output": {
+        "steps": [],
+        "question": "What kind of gift or interests does the child have, and what is your budget?",
+        "latency_seconds": 7.2573193999996874,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2949,
+          "completion_tokens": 43,
+          "latency_seconds": 7.264999999999418
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 0.36363636363636365,
+        "clarification_recall": 1.0,
+        "refusal_to_guess": 1.0
+      },
+      "latency_seconds": 7.257345900001383,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_016",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SimilarTool",
+            "args": {
+              "items": [
+                "Video_Games::vg_zzz"
+              ],
+              "top_k": 30
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 5.9983007999981055,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2955,
+          "completion_tokens": 37,
+          "latency_seconds": 5.985000000000582
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 5.998344799998449,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_017",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "games",
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "limit": 10
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 7.504096500000742,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2944,
+          "completion_tokens": 95,
+          "latency_seconds": 7.514999999999418
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 7.504156399998465,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_018",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "action strategy",
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "limit": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.653763600003003,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 100,
+          "latency_seconds": 8.656999999999243
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.653831600000558,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_019",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "MemoryTool",
+            "args": {
+              "user_id": "u_long"
+            }
+          },
+          {
+            "tool": "SimilarTool",
+            "args": {
+              "items": "$1.recent_items",
+              "top_k": 30
+            }
+          },
+          {
+            "tool": "RankTool",
+            "args": {
+              "user_id": "u_long",
+              "candidates": "$2.candidates",
+              "top_k": 5,
+              "exclude_seen": true
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$3.ranked.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 9.19516510000176,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2949,
+          "completion_tokens": 132,
+          "latency_seconds": 9.187000000001717
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 9.195238700001937,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_021",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "price_min": 200.01
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 7.876597200000106,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 112,
+          "latency_seconds": 7.875
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 7.8766581999989285,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_023",
+      "actual_output": {
+        "steps": [],
+        "question": "What kind of product are you looking for?",
+        "latency_seconds": 8.562573299997894,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2946,
+          "completion_tokens": 39,
+          "latency_seconds": 8.562999999998283
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 0.3225806451612903,
+        "clarification_recall": 1.0,
+        "refusal_to_guess": 1.0
+      },
+      "latency_seconds": 8.562604300001112,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_024",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "min_rating_number": 101
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 20
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.464185799999541,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2948,
+          "completion_tokens": 101,
+          "latency_seconds": 8.468000000000757
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.5,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.464242800000648,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_025",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "MemoryTool",
+            "args": {
+              "user_id": "u_long"
+            }
+          },
+          {
+            "tool": "SimilarTool",
+            "args": {
+              "items": "$1.recent_items",
+              "top_k": 50,
+              "domain": "Video_Games",
+              "exclude_input": true
+            }
+          },
+          {
+            "tool": "RankTool",
+            "args": {
+              "user_id": "u_long",
+              "candidates": "$2.candidates",
+              "top_k": 10,
+              "exclude_seen": true
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$3.ranked.*.item_id",
+              "max_rows": 10
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 14.620617600001424,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2952,
+          "completion_tokens": 116,
+          "latency_seconds": 14.625
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.75,
+        "argument_correctness": 0.5714285714285714,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 14.620705400000588,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_026",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "order_by": "rating_number",
+              "descending": true,
+              "limit": 5
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 13.003620100000262,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 127,
+          "latency_seconds": 13.0
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 13.003680599998916,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_029",
+      "actual_output": {
+        "steps": [],
+        "question": "What is your user ID?",
+        "latency_seconds": 11.523952499999723,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2948,
+          "completion_tokens": 46,
+          "latency_seconds": 11.515999999999622
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 0.13793103448275862,
+        "clarification_recall": 1.0,
+        "refusal_to_guess": 1.0
+      },
+      "latency_seconds": 11.523983899998711,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_030",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "FilterTool",
+            "args": {
+              "filters": {
+                "domain": "Video_Games",
+                "categories_any": [
+                  "Action"
+                ],
+                "price_max": 100,
+                "min_rating": 4,
+                "min_rating_number": 50
+              },
+              "order_by": "average_rating",
+              "descending": true,
+              "limit": 50
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 8.17101890000049,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2965,
+          "completion_tokens": 65,
+          "latency_seconds": 8.171999999998661
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 0.5,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 8.17106590000185,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_031",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "SearchTool",
+            "args": {
+              "query": "kids age 5 family friendly game",
+              "filters": {
+                "domain": "Video_Games"
+              },
+              "limit": 20
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.candidates.*.item_id"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 11.902508499999385,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2950,
+          "completion_tokens": 115,
+          "latency_seconds": 11.906000000002678
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 0.0,
+        "argument_correctness": 0.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 0.0,
+        "constraint_handling": 0.0,
+        "clarification_precision": 0.0,
+        "clarification_recall": 0.0,
+        "refusal_to_guess": 0.0
+      },
+      "latency_seconds": 11.902564399999392,
+      "token_usage": null
+    },
+    {
+      "case_id": "planner_032",
+      "actual_output": {
+        "steps": [
+          {
+            "tool": "MemoryTool",
+            "args": {
+              "user_id": "u_love_hate_mix"
+            }
+          },
+          {
+            "tool": "LookupTool",
+            "args": {
+              "item_ids": "$1.hated_items"
+            }
+          }
+        ],
+        "question": null,
+        "latency_seconds": 11.094318800001929,
+        "usage": {
+          "attempts": 1,
+          "prompt_tokens": 2952,
+          "completion_tokens": 83,
+          "latency_seconds": 11.093999999997322
+        }
+      },
+      "success": true,
+      "error": null,
+      "metrics": {
+        "tool_selection_accuracy": 1.0,
+        "argument_correctness": 1.0,
+        "plan_validity": 1.0,
+        "step_validity_rate": 1.0,
+        "reference_correctness": 1.0,
+        "constraint_handling": 1.0,
+        "clarification_precision": 1.0,
+        "clarification_recall": 1.0,
+        "unnecessary_clarification_rate": 1.0
+      },
+      "latency_seconds": 11.094370299997536,
+      "token_usage": null
+    }
+  ],
+  "metrics": {
+    "argument_correctness_mean": 0.3841575091575091,
+    "argument_correctness_std": 0.4383743249778619,
+    "argument_correctness_min": 0.0,
+    "argument_correctness_max": 1.0,
+    "clarification_precision_mean": 0.7417571732622645,
+    "clarification_precision_std": 0.40014593939189996,
+    "clarification_precision_min": 0.0,
+    "clarification_precision_max": 1.0,
+    "clarification_recall_mean": 0.8461538461538461,
+    "clarification_recall_std": 0.36080121229410994,
+    "clarification_recall_min": 0.0,
+    "clarification_recall_max": 1.0,
+    "constraint_handling_mean": 0.5448717948717948,
+    "constraint_handling_std": 0.46411318871533214,
+    "constraint_handling_min": 0.0,
+    "constraint_handling_max": 1.0,
+    "plan_validity_mean": 1.0,
+    "plan_validity_std": 0.0,
+    "plan_validity_min": 1.0,
+    "plan_validity_max": 1.0,
+    "reference_correctness_mean": 0.7307692307692307,
+    "reference_correctness_std": 0.4435600997950306,
+    "reference_correctness_min": 0.0,
+    "reference_correctness_max": 1.0,
+    "refusal_to_guess_mean": 0.5,
+    "refusal_to_guess_std": 0.5,
+    "refusal_to_guess_min": 0.0,
+    "refusal_to_guess_max": 1.0,
+    "step_validity_rate_mean": 1.0,
+    "step_validity_rate_std": 0.0,
+    "step_validity_rate_min": 1.0,
+    "step_validity_rate_max": 1.0,
+    "tool_selection_accuracy_mean": 0.49038461538461536,
+    "tool_selection_accuracy_std": 0.4926418637480576,
+    "tool_selection_accuracy_min": 0.0,
+    "tool_selection_accuracy_max": 1.0,
+    "unnecessary_clarification_rate_mean": 1.0,
+    "unnecessary_clarification_rate_std": 0.0,
+    "unnecessary_clarification_rate_min": 1.0,
+    "unnecessary_clarification_rate_max": 1.0,
+    "success_rate": 1.0
+  },
+  "latency": {
+    "mean": 10.157134396153756,
+    "std": 2.9038348016281614,
+    "min": 5.998344799998449,
+    "max": 16.5851685000016,
+    "p50": 8.739001599999028,
+    "p95": 16.083014725000794,
+    "p99": 16.5664394000014
+  },
+  "token_cost": null,
+  "timestamp": "2026-11-10T14:01:58.934105+00:00",
+  "git_sha": "",
+  "tags_summary": {
+    "planner": {
+      "argument_correctness_mean": 0.3841575091575091,
+      "argument_correctness_std": 0.4383743249778619,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 0.7417571732622645,
+      "clarification_precision_std": 0.40014593939189996,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 0.8461538461538461,
+      "clarification_recall_std": 0.36080121229410994,
+      "clarification_recall_min": 0.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.5448717948717948,
+      "constraint_handling_std": 0.46411318871533214,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.7307692307692307,
+      "reference_correctness_std": 0.4435600997950306,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 0.5,
+      "refusal_to_guess_std": 0.5,
+      "refusal_to_guess_min": 0.0,
+      "refusal_to_guess_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.49038461538461536,
+      "tool_selection_accuracy_std": 0.4926418637480576,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 10.157134396153756,
+      "std": 2.9038348016281614,
+      "min": 5.998344799998449,
+      "max": 16.5851685000016,
+      "p50": 8.739001599999028,
+      "p95": 16.083014725000794,
+      "p99": 16.5664394000014
+    },
+    "normal": {
+      "argument_correctness_mean": 0.2847222222222222,
+      "argument_correctness_std": 0.3575546017182223,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.5416666666666666,
+      "constraint_handling_std": 0.44292274219727706,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.6666666666666666,
+      "reference_correctness_std": 0.4714045207910317,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.5,
+      "tool_selection_accuracy_std": 0.5,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 9.744530991666275,
+      "std": 2.2932489023931226,
+      "min": 7.504156399998465,
+      "max": 14.801302600000781,
+      "p50": 8.559037200000603,
+      "p95": 13.812610499999753,
+      "p99": 14.603564180000577
+    },
+    "ambiguous": {
+      "argument_correctness_mean": 0.5,
+      "argument_correctness_std": 0.5,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 0.19129257838935257,
+      "clarification_precision_std": 0.1956827048180985,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 0.46153846153846156,
+      "clarification_recall_mean": 0.5,
+      "clarification_recall_std": 0.5,
+      "clarification_recall_min": 0.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.5,
+      "constraint_handling_std": 0.5,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.6666666666666666,
+      "reference_correctness_std": 0.4714045207910317,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 0.5,
+      "refusal_to_guess_std": 0.5,
+      "refusal_to_guess_min": 0.0,
+      "refusal_to_guess_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.5,
+      "tool_selection_accuracy_std": 0.5,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 8.558304083333496,
+      "std": 1.6413510611188695,
+      "min": 6.772146499999508,
+      "max": 11.902564399999392,
+      "p50": 8.406297949999498,
+      "p95": 11.078216249999969,
+      "p99": 11.737694769999507
+    },
+    "must-not-guess": {
+      "argument_correctness_mean": 0.75,
+      "argument_correctness_std": 0.4330127018922193,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 0.23051253529562765,
+      "clarification_precision_std": 0.1757532920543569,
+      "clarification_precision_min": 0.0,
+      "clarification_precision_max": 0.46153846153846156,
+      "clarification_recall_mean": 0.75,
+      "clarification_recall_std": 0.4330127018922193,
+      "clarification_recall_min": 0.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.75,
+      "constraint_handling_std": 0.4330127018922193,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 0.75,
+      "reference_correctness_std": 0.4330127018922193,
+      "reference_correctness_min": 0.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 0.75,
+      "refusal_to_guess_std": 0.4330127018922193,
+      "refusal_to_guess_min": 0.0,
+      "refusal_to_guess_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.75,
+      "tool_selection_accuracy_std": 0.4330127018922193,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 10.860975800000233,
+      "std": 3.715070605115237,
+      "min": 6.772146499999508,
+      "max": 16.5851685000016,
+      "p50": 10.043294099999912,
+      "p95": 15.825990810001166,
+      "p99": 16.43333296200151
+    },
+    "hard": {
+      "argument_correctness_mean": 0.0,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 0.0,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.6666666666666666,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.6666666666666666,
+      "constraint_handling_max": 0.6666666666666666,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 0.0,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 16.5102521000008,
+      "std": 0.0,
+      "min": 16.5102521000008,
+      "max": 16.5102521000008,
+      "p50": 16.5102521000008,
+      "p95": 16.5102521000008,
+      "p99": 16.5102521000008
+    },
+    "personalized": {
+      "argument_correctness_mean": 0.6428571428571428,
+      "argument_correctness_std": 0.41032590332414487,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.5,
+      "constraint_handling_std": 0.5,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.6875,
+      "tool_selection_accuracy_std": 0.409839907768875,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 1.0,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 11.295887150000453,
+      "std": 2.0343038368807687,
+      "min": 9.195238700001937,
+      "max": 14.620705400000588,
+      "p50": 10.683802249999644,
+      "p95": 14.09175513500013,
+      "p99": 14.514915347000496
+    },
+    "negative": {
+      "argument_correctness_mean": 0.0,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.0,
+      "argument_correctness_max": 0.0,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 1.0,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 1.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.0,
+      "tool_selection_accuracy_max": 0.0,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 5.998344799998449,
+      "std": 0.0,
+      "min": 5.998344799998449,
+      "max": 5.998344799998449,
+      "p50": 5.998344799998449,
+      "p95": 5.998344799998449,
+      "p99": 5.998344799998449
+    },
+    "exclusion": {
+      "argument_correctness_mean": 0.5714285714285714,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 0.5714285714285714,
+      "argument_correctness_max": 0.5714285714285714,
+      "clarification_precision_mean": 1.0,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 1.0,
+      "clarification_precision_max": 1.0,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 0.0,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 0.0,
+      "constraint_handling_max": 0.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 0.75,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 0.75,
+      "tool_selection_accuracy_max": 0.75,
+      "unnecessary_clarification_rate_mean": 1.0,
+      "unnecessary_clarification_rate_std": 0.0,
+      "unnecessary_clarification_rate_min": 1.0,
+      "unnecessary_clarification_rate_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 14.620705400000588,
+      "std": 0.0,
+      "min": 14.620705400000588,
+      "max": 14.620705400000588,
+      "p50": 14.620705400000588,
+      "p95": 14.620705400000588,
+      "p99": 14.620705400000588
+    },
+    "unanswerable": {
+      "argument_correctness_mean": 1.0,
+      "argument_correctness_std": 0.0,
+      "argument_correctness_min": 1.0,
+      "argument_correctness_max": 1.0,
+      "clarification_precision_mean": 0.13793103448275862,
+      "clarification_precision_std": 0.0,
+      "clarification_precision_min": 0.13793103448275862,
+      "clarification_precision_max": 0.13793103448275862,
+      "clarification_recall_mean": 1.0,
+      "clarification_recall_std": 0.0,
+      "clarification_recall_min": 1.0,
+      "clarification_recall_max": 1.0,
+      "constraint_handling_mean": 1.0,
+      "constraint_handling_std": 0.0,
+      "constraint_handling_min": 1.0,
+      "constraint_handling_max": 1.0,
+      "plan_validity_mean": 1.0,
+      "plan_validity_std": 0.0,
+      "plan_validity_min": 1.0,
+      "plan_validity_max": 1.0,
+      "reference_correctness_mean": 1.0,
+      "reference_correctness_std": 0.0,
+      "reference_correctness_min": 1.0,
+      "reference_correctness_max": 1.0,
+      "refusal_to_guess_mean": 1.0,
+      "refusal_to_guess_std": 0.0,
+      "refusal_to_guess_min": 1.0,
+      "refusal_to_guess_max": 1.0,
+      "step_validity_rate_mean": 1.0,
+      "step_validity_rate_std": 0.0,
+      "step_validity_rate_min": 1.0,
+      "step_validity_rate_max": 1.0,
+      "tool_selection_accuracy_mean": 1.0,
+      "tool_selection_accuracy_std": 0.0,
+      "tool_selection_accuracy_min": 1.0,
+      "tool_selection_accuracy_max": 1.0,
+      "success_rate": 1.0,
+      "mean": 11.523983899998711,
+      "std": 0.0,
+      "min": 11.523983899998711,
+      "max": 11.523983899998711,
+      "p50": 11.523983899998711,
+      "p95": 11.523983899998711,
+      "p99": 11.523983899998711
+    }
+  },
+  "metadata": {
+    "git_sha": "2bc6bc6095ca5b146997a660875e0267571359d5",
+    "config": {},
+    "provenance": {
+      "component": "planner",
+      "dataset": "package/evaluation/component/benchmarks/planner_dataset.jsonl",
+      "dataset_sha256": "a8a88d073974a079c121aba3940ab3f851964da33eb7d035fe77feaaa2339dcf",
+      "evaluator_config_sha256": "44136fa355b3678a",
+      "llm": {
+        "provider": "openai_compatible",
+        "model": "gpt-5.4",
+        "base_url_sha256": "5b969815991f429a",
+        "config_sha256": "bf9f8de159e82e2a"
+      },
+      "evidence_kinds": []
+    },
+    "dataset_path": "package/evaluation/component/benchmarks/planner_dataset.jsonl",
+    "dataset_sha256": "a8a88d073974a079c121aba3940ab3f851964da33eb7d035fe77feaaa2339dcf",
+    "cases_run": 26,
+    "cases_total": 26,
+    "tags_filter": null,
+    "metadata_filter": null,
+    "runs": 1
+  },
+  "thresholds_result": null
+}

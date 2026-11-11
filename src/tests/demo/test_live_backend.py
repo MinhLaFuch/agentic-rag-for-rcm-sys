@@ -364,6 +364,66 @@ def test_initialize_checks_dataset_bound_cache_and_records_refit(tmp_path, monke
     assert backend._knn_provenance["fit_splits"] == ["train"]
 
 
+def test_live_backend_session_for_creates_and_reuses():
+    """_session_for: cùng session_key → cùng Session; không key → None; key khác → Session khác."""
+    from package.agents import Session
+
+    backend = LiveBackend()
+    req = DemoRequest(user_id=None, text="a", reflect_rounds=0, use_memory=False, mode="planner", session_key="conv1")
+    s1 = backend._session_for(req)
+    assert isinstance(s1, Session)
+    assert backend._session_for(req) is s1
+
+    req_other = DemoRequest(user_id=None, text="a", reflect_rounds=0, use_memory=False, mode="planner", session_key="conv2")
+    assert backend._session_for(req_other) is not s1
+
+    req_none = DemoRequest(user_id=None, text="a", reflect_rounds=0, use_memory=False, mode="planner")
+    assert backend._session_for(req_none) is None
+
+
+def test_respond_planner_attaches_session_and_resets_it(monkeypatch):
+    """_respond_planner gắn Session vào executor trong run() và reset về None sau đó."""
+    from package.demo.backend import live_backend as module
+    from package.demo import DemoResult
+
+    backend = LiveBackend()
+    backend._initialized = True
+
+    seen_sessions = []
+    executor = MagicMock()
+    executor.reflect_rounds = 0
+    executor.last_plan, executor.last_question = [], None
+    executor.last_reflections, executor.last_first_attempt_ok, executor.last_truncated = 0, True, False
+    executor.last_usage = {}
+
+    def fake_run(text):
+        seen_sessions.append(executor.session)
+        return []
+
+    executor.run.side_effect = fake_run
+    backend._executor_planner = executor
+    backend._executor_planner_memory = executor
+
+    monkeypatch.setattr(module, "compose_answer", lambda *a, **k: MagicMock())
+    monkeypatch.setattr(
+        module, "adapt_from_inference",
+        lambda *a, **k: DemoResult(status="ok", text="t", items=[], trace=None, usage={}, error=None),
+    )
+
+    req = DemoRequest(user_id=None, text="hi", reflect_rounds=0, use_memory=False, mode="planner", session_key="convX")
+    result = backend._respond_planner(req)
+
+    assert isinstance(seen_sessions[0], type(backend._sessions["convX"]))
+    assert executor.session is None  # reset sau request
+    assert result.session_turns == len(backend._sessions["convX"].turns)
+
+    # Request không có session_key → executor.session là None trong run
+    seen_sessions.clear()
+    req_single = DemoRequest(user_id=None, text="hi", reflect_rounds=0, use_memory=False, mode="planner")
+    backend._respond_planner(req_single)
+    assert seen_sessions[0] is None
+
+
 def test_format_trace_with_inference():
     """format_trace phải hiển thị thông tin inference khi có."""
     from package.demo import DemoTrace
