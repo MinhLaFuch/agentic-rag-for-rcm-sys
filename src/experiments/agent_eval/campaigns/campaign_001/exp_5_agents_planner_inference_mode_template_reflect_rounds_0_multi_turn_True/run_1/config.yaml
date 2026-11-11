@@ -1,0 +1,376 @@
+run:
+  timestamp: '2026-11-10T16:52:02.887109+00:00'
+  seed: 42
+  git_commit: 77bec0156851cc422764883b0664942acc09f3b9
+  source_fingerprint: b6ed9ea29ef910973485c9aa06a0328032b37973236e89eda225032e7b14d4f5
+  environment:
+    numpy: 2.5.3
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: null
+    python: 3.12.10
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.10
+    cpu_count: 16
+  runtime_seconds: 2059.95
+  dataset:
+    tag: multi_domain
+    splits_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 2757103
+    num_items: 678281
+    metadata_coverage: 1.0
+    n_requests: 132
+    profile_as_of_timestamp: 1617737606549
+    mapping_hash: 1160c09b2971afd2507f791a3802e356627f895a2cd0b7b111d58ce581e7ff90
+    user_mapping_hash: 9646bb6148e580f6abdd0e519ceca1f2c8cde01b15a2397fc759477d42fcf27a
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 2131392901
+        mtime_ns: 1794243052490435900
+        sha256: 3f47fb43cbb17a6ee820b5add26339f8c4d5a1af2c61be2f04603c485f38c0f7
+      validation:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 298562345
+        mtime_ns: 1794243053051417900
+        sha256: b981e4b84b8817d63817794c3d104eb2cb98fca21cdbbaa69a9165a6d0697334
+      test:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 296008351
+        mtime_ns: 1794243049694764400
+        sha256: 8b315d03afdd82e8159563e2e832b6f7ce2fdeef5335384ab420194511e90a1f
+config:
+  manifest_status: legacy_unmanifested
+  manifest_sha256: legacy_unmanifested
+  protocol:
+    version: 2
+    evaluation_kind: agent
+    item_knn: &id001
+      scope: dataset_bound
+      user_mapping_hash: 9646bb6148e580f6abdd0e519ceca1f2c8cde01b15a2397fc759477d42fcf27a
+      item_mapping_hash: 1160c09b2971afd2507f791a3802e356627f895a2cd0b7b111d58ce581e7ff90
+      eval_on: validation
+      fit_splits:
+      - train
+      tag: multi_domain
+    fit_timestamp_max: 1617737606134
+    target_timestamp_min: 1617737606549
+    metadata_policy:
+      name: historical_static_catalog
+      version: 2
+      as_of_timestamp: 1617737606549
+      masked_fields:
+      - price
+      - average_rating
+      - rating_number
+      first_seen_filter: true
+      first_seen_proxy: minimum timestamp per item in all cleaned interactions; not
+        an actual launch/availability date
+      aggregate_observed_at: null
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified
+      catalog_assumption: visible items satisfy first_seen_ts <= as_of_timestamp;
+        first_seen_ts is a cleaned-interaction proxy, not launch date; title/taxonomy/store
+        values remain static metadata with historical validity unverified
+      historical_causal_claim: false
+      snapshot_mutable_fields_used: false
+    label_policy: all observed review user-item pairs are binary positives, independent
+      of stars
+    cohort_policy: existing pre-split filtered cohort; future-informed selection
+    history_size: unique fit items, consistent with binary CSR
+    segment_population_users:
+      sparse: 443377
+      warm: 618723
+      cold: 67319
+    segment_sample_users: {}
+    sampling: seeded per-segment cap; pooled sample average is not population-weighted
+    item_warm_definition: any user interacted in fit; distinct from same-user repeat
+    candidate_target_denominator: all unique target items per user; seen filtering
+      may make repeat targets unretrievable
+    ranking_target_denominator: request.targets; ambiguous requests have no quality
+      ground truth
+    query_provenance: fit-history title proxy, not observed user query; target-metadata
+      queries must be oracle
+    scorer: &id002
+      mode: baseline
+      name: ItemKNNRecommender
+      popularity_weight: 1.0e-06
+      popularity_source: CF fit popularity
+      cf_normalization: none
+      cf_provenance: *id001
+      history_splits:
+      - train
+      candidate_ties: input order (RecoModelTool)
+      baseline_ties: global item index
+    request_ids:
+    - similar-sparse-0
+    - similar-sparse-1
+    - similar-sparse-2
+    - similar-sparse-3
+    - similar-sparse-4
+    - similar-sparse-5
+    - similar-sparse-6
+    - similar-sparse-7
+    - similar-sparse-8
+    - similar-sparse-9
+    - similar-sparse-10
+    - similar-sparse-11
+    - similar-sparse-12
+    - similar-sparse-13
+    - similar-sparse-14
+    - similar-sparse-15
+    - similar-sparse-16
+    - similar-sparse-17
+    - similar-sparse-18
+    - similar-sparse-19
+    - similar-warm-0
+    - similar-warm-1
+    - similar-warm-2
+    - similar-warm-3
+    - similar-warm-4
+    - similar-warm-5
+    - similar-warm-6
+    - similar-warm-7
+    - similar-warm-8
+    - similar-warm-9
+    - similar-warm-10
+    - similar-warm-11
+    - similar-warm-12
+    - similar-warm-13
+    - similar-warm-14
+    - similar-warm-15
+    - similar-warm-16
+    - similar-warm-17
+    - similar-warm-18
+    - similar-warm-19
+    - personalized-sparse-0
+    - personalized-sparse-1
+    - personalized-sparse-2
+    - personalized-sparse-3
+    - personalized-sparse-4
+    - personalized-sparse-5
+    - personalized-sparse-6
+    - personalized-sparse-7
+    - personalized-sparse-8
+    - personalized-sparse-9
+    - personalized-sparse-10
+    - personalized-sparse-11
+    - personalized-sparse-12
+    - personalized-sparse-13
+    - personalized-sparse-14
+    - personalized-sparse-15
+    - personalized-sparse-16
+    - personalized-sparse-17
+    - personalized-sparse-18
+    - personalized-sparse-19
+    - personalized-warm-0
+    - personalized-warm-1
+    - personalized-warm-2
+    - personalized-warm-3
+    - personalized-warm-4
+    - personalized-warm-5
+    - personalized-warm-6
+    - personalized-warm-7
+    - personalized-warm-8
+    - personalized-warm-9
+    - personalized-warm-10
+    - personalized-warm-11
+    - personalized-warm-12
+    - personalized-warm-13
+    - personalized-warm-14
+    - personalized-warm-15
+    - personalized-warm-16
+    - personalized-warm-17
+    - personalized-warm-18
+    - personalized-warm-19
+    - ambiguous-none-0
+    - ambiguous-none-1
+    - ambiguous-none-2
+    - ambiguous-none-3
+    - ambiguous-none-4
+    - ambiguous-none-5
+    - exclusion-sparse-0
+    - exclusion-sparse-1
+    - exclusion-sparse-2
+    - exclusion-sparse-3
+    - exclusion-sparse-4
+    - exclusion-sparse-5
+    - exclusion-sparse-6
+    - exclusion-sparse-7
+    - exclusion-sparse-8
+    - exclusion-sparse-9
+    - exclusion-sparse-10
+    - exclusion-sparse-11
+    - exclusion-sparse-12
+    - exclusion-sparse-13
+    - exclusion-sparse-14
+    - exclusion-sparse-15
+    - exclusion-sparse-16
+    - exclusion-sparse-17
+    - exclusion-sparse-18
+    - exclusion-sparse-19
+    - exclusion-warm-0
+    - exclusion-warm-1
+    - exclusion-warm-2
+    - exclusion-warm-3
+    - exclusion-warm-4
+    - exclusion-warm-5
+    - exclusion-warm-6
+    - exclusion-warm-7
+    - exclusion-warm-8
+    - exclusion-warm-9
+    - exclusion-warm-10
+    - exclusion-warm-11
+    - exclusion-warm-12
+    - exclusion-warm-13
+    - exclusion-warm-14
+    - exclusion-warm-15
+    - exclusion-warm-16
+    - exclusion-warm-17
+    - exclusion-warm-18
+    - exclusion-warm-19
+    - unanswerable-none-0
+    - unanswerable-none-1
+    - unanswerable-none-2
+    - unanswerable-none-3
+    - unanswerable-none-4
+    - unanswerable-none-5
+    request_scope: realistic
+    request_content_sha256: 7edf0f1340b074ef8934bca2c1d128a26ce3555bf77d106dec4f3a5a5a70acb4
+    resume_identity_sha256: 22fc9aa28ed64946a3c0e5d38481e44904e86c94eee02a3787bc816d26c263a1
+  agents:
+  - planner
+  k: 10
+  per_segment: 20
+  n_ambiguous: 6
+  language: vi
+  request_scope: realistic
+  price_slack: 1.25
+  price_round_to: 5
+  sparse_max: 4
+  item_knn_k: 20
+  reflect_rounds: 0
+  inference_mode: template
+  trajectory_log: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\logs\multi_domain\campaign_001_parameter_grid_exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl
+  llm_model: gpt-5.4
+  knn_artifact_status: loaded_cache
+  knn_fit_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_data_hash: 10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd
+  knn_cache_used: true
+  scorer: *id002
+  eval_schema_version: 2
+  provenance:
+    planner_prompt_sha256: 782cd6137240ebf29c4a1c9fba62bb440845f9177a35b4129937d328a7f50343
+    planner_memory_prompt_sha256: null
+    inference_prompt_sha256: 94eec36e05866d1c8bdb49c6e58ab55a968d7733450b3f2dd2c966639fc77af1
+    tool_schema_sha256: e71e88db9de4abdc1d5773076bebb61e4c03d81e0235e87de98a03dc99e5e512
+    git_commit: 77bec0156851cc422764883b0664942acc09f3b9
+    git_dirty: true
+    agent_limits:
+      temperature: 0.0
+      max_tokens: 2048
+      max_steps: 8
+      plan_retries: 1
+      reflect_rounds: 0
+      llm_retries: null
+    inference_limits:
+      temperature: 0.0
+      max_tokens: 2048
+      llm_retries: 1
+      check_numbers: true
+      price_tolerance: 0.5
+    config_overlay:
+      path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True\run_1\config_overlay.yaml
+      sha256: a8d5b6aaef33c249626c229651781586dc8c5e897e2da7ace427ad6263e9c9f8
+      content:
+        agent/agent_eval:
+          agent_eval:
+            agents:
+            - planner
+            allow_missing_corpus_sources: true
+            trajectory_file: campaign_001_parameter_grid_exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl
+            campaign_id: campaign_001_parameter_grid
+            per_segment: 20
+            multi_turn:
+              enabled: true
+              output_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\multi_turn\exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True_run1
+            experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True\run_1
+            item_knn_reuse_cache: true
+        path/data_paths:
+          paths:
+            item_knn_dir: experiments/agent_eval/campaigns/campaign_001/item_knn
+        agent/inference:
+          inference:
+            mode: template
+        agent/agent:
+          agent:
+            reflect_rounds: 0
+        eval/baselines:
+          baselines:
+            seed: 42
+  corpus_artifacts:
+    mode: loaded_prebuilt
+    metadata_sources:
+      Video_Games:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Video_Games.jsonl.gz
+        exists: true
+        size_bytes: 103096082
+        sha256: ced9696b0874121327a438bfe9d3d01aba45da158e58f94f4920352d75fc1fc9
+      Toys_and_Games:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Toys_and_Games.jsonl.gz
+        exists: true
+        size_bytes: 658655829
+        sha256: c69383112c0c0b0f10439eada942f2cf430511b993d2af8c665a5349c8749f07
+      Electronics:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Electronics.jsonl.gz
+        exists: true
+        size_bytes: 1312900427
+        sha256: a4a196a1c8e443e0942d8a5c79b5a5d2d68e29d483f2badec1126690b4b2790d
+    sqlite_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.sqlite
+    sqlite_sha256: c7dfa9b340428f912a5dad7d515b68c174331c256ecf06e2f9503bbc0a1c7195
+    manifest_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.meta.json
+    manifest_sha256: c6dbf8bf4f630956a86c27feaefd8484f49cb1319e8754843758a10ff032afbe
+    source_hash_semantics:
+      format_version: 2
+      source_hash_protocol: sha256_file_bytes_v1
+      mapping_hash_protocol: sorted_key_index_json_v1
+      coverage_by_domain:
+        Electronics:
+          mapping_items: 407326
+          metadata_items: 407326
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Toys_and_Games:
+          mapping_items: 225590
+          metadata_items: 225590
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Video_Games:
+          mapping_items: 45365
+          metadata_items: 45365
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+      metadata_duplicates_dropped_by_domain:
+        Video_Games: 0
+        Toys_and_Games: 0
+        Electronics: 0
+      missing_sources: []
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified
+    missing_sources: []
+    allow_missing_sources: true
+  campaign_id: campaign_001_parameter_grid
+  multi_turn:
+    enabled: true
+    status: success
+    output_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\campaigns\campaign_001\multi_turn\exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True_run1\multi_turn.json
+    dataset: package/evaluation/multi_turn/conversations.jsonl

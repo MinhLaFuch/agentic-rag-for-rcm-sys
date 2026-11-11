@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+import uuid
 from typing import Any
 
 try:
@@ -69,7 +70,8 @@ def build_ui(
         gr.Markdown("# Demo LLM Agent Recommender System")
 
         # --- Warnings ---
-        gr.Markdown("⚠️ **Single-turn demo**: No follow-up questions; send new request for clarification.")
+        gr.Markdown("💬 **Multi-turn demo**: Planner remembers this conversation (shown items, constraints, feedback). "
+                    "Type1 is single-turn only. Use **New conversation** to reset.")
 
         # --- Input ---
         with gr.Row():
@@ -101,6 +103,7 @@ def build_ui(
         # --- Toggles ---
         with gr.Row():
             memory_toggle = gr.Checkbox(label="Memory (agent can read profile memory)", value=False)
+            multiturn_toggle = gr.Checkbox(label="Multi-turn (planner remembers conversation)", value=True)
             reflect_toggle = gr.Radio(
                 choices=[("Off (0)", 0), ("On (1)", 1)],
                 value=0,
@@ -144,6 +147,7 @@ def build_ui(
         # --- Turn history ---
         with gr.Row():
             clear_history_btn = gr.Button("Clear history", size="sm")
+            new_conversation_btn = gr.Button("New conversation", size="sm")
         turn_history = gr.Dataframe(
             label="Turn history",
             headers=["Turn", "Profile", "Memory", "MemoryTool called?", "Tool sequence", "Status", "#Items"],
@@ -152,6 +156,7 @@ def build_ui(
             column_count=7,
         )
         turn_history_state = gr.State(value=[])  # Store history as list of dicts
+        session_key_state = gr.State(value=uuid.uuid4().hex[:12])  # conversation id for multi-turn
 
         # --- Event handlers ---
         def on_profile_change(profile_id: str) -> str:
@@ -166,18 +171,20 @@ def build_ui(
                 return "\n".join(lines)
             return "Profile not found"
 
-        def on_clear_history() -> list:
-            """Clear turn history."""
-            return []
+        def on_clear_history() -> tuple[list, str]:
+            """Clear turn history and start a fresh conversation (new session key)."""
+            return [], uuid.uuid4().hex[:12]
 
         def on_submit(
             profile_id: str,
             request_text: str,
             use_memory: bool,
+            multiturn: bool,
             reflect_rounds: int,
             mode: str,
             inference_mode: str,
             history: list,
+            session_key: str,
         ) -> tuple[str, str, list[list[str]], str, str, list]:
             """Handle submit button click."""
             if not request_text.strip():
@@ -202,6 +209,7 @@ def build_ui(
                 mode=mode,
                 inference_mode=inference_mode,
                 profile_id=profile_id,
+                session_key=session_key if multiturn else None,
             )
 
             result = backend.respond(demo_request)
@@ -218,6 +226,8 @@ def build_ui(
                 status_md += f"\n\n**Inference:** {composer}"
                 if fallback:
                     status_md += f" (fallback: {fallback})"
+            if result.session_turns is not None:
+                status_md += f"\n\n**Conversation turn:** {result.session_turns}"
 
             # Format items
             items_rows = format_items(result.items)
@@ -255,18 +265,24 @@ def build_ui(
         profile_dropdown.change(
             fn=on_clear_history,
             inputs=[],
-            outputs=[turn_history_state],
+            outputs=[turn_history_state, session_key_state],
         )
 
         clear_history_btn.click(
             fn=on_clear_history,
             inputs=[],
-            outputs=[turn_history_state],
+            outputs=[turn_history_state, session_key_state],
+        )
+
+        new_conversation_btn.click(
+            fn=on_clear_history,
+            inputs=[],
+            outputs=[turn_history_state, session_key_state],
         )
 
         submit_btn.click(
             fn=on_submit,
-            inputs=[profile_dropdown, request_input, memory_toggle, reflect_toggle, mode_radio, inference_radio, turn_history_state],
+            inputs=[profile_dropdown, request_input, memory_toggle, multiturn_toggle, reflect_toggle, mode_radio, inference_radio, turn_history_state, session_key_state],
             outputs=[status_output, text_output, items_table, trace_output, memory_output, turn_history_state],
         )
 

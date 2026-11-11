@@ -18,7 +18,7 @@
   "num_users": 2757103,
   "num_items": 678281,
   "data_hash": "10c47cb94df02c9e81b2805fc4c9bd874dbfcc0a593ed5ab65674b85057bd5fd",
-  "created_at": 1794320131.8435292,
-  "fit_time_seconds": 35.55638860000181,
+  "created_at": 1794324174.7095299,
+  "fit_time_seconds": 37.667357999998785,
   "artifact_sha256": "4fbc127eae39622b4ba5b117364b380a34794244bb5b8f9c3ab8799169182c8d"
 }

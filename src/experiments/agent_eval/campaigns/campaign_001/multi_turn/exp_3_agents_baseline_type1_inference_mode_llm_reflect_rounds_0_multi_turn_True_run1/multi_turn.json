@@ -22,9 +22,9 @@
     "conversation_success_std": 0.0,
     "conversation_success_min": 1.0,
     "conversation_success_max": 1.0,
-    "exclusion_compliance_mean": 1.0,
-    "exclusion_compliance_std": 0.0,
-    "exclusion_compliance_min": 1.0,
+    "exclusion_compliance_mean": 0.9090909090909091,
+    "exclusion_compliance_std": 0.1928473039599675,
+    "exclusion_compliance_min": 0.5,
     "exclusion_compliance_max": 1.0,
     "tool_call_match_rate_mean": 1.0,
     "tool_call_match_rate_std": 0.0,
@@ -36,15 +36,15 @@
     "turn_success_rate_max": 1.0
   },
   "latency": {
-    "mean": 17.767098118181988,
-    "min": 8.00754450000386,
-    "max": 24.05654549999599
+    "mean": 17.09898016363745,
+    "min": 7.171142700004566,
+    "max": 25.694596200009983
   },
   "failure_distribution": {},
   "context_retention_metrics": {
     "mean": 1.0
   },
-  "timestamp": "2026-11-10T14:44:26.218244+00:00",
-  "git_sha": "12b287ee38f3e3e0d2c0feb63e194f1bad7c8d9b",
+  "timestamp": "2026-11-10T15:54:35.619918+00:00",
+  "git_sha": "77bec0156851cc422764883b0664942acc09f3b9",
   "status": "success"
 }

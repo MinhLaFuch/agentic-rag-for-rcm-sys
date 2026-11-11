@@ -1,7 +1,7 @@
 run:
-  timestamp: '2026-11-10T14:23:07.302939+00:00'
+  timestamp: '2026-11-10T15:33:25.794690+00:00'
   seed: 42
-  git_commit: 12b287ee38f3e3e0d2c0feb63e194f1bad7c8d9b
+  git_commit: 77bec0156851cc422764883b0664942acc09f3b9
   source_fingerprint: b6ed9ea29ef910973485c9aa06a0328032b37973236e89eda225032e7b14d4f5
   environment:
     numpy: 2.5.3
@@ -16,7 +16,7 @@ run:
     platform: Windows-11-10.0.26200-SP0
     python: 3.12.10
     cpu_count: 16
-  runtime_seconds: 377.57
+  runtime_seconds: 372.95
   dataset:
     tag: multi_domain
     splits_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
@@ -271,7 +271,7 @@ config:
     planner_memory_prompt_sha256: null
     inference_prompt_sha256: 94eec36e05866d1c8bdb49c6e58ab55a968d7733450b3f2dd2c966639fc77af1
     tool_schema_sha256: e71e88db9de4abdc1d5773076bebb61e4c03d81e0235e87de98a03dc99e5e512
-    git_commit: 12b287ee38f3e3e0d2c0feb63e194f1bad7c8d9b
+    git_commit: 77bec0156851cc422764883b0664942acc09f3b9
     git_dirty: true
     agent_limits:
       temperature: 0.0

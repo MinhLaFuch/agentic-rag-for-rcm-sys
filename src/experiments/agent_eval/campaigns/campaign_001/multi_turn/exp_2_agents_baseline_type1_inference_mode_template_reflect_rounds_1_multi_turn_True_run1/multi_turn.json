@@ -10,8 +10,8 @@
   "failed_conversation_ids": [],
   "failed_conversations": 0,
   "metrics": {
-    "avg_item_match_rate_mean": 0.8409090909090909,
-    "avg_item_match_rate_std": 0.22034908442801496,
+    "avg_item_match_rate_mean": 0.8181818181818182,
+    "avg_item_match_rate_std": 0.24052284646041733,
     "avg_item_match_rate_min": 0.5,
     "avg_item_match_rate_max": 1.0,
     "context_retention_mean": 1.0,
@@ -22,13 +22,13 @@
     "conversation_success_std": 0.0,
     "conversation_success_min": 1.0,
     "conversation_success_max": 1.0,
-    "exclusion_compliance_mean": 0.9545454545454546,
-    "exclusion_compliance_std": 0.14373989364401724,
-    "exclusion_compliance_min": 0.5,
+    "exclusion_compliance_mean": 1.0,
+    "exclusion_compliance_std": 0.0,
+    "exclusion_compliance_min": 1.0,
     "exclusion_compliance_max": 1.0,
-    "tool_call_match_rate_mean": 1.0,
-    "tool_call_match_rate_std": 0.0,
-    "tool_call_match_rate_min": 1.0,
+    "tool_call_match_rate_mean": 0.75,
+    "tool_call_match_rate_std": 0.25,
+    "tool_call_match_rate_min": 0.5,
     "tool_call_match_rate_max": 1.0,
     "turn_success_rate_mean": 1.0,
     "turn_success_rate_std": 0.0,
@@ -36,15 +36,15 @@
     "turn_success_rate_max": 1.0
   },
   "latency": {
-    "mean": 22.436040918182037,
-    "min": 7.317124500004866,
-    "max": 37.87986830000591
+    "mean": 21.827310827272992,
+    "min": 8.642546399998537,
+    "max": 43.136374499998055
   },
   "failure_distribution": {},
   "context_retention_metrics": {
     "mean": 1.0
   },
-  "timestamp": "2026-11-10T14:23:01.208188+00:00",
-  "git_sha": "12b287ee38f3e3e0d2c0feb63e194f1bad7c8d9b",
+  "timestamp": "2026-11-10T15:33:20.240671+00:00",
+  "git_sha": "77bec0156851cc422764883b0664942acc09f3b9",
   "status": "success"
 }

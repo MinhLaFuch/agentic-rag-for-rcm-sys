@@ -17,9 +17,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.002825,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.003
+          "wall_seconds": 0.002025,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
         },
         "sparse": {
           "n": 20,
@@ -35,9 +35,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0027500000000000003,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.003
+          "wall_seconds": 0.0020000000000000005,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
         },
         "warm": {
           "n": 20,
@@ -53,9 +53,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0029000000000000007,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.003
+          "wall_seconds": 0.0020500000000000006,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.0020500000000000006
         }
       },
       "personalized": {
@@ -73,9 +73,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.002225,
+          "wall_seconds": 0.002,
           "wall_seconds_p50": 0.002,
-          "wall_seconds_p95": 0.003
+          "wall_seconds_p95": 0.002
         },
         "sparse": {
           "n": 20,
@@ -91,9 +91,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0022000000000000006,
+          "wall_seconds": 0.0020000000000000005,
           "wall_seconds_p50": 0.002,
-          "wall_seconds_p95": 0.003
+          "wall_seconds_p95": 0.002
         },
         "warm": {
           "n": 20,
@@ -109,9 +109,9 @@
           "provider_error": 0.0,
           "recall@10": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0022500000000000007,
+          "wall_seconds": 0.0020000000000000005,
           "wall_seconds_p50": 0.002,
-          "wall_seconds_p95": 0.003
+          "wall_seconds_p95": 0.002
         }
       },
       "similar": {
@@ -130,9 +130,9 @@
           "recall@10": 0.00625,
           "seed_in_result": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.002875,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.003049999999999997
+          "wall_seconds": 0.002025,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
         },
         "sparse": {
           "n": 20,
@@ -149,9 +149,9 @@
           "recall@10": 0.0125,
           "seed_in_result": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0028000000000000004,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.004050000000000001
+          "wall_seconds": 0.0020500000000000006,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.0020500000000000006
         },
         "warm": {
           "n": 20,
@@ -168,9 +168,9 @@
           "recall@10": 0.0,
           "seed_in_result": 0.0,
           "task_success": 1.0,
-          "wall_seconds": 0.0029500000000000004,
-          "wall_seconds_p50": 0.003,
-          "wall_seconds_p95": 0.003
+          "wall_seconds": 0.0020000000000000005,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
         }
       }
     },
@@ -209,9 +209,9 @@
           "seed_in_result": 0.0,
           "steps_ok_rate": 1.0,
           "task_success": 1.0,
-          "wall_seconds": 0.008525,
-          "wall_seconds_p50": 0.008,
-          "wall_seconds_p95": 0.01
+          "wall_seconds": 0.00625,
+          "wall_seconds_p50": 0.006,
+          "wall_seconds_p95": 0.007049999999999997
         },
         "sparse": {
           "n": 20,
@@ -246,9 +246,9 @@
           "seed_in_result": 0.0,
           "steps_ok_rate": 1.0,
           "task_success": 1.0,
-          "wall_seconds": 0.008600000000000002,
-          "wall_seconds_p50": 0.009,
-          "wall_seconds_p95": 0.010100000000000001
+          "wall_seconds": 0.006250000000000001,
+          "wall_seconds_p50": 0.006,
+          "wall_seconds_p95": 0.007100000000000001
         },
         "warm": {
           "n": 20,
@@ -283,9 +283,9 @@
           "seed_in_result": 0.0,
           "steps_ok_rate": 1.0,
           "task_success": 1.0,
-          "wall_seconds": 0.008450000000000003,
-          "wall_seconds_p50": 0.008,
-          "wall_seconds_p95": 0.01
+          "wall_seconds": 0.006250000000000001,
+          "wall_seconds_p50": 0.006,
+          "wall_seconds_p95": 0.007050000000000001
         }
       }
     }
