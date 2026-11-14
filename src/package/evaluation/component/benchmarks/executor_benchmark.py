@@ -3,7 +3,7 @@
 Scope (D1 option 1): this benchmark measures the execution engine only —
 step execution, $N.path reference resolution, per-step error_kind reporting,
 and empty/edge tool outputs — using REAL tools (FilterTool, SimilarTool,
-LookupTool, SearchTool, RankTool) over the synthetic fixture corpus.
+LookupTool, SearchTool, RankTool, MemoryTool) over the synthetic fixture corpus.
 
 It deliberately does NOT exercise plan() or reflection: those need an LLM
 provider and are covered by the planner benchmark (real LLM) and by
@@ -48,7 +48,10 @@ class ExecutorBenchmark(ComponentEvaluator):
 
         # llm=None is intentional: _execute never calls the LLM. PlanExecutor
         # stores it but only plan()/run() reflection paths use it.
-        self.executor = PlanExecutor(llm=None, tools=agent_tools.for_planner(), reflect_rounds=0)
+        # for_planner_memory (not for_planner): exec_019 exercises the
+        # MemoryTool -> $1.price_range.max null-ref path seen in campaign_001;
+        # the multi-turn runner uses the same toolset.
+        self.executor = PlanExecutor(llm=None, tools=agent_tools.for_planner_memory(), reflect_rounds=0)
 
     def run_component(self, case_input: dict[str, Any]) -> dict[str, Any]:
         """Execute the case's steps with real tools and return per-step results."""

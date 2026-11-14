@@ -323,10 +323,12 @@ class LiveBackend:
         session = self._session_for(request)
         executor.session = session
 
-        # Memory snapshots (before and after)
-        memory_before = take_memory_snapshot(self._memory_tool, user_id) if request.use_memory else None
-
+        # Memory snapshots (before and after). Snapshot nằm trong try để mọi
+        # lỗi giữa chừng vẫn đi qua finally reset executor.session/reflect_rounds.
+        memory_before = None
         try:
+            if request.use_memory:
+                memory_before = take_memory_snapshot(self._memory_tool, user_id)
             results = executor.run(effective_text)
             plan_error = None
         except (ValueError, LLMProviderError) as exc:
@@ -388,14 +390,22 @@ class LiveBackend:
         return result
 
     def _session_for(self, request: DemoRequest) -> Session | None:
-        """Session của conversation theo session_key; None = single-turn."""
+        """Session của conversation theo session_key; None = single-turn.
+
+        LRU: key được dùng lại được đưa về cuối dict; khi vượt max_sessions
+        (demo.yaml) thì evict key cũ nhất — trước đây _sessions phình vô hạn
+        theo số "New conversation".
+        """
         key = getattr(request, "session_key", None)
         if not key:
             return None
-        session = self._sessions.get(key)
+        session = self._sessions.pop(key, None)
         if session is None:
             session = Session(**asdict(get_session_limits()))
-            self._sessions[key] = session
+            max_sessions = get_demo_limits().max_sessions
+            while len(self._sessions) >= max_sessions:
+                self._sessions.pop(next(iter(self._sessions)))
+        self._sessions[key] = session
         return session
 
     def _build_memory_view(

@@ -53,7 +53,7 @@ def evaluator():
 # ---------------- dataset lint ----------------
 
 def test_dataset_loads_and_has_11_conversations(conversations):
-    assert len(conversations) == 11
+    assert len(conversations) == 13
     assert all(c.turns for c in conversations)
 
 

@@ -1,6 +1,7 @@
 # Config cho công cụ so sánh thí nghiệm (ablation comparison tool).
-# Framework còn thay đổi, nên đây chỉ là base template - không gắn cứng vào ablation cụ thể.
-# Khi framework ổn định, định nghĩa ablation cụ thể bằng cấu hình ở đây.
+# Ablation scope: campaign_001, template inference, reflect_rounds {0,1},
+# agents {baseline, planner, planner_memory}. KHÔNG claim ablation ngoài
+# agent-layer (retrieval/embedding thuộc effort khác — xem docs/ablation_scope.md).
 
 ablation:
   # Số resample bootstrap cho khoảng tin cậy
@@ -31,42 +32,51 @@ ablation:
     - inference_latency_seconds  # độ trễ riêng của bước Inference
     - inference_completion_tokens
 
-  # Nhóm (group): nhãn -> danh sách các thư mục exp_NNN của cấu hình đó
-  # Ví dụ: config_a là cấu hình có reflect_rounds=0, config_b là reflect_rounds=1
-  # Các thư mục là tương đối experiments_dir/agent_eval/
-  # Muốn có khoảng tin cậy từ nhiều lần lặp: thêm exp vào cùng group, ví dụ reflect_0: [exp_005, exp_007]
+  # Nhóm (group): nhãn -> đường dẫn exp dir tương đối experiments/agent_eval/.
+  # Campaign layout: campaigns/<campaign_id>/<exp_name>/run_<N>/.
+  # Template 2x2 (planner-memory x reflect) + baseline ItemKNN, đều inference_mode=template.
   groups:
-    reflect_0: [exp_012]        # lần 1 (id thật của bạn)
-    reflect_1: [exp_013]        # lần 2
-    infer_template: [exp_011]   # reflect 1, template (đã có)
+    # --- 2x2: planner x planner_memory, reflect 0 vs 1 (template) ---
+    planner_tmpl_r0:   [campaigns/campaign_001/exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True/run_1]
+    planner_tmpl_r1:   [campaigns/campaign_001/exp_6_agents_planner_inference_mode_template_reflect_rounds_1_multi_turn_True/run_1]
+    pmem_tmpl_r0:      [campaigns/campaign_001/exp_9_agents_planner_memory_inference_mode_template_reflect_rounds_0_multi_turn_True/run_1]
+    pmem_tmpl_r1:      [campaigns/campaign_001/exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True/run_1]
+    # --- Baseline ItemKNN (agent='baseline', không LLM, chỉ kinds similar/personalized/exclusion) ---
+    baseline_itemknn:  [campaigns/campaign_001/exp_1_agents_baseline_type1_inference_mode_template_reflect_rounds_0_multi_turn_True/run_1]
+    # --- Tương lai: -Rank (planner_memory - RankTool) và các biến thể llm ---
+    # Chạy campaign với agent_config.exclude_tools: [RankTool] rồi thêm group tại đây.
+    # pmem_tmpl_r1_norank: [campaigns/campaign_001/<exp_name>/run_1]
 
   # Danh sách các contrast để so sánh
-  # Mỗi contrast: name (tên), a (agent, group), b (agent, group), kinds (tuỳ chọn, nếu bỏ thì so tất cả)
+  # Mỗi contrast: name (tên), a (agent, group), b (agent, group), kinds (tuỳ chọn)
   contrasts:
-    # Tác dụng của reflect (a = không reflect, b = có reflect)
-    - name: planner_reflect0_vs_reflect1
-      a: [planner, reflect_0]
-      b: [planner, reflect_1]
-    - name: planner_memory_reflect0_vs_reflect1
-      a: [planner_memory, reflect_0]
-      b: [planner_memory, reflect_1]
+    # Tác dụng của reflect trên planner_memory (a = reflect 0, b = reflect 1)
+    - name: reflect_effect_planner_memory
+      a: [planner_memory, pmem_tmpl_r0]
+      b: [planner_memory, pmem_tmpl_r1]
+    # Tác dụng của reflect trên planner (không memory)
+    - name: reflect_effect_planner
+      a: [planner, planner_tmpl_r0]
+      b: [planner, planner_tmpl_r1]
 
-    # Tác dụng của MemoryTool trên cùng một lần chạy (a = không memory, b = có memory)
-    - name: memory_vs_no_memory
-      a: [planner, reflect_1]
-      b: [planner_memory, reflect_1]
-      kinds: [similar, constrained, cold_text]  # personalized của planner không được chấm nên bỏ
+    # Tác dụng của MemoryTool ở reflect=1.
+    # kinds loại personalized: planner không memory trả task_success=None cho
+    # personalized và công cụ generic này coi None như False trong McNemar —
+    # phân tích personalized đúng (loại cặp None, báo effective n) nằm ở
+    # scripts/experiments/pairwise_ablation.py.
+    - name: memory_effect_reflect1
+      a: [planner, planner_tmpl_r1]
+      b: [planner_memory, pmem_tmpl_r1]
+      kinds: [similar, exclusion, unanswerable, ambiguous]
 
-    # Inference: template so với llm (a = template, b = llm)
-    - name: planner_memory_template_vs_llm
-      a: [planner_memory, infer_template]
-      b: [planner_memory, reflect_1]
-    - name: planner_template_vs_llm
-      a: [planner, infer_template]
-      b: [planner, reflect_1]
-    - name: type1_template_vs_llm
-      a: [type1, infer_template]
-      b: [type1, reflect_1]
+    # Baseline ItemKNN vs full agent (planner_memory reflect=1).
+    # Baseline chỉ xử lý được similar/personalized/exclusion; ambiguous và
+    # unanswerable không áp dụng được (không có request tương ứng -> pairwise
+    # script báo "not applicable").
+    - name: baseline_vs_full_agent
+      a: [baseline, baseline_itemknn]
+      b: [planner_memory, pmem_tmpl_r1]
+      kinds: [similar, personalized, exclusion]
 
   # Đường dẫn xuất báo cáo: outputs.ablation trong configs/path/data_paths.yaml
   # (tương đối experiments_dir → experiments/agent_eval/ablation/)

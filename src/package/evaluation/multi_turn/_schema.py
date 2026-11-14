@@ -44,6 +44,13 @@ class TurnInput:
     # resolved against the turn's post-turn session_state; a list arg matches
     # when it CONTAINS the resolved value, scalars must be equal.
     expected_tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    # Negative expectations (previously unscoreable):
+    #   expect_clarification -> turn passes iff the agent asked a question
+    #     (executor.last_question non-empty) instead of guessing;
+    #   expect_no_result     -> turn passes iff the agent returned zero items
+    #     (e.g. filters that match nothing) instead of inventing recommendations.
+    expect_clarification: bool = False
+    expect_no_result: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -58,6 +65,8 @@ class TurnInput:
             "expected_exclusions": self.expected_exclusions,
             "absent_exclusions": self.absent_exclusions,
             "expected_tool_calls": self.expected_tool_calls,
+            "expect_clarification": self.expect_clarification,
+            "expect_no_result": self.expect_no_result,
             "metadata": self.metadata,
         }
 
@@ -74,6 +83,8 @@ class TurnInput:
             expected_exclusions=data.get("expected_exclusions", {}),
             absent_exclusions=data.get("absent_exclusions", []),
             expected_tool_calls=data.get("expected_tool_calls", []),
+            expect_clarification=bool(data.get("expect_clarification", False)),
+            expect_no_result=bool(data.get("expect_no_result", False)),
             metadata=data.get("metadata", {}),
         )
 

@@ -146,6 +146,99 @@ def test_run_multi_turn_failed_exit_is_failed(monkeypatch, tmp_path):
     assert info["error"] == "boom"
 
 
+def test_jev_configured_env_fallback(monkeypatch):
+    for var in ("JEV_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setattr(
+        "package.config.load_config",
+        lambda *a, **k: {"api_key": ""},
+    )
+    assert _run_all._jev_configured() is False
+    monkeypatch.setenv("TYPESAFE_API_KEY", "x")
+    assert _run_all._jev_configured() is True
+
+
+def test_grounding_skipped_without_jev(monkeypatch, tmp_path):
+    """run_all_benchmarks: grounding không có Jev credential -> skipped, không subprocess."""
+    monkeypatch.setattr(_run_all, "_jev_configured", lambda: False)
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: False)
+    monkeypatch.setattr(_run_all, "get_data_paths", lambda: _FakePaths(tmp_path))
+    monkeypatch.setattr(
+        "package.config.load_config",
+        lambda *a, **k: {"component_benchmarks": {"datasets": {"grounding": "ds.jsonl"}}},
+    )
+    called = []
+    monkeypatch.setattr(_run_all.subprocess, "run", lambda *a, **k: called.append(a) or None)
+
+    results = _run_all.run_all_benchmarks(output_dir=tmp_path / "out")
+
+    assert results["grounding"]["status"] == "skipped_no_credentials"
+    assert called == []  # không chạy subprocess nào cho grounding
+    agg = _run_all.aggregate_results(results)
+    assert agg["components"]["grounding"]["status"] == "skipped_no_credentials"
+    assert agg["summary"]["skipped_components"] == 2  # grounding + multi_turn
+
+
+def test_backlog_dataset_skipped_by_default(monkeypatch, tmp_path):
+    """backlog_datasets + run_backlog=false -> status skipped_backlog, không subprocess."""
+    monkeypatch.setattr(_run_all, "_jev_configured", lambda: True)
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: False)
+    monkeypatch.setattr(_run_all, "get_data_paths", lambda: _FakePaths(tmp_path))
+    monkeypatch.setattr(
+        "package.config.load_config",
+        lambda *a, **k: {"component_benchmarks": {
+            "datasets": {"dummy": "d.jsonl"},
+            "run_backlog": False,
+            "backlog_datasets": {"planner_backlog": {"component": "planner", "dataset": "bl.jsonl"}},
+        }},
+    )
+    called = []
+
+    def fake_run(cmd, **kwargs):
+        called.append(cmd)
+        return type("R", (), {"returncode": 0, "stdout": "Results saved to: out/d.json\n", "stderr": ""})()
+
+    monkeypatch.setattr(_run_all.subprocess, "run", fake_run)
+
+    results = _run_all.run_all_benchmarks(output_dir=tmp_path / "out")
+
+    assert results["planner_backlog"]["status"] == "skipped_backlog"
+    assert results["planner_backlog"]["backlog"] is True
+    assert len(called) == 1 and "d.jsonl" in called[0]  # chỉ dummy chạy, backlog không
+    agg = _run_all.aggregate_results(results)
+    assert agg["components"]["planner_backlog"]["status"] == "skipped_backlog"
+    assert agg["components"]["planner_backlog"]["backlog"] is True
+    assert agg["summary"]["skipped_components"] == 2  # planner_backlog + multi_turn
+
+
+def test_backlog_dataset_runs_when_enabled(monkeypatch, tmp_path):
+    """run_backlog=true -> backlog chạy qua component CLI thật."""
+    monkeypatch.setattr(_run_all, "_jev_configured", lambda: True)
+    monkeypatch.setattr(_run_all, "_llm_configured", lambda: False)
+    monkeypatch.setattr(_run_all, "get_data_paths", lambda: _FakePaths(tmp_path))
+    monkeypatch.setattr(
+        "package.config.load_config",
+        lambda *a, **k: {"component_benchmarks": {
+            "datasets": {"dummy": "d.jsonl"},
+            "run_backlog": True,
+            "backlog_datasets": {"planner_backlog": {"component": "planner", "dataset": "bl.jsonl"}},
+        }},
+    )
+    seen = []
+
+    def fake_run(cmd, **kwargs):
+        seen.append(cmd)
+        return type("R", (), {"returncode": 0, "stdout": "Results saved to: out/bl.json\n", "stderr": ""})()
+
+    monkeypatch.setattr(_run_all.subprocess, "run", fake_run)
+
+    results = _run_all.run_all_benchmarks(output_dir=tmp_path / "out")
+
+    assert results["planner_backlog"]["backlog"] is True
+    assert results["planner_backlog"]["result_file"] is not None
+    assert any("planner" in c and "bl.jsonl" in c for c in seen)
+
+
 class _FakePaths:
     def __init__(self, root):
         self._root = root

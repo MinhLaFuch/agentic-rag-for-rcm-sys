@@ -41,7 +41,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from package.agents import PlanExecutor, Type1Agent, build_tools, Session
+from package.agents import PlanExecutor, Type1Agent, build_tools, Session, validate_tool_names
 from package.agents import extract_recommendations, get_agent_limits, get_session_limits
 from package.evaluation import (
     AGENTS,
@@ -284,6 +284,10 @@ def main() -> None:
     if set(agents) - set(AGENTS):
         raise SystemExit(f"Unknown agent(s) {sorted(set(agents) - set(AGENTS))}; choose from {list(AGENTS)}")
     per_segment = int(cfg["per_segment"])
+    # Optional tool subset for ablations (e.g. exclude_tools: [RankTool]);
+    # empty/absent = full toolset, unchanged behaviour. Hashed into
+    # resume_identity via _resume_agent_config.
+    exclude_tools = validate_tool_names(cfg.get("exclude_tools") or [])
     reflect_rounds = get_agent_limits().reflect_rounds
     inference_mode = get_inference_limits().mode
     request_scope = str(cfg["request_scope"])
@@ -440,13 +444,15 @@ def main() -> None:
         # Single-turn evaluation: no session (session=None).
         # Multi-turn evaluation (agent_eval.enable_session): a fresh Session is created per request inside run_planner.
         # This prevents cross-request contamination of shown_items/candidates/constraints.
-        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=None)
-        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=None)
+        planner_tool_list = tools.for_planner(exclude_tools=exclude_tools)
+        planner_memory_tool_list = tools.for_planner_memory(exclude_tools=exclude_tools)
+        runners["planner"] = PlanExecutor(llm, planner_tool_list, reflect_rounds=reflect_rounds, session=None)
+        runners["planner_memory"] = PlanExecutor(llm, planner_memory_tool_list, reflect_rounds=reflect_rounds, session=None)
 
     # Build provenance (hashes of prompts, tool schemas, git state, limits)
     provenance = build_run_provenance(
-        planner_tools=tools.for_planner(),
-        memory_tools=tools.for_planner_memory() if "planner_memory" in agents else None,
+        planner_tools=tools.for_planner(exclude_tools=exclude_tools),
+        memory_tools=tools.for_planner_memory(exclude_tools=exclude_tools) if "planner_memory" in agents else None,
     )
 
     def answerer(outcome: Any) -> Any:

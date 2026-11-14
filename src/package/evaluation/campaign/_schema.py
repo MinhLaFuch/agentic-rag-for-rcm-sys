@@ -294,6 +294,7 @@ class ExperimentRun:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     duration_seconds: float = 0.0
     metrics: dict[str, Any] = field(default_factory=dict)
+    git_sha: str = ""  # SHA at the run that produced this entry; "" for entries predating the field
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -306,6 +307,7 @@ class ExperimentRun:
             "timestamp": self.timestamp,
             "duration_seconds": self.duration_seconds,
             "metrics": self.metrics,
+            "git_sha": self.git_sha,
         }
 
     @classmethod
@@ -320,6 +322,7 @@ class ExperimentRun:
             timestamp=data.get("timestamp"),
             duration_seconds=data.get("duration_seconds", 0.0),
             metrics=data.get("metrics", {}),
+            git_sha=data.get("git_sha", ""),
         )
 
 
@@ -344,6 +347,7 @@ class CampaignResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
     multi_turn: dict[str, Any] = field(default_factory=dict)
+    subset: dict[str, Any] = field(default_factory=dict)  # non-empty only for --only runs: which experiments ran/were skipped
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -355,6 +359,7 @@ class CampaignResult:
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
             "multi_turn": self.multi_turn,
+            "subset": self.subset,
         }
 
     @classmethod
@@ -368,4 +373,5 @@ class CampaignResult:
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
             multi_turn=data.get("multi_turn", {}),
+            subset=data.get("subset", {}),
         )

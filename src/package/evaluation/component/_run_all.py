@@ -36,47 +36,44 @@ def run_all_benchmarks(
         print(f"{'='*60}")
 
         info: dict[str, Any] = {"result_file": None, "error": None, "not_implemented": False}
-        try:
-            # Run benchmark from src directory
-            cmd = [
-                sys.executable, "-m", "package.evaluation.component.run",
-                "--component", component,
-                "--dataset", dataset,
-            ]
 
-            # Evaluator configs come from configs/eval/component_benchmarks.yaml (configs.<component>)
+        # Grounding cần Jev credential (judge.yaml api_key hoặc env fallback).
+        # Thiếu credential -> skipped_no_credentials như multi_turn, thay vì
+        # để mọi case fail do raise trong GroundingBenchmark.run_component.
+        if component == "grounding" and not _jev_configured():
+            info["status"] = "skipped_no_credentials"
+            info["error"] = (
+                "grounding needs a Jev credential: set JEV_API_KEY "
+                "(configs/eval/judge.yaml) or TYPESAFE_API_KEY/OPENROUTER_API_KEY"
+            )
+            print("grounding: skipped — no Jev credentials configured")
+            results[component] = info
+            continue
 
-            # Run from src directory
-            from package.config import get_data_paths
-            result = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=str(get_data_paths().src_root))
-            print(result.stdout)
+        results[component] = _run_component_cli(component, dataset, info)
 
-            if result.returncode != 0:
-                print(f"Error running {component}: exit code {result.returncode}")
-                print(f"stderr: {result.stderr}")
-                info["error"] = (result.stderr or "").strip()[-500:] or f"exit code {result.returncode}"
-                info["not_implemented"] = "not yet implemented" in (result.stderr or "").lower()
-                results[component] = info
-                continue
-
-            # Extract result file path from output
-            for line in result.stdout.split('\n'):
-                if "Results saved to:" in line:
-                    result_file = line.split("Results saved to:")[-1].strip()
-                    info["result_file"] = str(get_data_paths().src_root / result_file)
-                    break
-
-            if info["result_file"] is None:
-                print(f"Warning: {component} completed but no 'Results saved to:' line found in stdout")
-                info["error"] = "completed but no 'Results saved to:' line in stdout"
-
-        except Exception as e:
-            print(f"Unexpected error running {component}: {e}")
-            import traceback
-            traceback.print_exc()
-            info["error"] = str(e)
-
-        results[component] = info
+    # Backlog datasets (known unsupported features — expected failures, not
+    # regressions). run_backlog=false -> status "skipped_backlog" trong report;
+    # true -> chạy thật qua cùng component CLI.
+    run_backlog = bool(bench_cfg.get("run_backlog", False))
+    for label, spec in (bench_cfg.get("backlog_datasets") or {}).items():
+        if isinstance(spec, str):
+            spec = {"component": label, "dataset": spec}
+        component = spec["component"]
+        dataset = spec["dataset"]
+        info = {"result_file": None, "error": None, "not_implemented": False,
+                "backlog": True}
+        if not run_backlog:
+            info["status"] = "skipped_backlog"
+            info["error"] = (
+                "backlog dataset documents known unsupported features; "
+                "set component_benchmarks.run_backlog: true to run, or invoke "
+                f"--component {component} --dataset {dataset} directly"
+            )
+            print(f"{label}: skipped — backlog dataset (run_backlog=false)")
+            results[label] = info
+            continue
+        results[label] = _run_component_cli(component, dataset, info)
 
     # Multi-turn conversation evaluation is not a component-benchmark case: it
     # needs a real LLM (PlanExecutor + Session over the fixture corpus). Run it
@@ -85,6 +82,59 @@ def run_all_benchmarks(
     results["multi_turn"] = _run_multi_turn()
 
     return results
+
+
+def _run_component_cli(component: str, dataset: str, info: dict[str, Any]) -> dict[str, Any]:
+    """Chạy một component benchmark qua subprocess; điền info in-place."""
+    try:
+        cmd = [
+            sys.executable, "-m", "package.evaluation.component.run",
+            "--component", component,
+            "--dataset", dataset,
+        ]
+        from package.config import get_data_paths
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=str(get_data_paths().src_root))
+        print(result.stdout)
+
+        if result.returncode != 0:
+            print(f"Error running {component}: exit code {result.returncode}")
+            print(f"stderr: {result.stderr}")
+            info["error"] = (result.stderr or "").strip()[-500:] or f"exit code {result.returncode}"
+            info["not_implemented"] = "not yet implemented" in (result.stderr or "").lower()
+            return info
+
+        for line in result.stdout.split('\n'):
+            if "Results saved to:" in line:
+                result_file = line.split("Results saved to:")[-1].strip()
+                info["result_file"] = str(get_data_paths().src_root / result_file)
+                break
+
+        if info["result_file"] is None:
+            print(f"Warning: {component} completed but no 'Results saved to:' line found in stdout")
+            info["error"] = "completed but no 'Results saved to:' line in stdout"
+
+    except Exception as e:
+        print(f"Unexpected error running {component}: {e}")
+        import traceback
+        traceback.print_exc()
+        info["error"] = str(e)
+
+    return info
+
+
+def _jev_configured() -> bool:
+    """True khi Jev judge có credential: judge.yaml api_key hoặc env fallback
+    (TYPESAFE_API_KEY / OPENROUTER_API_KEY — xem package/api/jev_provider.py)."""
+    import os
+
+    if os.environ.get("TYPESAFE_API_KEY") or os.environ.get("OPENROUTER_API_KEY"):
+        return True
+    try:
+        from package.config import load_config
+
+        return bool(load_config("eval/judge").get("api_key"))
+    except Exception:
+        return False
 
 
 def _llm_configured() -> bool:
@@ -144,6 +194,7 @@ def _as_info(value: Any) -> dict[str, Any]:
             "error": value.get("error"),
             "not_implemented": bool(value.get("not_implemented")),
             "status": value.get("status"),
+            "backlog": bool(value.get("backlog")),
         }
     # Legacy shape: plain path string or None
     return {"result_file": value, "error": None, "not_implemented": False}
@@ -166,11 +217,12 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
         info = _as_info(raw_info)
         result_file = info.get("result_file")
 
-        if info.get("status") == "skipped_no_credentials":
+        if info.get("status") in ("skipped_no_credentials", "skipped_backlog"):
             aggregated["components"][component] = {
-                "status": "skipped_no_credentials",
+                "status": info["status"],
+                "backlog": bool(info.get("backlog")),
                 "quality_gate": "not_evaluated",
-                "error": info.get("error") or "Skipped: no LLM credentials",
+                "error": info.get("error") or "Skipped",
             }
             aggregated["summary"]["skipped_components"] += 1
             continue
@@ -278,6 +330,7 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
 
             aggregated["components"][component] = {
                 "status": "success",
+                "backlog": bool(info.get("backlog")),
                 "quality_gate": quality_gate,
                 "thresholds_result": thresholds_result,
                 "metrics": metrics_summary,

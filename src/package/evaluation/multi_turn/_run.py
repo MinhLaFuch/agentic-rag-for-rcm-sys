@@ -33,6 +33,12 @@ def run_multi_turn_cli() -> None:
         default=None,
         help="Output JSON path (default: data_paths.outputs.multi_turn/<dataset>_<ts>.json)",
     )
+    parser.add_argument(
+        "--limits-json",
+        type=str,
+        default=None,
+        help='JSON object forwarded to RealAgentRunner as agent_eval.multi_turn.limits (Phase-C knobs; recorded, not enforced)',
+    )
     args = parser.parse_args()
 
     import subprocess
@@ -57,7 +63,8 @@ def run_multi_turn_cli() -> None:
 
     # Real runner: real LLM + real tools + Session. Raises if no LLM config —
     # a missing provider must fail loudly, never produce fake scores.
-    runner = RealAgentRunner()
+    mt_limits = json.loads(args.limits_json) if args.limits_json else {}
+    runner = RealAgentRunner(config={"limits": mt_limits})
     evaluator = MultiTurnEvaluator()
 
     summary = evaluator.evaluate_conversations(conversations, runner, git_sha=git_sha)
@@ -73,6 +80,9 @@ def run_multi_turn_cli() -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     payload = summary.to_dict()
     payload["status"] = "success"
+    # Resolved runner config (reflect_rounds, toolset, limits) — explicit
+    # provenance; previously only recoverable from campaign config_overlay.yaml.
+    payload["resolved_config"] = runner.resolved_config()
     output_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
     print(f"Results saved to: {output_path}")
     print(

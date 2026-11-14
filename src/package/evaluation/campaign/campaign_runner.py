@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -26,8 +27,43 @@ class CampaignRunner:
         self.config = config
         self.git_sha = git_sha
 
-    def run_campaign(self) -> CampaignResult:
+    @staticmethod
+    def _select_experiments(experiments: list[Any], only: list[str] | None) -> tuple[list[Any], list[str]]:
+        """Filter expanded experiments by --only tokens; names/IDs never renumber.
+
+        Each token is ``<n>`` or ``exp_<n>`` matching ``exp_<n>_*`` names, or an
+        exact experiment name. Returns (selected, skipped_names). Raises
+        ValueError on an unmatched token — never skips silently.
+        """
+        if only is None:
+            return list(experiments), []
+        selected: list[Any] = []
+        valid = ", ".join(e.name for e in experiments)
+        for token in only:
+            token = str(token).strip()
+            m = re.fullmatch(r"(?:exp_)?(\d+)", token)
+            if m:
+                prefix = f"exp_{int(m.group(1))}_"
+                matches = [e for e in experiments if e.name.startswith(prefix)]
+            else:
+                matches = [e for e in experiments if e.name == token]
+            if not matches:
+                raise ValueError(f"--only: no experiment matches {token!r}; valid IDs/names: {valid}")
+            for e in matches:
+                if e not in selected:
+                    selected.append(e)
+        skipped = [e.name for e in experiments if e not in selected]
+        return selected, skipped
+
+    def run_campaign(self, only: list[str] | None = None) -> CampaignResult:
         """Execute the full campaign.
+
+        Args:
+            only: optional list of experiment selectors (``7``, ``exp_7`` or an
+                exact experiment name). When given, ONLY those experiments run;
+                skipped experiments keep their previous campaign_result.json
+                entries untouched, comparisons are not recomputed, and the
+                previous result file is merged + backed up before overwrite.
 
         Returns:
             CampaignResult with all experiment runs and comparisons
@@ -35,19 +71,27 @@ class CampaignRunner:
         campaign_hash = self.config.compute_hash()
 
         # Expand parameter grid if provided
-        experiments = self.config.expand_parameter_grid()
+        all_experiments = self.config.expand_parameter_grid()
 
-        if not experiments:
+        if not all_experiments:
             raise ValueError("No experiments to run. Either provide 'experiments' list or 'parameter_grid' in campaign config.")
 
+        experiments, skipped_names = self._select_experiments(all_experiments, only)
+
         print(f"\n=== Campaign Summary ===")
-        print(f"Total experiments: {len(experiments)}")
+        print(f"Total experiments: {len(all_experiments)}")
         for exp in experiments:
             print(f"  - {exp.name}: {exp.description}")
+        if only is not None:
+            print(f"Subset run (--only): {len(experiments)} of {len(all_experiments)} experiments")
+            for name in skipped_names:
+                print(f"  - SKIPPED {name}")
 
-        # Auto-generate comparison pairs if empty and using parameter grid
+        # Auto-generate comparison pairs if empty and using parameter grid.
+        # Subset runs never compare: pairs would be missing skipped experiments,
+        # and the previous campaign_result.json comparisons must not be clobbered.
         comparison_pairs = self.config.comparison_pairs
-        if not comparison_pairs and self.config.parameter_grid:
+        if only is None and not comparison_pairs and self.config.parameter_grid:
             # Compare all experiments against the first one (baseline)
             baseline_exp = experiments[0]
             comparison_pairs = [(baseline_exp.name, exp.name) for exp in experiments[1:]]
@@ -78,9 +122,9 @@ class CampaignRunner:
                 )
                 runs.append(run)
 
-        # Perform comparisons if configured
+        # Perform comparisons if configured (skipped entirely on subset runs)
         comparisons = {}
-        if comparison_pairs:
+        if only is None and comparison_pairs:
             comparisons = self._run_comparisons(runs, output_dir, comparison_pairs)
 
         # Generate summary
@@ -95,13 +139,54 @@ class CampaignRunner:
             git_sha=self.git_sha,
             multi_turn=self._collect_multi_turn_result(runs),
         )
+        if only is not None:
+            result.subset = {
+                "only": [str(t) for t in only],
+                "ran": [e.name for e in experiments],
+                "skipped": skipped_names,
+                "comparisons": "skipped_subset_run",
+            }
 
         # Save campaign result
         result_path = output_dir / "campaign_result.json"
+        if only is not None:
+            result = self._merge_subset_result(result, result_path)
         with open(result_path, "w", encoding="utf-8") as f:
-            import json
             json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)
 
+        return result
+
+    def _merge_subset_result(self, result: CampaignResult, result_path: Path) -> CampaignResult:
+        """Merge a subset run into the existing campaign_result.json.
+
+        Runs of skipped experiments keep their previous entries verbatim;
+        comparisons from the previous full run are preserved untouched (a
+        subset cannot recompute them). The previous file is backed up first.
+        """
+        if not result_path.exists():
+            return result
+        try:
+            prev = CampaignResult.from_dict(json.loads(result_path.read_text(encoding="utf-8")))
+        except Exception:
+            return result
+
+        backup = result_path.with_name(
+            f"campaign_result_backup_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+        )
+        shutil.copyfile(result_path, backup)
+        print(f"Backed up previous campaign_result.json -> {backup.name}")
+
+        new_runs = {(r.experiment_name, r.run_number): r for r in result.runs}
+        merged: list[ExperimentRun] = []
+        for r in prev.runs:
+            merged.append(new_runs.pop((r.experiment_name, r.run_number), r))
+        merged.extend(new_runs.values())  # runs with no previous entry (shouldn't happen for same campaign)
+
+        result.runs = merged
+        if prev.comparisons:
+            result.comparisons = prev.comparisons
+        result.summary = self._generate_summary(merged)
+        result.multi_turn = self._collect_multi_turn_result(merged)
         return result
 
     def _run_experiment(
@@ -206,10 +291,11 @@ class CampaignRunner:
             error=error,
             duration_seconds=duration,
             metrics=metrics,
+            git_sha=self.git_sha,
         )
 
     # agent_config keys the overlay builder knows how to map; anything else is a config error
-    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn"}
+    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn", "exclude_tools"}
     _EVALUATION_CONFIG_KEYS = {"per_segment"}
 
     # agent_config.multi_turn accepts bool or a dict; these keys map onto
@@ -360,6 +446,10 @@ class CampaignRunner:
         reflect_rounds = experiment.agent_config.get("reflect_rounds")
         if reflect_rounds is not None:
             overlay["agent/agent"] = {"agent": {"reflect_rounds": reflect_rounds}}
+
+        exclude_tools = experiment.agent_config.get("exclude_tools")
+        if exclude_tools is not None:
+            agent_eval["exclude_tools"] = list(exclude_tools)
 
         # experiment.random_seed drives request sampling via eval/baselines.baselines.seed
         overlay["eval/baselines"] = {"baselines": {"seed": experiment.random_seed}}

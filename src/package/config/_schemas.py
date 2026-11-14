@@ -111,6 +111,10 @@ class AgentEvalConfig(BaseModel):
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
     campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
+    exclude_tools: list[str] = Field(
+        default_factory=list,
+        description="Tool class names excluded from planner/planner_memory toolsets (ablation); empty = full toolset",
+    )
     experiment_dir: str | None = Field(
         default=None,
         description="Explicit experiment output dir; null allocates the next exp_NNN under outputs.agent_eval",
@@ -542,6 +546,7 @@ class DemoConfig(BaseModel):
     default_language: str = Field(description="vi | en")
     max_recent_items_display: int = Field(gt=0)
     max_turn_history_rows: int = Field(gt=0)
+    max_sessions: int = Field(gt=0, description="Max multi-turn Sessions kept by LiveBackend (LRU)")
     eval_on: str = Field(description="validation | test — split loaded by LiveBackend")
     use_prebuilt_corpus: bool = Field(description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(description="Accept prebuilt corpus when raw meta files are missing")

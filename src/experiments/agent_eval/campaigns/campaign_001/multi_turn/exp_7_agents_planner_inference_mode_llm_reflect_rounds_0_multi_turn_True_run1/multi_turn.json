@@ -1,0 +1,71 @@
+{
+  "multi_turn_version": "1.0.0",
+  "total_conversations": 13,
+  "turn_success_rate": 1.0,
+  "conversation_success_rate": 1.0,
+  "total_turns_scheduled": 24,
+  "total_turns_executed": 24,
+  "avg_turns_per_conversation": 1.8461538461538463,
+  "turn_completion_ratio": 1.0,
+  "failed_conversation_ids": [],
+  "failed_conversations": 0,
+  "metrics": {
+    "avg_item_match_rate_mean": 0.8076923076923077,
+    "avg_item_match_rate_std": 0.24325212770525995,
+    "avg_item_match_rate_min": 0.5,
+    "avg_item_match_rate_max": 1.0,
+    "clarification_compliance_mean": 0.0,
+    "clarification_compliance_std": 0.0,
+    "clarification_compliance_min": 0.0,
+    "clarification_compliance_max": 0.0,
+    "context_retention_mean": 1.0,
+    "context_retention_std": 0.0,
+    "context_retention_min": 1.0,
+    "context_retention_max": 1.0,
+    "conversation_success_mean": 1.0,
+    "conversation_success_std": 0.0,
+    "conversation_success_min": 1.0,
+    "conversation_success_max": 1.0,
+    "exclusion_compliance_mean": 0.8461538461538461,
+    "exclusion_compliance_std": 0.23076923076923078,
+    "exclusion_compliance_min": 0.5,
+    "exclusion_compliance_max": 1.0,
+    "no_result_compliance_mean": 1.0,
+    "no_result_compliance_std": 0.0,
+    "no_result_compliance_min": 1.0,
+    "no_result_compliance_max": 1.0,
+    "tool_call_match_rate_mean": 1.0,
+    "tool_call_match_rate_std": 0.0,
+    "tool_call_match_rate_min": 1.0,
+    "tool_call_match_rate_max": 1.0,
+    "turn_success_rate_mean": 1.0,
+    "turn_success_rate_std": 0.0,
+    "turn_success_rate_min": 1.0,
+    "turn_success_rate_max": 1.0
+  },
+  "latency": {
+    "mean": 12.691386830769261,
+    "min": 4.028035799999998,
+    "max": 19.886785700000473
+  },
+  "failure_distribution": {},
+  "context_retention_metrics": {
+    "mean": 1.0
+  },
+  "timestamp": "2026-11-14T04:42:05.395393+00:00",
+  "git_sha": "880bf5c5d0dfb9c1c56dddec4c0629c784cd47e7",
+  "status": "success",
+  "resolved_config": {
+    "reflect_rounds": 0,
+    "tools": [
+      "FilterTool",
+      "LookupTool",
+      "MemoryTool",
+      "RankTool",
+      "SearchTool",
+      "SimilarTool"
+    ],
+    "limits": {},
+    "limits_enforced": false
+  }
+}

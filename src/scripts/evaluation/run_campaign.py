@@ -63,7 +63,20 @@ def main() -> None:
         action="store_true",
         help="Print what would be run without actually executing",
     )
+    ap.add_argument(
+        "--only",
+        type=str,
+        default=None,
+        help="Comma-separated experiment selectors (e.g. 7,8,11,12 or exp_7,exp_8); "
+             "runs ONLY those experiments and merges into the existing campaign_result.json",
+    )
     args = ap.parse_args()
+
+    only = None
+    if args.only:
+        only = [t.strip() for t in args.only.split(",") if t.strip()]
+        if not only:
+            raise SystemExit("--only given but empty")
 
     # Load campaign configuration
     campaign_path = Path(args.campaign_config)
@@ -86,20 +99,33 @@ def main() -> None:
     print(f"Git SHA: {git_sha}")
 
     if args.dry_run:
+        # Resolve --only against the expanded grid so IDs are shown, not renumbered
+        if only is not None:
+            try:
+                selected, skipped = CampaignRunner._select_experiments(experiments, only)
+            except ValueError as exc:
+                raise SystemExit(str(exc))
+        else:
+            selected, skipped = experiments, []
         print("\n=== DRY RUN - Would execute the following ===")
-        for exp in experiments:
+        for exp in selected:
             print(f"  - {exp.name}: {exp.description}")
             print(f"    Repetitions: {exp.repetition_count}")
             print(f"    Agents: {exp.agent_config.get('agents', 'default')}")
             print(f"    Inference mode: {exp.agent_config.get('inference_mode', 'default')}")
             print(f"    Reflect rounds: {exp.agent_config.get('reflect_rounds', 0)}")
+        for name in skipped:
+            print(f"  - SKIPPED {name}")
         print("\n=== DRY RUN COMPLETE ===")
         return
 
     # Run the campaign
     print("\n=== Starting Campaign Execution ===")
     runner = CampaignRunner(campaign, git_sha=git_sha)
-    result = runner.run_campaign()
+    try:
+        result = runner.run_campaign(only=only)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
 
     # Print summary
     print("\n=== Campaign Summary ===")

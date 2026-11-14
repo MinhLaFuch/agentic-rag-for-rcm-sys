@@ -57,14 +57,14 @@ def _summary(runner) -> ConversationSummary:
 
 
 # --- hand-computed expectations over the 11 fixture conversations ---------
-# 9 conversations x 2 turns + 2 conversations x 1 turn = 20 scheduled turns.
+# 11 conversations x 2 turns + 2 conversations x 1 turn = 24 scheduled turns (13 convs after week-47 additions).
 
 
 def test_turn_counts_all_success():
     s = _summary(PerfectRunner())
-    assert s.total_turns_scheduled == 20
-    assert s.total_turns_executed == 20
-    assert s.avg_turns_per_conversation == pytest.approx(20 / 11)
+    assert s.total_turns_scheduled == 24
+    assert s.total_turns_executed == 24
+    assert s.avg_turns_per_conversation == pytest.approx(24 / 13)
     assert s.turn_completion_ratio == pytest.approx(1.0)
     assert s.failed_conversations == 0
     assert s.failed_conversation_ids == []
@@ -73,23 +73,23 @@ def test_turn_counts_all_success():
 def test_turn_counts_fail_on_first_turn():
     # conv_m1_t1 fails -> conv_m1 stops after 1 executed turn; its t2 never runs.
     s = _summary(FailOnTurn("m1_t1"))
-    assert s.total_turns_scheduled == 20
-    assert s.total_turns_executed == 19
-    assert s.turn_completion_ratio == pytest.approx(19 / 20)
-    assert s.avg_turns_per_conversation == pytest.approx(19 / 11)
+    assert s.total_turns_scheduled == 24
+    assert s.total_turns_executed == 23
+    assert s.turn_completion_ratio == pytest.approx(23 / 24)
+    assert s.avg_turns_per_conversation == pytest.approx(23 / 13)
     assert s.failed_conversations == 1
     assert s.failed_conversation_ids == ["conv_m1_price_refinement"]
     # turn_success_rate denominator is EXECUTED turns: 18/19, not 18/20
-    assert s.turn_success_rate == pytest.approx(18 / 19)
-    assert s.conversation_success_rate == pytest.approx(10 / 11)
+    assert s.turn_success_rate == pytest.approx(22 / 23)
+    assert s.conversation_success_rate == pytest.approx(12 / 13)
 
 
 def test_turn_counts_fail_on_last_turn():
     # conv_m1_t2 fails -> both turns executed, only the last one failed.
     s = _summary(FailOnTurn("m1_t2"))
-    assert s.total_turns_executed == 20
+    assert s.total_turns_executed == 24
     assert s.turn_completion_ratio == pytest.approx(1.0)
-    assert s.turn_success_rate == pytest.approx(19 / 20)
+    assert s.turn_success_rate == pytest.approx(23 / 24)
     assert s.failed_conversation_ids == ["conv_m1_price_refinement"]
 
 
@@ -117,8 +117,8 @@ def test_from_dict_old_json_without_new_fields():
 def test_roundtrip_preserves_new_fields():
     s = _summary(FailOnTurn("m1_t1"))
     s2 = ConversationSummary.from_dict(json.loads(json.dumps(s.to_dict())))
-    assert s2.total_turns_executed == 19
-    assert s2.turn_completion_ratio == pytest.approx(19 / 20)
+    assert s2.total_turns_executed == 23
+    assert s2.turn_completion_ratio == pytest.approx(23 / 24)
     assert s2.failed_conversation_ids == ["conv_m1_price_refinement"]
 
 

@@ -36,7 +36,7 @@ evaluation_config:
 # (per-experiment overrides still go in each experiment's agent_config/evaluation_config)
 default_agents: [baseline, type1, planner, planner_memory]  # used when agent_config.agents is absent
 allow_missing_corpus_sources: true   # campaign runs accept prebuilt corpus without raw meta files
-experiment_timeout_seconds: 3600     # per-run subprocess timeout
+experiment_timeout_seconds: 7200     # per-run subprocess timeout; 7200 because llm planner runs need main eval remainder + multi_turn (<=1800s) + scoring/saving within one subprocess
 
 # Auto-generate comparison pairs: all vs first experiment (baseline)
 comparison_pairs: []

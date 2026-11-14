@@ -43,7 +43,7 @@ def evaluator():
 
 
 def test_dataset_loads(cases):
-    assert len(cases) == 12
+    assert len(cases) == 13
 
 
 def test_every_case_has_provenance(cases):
@@ -65,7 +65,9 @@ def test_deterministic_cases_have_presented_ids(cases):
     """FilterTool/LookupTool chains are hand-computable; SimilarTool/SearchTool
     cases must carry structural provenance instead of fabricated id lists."""
     have = {c.case_id for c in cases if c.expected.get("presented_item_ids")}
-    assert have == {"int_001", "int_005", "int_008", "int_010", "int_012"}
+    # int_013 contains SimilarTool but its ids are oracle-computed
+    # (oracle_fixture_knn.py, cross-checked == real tools), not fabricated.
+    assert have == {"int_001", "int_005", "int_008", "int_010", "int_012", "int_013"}
 
 
 def test_grounded_rate_absent_in_template_mode(evaluator):

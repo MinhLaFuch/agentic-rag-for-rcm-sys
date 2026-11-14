@@ -155,6 +155,8 @@ class MultiTurnEvaluator:
             "exclusion_compliance": 0.0,
             "reference_correctness": None,  # None = not measurable this turn
             "tool_call_match_rate": None,  # None = no expected_tool_calls
+            "clarification_compliance": None,  # None = turn did not expect clarification
+            "no_result_compliance": None,     # None = turn did not expect an empty result
         }
 
         if turn_output is None:
@@ -206,6 +208,17 @@ class MultiTurnEvaluator:
             metrics["tool_call_match_rate"] = self._tool_call_match_rate(
                 expected_calls, turn_output, session_state
             )
+
+        # Negative expectations: previously unscoreable turns.
+        # expect_no_result -> the agent must return zero items (a filtered-empty
+        # answer is correct; inventing recommendations is not).
+        if getattr(turn_input, "expect_no_result", False):
+            metrics["no_result_compliance"] = 1.0 if not actual_items else 0.0
+        # expect_clarification -> the agent must have asked a question
+        # (executor.last_question surfaced via trace.question) instead of guessing.
+        if getattr(turn_input, "expect_clarification", False):
+            question = ((turn_output.get("trace") or {}).get("question"))
+            metrics["clarification_compliance"] = 1.0 if question else 0.0
 
         # Reference correctness — REAL check (was a placeholder 1.0):
         # among executed steps whose args contain $N/$S references, the
@@ -389,6 +402,17 @@ class MultiTurnEvaluator:
         metrics["tool_call_match_rate"] = (
             sum(tool_call_scores) / len(tool_call_scores) if tool_call_scores else None
         )
+
+        # Negative-expectation compliance — mean over turns that set the flag
+        # (None on turns without the expectation, so they don't dilute the mean)
+        for key in ("clarification_compliance", "no_result_compliance"):
+            vals = [
+                tr.metrics.get(key)
+                for tr in turn_results
+                if tr.metrics.get(key) is not None
+            ]
+            if vals:
+                metrics[key] = sum(vals) / len(vals)
 
         return metrics
 

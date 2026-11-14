@@ -44,7 +44,7 @@ def _ids_in_spec(spec: dict) -> list[str]:
 
 
 def test_dataset_loads(cases):
-    assert len(cases) == 18
+    assert len(cases) == 22
 
 
 def test_every_case_has_num_steps_and_provenance(cases):

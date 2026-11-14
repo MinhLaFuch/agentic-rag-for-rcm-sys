@@ -1,0 +1,1053 @@
+{
+  "contrast": "reflect_effect_planner",
+  "agent_a": "planner",
+  "agent_b": "planner",
+  "group_a": "planner_tmpl_r0",
+  "group_b": "planner_tmpl_r1",
+  "k": 10,
+  "bootstrap_resamples": 10000,
+  "confidence": 0.95,
+  "results": {
+    "similar/sparse": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0125,
+        "mean_b": 0.0125,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0123151194370365,
+        "mean_b": 0.0123151194370365,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 8.683849999999074,
+        "mean_b": 8.030499999999666,
+        "diff": -0.6533499999994081,
+        "ci_lower": -1.3502499999991415,
+        "ci_upper": -0.0110499999991589,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 116.55,
+        "mean_b": 115.3,
+        "diff": -1.25,
+        "ci_lower": -4.5,
+        "ci_upper": 1.75,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "similar/warm": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 9.71335000000072,
+        "mean_b": 8.769749999999476,
+        "diff": -0.9436000000012434,
+        "ci_lower": -2.208450000001176,
+        "ci_upper": 0.22814999999827706,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 116.85,
+        "mean_b": 119.75,
+        "diff": 2.9000000000000057,
+        "ci_lower": -0.25,
+        "ci_upper": 6.95,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "personalized/sparse": {
+      "task_success": {
+        "n": 0
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.8,
+        "mean_b": 0.65,
+        "diff": -0.15000000000000002,
+        "ci_lower": -0.45,
+        "ci_upper": 0.15,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.35,
+        "diff": 0.35,
+        "ci_lower": 0.15,
+        "ci_upper": 0.55,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 11.200000000000363,
+        "mean_b": 16.513300000000164,
+        "diff": 5.313299999999801,
+        "ci_lower": 1.7492000000005645,
+        "ci_upper": 10.461700000000201,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 191.5,
+        "mean_b": 249.5,
+        "diff": 58.0,
+        "ci_lower": 12.05,
+        "ci_upper": 106.4,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 15
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "personalized/warm": {
+      "task_success": {
+        "n": 0
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.7,
+        "mean_b": 0.35,
+        "diff": -0.35,
+        "ci_lower": -0.6,
+        "ci_upper": -0.1,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.65,
+        "diff": 0.65,
+        "ci_lower": 0.45,
+        "ci_upper": 0.85,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 10.142900000000008,
+        "mean_b": 18.40924999999952,
+        "diff": 8.266349999999512,
+        "ci_lower": 5.360799999999654,
+        "ci_upper": 11.289050000000135,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 176.6,
+        "mean_b": 354.3,
+        "diff": 177.70000000000002,
+        "ci_lower": 111.1,
+        "ci_upper": 243.85,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 12
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "ambiguous/none": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "recall@10": {
+        "n": 0
+      },
+      "ndcg@10": {
+        "n": 0
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "llm_latency_seconds": {
+        "mean_a": 6.060000000000097,
+        "mean_b": 6.424499999999777,
+        "diff": 0.36449999999967986,
+        "ci_lower": -0.59066666666331,
+        "ci_upper": 1.3504999999968277,
+        "n": 6
+      },
+      "completion_tokens": {
+        "mean_a": 28.833333333333332,
+        "mean_b": 32.833333333333336,
+        "diff": 4.0000000000000036,
+        "ci_lower": -1.5,
+        "ci_upper": 10.333333333333334,
+        "n": 6
+      },
+      "answer_fallback": {
+        "n": 0
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      }
+    },
+    "exclusion/sparse": {
+      "task_success": {
+        "mean_a": 0.95,
+        "mean_b": 0.9,
+        "diff": -0.04999999999999993,
+        "ci_lower": -0.2,
+        "ci_upper": 0.1,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 13
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 13
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.95,
+        "mean_b": 0.95,
+        "diff": 0.0,
+        "ci_lower": -0.15,
+        "ci_upper": 0.15,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 19.21555000000044,
+        "mean_b": 19.345300000000133,
+        "diff": 0.12974999999969228,
+        "ci_lower": -2.4873499999997875,
+        "ci_upper": 2.6053499999979977,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 509.75,
+        "mean_b": 512.9,
+        "diff": 3.1499999999999773,
+        "ci_lower": -102.25,
+        "ci_upper": 100.4,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 17
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "exclusion/warm": {
+      "task_success": {
+        "mean_a": 0.95,
+        "mean_b": 0.95,
+        "diff": 0.0,
+        "ci_lower": -0.15,
+        "ci_upper": 0.15,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 8
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 8
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.95,
+        "mean_b": 1.0,
+        "diff": 0.050000000000000044,
+        "ci_lower": 0.0,
+        "ci_upper": 0.15,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 19.382100000000356,
+        "mean_b": 17.505449999998746,
+        "diff": -1.8766500000016109,
+        "ci_lower": -4.5367000000020195,
+        "ci_upper": 0.9818999999984953,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 549.55,
+        "mean_b": 420.95,
+        "diff": -128.59999999999997,
+        "ci_lower": -226.95,
+        "ci_upper": -39.65,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 18
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "unanswerable/none": {
+      "task_success": {
+        "mean_a": 0.0,
+        "mean_b": 1.0,
+        "diff": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0,
+        "n": 6
+      },
+      "recall@10": {
+        "n": 0
+      },
+      "ndcg@10": {
+        "n": 0
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 1.0,
+        "diff": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0,
+        "n": 6
+      },
+      "llm_latency_seconds": {
+        "mean_a": 9.30449999999837,
+        "mean_b": 14.320666666666511,
+        "diff": 5.016166666668141,
+        "ci_lower": 3.633666666666007,
+        "ci_upper": 6.445833333333819,
+        "n": 6
+      },
+      "completion_tokens": {
+        "mean_a": 104.33333333333333,
+        "mean_b": 183.5,
+        "diff": 79.16666666666667,
+        "ci_lower": 29.333333333333332,
+        "ci_upper": 132.16666666666666,
+        "n": 6
+      },
+      "answer_fallback": {
+        "n": 0
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      }
+    },
+    "all_kinds": {
+      "similar": {
+        "task_success": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "recall@10": {
+          "mean_a": 0.00625,
+          "mean_b": 0.00625,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "ndcg@10": {
+          "mean_a": 0.00615755971851825,
+          "mean_b": 0.00615755971851825,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 9.198599999999896,
+          "mean_b": 8.400124999999571,
+          "diff": -0.7984750000003249,
+          "ci_lower": -1.507549999999719,
+          "ci_upper": -0.13355000000101427,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 116.7,
+          "mean_b": 117.525,
+          "diff": 0.8250000000000028,
+          "ci_lower": -1.5,
+          "ci_upper": 3.4,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "personalized": {
+        "task_success": {
+          "n": 0
+        },
+        "recall@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "ndcg@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.75,
+          "mean_b": 0.5,
+          "diff": -0.25,
+          "ci_lower": -0.45,
+          "ci_upper": -0.05,
+          "n": 40,
+          "mcnemar": {
+            "b": 14.0,
+            "c": 4.0,
+            "p": 0.05
+          }
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.5,
+          "diff": 0.5,
+          "ci_lower": 0.35,
+          "ci_upper": 0.65,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 10.671450000000187,
+          "mean_b": 17.46127499999984,
+          "diff": 6.789824999999654,
+          "ci_lower": 4.27599999999893,
+          "ci_upper": 9.76649999999845,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 184.05,
+          "mean_b": 301.9,
+          "diff": 117.84999999999997,
+          "ci_lower": 73.125,
+          "ci_upper": 163.925,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 27
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "ambiguous": {
+        "task_success": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "recall@10": {
+          "n": 0
+        },
+        "ndcg@10": {
+          "n": 0
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "llm_latency_seconds": {
+          "mean_a": 6.060000000000097,
+          "mean_b": 6.424499999999777,
+          "diff": 0.36449999999967986,
+          "ci_lower": -0.59066666666331,
+          "ci_upper": 1.3504999999968277,
+          "n": 6
+        },
+        "completion_tokens": {
+          "mean_a": 28.833333333333332,
+          "mean_b": 32.833333333333336,
+          "diff": 4.0000000000000036,
+          "ci_lower": -1.5,
+          "ci_upper": 10.333333333333334,
+          "n": 6
+        },
+        "answer_fallback": {
+          "n": 0
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        }
+      },
+      "exclusion": {
+        "task_success": {
+          "mean_a": 0.95,
+          "mean_b": 0.925,
+          "diff": -0.02499999999999991,
+          "ci_lower": -0.125,
+          "ci_upper": 0.075,
+          "n": 40
+        },
+        "recall@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 21
+        },
+        "ndcg@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 21
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.95,
+          "mean_b": 0.975,
+          "diff": 0.025000000000000022,
+          "ci_lower": -0.05,
+          "ci_upper": 0.1,
+          "n": 40
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 19.2988250000004,
+          "mean_b": 18.42537499999944,
+          "diff": -0.8734500000009575,
+          "ci_lower": -2.8207500000009533,
+          "ci_upper": 0.9936499999981606,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 529.65,
+          "mean_b": 466.925,
+          "diff": -62.724999999999966,
+          "ci_lower": -137.6,
+          "ci_upper": 8.2,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 35
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "unanswerable": {
+        "task_success": {
+          "mean_a": 0.0,
+          "mean_b": 1.0,
+          "diff": 1.0,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "n": 6
+        },
+        "recall@10": {
+          "n": 0
+        },
+        "ndcg@10": {
+          "n": 0
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 1.0,
+          "diff": 1.0,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "n": 6
+        },
+        "llm_latency_seconds": {
+          "mean_a": 9.30449999999837,
+          "mean_b": 14.320666666666511,
+          "diff": 5.016166666668141,
+          "ci_lower": 3.633666666666007,
+          "ci_upper": 6.445833333333819,
+          "n": 6
+        },
+        "completion_tokens": {
+          "mean_a": 104.33333333333333,
+          "mean_b": 183.5,
+          "diff": 79.16666666666667,
+          "ci_lower": 29.333333333333332,
+          "ci_upper": 132.16666666666666,
+          "n": 6
+        },
+        "answer_fallback": {
+          "n": 0
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        }
+      }
+    },
+    "variance": {
+      "note": "Only 1 run per group, cannot compute variance"
+    },
+    "n_pairs": 132
+  }
+}
