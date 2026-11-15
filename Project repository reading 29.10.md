@@ -5,6 +5,8 @@ viewed: 2026-11-14-14:00
 branch: tools-building
 commit: 880bf5c
 ---
+> **NOTE (2026-11-15):** This is a dated snapshot. The current central document is `src/reading.md` — it supersedes this file and includes the evaluation-integrity fixes (R1–R3, items 23–25).
+
 **agentic-rag-for-rcm-sys / src** — An LLM-agent product recommender running on Amazon Reviews 2023 (3 domains: Video_Games, Toys_and_Games, Electronics).
 
 > **Architectural principle:** The LLM only decides *what to do*; tools provide controlled operations; ItemCorpus provides item knowledge; recommenders provide recommendation signals; the agent layer combines results; the inference layer writes the final response using only items the agent selected.
@@ -1040,6 +1042,28 @@ PYTHONPATH=. python scripts/data_pipeline/verify_tag.py --tag <tag>
 20. **Add BPR-MF to online serving** (currently evaluation only). **chưa có artifact xác nhận**
 21. **Real multi-turn evaluation** with LLM (replace MockAgentRunner). **chưa có artifact xác nhận**
 22. **Cross-domain recommendation** (currently per-domain corpus). **chưa có artifact xác nhận**---
+
+### 0.16.6. Priority 6: Evaluation Integrity — Repository Audit Follow-ups (added 2026-11-15)
+
+Items from the comprehensive repository audit + TD-13 / Section 5B investigations. `[INVESTIGATE]` = read-only analysis task producing a recommendation per item; `[CLEANUP]` = gated implementation task. Do NOT implement inside investigation tasks.
+
+23. **[INVESTIGATE] TD-13 — Incomplete evaluation metrics.** Trace each metric source → computation → aggregation → report; recommend implement / exclude / remove per research value and data availability. Do not assume every `None` metric must be implemented.
+    - `package/evaluation/layer1_outcome/score_layer1_outcome.py` — `target_in_pool`, `target_reachable` always `None` (needs `item_idx → item_id` reverse mapping; see dead `pass` block ~line 55).
+    - `package/evaluation/layer3_grounding/score_layer3_grounding.py` — `target_in_pool` always `None` (lines ~39, ~86); check whether the same mapping limitation applies.
+    - `package/evaluation/product_reply/evaluate_product_reply.py` — `_score_language` ASCII heuristic (returns 5/3); assess vs. real language detection. Note: Jev variant `evaluate_product_reply_with_jev.py` is what `grounding_benchmark.py` actually uses.
+    - `package/data/eda/segment_users.py:43` — `evolving_interest` column permanently `False` ("BLOCKED" comment); decide implement / explicitly exclude / remove.
+    - Verify missing metrics stay `None` (not silently `0`) through `trajectory/summarize.py` aggregation — current behavior confirmed safe (`summarize` skips `None`), re-verify after any change.
+24. **[INVESTIGATE] Section 5B — Simulated inputs in real evaluation.** Document how simulated requests/queries are constructed, flagged, and reported; check for target leakage into "realistic" requests.
+    - `package/evaluation/requests/build_requests.py` — requests synthesized from held-out data; trace `request.oracle` flag and `query_provenance` propagation into `run_agent_eval.py`, `trajectory/score_trajectory.py`, `ablation/_report.py` (`is_oracle`).
+    - `package/evaluation/requests/filter_requests_by_scope.py` + `configs/agent/agent_eval.yaml:request_scope` — `realistic` | `oracle` | `all` semantics.
+    - `scripts/evaluation/candidate_recall.py` + `configs/eval/candidate_recall.yaml` — `history` vs `category_oracle` query modes (`package/config/_schemas.py:14` `QUERY_MODES`).
+    - Verify oracle-derived results are separated from realistic-proxy results in downstream reports (`experiments/**`, ablation `comparison.*`, `metrics.json`).
+    - Check no held-out target info leaks into "realistic"/"similar"/"personalized" request construction (constraints must come from fit history only).
+25. **[CLEANUP] Section 5B — Placeholder/demo-only output filtering.** Prevent placeholder, fabricated-demo, and dry-run outputs from being mistaken for genuine results. Gated actions to evaluate; do NOT delete legitimate test doubles, synthetic benchmark fixtures, independent oracle implementations (`compute_memory_oracle.py`, `oracle_fixture_knn.py`), or documented offline proxies.
+    - `package/evaluation/reporting/_visualizations.py` — 6 chart functions emit "PLACEHOLDER — chart not implemented" Markdown stubs; implement or remove from official report paths.
+    - `package/evaluation/component/link_component_to_e2e.py` + `create_traceback_tool.py` — emit `placeholder_not_computed` / `keyword_heuristic_placeholder`; require explicit opt-in via `scripts/evaluation/link_e2e_cli.py` and/or exclude `placeholder_*` statuses from official summaries.
+    - `scripts/evaluation/generate_example_report.py` — hardcoded fabricated metrics; keep isolated (already labeled "must not be cited") or move under `scripts/demo/`.
+    - `scripts/evaluation/opik_poc.py` — DRY-RUN simulated Opik with fixed placeholder scores; keep PoC labeling, ensure outputs can't enter eval summaries.---
 
 ## 0.17. Glossary of Important Components and Terms
 
