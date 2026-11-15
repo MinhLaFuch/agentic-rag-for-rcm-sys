@@ -104,6 +104,14 @@ output_dir.mkdir(parents=True, exist_ok=True)
 # Markdown report
 md_path = output_dir / "evaluation_report.md"
 generate_markdown_report(example_results, md_path, include_confidence_intervals=True)
+# Stamp the output itself: fabricated demo numbers must never be mistaken for real results
+_banner = ("> **SYNTHETIC DEMO — DO NOT CITE.** All metrics in this file are hardcoded placeholders "
+           "from `generate_example_report.py`, not evaluation output.\n\n")
+md_path.write_text(_banner + md_path.read_text(encoding="utf-8"), encoding="utf-8")
+(output_dir / "README.txt").write_text(
+    "SYNTHETIC DEMO OUTPUT — every file in this directory is fabricated by "
+    "scripts/evaluation/generate_example_report.py and must not be cited as results.\n",
+    encoding="utf-8")
 print(f"Markdown report: {md_path}")
 
 # CSV export

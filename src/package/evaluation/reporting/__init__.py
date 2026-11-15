@@ -1,4 +1,12 @@
-"""Reporting package."""
+"""Reporting package.
+
+WARNING: the chart generators in `_visualizations` are PLACEHOLDER stubs that
+emit "chart not implemented" text — they do not render real charts. This
+package's only consumer is `scripts/evaluation/generate_example_report.py`
+(synthetic demo, not citable). Real campaign reports are produced by
+`package/evaluation/component/_run_all.py` and `package/evaluation/multi_turn/_reporting.py`,
+which do NOT use this package.
+"""
 
 from ._generator import (
     generate_markdown_report,
