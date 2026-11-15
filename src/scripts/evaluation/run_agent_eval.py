@@ -169,6 +169,7 @@ def run_planner(
         results = executor.run(request.text)
         traj["steps"] = [
             {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds", "args", "output_summary", "note", "error_kind")},
+             "data": r.get("data") or {},
              "error": None if r.get("error") is None else str(r["error"])[:error_chars]}
             for r in results
         ]

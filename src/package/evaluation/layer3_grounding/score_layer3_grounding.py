@@ -82,6 +82,13 @@ def _extract_retrieval_diagnostics(
             elif tool == "RankTool":
                 ranking_steps.append(step)
     
+    # Steps recorded before tool `data` was persisted carry no candidate/ranked
+    # payloads: diagnostics are unmeasurable, not zero/empty. If any relevant
+    # step lacks a data dict, bail out so callers keep the unavailable (None) values.
+    relevant_steps = [s for steps_ in retrieval_steps.values() for s in steps_] + ranking_steps
+    if relevant_steps and not all(isinstance(s.get("data"), dict) for s in relevant_steps):
+        return {}
+
     diagnostics = {
         "target_in_pool": None,
         "retrieved_by_sql": None,

@@ -175,7 +175,14 @@ def _extract_retrieval_funnel(
             retrieval_steps.append(step)
         elif step.get("ok") and tool == "RankTool":
             ranking_steps.append(step)
-    
+
+    # Steps recorded before tool `data` was persisted carry no candidate/ranked
+    # payloads: the funnel is unmeasurable, not zero. Only emit counts when every
+    # relevant step reports a data dict (an empty dict is a genuine empty result).
+    relevant_steps = retrieval_steps + ranking_steps
+    if relevant_steps and not all(isinstance(s.get("data"), dict) for s in relevant_steps):
+        return {}
+
     funnel = {}
     
     # Candidate generation: total candidates from all retrieval steps

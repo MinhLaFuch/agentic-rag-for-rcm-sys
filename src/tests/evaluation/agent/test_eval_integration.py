@@ -108,6 +108,15 @@ def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
     assert traj["answer"] is None and traj["answer_status"] is None and traj["inference_usage"] == {} and traj["inference_mode"] is None
 
 
+def test_run_planner_steps_carry_tool_data(corpus):
+    """Trajectory steps keep the tool payload (`data`) so funnel/diagnostic metrics stay measurable."""
+    traj = _load_run_agent_eval().run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
+    assert traj["steps"], "expected at least one executed step"
+    assert all(isinstance(s.get("data"), dict) for s in traj["steps"])
+    assert "items" in traj["steps"][0]["data"]  # LookupTool payload preserved, parity with run_type1
+    json.dumps(traj, ensure_ascii=False)
+
+
 def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage(corpus):
     script = _load_run_agent_eval()
     plain = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)

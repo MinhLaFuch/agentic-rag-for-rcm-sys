@@ -17,6 +17,8 @@ from package.evaluation import (
     filter_requests_by_scope,
 )
 from package.evaluation.requests._helper import _deepest_category
+from package.evaluation.layer1_outcome import _extract_retrieval_funnel
+from package.evaluation.layer3_grounding import _extract_retrieval_diagnostics
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from package.tools import get_tool_limits
@@ -130,6 +132,10 @@ def _step(tool, ok=True):
     return {"tool": tool, "ok": ok, "error": None, "invented_ids": [], "latency_seconds": 0.01}
 
 
+def _data_step(tool, data, ok=True):
+    return {**_step(tool, ok), "data": data}
+
+
 def test_score_trajectory_ranking_and_tool_selection(corpus):
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
     traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
@@ -177,6 +183,56 @@ def test_baseline_rows_have_no_agent_only_metrics(corpus):
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
     row = score_trajectory(request, _trajectory(agent="baseline", recommended=[VG_B]), item2id=ITEM2ID, corpus=corpus, k=2)
     assert row["tool_selection_ok"] is None and row["n_steps"] is None and row["recall@2"] == 1.0
+
+
+def test_retrieval_funnel_is_unavailable_without_step_data():
+    # Steps recorded before tool `data` was persisted must not read as zero retrieval.
+    assert _extract_retrieval_funnel({"steps": [_step("SearchTool"), _step("RankTool")]}, ITEM2ID, k=10) == {}
+    # A data-carrying step mixed with a data-less one is still unmeasurable.
+    mixed = {"steps": [_data_step("SearchTool", {"candidates": [{"item_id": "a"}]}), _step("RankTool")]}
+    assert _extract_retrieval_funnel(mixed, ITEM2ID, k=10) == {}
+
+
+def test_retrieval_funnel_counts_real_and_genuinely_empty_results():
+    cands = {"candidates": [{"item_id": "a"}, {"item_id": "b"}]}
+    ranked = {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}
+    full = _extract_retrieval_funnel({"steps": [_data_step("SearchTool", cands), _data_step("RankTool", ranked)]}, ITEM2ID, k=10)
+    assert full["candidate_generation_count"] == 2 and full["retrieved_count"] == 2
+    assert full["filtered_count"] == 3 and full["ranked_count"] == 3
+    empty = _extract_retrieval_funnel(
+        {"steps": [_data_step("SearchTool", {"candidates": []}), _data_step("RankTool", {"ranked": []})]}, ITEM2ID, k=10)
+    assert empty["candidate_generation_count"] == 0 and empty["retrieved_count"] == 0
+    assert empty["filtered_count"] == 0 and empty["ranked_count"] == 0
+    # Steps with no retrieval/ranking tool at all: genuinely zero funnel.
+    lookup_only = _extract_retrieval_funnel({"steps": [_data_step("LookupTool", {"items": []})]}, ITEM2ID, k=10)
+    assert lookup_only["candidate_generation_count"] == 0
+
+
+def test_retrieval_diagnostics_require_step_data():
+    assert _extract_retrieval_diagnostics({"steps": [_step("SearchTool"), _step("RankTool")]}) == {}
+    mixed = {"steps": [_data_step("SearchTool", {"candidates": []}), _step("RankTool")]}
+    assert _extract_retrieval_diagnostics(mixed) == {}
+    data_steps = [_data_step("SearchTool", {"candidates": [{"item_id": "a"}]}),
+                  _data_step("RankTool", {"ranked": [{"item_id": "a"}]})]
+    diag = _extract_retrieval_diagnostics({"steps": data_steps})
+    assert diag["rank_in_pool"] == 1  # current semantics: count of ranked items (R3 rework pending)
+
+
+def test_score_trajectory_keeps_funnel_none_without_step_data(corpus):
+    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A])
+    row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    for key in ("candidate_generation_count", "retrieved_count", "filtered_count", "ranked_count", "rank_in_pool"):
+        assert row[key] is None, key
+
+
+def test_score_trajectory_counts_candidates_when_steps_carry_data(corpus):
+    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}, {"item_id": VG_B}]}),
+             _data_step("RankTool", {"ranked": [{"item_id": VG_A}]})]
+    row = score_trajectory(request, _trajectory(steps=steps, recommended=[VG_A]), item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["candidate_generation_count"] == 2 and row["retrieved_count"] == 2
+    assert row["filtered_count"] == 1 and row["ranked_count"] == 1
 
 
 def test_summarize_means_per_agent_kind_and_segment():
