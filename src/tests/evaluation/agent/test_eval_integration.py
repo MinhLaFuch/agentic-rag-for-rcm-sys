@@ -182,6 +182,48 @@ def test_itemcf_reachable_ignores_edges_from_hidden_seeds(corpus):
     assert script._itemcf_reachable(sim, item2id, visible_item_ids={"Ghost::x", "C::c"}) == set()
 
 
+def test_itemcf_reachable_for_seeds_uses_only_actual_seeds(corpus):
+    """Request-specific reachability: only the trajectory's own seeds contribute edges."""
+    from scipy import sparse
+
+    script = _load_run_agent_eval()
+    # row 0 -> col 1, row 2 -> col 1 as well? keep it simple: only row 0 has an edge
+    sim = sparse.csr_matrix(([1.0], ([0], [1])), shape=(3, 3))
+    item2id = {"A::a": 0, "B::b": 1, "C::c": 2}
+    id2item = {v: k for k, v in item2id.items()}
+
+    # seeding with A reaches idx 1; seeding with C (no edges) reaches nothing
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a"}, item2id, id2item) == {1}
+    assert script._itemcf_reachable_for_seeds(sim, {"C::c"}, item2id, id2item) == set()
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a", "C::c"}, item2id, id2item) == {1}
+    # unknown / hidden seeds contribute nothing; visible_item_ids gates both sides
+    assert script._itemcf_reachable_for_seeds(sim, {"Ghost::x"}, item2id, id2item) == set()
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a"}, item2id, id2item,
+                                              visible_item_ids={"C::c"}) == set()  # seed hidden
+    # candidate-side visibility: idx 1 maps to B::b, hidden under this policy
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a", "C::c"}, item2id, id2item,
+                                              visible_item_ids={"A::a", "C::c"}) == set()
+
+
+def test_trajectory_itemcf_seeds_recovers_logged_args():
+    script = _load_run_agent_eval()
+    traj = {"steps": [
+        {"tool": "SimilarTool", "ok": True, "args": {"items": ["A::a", "B::b"], "top_k": 10}},
+        {"tool": "RankTool", "ok": True, "args": {"candidates": "<list length=9 first_3=[...]>"}},
+        {"tool": "SimilarTool", "ok": True, "args": {"items": ["C::c"]}},
+    ]}
+    assert script._trajectory_itemcf_seeds(traj) == ({"A::a", "B::b", "C::c"}, True)
+    # no SimilarTool step -> path unexercised
+    assert script._trajectory_itemcf_seeds({"steps": [{"tool": "SearchTool", "ok": True, "args": {}}]}) is None
+    # truncated args list -> seeds unknowable
+    truncated = {"steps": [{"tool": "SimilarTool", "ok": True,
+                            "args": {"items": "<list length=9 first_3=['A::a']>"}}]}
+    assert script._trajectory_itemcf_seeds(truncated) == (set(), False)
+    # failed SimilarTool steps do not count as exercising the path
+    failed = {"steps": [{"tool": "SimilarTool", "ok": False, "args": {"items": ["A::a"]}}]}
+    assert script._trajectory_itemcf_seeds(failed) is None
+
+
 def test_run_type1_keeps_the_recommendation_and_adds_the_answer():
     script = _load_run_agent_eval()
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="similar to x", user_id="u1", seed_item_id=VG_A, targets=[1])

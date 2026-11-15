@@ -166,6 +166,58 @@ def _itemcf_reachable(similarity: Any, item2id: Mapping[str, int], *,
     return {int(col) for col, cnt in enumerate(similarity[seed_idx].getnnz(axis=0)) if cnt > 0}
 
 
+def _itemcf_reachable_for_seeds(
+    similarity: Any,
+    seed_item_ids: set[str],
+    item2id: Mapping[str, int],
+    id2item: Mapping[int, str],
+    *,
+    visible_item_ids: set[str] | None = None,
+) -> set[int]:
+    """Item indices reachable as ItemCF candidates from the given seed items only.
+
+    Same candidate semantics as _itemcf_reachable (nonzero similarity columns over
+    valid seed rows), but restricted to the seeds a trajectory actually used.
+    Under the temporal policy both seeds and candidates must be corpus-visible,
+    mirroring SimilarTool.execute.
+    """
+    n = similarity.shape[0]
+    seed_idx = sorted({
+        item2id[s] for s in seed_item_ids
+        if s in item2id and 0 <= item2id[s] < n
+        and (visible_item_ids is None or s in visible_item_ids)
+    })
+    if not seed_idx:
+        return set()
+    cols = {int(c) for c, cnt in enumerate(similarity[seed_idx].getnnz(axis=0)) if cnt > 0}
+    if visible_item_ids is not None:
+        cols = {c for c in cols if id2item.get(c) in visible_item_ids}
+    return cols
+
+
+def _trajectory_itemcf_seeds(trajectory: dict[str, Any]) -> tuple[set[str], bool] | None:
+    """(seed item ids, all_recovered) from a trajectory's ok SimilarTool steps.
+
+    Returns None when no SimilarTool step ran (path unexercised). all_recovered
+    is False when a step's `items` arg was truncated by args simplification,
+    making the true seed set unknowable.
+    """
+    seeds: set[str] = set()
+    saw = False
+    complete = True
+    for step in trajectory.get("steps") or []:
+        if step.get("tool") == "SimilarTool" and step.get("ok"):
+            saw = True
+            items = (step.get("args") or {}).get("items")
+            if isinstance(items, list):
+                seeds.update(i for i in items if isinstance(i, str))
+            else:
+                complete = False
+    if not saw:
+        return None
+    return seeds, complete
+
+
 def run_planner(
     executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
     session_enabled: bool = False,
@@ -584,8 +636,22 @@ def main() -> None:
             raise SystemExit("corpus item listing truncated; cannot establish the ItemCF seed universe")
         visible_item_ids = {r["item_id"] for r in visible_rows}
     itemcf_reachable = _itemcf_reachable(knn.similarity, item2id, visible_item_ids=visible_item_ids)
-    rows = [score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k,
-                             id2item=id2item, itemcf_reachable=itemcf_reachable) for t in trajectories]
+    rows = []
+    for t in trajectories:
+        # Request-specific ItemCF reachability: candidate space of the seeds this
+        # trajectory actually passed to SimilarTool (None when unexercised or the
+        # seed list was truncated in the logged args).
+        itemcf_reachable_request = None
+        seed_info = _trajectory_itemcf_seeds(t)
+        if seed_info is not None:
+            seeds, complete = seed_info
+            if complete:
+                itemcf_reachable_request = _itemcf_reachable_for_seeds(
+                    knn.similarity, seeds, item2id, id2item, visible_item_ids=visible_item_ids
+                )
+        rows.append(score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k,
+                                     id2item=id2item, itemcf_reachable=itemcf_reachable,
+                                     itemcf_reachable_request=itemcf_reachable_request))
     summary = summarize(rows)
     columns = [c.format(k=k) for c in SUMMARY_COLUMNS]
     for agent, per_kind in summary.items():

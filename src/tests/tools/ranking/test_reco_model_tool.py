@@ -69,6 +69,17 @@ def test_reco_has_personal_signal_flag(cf_setup):
     assert result_pop.data["has_personal_signal"] is False
 
 
+def test_reco_echoes_deduped_input_candidate_ids(cf_setup):
+    """candidate_item_ids records the exact deduped input set for evaluation traceability."""
+    interactions, user2id, item2id = cf_setup
+    model = PopularityRecommender().fit(interactions)
+    tool = RankTool(BaselineScorer(model), user2id, item2id)
+    result = tool(user_id="u1", candidates=[{"item_id": VG_B}, VG_A, VG_B, "stray::id"])
+    assert result.ok
+    # dicts and strings both accepted; duplicates removed, first-seen order kept
+    assert result.data["candidate_item_ids"] == [VG_B, VG_A, "stray::id"]
+
+
 def test_reco_note_when_all_candidates_seen(corpus, cf_setup):
     """When all candidates have been seen, ranked=[] and note explains why."""
     tool = _reco(corpus, cf_setup)

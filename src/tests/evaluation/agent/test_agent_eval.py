@@ -317,6 +317,132 @@ def test_target_pool_detail_is_skipped_by_summarize(corpus):
     assert "target_in_pool_sql" not in summary["planner"]["similar"]["all"]  # diagnostic, not a score
 
 
+def _stage_row(corpus, targets, steps, recommended=(), *, itemcf_reachable=None, itemcf_reachable_request=None,
+               id2item=None):
+    return score_trajectory(
+        _pool_request(targets), _trajectory(steps=steps, recommended=list(recommended)),
+        item2id=ITEM2ID, corpus=corpus, k=2,
+        id2item=id2item if id2item is not None else ID2ITEM,
+        itemcf_reachable=itemcf_reachable,
+        itemcf_reachable_request=itemcf_reachable_request)
+
+
+def _ranker_data(ranked=(), candidate_item_ids=None, unscored=(), excluded_seen=()):
+    data = {"ranked": [{"rank": i + 1, "item_id": iid} for i, iid in enumerate(ranked)],
+            "unscored_item_ids": list(unscored), "excluded_seen": list(excluded_seen)}
+    if candidate_item_ids is not None:
+        data["candidate_item_ids"] = list(candidate_item_ids)
+    return data
+
+
+def test_stage_diagnostics_survived_target(corpus):
+    # target idx 1 = VG_B: in pool, retrieved by ItemCF, ranked #1, recommended
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}, {"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B, VG_A], candidate_item_ids=[VG_A, VG_B]))]
+    row = _stage_row(corpus, [1], steps, recommended=[VG_B],
+                     itemcf_reachable={1}, itemcf_reachable_request={1})
+    assert row["retrieved_by_itemcf"] is True and row["retrieved_by_sql"] is None
+    assert row["target_reachable"] is True and row["rank_in_pool"] == 1
+    detail = row["target_stage_detail"]["1"]
+    assert detail["best_stage"] == "survived"
+    assert detail["paths"]["itemcf"]["stage_lost"] == "survived"
+    assert detail["paths"]["itemcf"]["seed_reachable"] is True
+    assert detail["paths"]["sql"]["stage_lost"] is None  # path not exercised
+    assert row["stage_lost"] == "survived" and row["target_rank_detail"]["1"] == 1
+
+
+def test_stage_diagnostics_pool_and_retrieve_losses(corpus):
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}]})]
+    # idx 1 in corpus but NOT in itemcf_reachable -> pool loss on itemcf path
+    row = _stage_row(corpus, [1], steps, itemcf_reachable=set(), itemcf_reachable_request={1})
+    d = row["target_stage_detail"]["1"]["paths"]["itemcf"]
+    assert d["stage_lost"] == "pool" and d["pool"] is False
+    # idx 2 = VG_C reachable by ItemCF but absent from candidates -> retrieve loss
+    row2 = _stage_row(corpus, [2], steps, itemcf_reachable={2}, itemcf_reachable_request={2})
+    d2 = row2["target_stage_detail"]["2"]["paths"]["itemcf"]
+    assert d2["stage_lost"] == "retrieve" and d2["retrieved"] is False
+    assert row2["retrieved_by_itemcf"] is False and row2["target_reachable"] is False
+    assert row2["stage_lost"] == "retrieve"
+
+
+def test_stage_diagnostics_ranking_losses(corpus):
+    cands = {"candidates": [{"item_id": VG_B}]}
+    base = [_data_step("SimilarTool", cands)]
+    # never passed to the ranker
+    row = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A]))],
+                     itemcf_reachable={1})
+    assert row["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_input"
+    assert row["rank_in_pool"] is None
+    # passed but outside the scorer matrix
+    row2 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B], unscored=[VG_B]))],
+                      itemcf_reachable={1})
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_unscored"
+    # passed but excluded as already seen
+    row3 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B], excluded_seen=[VG_B]))],
+                      itemcf_reachable={1})
+    assert row3["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_excluded_seen"
+    # scored but cut by RankTool top_k
+    row4 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B]))],
+                      itemcf_reachable={1})
+    assert row4["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_topk"
+    # ranked but absent from final recommendations
+    row5 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_B, VG_A], candidate_item_ids=[VG_A, VG_B]))],
+                      recommended=[VG_A], itemcf_reachable={1})
+    assert row5["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "final"
+    assert row5["rank_in_pool"] == 1 and row5["stage_lost"] == "final"
+
+
+def test_stage_diagnostics_unknown_without_ranker_input(corpus):
+    # pre-candidate_item_ids trajectory: handoff vs top_k cut is unknowable -> None
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", {"ranked": [{"rank": 1, "item_id": VG_A}], "unscored_item_ids": [], "excluded_seen": []})]
+    row = _stage_row(corpus, [1], steps, itemcf_reachable={1})
+    assert row["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] is None
+    assert row["stage_lost"] is None
+
+
+def test_stage_diagnostics_unexercised_paths_and_missing_data(corpus):
+    # no retrieval steps at all -> every path unexercised -> all None
+    row = _stage_row(corpus, [1], [_data_step("LookupTool", {"items": []})], itemcf_reachable={1})
+    assert row["retrieved_by_sql"] is None and row["retrieved_by_itemcf"] is None
+    assert row["target_reachable"] is None and row["stage_lost"] is None
+    # exercised but data-less step -> unmeasurable, not False
+    row2 = _stage_row(corpus, [1], [_step("SimilarTool")], itemcf_reachable={1})
+    assert row2["retrieved_by_itemcf"] is None
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] is None
+
+
+def test_stage_diagnostics_mixed_stages_and_seed_reachability(corpus):
+    # target 1 retrieved+survives via itemcf; target 7 globally ItemCF-eligible but
+    # not reachable from this trajectory's seeds -> per-path stages differ -> "mixed"
+    id2item = {**ID2ITEM, 7: "Ghost::x"}
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B], candidate_item_ids=[VG_B]))]
+    row = _stage_row(corpus, [1, 7], steps, recommended=[VG_B],
+                     id2item=id2item, itemcf_reachable={1, 7}, itemcf_reachable_request={1})
+    d1 = row["target_stage_detail"]["1"]["paths"]["itemcf"]
+    d7 = row["target_stage_detail"]["7"]["paths"]["itemcf"]
+    assert d1["stage_lost"] == "survived" and d1["seed_reachable"] is True
+    # globally in the ItemCF pool (pool=True) but absent from these seeds' candidate
+    # space and from the returned candidates -> lost at retrieve on this path
+    assert d7["stage_lost"] == "retrieve" and d7["seed_reachable"] is False
+    assert row["target_stage_detail"]["7"]["best_stage"] == "retrieve"  # beats sql/semantic "pool"
+    assert row["stage_lost"] == "mixed"
+    # seed_reachable None when request reachability was not supplied
+    row2 = _stage_row(corpus, [1], steps[:1], itemcf_reachable={1})
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["seed_reachable"] is None
+
+
+def test_stage_diagnostics_new_keys_skipped_by_summarize(corpus):
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B], candidate_item_ids=[VG_B]))]
+    row = _stage_row(corpus, [1], steps, recommended=[VG_B], itemcf_reachable={1})
+    summary = summarize([row])
+    entry = summary["planner"]["similar"]["all"]
+    for key in ("stage_lost", "target_stage_detail", "target_rank_detail"):
+        assert key not in entry
+
+
 def test_summarize_means_per_agent_kind_and_segment():
     rows = [
         {"request_id": "r0", "agent": "a", "kind": "similar", "segment": "warm", "task_success": True, "recall@10": 0.5, "x": None},

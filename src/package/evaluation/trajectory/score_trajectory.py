@@ -8,7 +8,7 @@ from typing import Any
 from package.corpus import ItemCorpus
 from package.evaluation._schema import PLANNER_AGENTS
 from package.evaluation.requests import AgentRequest
-from package.evaluation.layer1_outcome import score_layer1_outcome, _extract_retrieval_funnel
+from package.evaluation.layer1_outcome import score_layer1_outcome, _extract_retrieval_funnel, _extract_stage_diagnostics
 from package.evaluation.layer2_interaction import score_layer2_interaction
 from package.evaluation.layer3_grounding import score_layer3_grounding, _extract_retrieval_diagnostics
 from package.evaluation.layer4_process import score_layer4_process
@@ -25,6 +25,7 @@ def score_trajectory(
     seen_item_ids: set[int] | None = None,
     id2item: Mapping[int, str] | None = None,
     itemcf_reachable: set[int] | None = None,
+    itemcf_reachable_request: set[int] | None = None,
 ) -> dict[str, Any]:
     """
     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds, error_kind}], recommended[item_id],
@@ -57,6 +58,10 @@ def score_trajectory(
     # Extract funnel metrics from trajectory steps
     funnel = _extract_retrieval_funnel(trajectory, item2id=item2id, k=k, corpus=corpus)
     diagnostics = _extract_retrieval_diagnostics(trajectory, item2id=item2id, k=k)
+    stage = _extract_stage_diagnostics(
+        request, trajectory, item2id=item2id, id2item=id2item, corpus=corpus,
+        itemcf_reachable=itemcf_reachable, itemcf_reachable_request=itemcf_reachable_request,
+    )
 
     # Combine all layers into one row
     row: dict[str, Any] = {
@@ -71,9 +76,10 @@ def score_trajectory(
     row.update(layer4)
     row.update(layer5)
 
-    # Merge funnel and diagnostics (funnel takes precedence for overlapping keys)
+    # Merge funnel, diagnostics and stage diagnostics (later updates win)
     row.update(funnel)
     row.update(diagnostics)
+    row.update(stage)
 
     # Special case: personalized planner without MemoryTool cannot honestly personalize
     # This override is applied in the combiner, not in individual layers

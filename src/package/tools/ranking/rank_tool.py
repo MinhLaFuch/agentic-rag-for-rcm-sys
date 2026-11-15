@@ -37,6 +37,7 @@ class RankTool(Tool):
         "ranked": "list[{rank, item_id, score, domain}]  -- best first",
         "model": "str  -- name of the scorer that produced the scores",
         "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
+        "candidate_item_ids": "list[str]  -- deduped input candidate ids, in input order",
         "has_personal_signal": "bool  -- true if user has collaborative/personal signal vs only popularity",
         "note": "str | None  -- explanation when ranked is empty",
     }
@@ -146,6 +147,7 @@ class RankTool(Tool):
             "cold_start": cold_start,
             "excluded_seen": excluded_seen,
             "unscored_item_ids": unscored,
+            "candidate_item_ids": ids,
             "has_personal_signal": self.scorer.has_personal_signal(user_idx),
             "note": note,
         }

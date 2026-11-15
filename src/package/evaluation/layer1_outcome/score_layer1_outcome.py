@@ -223,10 +223,8 @@ def _extract_retrieval_funnel(
     else:
         funnel["filtered_count"] = funnel["retrieved_count"]
         funnel["ranked_count"] = funnel["retrieved_count"]
-    
+
     return funnel
-
-
 
 
 def _target_pool_detail(
@@ -277,3 +275,232 @@ def _pool_path_verdict(detail: dict[str, dict[str, bool | None]], path: str) -> 
     if not values or any(v is None for v in values):
         return None
     return False
+
+
+# Retrieval path -> tools whose `data.candidates` feed that path. LookupTool is a
+# fetch/enrichment step (item_ids in, metadata out), not candidate discovery, so it
+# is not a retrieval path here.
+_PATH_TOOLS = {"sql": ("FilterTool",), "semantic": ("SearchTool",), "itemcf": ("SimilarTool",)}
+_PATHS = ("sql", "semantic", "itemcf")
+
+# Loss stages, ordered by how far the target got. "survived" = reached `recommended`.
+_STAGE_ORDER = {
+    "pool": 0,
+    "retrieve": 1,
+    "rank_input": 2,
+    "rank_unscored": 3,
+    "rank_excluded_seen": 3,
+    "rank_topk": 4,
+    "final": 5,
+    "survived": 6,
+}
+
+
+def _step_item_ids(rows: Any) -> set[str]:
+    """item_id strings from a tool `candidates`/`ranked`/`items` list."""
+    ids: set[str] = set()
+    if not isinstance(rows, list):
+        return ids
+    for r in rows:
+        if isinstance(r, dict) and isinstance(r.get("item_id"), str):
+            ids.add(r["item_id"])
+        elif isinstance(r, str):
+            ids.add(r)
+    return ids
+
+
+def _path_candidates(steps: list[dict[str, Any]], tools: tuple[str, ...]) -> tuple[bool, set[str] | None]:
+    """(exercised, candidate item_ids or None when unmeasurable).
+
+    exercised = at least one ok step for these tools ran. The candidate set is
+    None when any exercised step lacks a dict `data` (pre-R1 trajectories),
+    mirroring the funnel's missing-data-is-unknown rule.
+    """
+    relevant = [s for s in steps if s.get("tool") in tools and s.get("ok")]
+    if not relevant:
+        return False, None
+    if not all(isinstance(s.get("data"), dict) for s in relevant):
+        return True, None
+    ids: set[str] = set()
+    for s in relevant:
+        ids |= _step_item_ids(s["data"].get("candidates"))
+    return True, ids
+
+
+def _last_ranker(steps: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Data of the last ok RankTool step, or None when absent/unmeasurable.
+
+    Caveat: extract_recommendations skips an ok RankTool whose `ranked` is
+    empty and may fall back to an earlier RankTool or retrieval candidates,
+    while this picks the strictly last ok RankTool. When the last ranker is
+    empty but `recommended` is non-empty, downstream stage attribution for a
+    non-surviving target is measured against the empty ranker rather than the
+    step that actually produced the output. "survived" is unaffected (it is
+    checked before any ranker evidence).
+    """
+    for s in reversed(steps):
+        if s.get("tool") == "RankTool" and s.get("ok"):
+            data = s.get("data")
+            return data if isinstance(data, dict) else None
+    return None
+
+
+def _extract_stage_diagnostics(
+    request: Any,
+    trajectory: dict[str, Any],
+    *,
+    item2id: Mapping[str, int],
+    id2item: Mapping[int, str] | None,
+    corpus: ItemCorpus | None,
+    itemcf_reachable: set[int] | None,
+    itemcf_reachable_request: set[int] | None,
+) -> dict[str, Any]:
+    """Per-target, per-path retrieval funnel diagnostics (R3).
+
+    For each ground-truth target and each retrieval path (sql / semantic /
+    itemcf) walks S0 pool -> S1/S2 retrieval -> S3/S4 ranking -> S5 final
+    inclusion and reports the stage where the target was lost, or "survived".
+    None means unmeasurable (path not exercised, missing `data`, unmappable
+    target), never a silent negative.
+
+    Downstream of retrieval the pipeline is shared: RankTool's `ranked`,
+    `unscored_item_ids`, `excluded_seen` and `candidate_item_ids` (echoed input)
+    attribute ranking losses; `recommended` is S5. A target retrieved by one
+    path but lost downstream is "lost" for that path even if another path also
+    carried it — per-path detail preserves which path could have delivered it.
+    """
+    out: dict[str, Any] = {
+        "retrieved_by_sql": None,
+        "retrieved_by_semantic": None,
+        "retrieved_by_itemcf": None,
+        "target_reachable": None,
+        "rank_in_pool": None,
+        "target_rank_detail": None,
+        "stage_lost": None,
+        "target_stage_detail": None,
+    }
+    steps = trajectory.get("steps") or []
+    targets = list(getattr(request, "targets", None) or [])
+    if not steps or not targets or id2item is None or corpus is None:
+        return out
+
+    pool_detail = _target_pool_detail(targets, id2item, corpus, itemcf_reachable)
+
+    exercised: dict[str, bool] = {}
+    path_ids: dict[str, set[str] | None] = {}
+    for path, tools in _PATH_TOOLS.items():
+        exercised[path], path_ids[path] = _path_candidates(steps, tools)
+
+    ranker = _last_ranker(steps)
+    ranked_map: dict[str, int] = {}
+    unscored: set[str] = set()
+    excluded_seen: set[str] = set()
+    ranker_input: list[str] | None = None
+    if ranker is not None:
+        for r in ranker.get("ranked") or []:
+            if isinstance(r, dict) and isinstance(r.get("item_id"), str) and isinstance(r.get("rank"), int):
+                ranked_map[r["item_id"]] = r["rank"]
+        unscored = set(ranker.get("unscored_item_ids") or [])
+        excluded_seen = set(ranker.get("excluded_seen") or [])
+        raw_input = ranker.get("candidate_item_ids")
+        ranker_input = list(raw_input) if isinstance(raw_input, list) else None
+
+    recommended_ids = set(trajectory.get("recommended") or [])
+
+    def _downstream_stage(item_id: str) -> str | None:
+        """Stage after a successful retrieval, or None when unmeasurable."""
+        if item_id in recommended_ids:
+            return "survived"
+        if ranker is None:
+            return None
+        if item_id in ranked_map:
+            return "final"
+        if item_id in unscored:
+            return "rank_unscored"
+        if item_id in excluded_seen:
+            return "rank_excluded_seen"
+        if ranker_input is None:
+            return None  # pre-candidate_item_ids trajectory: handoff vs top_k cut unknowable
+        if item_id in ranker_input:
+            return "rank_topk"  # scored but cut by RankTool top_k
+        return "rank_input"  # never passed to the ranker
+
+    stage_detail: dict[str, dict[str, Any]] = {}
+    rank_detail: dict[str, int | None] = {}
+    per_path_retrieved: dict[str, list[bool | None]] = {p: [] for p in _PATHS}
+    any_retrieved = False
+    best_stages: list[str] = []  # per-target best (furthest) stage, for the flat verdict
+
+    for target_idx in targets:
+        item_id = id2item.get(target_idx)
+        t_key = str(target_idx)
+        path_entries: dict[str, Any] = {}
+        target_best: str | None = None
+        target_best_order = -1
+        for path in _PATHS:
+            pool = pool_detail[t_key][path]
+            retrieved: bool | None = None
+            if item_id is not None and exercised[path]:
+                retrieved = None if path_ids[path] is None else item_id in path_ids[path]
+                per_path_retrieved[path].append(retrieved)
+                if retrieved:
+                    any_retrieved = True
+            if path == "itemcf":
+                seed_reachable = (
+                    None if itemcf_reachable_request is None or item_id is None
+                    else target_idx in itemcf_reachable_request
+                )
+            else:
+                seed_reachable = None
+
+            stage: str | None = None
+            if item_id is not None and pool is not None:
+                if pool is False:
+                    stage = "pool"
+                elif exercised[path] and path_ids[path] is not None:
+                    if not retrieved:
+                        stage = "retrieve"
+                    else:
+                        stage = _downstream_stage(item_id)
+            entry: dict[str, Any] = {
+                "pool": pool,
+                "retrieved": retrieved,
+                "seed_reachable": seed_reachable,
+                "stage_lost": stage,
+            }
+            path_entries[path] = entry
+            if stage is not None and _STAGE_ORDER[stage] > target_best_order:
+                target_best, target_best_order = stage, _STAGE_ORDER[stage]
+
+        rank_detail[t_key] = ranked_map.get(item_id) if item_id is not None else None
+        stage_detail[t_key] = {"paths": path_entries, "best_stage": target_best}
+        if target_best is not None:
+            best_stages.append(target_best)
+
+    # Flat per-path retrieved verdicts: existential, same convention as pool verdicts.
+    for path in _PATHS:
+        values = per_path_retrieved[path]
+        if any(v is True for v in values):
+            out[f"retrieved_by_{path}"] = True
+        elif not values or any(v is None for v in values):
+            out[f"retrieved_by_{path}"] = None
+        else:
+            out[f"retrieved_by_{path}"] = False
+
+    # target_reachable: True if any target was retrieved by any exercised path;
+    # False only when every exercised path measurably missed every target;
+    # None when nothing measurable ran or any exercised path is unmeasurable.
+    all_retrieved_values = [v for vals in per_path_retrieved.values() for v in vals]
+    if any_retrieved:
+        out["target_reachable"] = True
+    elif all_retrieved_values and all(v is False for v in all_retrieved_values):
+        out["target_reachable"] = False
+    target_ranks = [r for r in rank_detail.values() if r is not None]
+    out["rank_in_pool"] = min(target_ranks) if target_ranks else None
+
+    out["target_rank_detail"] = rank_detail
+    out["target_stage_detail"] = stage_detail
+    if best_stages:
+        unique = set(best_stages)
+        out["stage_lost"] = unique.pop() if len(unique) == 1 else "mixed"
+    return out
