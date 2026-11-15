@@ -24,11 +24,11 @@ KIND_SEGMENTS = {
     "constrained": ("sparse", "warm"),   # category + price ceiling built from a held-out item   (ORACLE constraints)
     "cold_text": ("cold",),              # new user who only says what they want                 (ORACLE category)
     "ambiguous": ("none",),              # missing information: the right move is to ask back
-    "exclusion": ("sparse", "warm"),     # items/categories to exclude from recommendations
+    "exclusion": ("sparse", "warm"),     # items/categories to exclude — built from held-out items (ORACLE)
     "unanswerable": ("none",),           # request that cannot be answered from available information
 }
 KINDS = tuple(KIND_SEGMENTS)
-ORACLE_KINDS = ("constrained", "cold_text")  # built from held-out items: an upper-bound scenario, not a real query log
+ORACLE_KINDS = ("constrained", "cold_text", "exclusion")  # built from held-out items: an upper-bound scenario, not a real query log
 
 
 @lru_cache(maxsize=1)

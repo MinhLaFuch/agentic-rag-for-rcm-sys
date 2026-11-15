@@ -49,6 +49,7 @@ _NON_NUMERIC_KEYS = {
     "exclusion_compliance",
     "category_coverage",
     "target_in_pool",
+    "oracle",
     "target_in_pool_sql",
     "target_in_pool_semantic",
     "target_in_pool_itemcf",

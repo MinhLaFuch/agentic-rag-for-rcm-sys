@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from package.evaluation._schema import ORACLE_KINDS
 from package.evaluation.ablation import bootstrap_ci
 
 from .collect import collect
@@ -24,7 +25,7 @@ def _std(xs: list[float]) -> float | None:
 def _group_key(info: dict[str, dict], rid: str, level: int) -> str:
     kind = info[rid]["kind"]
     segment = info[rid]["segment"]
-    scope = "oracle" if kind in ("constrained", "cold_text") else "realistic"
+    scope = "oracle" if kind in ORACLE_KINDS else "realistic"
     if level == 0:
         return scope
     elif level == 1:

@@ -4,7 +4,7 @@ Agent evaluation: does the agent layer add anything over the plain recommender, 
 One run builds a fixed set of simulated requests from held-out data, sends the SAME requests to every agent
 listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent metrics).  Request kinds:
   similar / personalized   built from the user's fit history only (honest)
-  constrained / cold_text  category (+ price ceiling) taken from held-out items = ORACLE scenario, an upper bound
+  constrained / cold_text / exclusion   constraints (or the excluded item+category) taken from held-out items = ORACLE scenario, an upper bound
   ambiguous                missing information; the right move is to ask back instead of inventing ids
 Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
 By default, target-informed oracle request kinds are excluded (agent_eval.request_scope); set it to ``oracle``
@@ -732,7 +732,7 @@ def main() -> None:
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
         exist_ok=mt_info is not None or bool(exp_dir_override),
-        notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
+        notes=(f"Kinds {list(ORACLE_KINDS)} take their constraints/exclusions from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "
                "Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting."),
     )

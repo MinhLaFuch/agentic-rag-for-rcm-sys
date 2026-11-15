@@ -76,10 +76,11 @@ def test_build_requests_makes_every_kind_with_the_right_ground_truth(corpus):
     assert cold.category == "Electronics" and cold.targets == [3, 4] and cold.oracle
     assert reqs["ambiguous-none-0"].user_id is None and reqs["ambiguous-none-0"].targets == []
     
-    # Check exclusion request
+    # Check exclusion request: built from held-out items -> oracle scope
     exclusion = reqs["exclusion-warm-0"]
     assert exclusion.user_id is not None
     assert exclusion.targets  # should have targets (held-out items except the excluded one)
+    assert exclusion.oracle
     
     # Check unanswerable request
     unanswerable = reqs["unanswerable-none-0"]
@@ -94,9 +95,21 @@ def test_request_scope_keeps_target_informed_cases_separate(corpus):
     assert realistic and all(not request.oracle for request in realistic)
     assert oracle and all(request.oracle for request in oracle)
     assert {request.request_id for request in realistic}.isdisjoint({request.request_id for request in oracle})
+    # exclusion derives its excluded item+category from held-out items: oracle, never realistic
+    assert "exclusion-warm-0" in {request.request_id for request in oracle}
+    assert "exclusion-warm-0" not in {request.request_id for request in realistic}
     assert len(filter_requests_by_scope(requests, "all")) == len(requests)
     with pytest.raises(ValueError, match="scope"):
         filter_requests_by_scope(requests, "unknown")
+
+
+def test_scored_rows_carry_the_oracle_flag(corpus):
+    request = AgentRequest(request_id="exclusion-warm-0", kind="exclusion", segment="warm",
+                           text="t", targets=[1], oracle=True)
+    row = score_trajectory(request, _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+                           item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["oracle"] is True
+    assert "oracle" not in summarize([row])["planner"]["exclusion"]["all"]  # flag, not a score
 
 
 def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):

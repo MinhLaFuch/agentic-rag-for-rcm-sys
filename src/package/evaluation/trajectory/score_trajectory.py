@@ -69,6 +69,7 @@ def score_trajectory(
         "agent": agent,
         "kind": request.kind,
         "segment": request.segment,
+        "oracle": request.oracle,
     }
     row.update(layer1)
     row.update(layer2)
