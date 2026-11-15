@@ -33,6 +33,7 @@ import hashlib
 import json
 import shutil
 import time
+from collections.abc import Mapping
 from dataclasses import asdict
 from itertools import islice
 from pathlib import Path
@@ -143,6 +144,26 @@ def _error_chars() -> int:
     if chars <= 0:
         raise ConfigError("configs/agent/agent_eval.yaml: trajectory_error_chars must be > 0")
     return chars
+
+
+def _itemcf_reachable(similarity: Any, item2id: Mapping[str, int], *,
+                      visible_item_ids: set[str] | None = None) -> set[int]:
+    """Item indices ItemCF can return from at least one valid seed.
+
+    Mirrors SimilarTool: candidates are the nonzero columns of the kept
+    (top-k per row, asymmetric) similarity rows, counted only over rows that
+    are valid seeds. Under the temporal metadata policy seeds must be
+    corpus-visible (visible_item_ids); without it any mapped index in bounds
+    is a valid seed (visible_item_ids=None).
+    """
+    n = similarity.shape[0]
+    if visible_item_ids is None:
+        seed_idx = sorted({idx for idx in item2id.values() if 0 <= idx < n})
+    else:
+        seed_idx = sorted({item2id[i] for i in visible_item_ids if i in item2id and 0 <= item2id[i] < n})
+    if not seed_idx:
+        return set()
+    return {int(col) for col, cnt in enumerate(similarity[seed_idx].getnnz(axis=0)) if cnt > 0}
 
 
 def run_planner(
@@ -550,7 +571,21 @@ def main() -> None:
 
     # ---- score + report
     by_id = {r.request_id: r for r in requests}
-    rows = [score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k) for t in trajectories]
+    # ItemCF pool = item indices reachable as a candidate from at least one valid
+    # seed (nonzero similarity column over valid seed rows), the same candidate
+    # space SimilarTool can return. Under the temporal policy, hidden items can
+    # be neither seeds nor candidates, so seed rows are restricted to the
+    # corpus-visible catalog the tools actually see.
+    visible_item_ids = None
+    if (metadata_policy or {}).get("first_seen_filter"):
+        n_visible = corpus.count("1=1", ())
+        visible_rows, truncated = corpus.select("SELECT item_id FROM items", max_rows=n_visible)
+        if truncated:
+            raise SystemExit("corpus item listing truncated; cannot establish the ItemCF seed universe")
+        visible_item_ids = {r["item_id"] for r in visible_rows}
+    itemcf_reachable = _itemcf_reachable(knn.similarity, item2id, visible_item_ids=visible_item_ids)
+    rows = [score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k,
+                             id2item=id2item, itemcf_reachable=itemcf_reachable) for t in trajectories]
     summary = summarize(rows)
     columns = [c.format(k=k) for c in SUMMARY_COLUMNS]
     for agent, per_kind in summary.items():

@@ -20,6 +20,8 @@ def score_layer1_outcome(
     k: int,
     seen_item_ids: set[int] | None = None,
     corpus: ItemCorpus | None = None,
+    id2item: Mapping[int, str] | None = None,
+    itemcf_reachable: set[int] | None = None,
 ) -> dict[str, Any]:
     """
     Score recommendation outcome against ground truth targets.
@@ -45,21 +47,23 @@ def score_layer1_outcome(
 
     row: dict[str, Any] = {"n_recommended": len(rec)}
 
-    # ===== Target Reachability =====
-    # Check if target items exist in the corpus (S0: target in pool)
-    if request.targets and corpus is not None:
-        target_in_pool = 0
-        for target_idx in request.targets:
-            # Check if target item exists in corpus
-            item_id = None
-            # We need to find item_id from item_idx
-            # This requires reverse lookup - we'll use a different approach
-            pass
-        row["target_in_pool"] = None  # Placeholder - requires reverse mapping
-        row["target_reachable"] = None  # Placeholder - requires catalog check
-    else:
-        row["target_in_pool"] = None
-        row["target_reachable"] = None
+    # ===== Target pool availability (per retrieval path) =====
+    # The system has no single eligible item universe: SQL/BM25/Lookup read the
+    # corpus `items` table (temporally masked when a metadata policy is active),
+    # ItemCF reads the similarity matrix, and the scorer has its own index bounds.
+    # `target_in_pool` therefore stays None; per-path availability lives in
+    # `target_in_pool_{sql,semantic,itemcf}` and per-target detail in
+    # `target_pool_detail` (input to stage-loss diagnostics, not to Recall).
+    row["target_in_pool"] = None
+    row["target_reachable"] = None  # defined together with stage_lost (R3)
+    row["target_pool_detail"] = None
+    for _path in ("sql", "semantic", "itemcf"):
+        row[f"target_in_pool_{_path}"] = None
+    if request.targets and corpus is not None and id2item is not None:
+        detail = _target_pool_detail(request.targets, id2item, corpus, itemcf_reachable)
+        row["target_pool_detail"] = detail
+        for path in ("sql", "semantic", "itemcf"):
+            row[f"target_in_pool_{path}"] = _pool_path_verdict(detail, path)
 
     # Calculate ranking metrics only for non-ambiguous requests with targets
     ranking_keys = (f"precision@{k}", f"recall@{k}", f"hit_rate@{k}", f"ndcg@{k}", f"mrr@{k}", f"map@{k}")
@@ -113,8 +117,6 @@ def score_layer1_outcome(
         row["distinct_main_categories"] = None
 
     # ===== Retrieval Funnel Metrics (S0-S5) =====
-    row["target_in_pool"] = None
-    row["target_reachable"] = None
     row["candidate_generation_count"] = None
     row["retrieved_count"] = None
     row["filtered_count"] = None
@@ -223,3 +225,55 @@ def _extract_retrieval_funnel(
         funnel["ranked_count"] = funnel["retrieved_count"]
     
     return funnel
+
+
+
+
+def _target_pool_detail(
+    targets: list[int],
+    id2item: Mapping[int, str],
+    corpus: ItemCorpus,
+    itemcf_reachable: set[int] | None,
+) -> dict[str, dict[str, bool | None]]:
+    """Per-target, per-path pool membership. None = availability unknown, never a silent False.
+
+    - sql / semantic: the corpus `items` table as the tools see it (the TEMP views
+      installed by apply_metadata_policy make first_seen_ts <= as_of filtering
+      automatic; the dormant dense leg shares the same corpus universe).
+    - itemcf: target index has a nonzero column in the ItemKNN similarity matrix
+      (i.e. is some item's kept neighbour), and — only when the temporal metadata
+      policy is active — is also visible in the corpus, mirroring SimilarTool.
+    """
+    detail: dict[str, dict[str, bool | None]] = {}
+    resolvable: list[tuple[int, str]] = []
+    for target_idx in targets:
+        item_id = id2item.get(target_idx)
+        if item_id is None:
+            detail[str(target_idx)] = {"sql": None, "semantic": None, "itemcf": None}
+        else:
+            resolvable.append((target_idx, item_id))
+    if not resolvable:
+        return detail
+
+    visible = set(corpus.item_domains([item_id for _, item_id in resolvable]))
+    enforce_cf_visibility = bool(
+        (getattr(corpus, "_evaluation_metadata_policy", None) or {}).get("first_seen_filter")
+    )
+    for target_idx, item_id in resolvable:
+        in_catalog = item_id in visible
+        entry: dict[str, bool | None] = {"sql": in_catalog, "semantic": in_catalog, "itemcf": None}
+        if itemcf_reachable is not None:
+            entry["itemcf"] = target_idx in itemcf_reachable and (not enforce_cf_visibility or in_catalog)
+        detail[str(target_idx)] = entry
+    return detail
+
+
+def _pool_path_verdict(detail: dict[str, dict[str, bool | None]], path: str) -> bool | None:
+    """Existential verdict for one retrieval path: True if any target is eligible,
+    False only when every target is measurably absent, None when any is unknown."""
+    values = [entry[path] for entry in detail.values()]
+    if any(v is True for v in values):
+        return True
+    if not values or any(v is None for v in values):
+        return None
+    return False

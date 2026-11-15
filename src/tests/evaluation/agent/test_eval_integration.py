@@ -163,6 +163,25 @@ class _FakeType1:
         return self.out
 
 
+def test_itemcf_reachable_ignores_edges_from_hidden_seeds(corpus):
+    """Seed-side temporal visibility: a target reachable only via a hidden item is NOT in the pool."""
+    from scipy import sparse
+
+    script = _load_run_agent_eval()
+    # similarity[0, 1] = 1.0: item idx 1 is a neighbour of idx 0 only
+    sim = sparse.csr_matrix(([1.0], ([0], [1])), shape=(3, 3))
+    item2id = {"A::a": 0, "B::b": 1, "C::c": 2}
+
+    # No policy: every mapped in-bounds index is a valid seed -> idx 1 reachable via row 0
+    assert script._itemcf_reachable(sim, item2id) == {1}
+    # Policy active, only C visible: seed rows = {2}, which has no edges -> nothing reachable
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"C::c"}) == set()
+    # Policy active, A and C visible: row 0 is a valid seed -> idx 1 reachable
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"A::a", "C::c"}) == {1}
+    # Visible id outside the mapping / out of bounds is ignored, not fatal
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"Ghost::x", "C::c"}) == set()
+
+
 def test_run_type1_keeps_the_recommendation_and_adds_the_answer():
     script = _load_run_agent_eval()
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="similar to x", user_id="u1", seed_item_id=VG_A, targets=[1])

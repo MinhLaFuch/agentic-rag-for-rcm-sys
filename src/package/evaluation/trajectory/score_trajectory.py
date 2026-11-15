@@ -23,6 +23,8 @@ def score_trajectory(
     corpus: ItemCorpus,
     k: int,
     seen_item_ids: set[int] | None = None,
+    id2item: Mapping[int, str] | None = None,
+    itemcf_reachable: set[int] | None = None,
 ) -> dict[str, Any]:
     """
     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds, error_kind}], recommended[item_id],
@@ -44,7 +46,8 @@ def score_trajectory(
     is_planner = agent in PLANNER_AGENTS
 
     # Score each layer independently
-    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids, corpus=corpus)
+    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids,
+                                  corpus=corpus, id2item=id2item, itemcf_reachable=itemcf_reachable)
     layer2 = score_layer2_interaction(request, trajectory, corpus=corpus)
     layer3 = score_layer3_grounding(trajectory)
     layer4 = score_layer4_process(request, trajectory)

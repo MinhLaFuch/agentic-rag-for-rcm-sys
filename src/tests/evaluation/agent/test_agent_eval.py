@@ -235,6 +235,88 @@ def test_score_trajectory_counts_candidates_when_steps_carry_data(corpus):
     assert row["filtered_count"] == 1 and row["ranked_count"] == 1
 
 
+def _pool_request(targets):
+    return AgentRequest(request_id="t", kind="similar", segment="warm", text="t", targets=targets)
+
+
+def _pool_row(corpus, targets, *, id2item=None, itemcf_reachable=None):
+    return score_trajectory(
+        _pool_request(targets), _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+        item2id=ITEM2ID, corpus=corpus, k=2,
+        id2item=id2item if id2item is not None else ID2ITEM,
+        itemcf_reachable=itemcf_reachable)
+
+
+def test_target_in_pool_per_path(corpus):
+    # target idx 1 = VG_B: in corpus, not in the ItemCF reachable set
+    row = _pool_row(corpus, [1], itemcf_reachable={0, 5})
+    assert row["target_in_pool_sql"] is True and row["target_in_pool_semantic"] is True
+    assert row["target_in_pool_itemcf"] is False
+    assert row["target_pool_detail"]["1"] == {"sql": True, "semantic": True, "itemcf": False}
+    # no shared pool exists: the bare columns stay unavailable
+    assert row["target_in_pool"] is None and row["target_reachable"] is None
+
+
+def test_target_in_pool_divergence_across_paths(corpus):
+    # idx 5 maps to an item absent from the corpus but reachable by ItemCF
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    row = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row["target_in_pool_sql"] is False and row["target_in_pool_semantic"] is False
+    assert row["target_in_pool_itemcf"] is True
+    assert row["target_pool_detail"]["5"] == {"sql": False, "semantic": False, "itemcf": True}
+
+
+def test_target_in_pool_temporal_policy_restricts_itemcf(corpus):
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    corpus._evaluation_metadata_policy = {"first_seen_filter": True}  # mirrors apply_metadata_policy
+    row = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row["target_in_pool_itemcf"] is False  # SimilarTool would filter it via item_domains
+    row2 = _pool_row(corpus, [0], id2item=id2item, itemcf_reachable={0})
+    assert row2["target_in_pool_itemcf"] is True  # VG_A visible in corpus
+
+
+def test_target_in_pool_unknown_never_reads_as_false(corpus):
+    # idx 99 has no id2item entry: availability unknown -> verdicts None, not False
+    row = _pool_row(corpus, [99], itemcf_reachable={99})
+    assert row["target_in_pool_sql"] is None and row["target_in_pool_itemcf"] is None
+    assert row["target_pool_detail"]["99"] == {"sql": None, "semantic": None, "itemcf": None}
+    # mixed: one measurable absence + one unknown -> still None (cannot rule out)
+    row2 = _pool_row(corpus, [5, 99], id2item={**ID2ITEM, 5: "Ghost::x"}, itemcf_reachable=set())
+    assert row2["target_in_pool_sql"] is None
+
+
+def test_target_in_pool_empty_targets_and_missing_inputs(corpus):
+    row = _pool_row(corpus, [])
+    assert row["target_in_pool_sql"] is None and row["target_pool_detail"] is None
+    # no id2item -> cannot map indices to catalog ids -> unavailable
+    row2 = score_trajectory(_pool_request([1]), _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+                            item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row2["target_in_pool_sql"] is None and row2["target_pool_detail"] is None
+    # itemcf_reachable=None -> only that path is unavailable
+    row3 = _pool_row(corpus, [1], itemcf_reachable=None)
+    assert row3["target_in_pool_sql"] is True and row3["target_in_pool_itemcf"] is None
+
+
+def test_target_in_pool_multiple_targets_existential(corpus):
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    # targets 0 (in corpus+cf) and 5 (not in corpus, in cf): every path has >=1 eligible
+    row = _pool_row(corpus, [0, 5], id2item=id2item, itemcf_reachable={0, 5})
+    assert row["target_in_pool_sql"] is True and row["target_in_pool_itemcf"] is True
+    # targets 1 (corpus, not cf) and 5 (cf, not corpus): each path still finds one
+    row2 = _pool_row(corpus, [1, 5], id2item=id2item, itemcf_reachable={5})
+    assert row2["target_in_pool_sql"] is True and row2["target_in_pool_itemcf"] is True
+    # no target anywhere: measurable absences only -> False
+    row3 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable=set(), )
+    assert row3["target_in_pool_sql"] is False and row3["target_in_pool_itemcf"] is False
+
+
+def test_target_pool_detail_is_skipped_by_summarize(corpus):
+    row = _pool_row(corpus, [1], itemcf_reachable={0})
+    summary = summarize([row])
+    assert "target_pool_detail" not in summary["planner"]["similar"]["all"]
+    assert "target_in_pool_sql" not in summary["planner"]["similar"]["all"]  # diagnostic, not a score
+
+
 def test_summarize_means_per_agent_kind_and_segment():
     rows = [
         {"request_id": "r0", "agent": "a", "kind": "similar", "segment": "warm", "task_success": True, "recall@10": 0.5, "x": None},
