@@ -656,6 +656,10 @@ class CampaignFileConfig(BaseModel):
     default_agents: list[str] = Field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
     )
+    agent_config_defaults: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Campaign-wide agent_config defaults merged under each experiment's own agent_config",
+    )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never | all")

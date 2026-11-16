@@ -118,6 +118,9 @@ class CampaignConfig:
     default_agents: list[str] = field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
     )
+    # Campaign-wide agent_config defaults merged under each experiment's own
+    # agent_config (experiment keys win). Use for always-on opt-ins like jev.
+    agent_config_defaults: dict[str, Any] = field(default_factory=dict)
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = "once"
@@ -139,6 +142,7 @@ class CampaignConfig:
             _comparison_pairs_key(): self.comparison_pairs,
             _statistical_settings_key(): self.statistical_settings,
             "default_agents": self.default_agents,
+            "agent_config_defaults": self.agent_config_defaults,
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
             "multi_turn": self.multi_turn,
@@ -158,6 +162,7 @@ class CampaignConfig:
             comparison_pairs=data.get(_comparison_pairs_key(), []),
             statistical_settings=data.get(_statistical_settings_key(), ""),
             default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
+            agent_config_defaults=data.get("agent_config_defaults", {}),
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
             multi_turn=data.get("multi_turn", "once"),

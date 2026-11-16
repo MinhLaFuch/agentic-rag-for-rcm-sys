@@ -36,6 +36,14 @@ evaluation_config:
 # Runtime defaults applied to every experiment's config overlay
 # (per-experiment overrides still go in each experiment's agent_config/evaluation_config)
 default_agents: [baseline, type1, planner, planner_memory]  # used when agent_config.agents is absent
+# Campaign-wide agent_config defaults — merged under every experiment's own
+# agent_config (experiment keys win). jev=true -> Jev judge pass on EVERY run.
+# NOTE: judge calls cost LLM tokens per eligible answer (answer_status=="ok");
+# requires JEV_API_KEY (or TYPESAFE_API_KEY/OPENROUTER_API_KEY) — missing creds
+# -> status "skipped_no_credentials" per run, campaign unaffected. Add
+# max_requests here (e.g. {enabled: true, max_requests: 200}) to cap cost.
+agent_config_defaults:
+  jev: true
 allow_missing_corpus_sources: true   # campaign runs accept prebuilt corpus without raw meta files
 experiment_timeout_seconds: 7200     # per-run subprocess timeout; 7200 because llm planner runs need main eval remainder + multi_turn (<=1800s) + scoring/saving within one subprocess
 

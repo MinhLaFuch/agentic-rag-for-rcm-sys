@@ -451,7 +451,8 @@ class CampaignRunner:
 
         opted: list[tuple[int, int, dict[str, Any]]] = []
         for exp_idx, experiment in enumerate(experiments):
-            frag = self._normalize_multi_turn_param(experiment.agent_config.get("multi_turn"))
+            agent_config = {**self.config.agent_config_defaults, **experiment.agent_config}
+            frag = self._normalize_multi_turn_param(agent_config.get("multi_turn"))
             for run_num in range(1, experiment.repetition_count + 1):
                 if frag.get("enabled"):
                     opted.append((exp_idx, run_num, frag))
@@ -487,7 +488,10 @@ class CampaignRunner:
         Raises ValueError on agent_config/evaluation_config keys that have no
         mapping — silently dropping them would run the wrong experiment.
         """
-        unknown_agent = set(experiment.agent_config) - self._AGENT_CONFIG_KEYS
+        # Campaign-level agent_config defaults apply to every experiment;
+        # the experiment's own keys win on conflict.
+        agent_config = {**self.config.agent_config_defaults, **experiment.agent_config}
+        unknown_agent = set(agent_config) - self._AGENT_CONFIG_KEYS
         unknown_eval = set(experiment.evaluation_config) - self._EVALUATION_CONFIG_KEYS
         if unknown_agent or unknown_eval:
             raise ValueError(
@@ -498,7 +502,7 @@ class CampaignRunner:
             )
 
         agent_eval: dict[str, Any] = {
-            "agents": experiment.agent_config.get("agents", list(self.config.default_agents)),
+            "agents": agent_config.get("agents", list(self.config.default_agents)),
             "allow_missing_corpus_sources": self.config.allow_missing_corpus_sources,
             "trajectory_file": f"{self.config.campaign_id}_{experiment.name}_run{run_number}_trajectories.jsonl",
             "campaign_id": self.config.campaign_id,
@@ -518,7 +522,7 @@ class CampaignRunner:
 
         # Same leak guard as multi_turn: every run gets an explicit jev fragment
         # so a base-yaml enabled=true cannot leak into the grid.
-        agent_eval["jev"] = self._normalize_jev_param(experiment.agent_config.get("jev"))
+        agent_eval["jev"] = self._normalize_jev_param(agent_config.get("jev"))
 
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
 
@@ -539,15 +543,15 @@ class CampaignRunner:
             overlay["path/data_paths"] = {"paths": {"item_knn_dir": Path(knn_root).as_posix()}}
             agent_eval["item_knn_reuse_cache"] = True
 
-        inference_mode = experiment.agent_config.get("inference_mode")
+        inference_mode = agent_config.get("inference_mode")
         if inference_mode is not None:
             overlay["agent/inference"] = {"inference": {"mode": inference_mode}}
 
-        reflect_rounds = experiment.agent_config.get("reflect_rounds")
+        reflect_rounds = agent_config.get("reflect_rounds")
         if reflect_rounds is not None:
             overlay["agent/agent"] = {"agent": {"reflect_rounds": reflect_rounds}}
 
-        exclude_tools = experiment.agent_config.get("exclude_tools")
+        exclude_tools = agent_config.get("exclude_tools")
         if exclude_tools is not None:
             agent_eval["exclude_tools"] = list(exclude_tools)
 
