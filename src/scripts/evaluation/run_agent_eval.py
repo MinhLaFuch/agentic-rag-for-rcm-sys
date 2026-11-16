@@ -336,6 +336,55 @@ def run_optional_multi_turn(cfg: dict[str, Any], exp_dir_candidate: Path) -> dic
         }
 
 
+def run_optional_jev(
+    cfg: dict[str, Any],
+    trajectories: list[dict[str, Any]],
+    requests_by_id: Mapping[str, Any],
+    corpus: Any,
+    output_dir: Path,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    """Jev judge pass over answered trajectories; never let it sink the main eval.
+
+    Returns ``(info, rows)``. ``info`` is None when ``agent_eval.jev.enabled``
+    is false (nothing changes downstream). Missing credentials ->
+    ``skipped_no_credentials``; judge failures per-answer surface inside each
+    row's ``evaluation_state``; a crash of the pass itself -> ``error``.
+    """
+    jev_cfg = cfg.get("jev") or {}
+    if not jev_cfg.get("enabled"):
+        return None, []
+    info: dict[str, Any] = {
+        "enabled": True,
+        "status": "success",
+        "n_cases": 0,
+        "output_path": str(output_dir / "jev_eval.jsonl"),
+    }
+    try:
+        from package.evaluation.judge import (
+            evaluate_trajectories_with_jev,
+            jev_credentials_configured,
+        )
+
+        if not jev_credentials_configured():
+            info["status"] = "skipped_no_credentials"
+            info["reason"] = (
+                "no Jev credential: set JEV_API_KEY (or TYPESAFE_API_KEY / OPENROUTER_API_KEY)"
+            )
+            return info, []
+        rows = evaluate_trajectories_with_jev(
+            trajectories,
+            requests_by_id,
+            corpus,
+            max_requests=jev_cfg.get("max_requests"),
+        )
+        info["n_cases"] = len(rows)
+        return info, rows
+    except Exception as exc:
+        info["status"] = "error"
+        info["error"] = f"{type(exc).__name__}: {exc}"
+        return info, []
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
@@ -711,6 +760,11 @@ def main() -> None:
     )
     mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
 
+    # ---- optional Jev judge pass (yaml-gated; runs after trajectory scoring) ----
+    # Writes <exp_dir>/jev_eval.jsonl next to scored.jsonl; disabled ->
+    # jev_info is None and nothing below changes.
+    jev_info, jev_rows = run_optional_jev(cfg, trajectories, by_id, corpus, exp_dir_candidate)
+
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
@@ -744,6 +798,8 @@ def main() -> None:
             "output_path": mt_info["output_path"],
             "dataset": (cfg.get("multi_turn") or {}).get("dataset"),
         }
+    if jev_info is not None:
+        exp_config["jev"] = jev_info
     exp_dir = save_experiment(
         exp_dir_candidate,
         config=exp_config,
@@ -767,9 +823,15 @@ def main() -> None:
     shutil.copyfile(traj_path, exp_dir / "trajectories.jsonl")
     (exp_dir / "requests.jsonl").write_text("".join(json.dumps(r.to_dict(), ensure_ascii=False) + "\n" for r in requests), encoding="utf-8")
     (exp_dir / "scored.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    if jev_rows:
+        (exp_dir / "jev_eval.jsonl").write_text(
+            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in jev_rows), encoding="utf-8"
+        )
     print(f"\nsaved -> {exp_dir}")
     if mt_info is not None:
         print(f"multi_turn -> {mt_info['output_path']} [{mt_info['status']}]")
+    if jev_info is not None:
+        print(f"jev -> {jev_info['output_path']} [{jev_info['status']}] n={jev_info['n_cases']}")
 
 
 if __name__ == "__main__":

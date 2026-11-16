@@ -18,6 +18,8 @@ from typing import Any
 
 from package.api import JevProvider
 
+DEFAULT_TIMEOUT = 30.0
+
 
 class JevClient(JevProvider):
     """Client for TypeSafe AI's Jev System One model.

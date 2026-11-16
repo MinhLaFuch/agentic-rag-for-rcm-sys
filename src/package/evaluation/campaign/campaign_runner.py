@@ -295,7 +295,7 @@ class CampaignRunner:
         )
 
     # agent_config keys the overlay builder knows how to map; anything else is a config error
-    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn", "exclude_tools"}
+    _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn", "exclude_tools", "jev"}
     _EVALUATION_CONFIG_KEYS = {"per_segment"}
 
     # agent_config.multi_turn accepts bool or a dict; these keys map onto
@@ -327,6 +327,36 @@ class CampaignRunner:
             return frag if frag["enabled"] else {"enabled": False}
         raise ValueError(
             f"agent_config.multi_turn must be bool or dict, got {type(value).__name__}"
+        )
+
+    # agent_config.jev accepts bool or a dict; these keys map onto
+    # agent_eval.jev. The artifact always lands in the experiment dir —
+    # the campaign owns artifact placement like multi_turn.
+    _JEV_PARAM_KEYS = {"enabled", "max_requests"}
+
+    @classmethod
+    def _normalize_jev_param(cls, value: Any) -> dict[str, Any]:
+        """agent_config.jev -> agent_eval.jev fragment.
+
+        ``True`` -> enabled with base-yaml defaults; ``False``/absent ->
+        disabled; a dict may set enabled/max_requests.
+        """
+        if value is None or value is False:
+            return {"enabled": False}
+        if value is True:
+            return {"enabled": True}
+        if isinstance(value, dict):
+            unknown = set(value) - cls._JEV_PARAM_KEYS
+            if unknown:
+                raise ValueError(
+                    f"agent_config.jev has unmapped keys {sorted(unknown)}; "
+                    f"supported: {sorted(cls._JEV_PARAM_KEYS)}"
+                )
+            frag = dict(value)
+            frag.setdefault("enabled", True)
+            return frag if frag["enabled"] else {"enabled": False}
+        raise ValueError(
+            f"agent_config.jev must be bool or dict, got {type(value).__name__}"
         )
 
     @staticmethod
@@ -419,6 +449,10 @@ class CampaignRunner:
         # gets enabled=false explicitly so a base-yaml enabled=true cannot
         # leak into the grid.
         agent_eval["multi_turn"] = multi_turn if multi_turn is not None else {"enabled": False}
+
+        # Same leak guard as multi_turn: every run gets an explicit jev fragment
+        # so a base-yaml enabled=true cannot leak into the grid.
+        agent_eval["jev"] = self._normalize_jev_param(experiment.agent_config.get("jev"))
 
         overlay: dict[str, Any] = {"agent/agent_eval": {"agent_eval": agent_eval}}
 

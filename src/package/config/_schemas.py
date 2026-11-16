@@ -85,6 +85,28 @@ class AgentEvalMultiTurnConfig(BaseModel):
     )
 
 
+class AgentEvalJevConfig(BaseModel):
+    """Jev LLM-as-judge post-hoc pass inside agent_eval.yaml.
+
+    Runs once per run_agent_eval invocation, after trajectory scoring: every
+    trajectory with ``answer_status == "ok"`` gets its answer judged by Jev
+    (claim-level faithfulness + communication) against the recommended items'
+    corpus metadata. Artifact: ``jev_eval.jsonl`` in the experiment dir.
+    Requires a judge credential (judge.yaml api_key or TYPESAFE_API_KEY /
+    OPENROUTER_API_KEY); missing credentials -> status
+    ``skipped_no_credentials``, never a crash. Each judged answer costs
+    several judge calls — cap with ``max_requests``.
+    """
+
+    model_config = _BASE_CONFIG
+
+    enabled: bool = Field(default=False, description="Run Jev judge over answered trajectories")
+    max_requests: int | None = Field(
+        default=None, gt=0,
+        description="Cap judged answers per run (cost control); null = all eligible",
+    )
+
+
 class AgentEvalConfig(BaseModel):
     """Agent evaluation config from configs/agent/agent_eval.yaml."""
 
@@ -126,6 +148,10 @@ class AgentEvalConfig(BaseModel):
     multi_turn: AgentEvalMultiTurnConfig = Field(
         default_factory=AgentEvalMultiTurnConfig,
         description="Optional multi-turn conversation evaluation step",
+    )
+    jev: AgentEvalJevConfig = Field(
+        default_factory=AgentEvalJevConfig,
+        description="Optional Jev LLM-as-judge post-hoc pass over answered trajectories",
     )
 
     @field_validator("agents")
