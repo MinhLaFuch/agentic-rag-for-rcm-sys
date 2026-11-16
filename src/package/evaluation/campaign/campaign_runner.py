@@ -88,10 +88,15 @@ class CampaignRunner:
         try:
             llm_cfg = load_config("agent/llm")
             llm = build_llm_provider(llm_cfg)
-            ok = llm.health_check()
+            # Ping via complete() instead of health_check() so HTTP/auth/model
+            # errors surface in the failure message instead of a bare False.
+            from package.api import LLMMessage
+
+            llm.complete([LLMMessage(role="user", content="ping")], max_tokens=1)
+            ok = True
         except Exception as exc:  # missing base_url/model, HTTP error, timeout...
             ok = False
-            detail = f" ({exc})"
+            detail = f" ({type(exc).__name__}: {exc})"
         if not ok:
             raise SystemExit(
                 f"LLM preflight failed{detail}: {len(needing)}/{len(experiments)} selected "

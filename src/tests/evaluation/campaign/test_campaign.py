@@ -750,8 +750,8 @@ def test_preflight_ok_when_health_check_passes(monkeypatch, capsys):
     import package.evaluation.campaign.campaign_runner as cr
 
     class _FakeLLM:
-        def health_check(self):
-            return True
+        def complete(self, messages, **kwargs):
+            return None
 
     monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: _FakeLLM())
     exp = ExperimentConfig(name="pl", agent_config={"agents": ["planner"]})
