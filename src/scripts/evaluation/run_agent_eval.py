@@ -55,6 +55,14 @@ from package.evaluation import (
 )
 from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.trajectory import score_trajectory, summarize
+from package.evaluation.diagnostics import error_taxonomy, reflection_diagnostics
+from package.evaluation.reporting import (
+    build_report_results,
+    generate_all_charts,
+    generate_csv_export,
+    generate_failure_report,
+    generate_markdown_report,
+)
 from package.evaluation.provenance import build_run_provenance
 from package.config import get_data_paths, get_domains, load_config
 from package.config.load_config import ConfigError
@@ -383,6 +391,33 @@ def run_optional_jev(
         info["status"] = "error"
         info["error"] = f"{type(exc).__name__}: {exc}"
         return info, []
+
+
+def _multi_turn_report_scalars(mt_info: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Extract the scalar metrics the report's multi_turn section expects.
+
+    Reads the multi_turn.json written by the optional step; returns None when
+    absent/unreadable so the report simply omits the section. None-valued
+    scalars are dropped — the markdown renderer cannot format them.
+    """
+    if not mt_info or not mt_info.get("output_path"):
+        return None
+    path = Path(mt_info["output_path"])
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    retention = data.get("context_retention_metrics") or {}
+    ctx_vals = [float(v) for v in retention.values() if isinstance(v, (int, float))]
+    scalars = {
+        "turn_success_rate": data.get("turn_success_rate"),
+        "conversation_success_rate": data.get("conversation_success_rate"),
+        "context_retention": sum(ctx_vals) / len(ctx_vals) if ctx_vals else None,
+    }
+    scalars = {k: v for k, v in scalars.items() if isinstance(v, (int, float))}
+    return scalars or None
 
 
 def main() -> None:
@@ -765,6 +800,18 @@ def main() -> None:
     # jev_info is None and nothing below changes.
     jev_info, jev_rows = run_optional_jev(cfg, trajectories, by_id, corpus, exp_dir_candidate)
 
+    # ---- diagnostics (always-on; cheap aggregation, no extra LLM calls) ----
+    # error_taxonomy reads trajectory steps, so kind is injected from the
+    # request lookup on copies — trajectories.jsonl stays unchanged.
+    # metrics.json gains a top-level "diagnostics" block; campaign metric
+    # flattening only reads "summary", so these never enter comparisons.
+    diagnostics = {
+        "error_taxonomy": error_taxonomy(
+            [{**t, "kind": by_id[t["request_id"]].kind} for t in trajectories]
+        ),
+        "reflection": reflection_diagnostics(rows),
+    }
+
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
                 "request_scope": request_scope,
@@ -803,7 +850,7 @@ def main() -> None:
     exp_dir = save_experiment(
         exp_dir_candidate,
         config=exp_config,
-        metrics={"k": k, "summary": summary},
+        metrics={"k": k, "summary": summary, "diagnostics": diagnostics},
         seed=seed,
         dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": len(item2id), "metadata_coverage": round(coverage, 4), "n_requests": len(requests),
@@ -827,6 +874,28 @@ def main() -> None:
         (exp_dir / "jev_eval.jsonl").write_text(
             "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in jev_rows), encoding="utf-8"
         )
+    (exp_dir / "diagnostics.json").write_text(
+        json.dumps(diagnostics, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # ---- human-readable report (always-on; pure rendering, no LLM calls) ----
+    # A rendering failure must not sink a completed eval — warn and continue.
+    try:
+        report_results = build_report_results(
+            rows,
+            trajectories,
+            k=k,
+            trajectory_path=traj_path.name,
+            multi_turn=_multi_turn_report_scalars(mt_info),
+        )
+        generate_markdown_report(report_results, exp_dir / "report.md")
+        generate_csv_export(report_results, exp_dir / "report.csv")
+        if report_results["failures"]:
+            generate_failure_report(report_results["failures"], exp_dir / "failures.md")
+        generate_all_charts(report_results, exp_dir / "charts")
+    except Exception as exc:  # noqa: BLE001 — reporting is auxiliary
+        print(f"warning: report generation failed ({exc}); eval artifacts are unaffected")
+
     print(f"\nsaved -> {exp_dir}")
     if mt_info is not None:
         print(f"multi_turn -> {mt_info['output_path']} [{mt_info['status']}]")

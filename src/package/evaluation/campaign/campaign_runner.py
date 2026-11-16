@@ -14,7 +14,9 @@ from datetime import datetime, timezone
 
 from ._schema import CampaignConfig, CampaignResult, ExperimentRun
 from ..statistics import bootstrap_confidence_interval, paired_bootstrap_difference
+from ..ablation import get_ablation_limits, run_ablation_contrasts
 from package.config import get_data_paths
+from package.config.load_config import ConfigError
 
 import yaml
 from statistics import stdev
@@ -127,6 +129,13 @@ class CampaignRunner:
         if only is None and comparison_pairs:
             comparisons = self._run_comparisons(runs, output_dir, comparison_pairs)
 
+        # Post-run ablation contrasts (full runs only; a subset run cannot
+        # resolve both sides of every contrast, and the previous result's
+        # ablation block is preserved by _merge_subset_result).
+        ablation_result: dict[str, Any] = {}
+        if only is None:
+            ablation_result = self._run_ablation(runs, output_dir)
+
         # Generate summary
         summary = self._generate_summary(runs)
 
@@ -138,6 +147,7 @@ class CampaignRunner:
             summary=summary,
             git_sha=self.git_sha,
             multi_turn=self._collect_multi_turn_result(runs),
+            ablation=ablation_result,
         )
         if only is not None:
             result.subset = {
@@ -187,7 +197,44 @@ class CampaignRunner:
             result.comparisons = prev.comparisons
         result.summary = self._generate_summary(merged)
         result.multi_turn = self._collect_multi_turn_result(merged)
+        if prev.ablation:
+            result.ablation = prev.ablation
         return result
+
+    def _run_ablation(self, runs: list[ExperimentRun], output_dir: Path) -> dict[str, Any]:
+        """Run configured ablation contrasts over this campaign's run dirs.
+
+        Contrasts in campaign.yaml reference experiment NAMES in the a/b
+        group slot; each name resolves to the experiment_dir of every
+        successful run (repetitions become group members, averaged inside
+        compare_two_groups). Metrics/bootstrap parameters still come from
+        configs/agent/ablation.yaml — the campaign only says who to compare.
+        Returns {"status": "disabled"} when no contrasts are configured.
+        """
+        contrasts = (self.config.ablation or {}).get("contrasts") or []
+        if not contrasts:
+            return {"status": "disabled"}
+        try:
+            limits = get_ablation_limits()
+        except ConfigError as e:
+            return {"status": "error", "error": str(e)}
+
+        groups: dict[str, list[Path]] = {}
+        for run in runs:
+            if run.success and run.experiment_dir:
+                groups.setdefault(run.experiment_name, []).append(Path(run.experiment_dir))
+
+        summary = run_ablation_contrasts(
+            limits=limits,
+            groups=groups,
+            contrasts=contrasts,
+            output_dir=output_dir / "ablation",
+        )
+        print(f"\nAblation: {summary['status']} -> {summary['output_dir']}")
+        for name, st in summary["contrasts"].items():
+            suffix = "" if st["status"] == "ok" else f" ({st.get('error')})"
+            print(f"  {name}: {st['status']}{suffix}")
+        return summary
 
     def _run_experiment(
         self,

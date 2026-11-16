@@ -121,6 +121,11 @@ class CampaignConfig:
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = "once"
+    # Optional post-run ablation contrasts. contrasts[] entries mirror
+    # configs/agent/ablation.yaml but reference experiment NAMES (resolved to
+    # run dirs at runtime) instead of paths: a/b are [agent, experiment_name].
+    # Metrics/bootstrap params still come from agent/ablation.yaml.
+    ablation: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -137,6 +142,7 @@ class CampaignConfig:
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
             "multi_turn": self.multi_turn,
+            "ablation": self.ablation,
         }
 
     @classmethod
@@ -155,6 +161,7 @@ class CampaignConfig:
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
             multi_turn=data.get("multi_turn", "once"),
+            ablation=data.get("ablation", {}),
         )
 
     @classmethod
@@ -347,6 +354,7 @@ class CampaignResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
     multi_turn: dict[str, Any] = field(default_factory=dict)
+    ablation: dict[str, Any] = field(default_factory=dict)  # post-run contrast statuses; {} when not configured
     subset: dict[str, Any] = field(default_factory=dict)  # non-empty only for --only runs: which experiments ran/were skipped
 
     def to_dict(self) -> dict[str, Any]:
@@ -359,6 +367,7 @@ class CampaignResult:
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
             "multi_turn": self.multi_turn,
+            "ablation": self.ablation,
             "subset": self.subset,
         }
 
@@ -373,5 +382,6 @@ class CampaignResult:
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
             multi_turn=data.get("multi_turn", {}),
+            ablation=data.get("ablation", {}),
             subset=data.get("subset", {}),
         )

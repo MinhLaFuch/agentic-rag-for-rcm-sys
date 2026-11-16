@@ -659,6 +659,10 @@ class CampaignFileConfig(BaseModel):
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never | all")
+    ablation: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Optional post-run ablation contrasts; a/b reference experiment names",
+    )
 
     @field_validator("multi_turn")
     @classmethod

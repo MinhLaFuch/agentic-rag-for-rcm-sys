@@ -1,12 +1,16 @@
 """Reporting package.
 
-`_visualizations` renders standalone SVG charts (no plotting dependency).
-This package's only consumer is `scripts/evaluation/generate_example_report.py`
-(synthetic demo, not citable). Real campaign reports are produced by
-`package/evaluation/component/_run_all.py` and `package/evaluation/multi_turn/_reporting.py`,
-which do NOT use this package.
+`_adapter.build_report_results` converts real `run_agent_eval` outputs
+(scored rows + trajectories) into the flat ``results`` shape consumed by
+`_generator` (markdown/CSV/failure reports) and `_visualizations` (SVG
+charts). `scripts/evaluation/run_agent_eval.py` writes report.md,
+report.csv, failures.md and charts/ into every experiment dir.
+
+`scripts/evaluation/generate_example_report.py` remains a synthetic,
+DO-NOT-CITE demo of the same API surface.
 """
 
+from ._adapter import build_report_results
 from ._generator import (
     generate_markdown_report,
     generate_csv_export,
@@ -24,6 +28,7 @@ from ._visualizations import (
 )
 
 __all__ = [
+    "build_report_results",
     "generate_markdown_report",
     "generate_csv_export",
     "generate_failure_report",

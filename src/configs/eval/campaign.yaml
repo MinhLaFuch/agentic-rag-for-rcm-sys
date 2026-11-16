@@ -60,3 +60,37 @@ output_dir: "agent_eval/campaigns/campaign_001"
 # statuses are reported in campaign_result.json.multi_turn.runs but metrics
 # never enter paired comparisons.
 multi_turn: "all"
+
+# Post-run ablation contrasts — chạy tự động sau khi mọi experiment xong
+# (full runs only; --only subset skips và giữ block cũ). a/b là
+# [agent, experiment_name]: experiment name resolve tới experiment_dir của
+# mọi run thành công (repetition_count > 1 -> nhiều run trong một group,
+# được average trong compare_two_groups). Metrics/bootstrap params vẫn lấy
+# từ configs/agent/ablation.yaml — section này chỉ định nghĩa "so ai với ai".
+# LƯU Ý: experiment names dưới đây là tên do parameter_grid sinh ra — nếu
+# đổi grid (thêm/bớt param hoặc đổi thứ tự) phải cập nhật lại contrasts.
+# Artifacts: <output_dir>/ablation/<contrast_name>/{report.md,comparison.json,
+# comparison.csv,disagreements.jsonl}; statuses trong campaign_result.json.ablation.
+# Phân tích personalized None-aware chuyên sâu vẫn chạy tay bằng
+# scripts/experiments/pairwise_ablation.py.
+ablation:
+  contrasts:
+    # Tác dụng của reflect trên planner_memory (template, reflect 0 vs 1)
+    - name: reflect_effect_planner_memory
+      a: [planner_memory, exp_9_agents_planner_memory_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+    # Tác dụng của reflect trên planner (không memory)
+    - name: reflect_effect_planner
+      a: [planner, exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner, exp_6_agents_planner_inference_mode_template_reflect_rounds_1_multi_turn_True]
+    # Tác dụng của MemoryTool ở reflect=1. kinds loại personalized vì planner
+    # không memory trả task_success=None — phân tích đúng nằm ở pairwise_ablation.py.
+    - name: memory_effect_reflect1
+      a: [planner, exp_6_agents_planner_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      kinds: [similar, exclusion, unanswerable, ambiguous]
+    # Baseline ItemKNN vs full agent (planner_memory reflect=1, template)
+    - name: baseline_vs_full_agent
+      a: [baseline, exp_1_agents_baseline_type1_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      kinds: [similar, personalized, exclusion]
