@@ -9,10 +9,11 @@ from __future__ import annotations
 import yaml
 from pathlib import Path
 from typing import Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 import hashlib
 import json
+import re
 from itertools import product
 
 
@@ -206,6 +207,31 @@ class CampaignConfig:
             _statistical_settings_key(): self.statistical_settings,
         }
         return hashlib.sha256(json.dumps(hash_input, sort_keys=True).encode()).hexdigest()[:16]
+
+    def next_version(self, times: int = 1) -> "CampaignConfig":
+        """Return a copy with the first digit group of campaign_id and
+        output_dir incremented (campaign_002 -> campaign_003).
+
+        Trajectory filenames and the campaign output dir derive from these
+        fields, so a bumped copy is fully isolated from the previous run.
+        ``times`` applies the bump repeatedly (rerun_campaign uses it to
+        resolve --next-created campaigns back to their source YAML).
+        """
+        def bump(value: str) -> str:
+            m = re.search(r"\d+", value)
+            if not m:
+                raise ValueError(
+                    f"campaign versioning needs a digit group in {value!r}; "
+                    "bump campaign_id/output_dir manually instead"
+                )
+            n = int(m.group(0)) + times
+            return value[: m.start()] + f"{n:0{len(m.group(0))}d}" + value[m.end() :]
+
+        return replace(
+            self,
+            campaign_id=bump(self.campaign_id),
+            output_dir=bump(self.output_dir),
+        )
 
     def expand_parameter_grid(self) -> list[ExperimentConfig]:
         """Expand parameter_grid into experiment configurations.

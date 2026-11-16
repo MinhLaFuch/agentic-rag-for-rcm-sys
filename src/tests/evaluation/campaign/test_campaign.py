@@ -802,3 +802,20 @@ def test_preflight_jev_silent_when_disabled(monkeypatch, capsys):
     exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
     runner._preflight_jev([exp])
     assert capsys.readouterr().out == ""
+
+
+def test_campaign_config_next_version():
+    """next_version bumps the first digit group of campaign_id + output_dir."""
+    cfg = CampaignConfig(
+        campaign_id="campaign_002_metric_fixes",
+        output_dir="agent_eval/campaigns/campaign_002",
+    )
+    v1 = cfg.next_version()
+    assert v1.campaign_id == "campaign_003_metric_fixes"
+    assert v1.output_dir == "agent_eval/campaigns/campaign_003"
+    # Original untouched (returns a copy); multi-bump works for rerun lookup.
+    assert cfg.campaign_id == "campaign_002_metric_fixes"
+    assert cfg.next_version(times=2).campaign_id == "campaign_004_metric_fixes"
+    # No digit group -> ValueError.
+    with pytest.raises(ValueError):
+        CampaignConfig(campaign_id="abc", output_dir="out").next_version()
