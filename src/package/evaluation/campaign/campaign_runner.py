@@ -105,12 +105,14 @@ class CampaignRunner:
         )
 
     def _preflight_jev(self, experiments: list[Any]) -> None:
-        """Warn up-front when Jev is enabled but no judge credential exists.
+        """Verify a judge credential exists when any selected experiment has Jev on.
 
-        Jev is auxiliary (coverage-only, never in comparisons, per-answer
-        failures are recorded inside jev_eval.jsonl), so a missing key warns
-        instead of aborting the campaign — every run would otherwise only
-        discover ``skipped_no_credentials`` after finishing.
+        Jev is mandatory for campaign runs that enable it: missing credentials
+        would only surface as ``skipped_no_credentials`` after every run
+        finishes, so fail fast like the LLM preflight. Resolves each
+        experiment's effective jev flag with the same
+        ``agent_config_defaults`` merge + ``_normalize_jev_param`` the overlay
+        uses.
         """
         if os.environ.get("CAMPAIGN_SKIP_LLM_PREFLIGHT"):
             return
@@ -125,15 +127,14 @@ class CampaignRunner:
             return
         from package.evaluation.judge import jev_credentials_configured
 
-        if jev_credentials_configured():
-            print(f"Jev preflight OK: credentials found ({len(enabled)}/{len(experiments)} experiments enabled)")
-        else:
-            print(
-                f"WARNING: Jev enabled for {len(enabled)}/{len(experiments)} experiments "
-                f"(e.g. {enabled[0]}) but no judge credential — every run will record "
-                "skipped_no_credentials. Set JEV_API_KEY (or TYPESAFE_API_KEY / "
-                "OPENROUTER_API_KEY), or disable agent_config.jev."
+        if not jev_credentials_configured():
+            raise SystemExit(
+                f"Jev preflight failed: Jev enabled for {len(enabled)}/{len(experiments)} "
+                f"selected experiments (e.g. {enabled[0]}) but no judge credential. "
+                "Set JEV_API_KEY (or TYPESAFE_API_KEY / OPENROUTER_API_KEY), or disable "
+                "agent_config.jev / agent_config_defaults.jev."
             )
+        print(f"Jev preflight OK: credentials found ({len(enabled)}/{len(experiments)} experiments enabled)")
 
     def run_campaign(self, only: list[str] | None = None) -> CampaignResult:
         """Execute the full campaign.
