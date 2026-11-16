@@ -13,9 +13,11 @@ from typing import Any
 from datetime import datetime, timezone
 
 from ._schema import CampaignConfig, CampaignResult, ExperimentRun
+from .._schema import INFERENCE_AGENTS, PLANNER_AGENTS
 from ..statistics import bootstrap_confidence_interval, paired_bootstrap_difference
 from ..ablation import get_ablation_limits, run_ablation_contrasts
-from package.config import get_data_paths
+from package.api import build_llm_provider
+from package.config import get_data_paths, load_config
 from package.config.load_config import ConfigError
 
 import yaml
@@ -57,6 +59,51 @@ class CampaignRunner:
         skipped = [e.name for e in experiments if e not in selected]
         return selected, skipped
 
+    def _preflight_llm(self, experiments: list[Any]) -> None:
+        """Verify the LLM provider once before any experiment subprocess runs.
+
+        Mirrors run_agent_eval's needs_llm rule per experiment: planner agents
+        always need the LLM; inference agents need it when the effective
+        inference mode is 'llm' (agent_config overrides the base
+        configs/agent/inference.yaml mode). Only selected (--only) experiments
+        are checked. Raises SystemExit with an actionable message on failure.
+        Set CAMPAIGN_SKIP_LLM_PREFLIGHT=1 to bypass (used by tests).
+        """
+        if os.environ.get("CAMPAIGN_SKIP_LLM_PREFLIGHT"):
+            return
+        base_mode = (load_config("agent/inference").get("inference") or {}).get("mode", "template")
+        needing: list[str] = []
+        for exp in experiments:
+            agent_config = {**self.config.agent_config_defaults, **exp.agent_config}
+            agents = agent_config.get("agents", list(self.config.default_agents))
+            mode = agent_config.get("inference_mode") or base_mode
+            if any(a in PLANNER_AGENTS for a in agents) or (
+                mode == "llm" and any(a in INFERENCE_AGENTS for a in agents)
+            ):
+                needing.append(exp.name)
+        if not needing:
+            return
+
+        detail = ""
+        try:
+            llm_cfg = load_config("agent/llm")
+            llm = build_llm_provider(llm_cfg)
+            ok = llm.health_check()
+        except Exception as exc:  # missing base_url/model, HTTP error, timeout...
+            ok = False
+            detail = f" ({exc})"
+        if not ok:
+            raise SystemExit(
+                f"LLM preflight failed{detail}: {len(needing)}/{len(experiments)} selected "
+                f"experiments need the LLM (e.g. {needing[0]}). Check LLM_BASE_URL/LLM_API_KEY "
+                "env vars and configs/agent/llm.yaml, or restrict the run to offline "
+                "experiments (baseline/type1 + inference.mode=template)."
+            )
+        print(
+            f"LLM preflight OK: model={llm_cfg.get('model')} base_url={llm_cfg.get('base_url')} "
+            f"({len(needing)}/{len(experiments)} experiments need it)"
+        )
+
     def run_campaign(self, only: list[str] | None = None) -> CampaignResult:
         """Execute the full campaign.
 
@@ -79,6 +126,10 @@ class CampaignRunner:
             raise ValueError("No experiments to run. Either provide 'experiments' list or 'parameter_grid' in campaign config.")
 
         experiments, skipped_names = self._select_experiments(all_experiments, only)
+
+        # Fail fast: when any selected experiment needs the LLM, verify the
+        # provider once up-front instead of dying inside the Nth subprocess.
+        self._preflight_llm(experiments)
 
         print(f"\n=== Campaign Summary ===")
         print(f"Total experiments: {len(all_experiments)}")

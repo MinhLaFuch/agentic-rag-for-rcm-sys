@@ -714,3 +714,59 @@ def test_experiment_run_roundtrip_includes_experiment_dir():
     old = run.to_dict()
     del old["experiment_dir"]
     assert ExperimentRun.from_dict(old).experiment_dir == ""
+
+
+# --- LLM preflight ---------------------------------------------------------
+
+def _preflight_runner(**kwargs):
+    return CampaignRunner(CampaignConfig(campaign_id="pf", **kwargs))
+
+
+def test_preflight_skipped_for_offline_experiments(monkeypatch):
+    """baseline-only + template inference never touches the LLM provider."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    called = []
+    import package.evaluation.campaign.campaign_runner as cr
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: called.append(cfg) or None)
+    exp = ExperimentConfig(
+        name="off", agent_config={"agents": ["baseline"], "inference_mode": "template"}
+    )
+    _preflight_runner()._preflight_llm([exp])
+    assert called == []
+
+
+def test_preflight_needs_llm_for_type1_under_llm_mode(monkeypatch):
+    """type1 with effective inference.mode=llm (base yaml default) needs LLM."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    exp = ExperimentConfig(name="t1", agent_config={"agents": ["type1"]})
+    runner = _preflight_runner()
+    # No LLM configured in test env -> build/health fails -> SystemExit.
+    with pytest.raises(SystemExit, match="LLM preflight failed"):
+        runner._preflight_llm([exp])
+
+
+def test_preflight_ok_when_health_check_passes(monkeypatch, capsys):
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    import package.evaluation.campaign.campaign_runner as cr
+
+    class _FakeLLM:
+        def health_check(self):
+            return True
+
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: _FakeLLM())
+    exp = ExperimentConfig(name="pl", agent_config={"agents": ["planner"]})
+    _preflight_runner()._preflight_llm([exp])
+    assert "LLM preflight OK" in capsys.readouterr().out
+
+
+def test_preflight_respects_experiment_inference_override(monkeypatch):
+    """inference_mode=template on the experiment cancels the llm base default."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    called = []
+    import package.evaluation.campaign.campaign_runner as cr
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: called.append(cfg) or None)
+    exp = ExperimentConfig(
+        name="tpl", agent_config={"agents": ["type1", "baseline"], "inference_mode": "template"}
+    )
+    _preflight_runner()._preflight_llm([exp])
+    assert called == []
