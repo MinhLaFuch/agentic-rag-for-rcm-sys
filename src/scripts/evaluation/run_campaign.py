@@ -28,6 +28,36 @@ from package.evaluation.campaign import CampaignConfig, CampaignRunner
 DEFAULT_CAMPAIGN_CONFIG = str(ROOT / "configs" / "eval" / "campaign.yaml")
 
 
+def _bump_campaign_number(campaign: CampaignConfig) -> None:
+    """Increment the first digit group in campaign_id and output_dir in place.
+
+    campaign_002_metric_fixes -> campaign_003_metric_fixes,
+    agent_eval/campaigns/campaign_002 -> agent_eval/campaigns/campaign_003.
+    Trajectory filenames and the campaign output dir derive from these fields,
+    so bumping both keeps the new run fully isolated from the previous one.
+    """
+    import re
+
+    def bump(value: str) -> str | None:
+        m = re.search(r"\d+", value)
+        if not m:
+            return None
+        n = int(m.group(0))
+        return value[: m.start()] + f"{n + 1:0{len(m.group(0))}d}" + value[m.end() :]
+
+    new_id = bump(campaign.campaign_id)
+    new_out = bump(campaign.output_dir)
+    if new_id is None or new_out is None:
+        raise SystemExit(
+            "--next needs a digit group in campaign_id and output_dir to increment "
+            f"(got campaign_id={campaign.campaign_id!r}, output_dir={campaign.output_dir!r}); "
+            "bump them manually in the campaign YAML instead"
+        )
+    campaign.campaign_id = new_id
+    campaign.output_dir = new_out
+    print(f"--next: campaign_id -> {new_id}, output_dir -> {new_out}")
+
+
 def get_git_sha() -> str:
     """Get current git commit SHA."""
     try:
@@ -70,6 +100,13 @@ def main() -> None:
         help="Comma-separated experiment selectors (e.g. 7,8,11,12 or exp_7,exp_8); "
              "runs ONLY those experiments and merges into the existing campaign_result.json",
     )
+    ap.add_argument(
+        "--next",
+        action="store_true",
+        help="Auto-increment the campaign number (campaign_002 -> campaign_003) in "
+             "campaign_id and output_dir before running — use for a fresh full run; "
+             "cannot be combined with --only (reruns must target the existing campaign)",
+    )
     args = ap.parse_args()
 
     only = None
@@ -84,6 +121,11 @@ def main() -> None:
         raise SystemExit(f"Campaign config not found: {campaign_path}")
 
     campaign = CampaignConfig.from_yaml(campaign_path)
+
+    if args.next:
+        if only is not None:
+            raise SystemExit("--next cannot be combined with --only: reruns must target the existing campaign")
+        _bump_campaign_number(campaign)
 
     # Expand parameter grid to get actual experiments
     experiments = campaign.expand_parameter_grid()
