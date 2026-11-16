@@ -17,9 +17,14 @@ src/.venv/
 # Python cache
 __pycache__/
 *.pyc
+*.egg-info/
 
 # pytest
 .pytest_cache/
+src/experiments/test_logs/
+
+# Synthetic demo report output (DO-NOT-CITE)
+src/experiments/agent_eval/example_report/
 
 # Local resources
 src/resource/item_knn/

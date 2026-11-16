@@ -453,6 +453,11 @@ class TuningBprMfGrid(BaseModel):
     epochs: list[int] = Field(description="epochs grid values")
 
 
+class TuningItemKnnHybridGrid(BaseModel):
+    model_config = _BASE_CONFIG
+    weights: list[float] = Field(description="hybrid_weight grid for HybridItemKNNRecommender")
+
+
 class TuningConfig(BaseModel):
     """Tuning config from configs/eval/tuning.yaml."""
 
@@ -462,6 +467,9 @@ class TuningConfig(BaseModel):
     run_final_test: bool = Field(description="Refit winner on train+validation and evaluate test once")
     models: list[str] = Field(description="Default model list")
     item_knn: TuningItemKnnGrid = Field(description="ItemKNN tuning grid")
+    item_knn_hybrid: TuningItemKnnHybridGrid | None = Field(
+        default=None, description="ItemKNN hybrid weight grid (tune_item_knn_hybrid.py)"
+    )
     bpr_mf: TuningBprMfGrid = Field(description="BPR-MF tuning grid")
 
 
@@ -478,6 +486,29 @@ class ComponentBenchmarksConfig(BaseModel):
         default_factory=dict,
         description="Component name -> benchmark dataset path (src-relative), used by _run_all.py",
     )
+    run_backlog: bool = Field(
+        default=False,
+        description="Whether to run backlog (known-unsupported) datasets; false -> skipped_backlog",
+    )
+    backlog_datasets: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Label -> {component, dataset} entries for backlog benchmark datasets",
+    )
+
+
+class DenseRetrievalConfig(BaseModel):
+    """Dense retrieval config from configs/eval/dense_retrieval.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    enabled: bool = Field(description="Wire vector_store/query_encoder into SearchTool via build_tools")
+    artifacts_dir: str | None = Field(
+        default=None, description="src-relative dir with manifest.json/vectors.npy/valid.npy/item_ids.json"
+    )
+    encoder_lock: str | None = Field(
+        default=None, description="src-relative encoder lock json from build_semantic_embeddings.py pin"
+    )
+    rrf_k: int = Field(gt=0, description="RRF fusion constant for BM25+dense hybrid search")
 
 
 class RankingDiagnosticsConfig(BaseModel):
@@ -705,6 +736,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/memory_utility": ("memory_utility", MemoryUtilityConfig),
         "eval/tuning": ("tuning", TuningConfig),
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
+        "eval/dense_retrieval": ("dense_retrieval", DenseRetrievalConfig),
         "eval/judge": (None, JudgeConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),

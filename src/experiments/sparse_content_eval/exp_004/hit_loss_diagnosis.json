@@ -1,0 +1,69 @@
+{
+  "counts": {
+    "paired_users": 500,
+    "users_losing_target_pairs": 2,
+    "demoted_by_rrf": 2,
+    "lost_target_pairs": 2
+  },
+  "details": [
+    {
+      "user_idx": 408674,
+      "history_unique_items": 1,
+      "item_id": "Electronics::B07HZLHPKP",
+      "reason": "demoted_by_rrf",
+      "baseline_rank": 10,
+      "baseline_model_score": 0.0401933400870786,
+      "cf_source_rank": 10,
+      "bm25_source_rank": null,
+      "rrf_rank": 19,
+      "lost_all_request_hits": true,
+      "higher_ranked_sources": [
+        "both",
+        "both",
+        "both",
+        "both",
+        "both",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "cf_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only"
+      ]
+    },
+    {
+      "user_idx": 2314888,
+      "history_unique_items": 1,
+      "item_id": "Electronics::B0BRKXMVM1",
+      "reason": "demoted_by_rrf",
+      "baseline_rank": 8,
+      "baseline_model_score": 0.06473822205437994,
+      "cf_source_rank": 8,
+      "bm25_source_rank": null,
+      "rrf_rank": 14,
+      "lost_all_request_hits": false,
+      "higher_ranked_sources": [
+        "both",
+        "both",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "bm25_only",
+        "cf_only",
+        "cf_only",
+        "bm25_only"
+      ]
+    }
+  ]
+}

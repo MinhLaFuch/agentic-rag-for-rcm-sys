@@ -1,8 +1,8 @@
 """
 Chạy các baseline trên splits của stage 3.
 
-    PYTHONPATH=. python scripts/evaluation/run_baselines.py --eval-on validation
-    PYTHONPATH=. python scripts/evaluation/run_baselines.py --domain Video_Games
+    PYTHONPATH=. python benchmarks/run_baselines.py --eval-on validation
+    PYTHONPATH=. python benchmarks/run_baselines.py --domain Video_Games
 
 Mọi tham số (models, ks, seed, tham số từng model, popularity_source,
 item_knn_hybrid_weight) đọc từ

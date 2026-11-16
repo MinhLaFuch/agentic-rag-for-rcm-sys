@@ -14,7 +14,7 @@ Research-grade project: Traditional RecSys + Sequential Recommendation + Retriev
 
 # Tóm tắt trong folder `src`
 
-Tài liệu trung tâm: **`src/reading.md`** — repository reading đầy đủ (kiến trúc, evaluation framework, known issues, future work). Bản snapshot có ngày: `src/docs/Project repository reading 29.10.md`.
+Tài liệu trung tâm: **`src/Project repository reading 29.10.md`** — repository reading đầy đủ (kiến trúc, evaluation framework, known issues, future work).
 
 Tài liệu hỗ trợ trong `src/docs/` (các investigation/eval-surface docs tuần 47):
 
@@ -74,7 +74,7 @@ src/
   experiments/   # kết quả từng experiment (trajectories, scored.jsonl, metrics)
   resource/      # data đã xử lý: raw/, mapped/, splits/, corpus artifacts
   benchmarks/    # benchmark configs/fixtures
-  reading.md     # TÀI LIỆU TRUNG TÂM — repository reading đầy đủ
+  Project repository reading 29.10.md  # TÀI LIỆU TRUNG TÂM — repository reading đầy đủ
 notebooks/       # EDA/visualization only — KHÔNG chứa business logic
 ```
 
@@ -120,4 +120,4 @@ notebooks/       # EDA/visualization only — KHÔNG chứa business logic
 
 ### Maintenance Rule
 > When you modify a `_prompt.py`, **update this section** in the same PR.  
-> The README is your "reading.md" — keep it in sync.
+> The central reading doc is `src/Project repository reading 29.10.md` — keep it in sync.

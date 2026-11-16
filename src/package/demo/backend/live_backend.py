@@ -5,6 +5,7 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -26,6 +27,7 @@ from package.tools.scoring import BaselineScorer
 from package.corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
 from package.data._shared.select_fit_target import select_fit_target
+from package.embeddings.build_dense_retrieval import build_dense_retrieval
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared.load_item_knn import load_item_knn
 from package.recommenders.shared.provenance import fit_provenance
@@ -183,17 +185,37 @@ class LiveBackend:
                            eval_on=self._eval_on, tag=data_paths.tag))
         self._knn_provenance.update(data_hash=knn._fit_data_hash, neighbors=knn_k)
 
+        # Optional dense retrieval leg for SearchTool (configs/eval/dense_retrieval.yaml).
+        # enabled=true with missing/invalid artifacts raises — never silently BM25-only.
+        dense_cfg = load_config("eval/dense_retrieval")["dense_retrieval"]
+        vector_store = query_encoder = None
+        if dense_cfg.get("enabled"):
+            src_root = Path(__file__).resolve().parents[3]
+            if not dense_cfg.get("artifacts_dir") or not dense_cfg.get("encoder_lock"):
+                raise RuntimeError(
+                    "dense_retrieval.enabled=true requires artifacts_dir and encoder_lock "
+                    "in configs/eval/dense_retrieval.yaml"
+                )
+            vector_store, query_encoder, dense_provenance = build_dense_retrieval(
+                src_root / dense_cfg["artifacts_dir"],
+                src_root / dense_cfg["encoder_lock"],
+                rrf_k=int(dense_cfg.get("rrf_k", 60)),
+            )
+            print(
+                f"Dense retrieval: {dense_provenance['valid_rows']}/{dense_provenance['rows']} items, "
+                f"encoder={dense_provenance['encoder_model_id']}@{str(dense_provenance['encoder_revision'])[:12]}"
+            )
+
         # Build tools
         logger = ToolCallLogger()
         tools = build_tools(
-            knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
+            knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None,
+            vector_store=vector_store, query_encoder=query_encoder, rrf_k=int(dense_cfg.get("rrf_k", 60)),
         )
 
-        # Store MemoryTool for snapshots
-        tools_memory = build_tools(
-            knn, BaselineScorer(knn), user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None
-        )
-        self._memory_tool = tools_memory.memory if hasattr(tools_memory, "memory") else None
+        # Reuse the same MemoryTool instance for snapshots (it is stateless,
+        # but a single instance keeps logger/provenance consistent).
+        self._memory_tool = tools.memory if hasattr(tools, "memory") else None
 
         self._planner_tools = tools
         self._intent_search = tools.search
