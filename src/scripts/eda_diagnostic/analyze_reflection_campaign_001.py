@@ -29,8 +29,9 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import mean, median
 
-SRC = Path(__file__).resolve().parents[2]
-CAMPAIGN = SRC / "experiments" / "agent_eval" / "campaigns" / "campaign_001"
+from package.config import get_data_paths
+
+CAMPAIGN = Path(get_data_paths().experiments_dir) / "agent_eval" / "campaigns" / "campaign_001"
 
 # reflect_rounds=1 experiments under analysis, paired with their r0 sibling
 REFLECT_EXPS = {

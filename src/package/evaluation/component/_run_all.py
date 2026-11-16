@@ -328,6 +328,15 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
             else:
                 quality_gate = "not_evaluated"
 
+            # Provenance: older writers put git_sha/provenance under metadata;
+            # fall back so the unified report surfaces real values, not blanks.
+            metadata = result.get("metadata") or {}
+            git_sha = result.get("git_sha") or metadata.get("git_sha")
+            provenance = metadata.get("provenance")
+            provider_error_count = sum(
+                1 for c in per_case if c.get("provider_error")
+            )
+
             aggregated["components"][component] = {
                 "status": "success",
                 "backlog": bool(info.get("backlog")),
@@ -340,8 +349,10 @@ def aggregate_results(result_files: dict[str, Any]) -> dict[str, Any]:
                 },
                 "cases_run": result.get("cases_run", len(per_case)),
                 "failed_cases": failed_cases,
+                "provider_error_count": provider_error_count,
                 "success_rate": success_rate,
-                "git_sha": result.get("git_sha"),
+                "git_sha": git_sha,
+                **({"provenance": provenance} if provenance else {}),
             }
             aggregated["summary"]["successful_components"] += 1
         except Exception as e:

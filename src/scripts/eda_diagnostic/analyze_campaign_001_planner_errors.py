@@ -15,9 +15,11 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parents[2]
-LOGS = SRC / "experiments" / "logs" / "multi_domain"
-CAMPAIGN = SRC / "experiments" / "agent_eval" / "campaigns" / "campaign_001"
+from package.config import get_data_paths
+
+_paths = get_data_paths()
+LOGS = Path(_paths.log_dir)
+CAMPAIGN = Path(_paths.experiments_dir) / "agent_eval" / "campaigns" / "campaign_001"
 
 EXPERIMENTS = {
     "exp_5": "planner/template/r0",
