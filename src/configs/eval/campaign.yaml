@@ -1,5 +1,5 @@
-campaign_id: "campaign_001_parameter_grid"
-description: "Parameter grid search: agents x inference_mode x reflect_rounds"
+campaign_id: "campaign_002_metric_fixes"
+description: "Parameter grid search: agents x inference_mode x reflect_rounds (post metric-integrity fixes; request_scope=all for oracle coverage)"
 
 dataset:
   split: "validation"  # validation or test
@@ -31,6 +31,7 @@ parameter_grid:
 # Optional: Add per_segment (applies to all experiments)
 evaluation_config:
   per_segment: 20  # Requests per (kind, segment)
+  request_scope: "all"  # all = realistic + oracle kinds (constrained/cold_text/exclusion) — exercises exclusion_compliance fixes; ~2x requests vs realistic
 
 # Runtime defaults applied to every experiment's config overlay
 # (per-experiment overrides still go in each experiment's agent_config/evaluation_config)
@@ -47,7 +48,7 @@ statistical_settings:
   paired_comparison: true
 
 # Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
-output_dir: "agent_eval/campaigns/campaign_001"
+output_dir: "agent_eval/campaigns/campaign_002"
 
 # Multi-turn conversation eval — per-experiment opt-in via agent_config.multi_turn
 # (true, or a dict like {enabled: true, limits: {...}}; usable in parameter_grid).

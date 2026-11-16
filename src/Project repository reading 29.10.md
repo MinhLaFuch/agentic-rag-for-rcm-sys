@@ -59,7 +59,7 @@ All changes below are **uncommitted** on `tools-building` @ `880bf5c`. Detailed 
 
 | Area | Change | Evidence |
 |------|--------|----------|
-| **Campaign resume** | `run_campaign.py --only 7,8,11,12` subset selection; per-experiment timeout 3600→7200s; merge preserves completed experiments; `git_sha` recorded | `campaign.yaml`, `campaign_runner.py`, `run_campaign.py`, `test_only_subset.py`; campaign_001 = 12/12 successful, 528 trajectory records for exp 7/8/11/12 |
+| **Campaign resume** | `run_campaign.py --only 7,8,11,12` subset selection; per-experiment timeout 3600→7200s; merge keeps skipped runs and **recomputes comparisons+ablation over merged runs** (2026-11-16 — preserves consistency after re-running a timed-out exp); trajectory-level `--resume` per `{campaign_id}_{exp}_run{N}_trajectories.jsonl`; `git_sha` recorded | `campaign.yaml`, `campaign_runner.py`, `run_campaign.py`, `test_only_subset.py`; campaign_001 = 12/12 successful |
 | **Benchmark cases** | +5 executor cases (exec_019–023), +3 planner cases (planner_033–035), +1 integration case (int_013); `expect_*` metrics; `resolved_config`/limits plumbing | `executor_dataset.jsonl` (22), `planner_dataset.jsonl` (29), `integration_dataset.jsonl` (13) |
 | **Multi-turn eval** | Repaired per-turn metrics (expect_* handling, resolved_config); +2 negative conversations → `conversations.jsonl` = 13 | `multi_turn/_schema.py`, `_agent_runner.py`, `_eval_step.py`, `_run.py`, `multi_turn_evaluator.py` |
 | **Source fingerprint** | `_source_fingerprint()` now hashes `pyproject.toml` + all `.py/.yaml/.yml` under `src/{package,scripts,configs}` (was repo-root only → blind to code drift). **Consequence:** old trajectories/artifacts won't resume under changed code (intentional provenance) | `recommender/experiment/save_experiment.py`; `test_source_fingerprint.py` (4 tests) |
@@ -473,7 +473,7 @@ Final Response + Trajectory (saved to JSONL)
 
 **Config**: `configs/eval/campaign.yaml` (parameter_grid, comparison_pairs, repetition_count, output_dir, per-experiment timeout — now 7200s, `multi_turn` policy never/once/all, `ablation.contrasts`)
 
-**Post-run wiring (added 2026-11-16)**: after comparisons, configured `ablation.contrasts` run automatically via `run_ablation_contrasts` → `<campaign_dir>/ablation/<contrast>/` artifacts + `campaign_result.json["ablation"]` statuses (subset runs skip + preserve). Per-experiment opt-ins: `agent_config.multi_turn`, `agent_config.jev` (both normalized into the config overlay; explicit `enabled:false` prevents base-yaml leakage into grid runs).
+**Post-run wiring (added 2026-11-16)**: after comparisons, configured `ablation.contrasts` run automatically via `run_ablation_contrasts` → `<campaign_dir>/ablation/<contrast>/` artifacts + `campaign_result.json["ablation"]` statuses (subset runs skip + preserve). Per-experiment opt-ins: `agent_config.multi_turn`, `agent_config.jev` (both normalized into the config overlay; explicit `enabled:false` prevents base-yaml leakage into grid runs). `evaluation_config` accepts `per_segment` + `request_scope` (mapped into the agent_eval overlay — campaign.yaml sets `request_scope: "all"` for oracle coverage).
 
 **CLI**: `PYTHONPATH=. python scripts/evaluation/run_campaign.py [--campaign-config PATH] [--only 7,8,11,12] [--dry-run] [--git-sha SHA]` — `--only` runs a subset of grid experiments while preserving completed ones (merge, not overwrite). Campaign overlays may set `agent_eval.exclude_tools` for tool-subset ablations.
 
@@ -1234,7 +1234,8 @@ Campaign `_compare_experiments` uses `bootstrap_confidence_interval` + `paired_b
 | `_build_config_overlay` | Maps `agent_config` keys → overlay fragments: `inference_mode`→`agent/inference`, `reflect_rounds`→`agent/agent`, `exclude_tools`, `jev`/`multi_turn` normalized, `random_seed`→`eval/baselines.seed`, campaign ItemKNN cache→`path/data_paths.item_knn_dir` + `item_knn_reuse_cache` |
 | `_normalize_multi_turn_param` / `_normalize_jev_param` | bool→`{enabled:true}`; dict passthrough; explicit `{enabled:false}` written for grid isolation |
 | `_multi_turn_plans` / `_multi_turn_run_dir` / `_run_multi_turn_fragment` / `_collect_multi_turn_result` | Policy never/once/all resolution; per-run multi_turn artifact status into `campaign_result.json["multi_turn"]` (coverage only — never in comparisons) |
-| `_run_ablation` | Resolves contrast `[agent, experiment_name]` pairs → successful `run_N` dirs → `run_ablation_contrasts` → `<campaign>/ablation/<contrast>/`; subset runs preserve prior `result.ablation` |
+| `_run_ablation` | Resolves contrast `[agent, experiment_name]` pairs → successful `run_N` dirs → `run_ablation_contrasts` → `<campaign>/ablation/<contrast>/`; subset merges recompute it over merged runs |
+| `_merge_subset_result` | Merges `--only` runs into previous `campaign_result.json` (backup first): skipped runs kept verbatim, **comparisons + ablation recomputed over merged runs** (auto-gen pairs resolved over the full grid), summary/multi_turn regenerated |
 | `_run_comparisons` / `_compare_experiments` / `_average_metrics` / `_generate_summary` | comparison_pairs → per-metric paired bootstrap CI + McNemar on repeated runs; averages across `repetition_count` |
 | `_load_experiment_metrics` | Reads ONLY `metrics.json["summary"]` → flat `{agent}_{kind}_{metric}` means — diagnostics/reporting blocks cannot leak into comparisons |
 | `CheckpointManager` | `save/load/clear_checkpoint` for crash recovery |

@@ -549,7 +549,7 @@ def test_repo_campaign_yaml_still_loads_via_config_system():
 
     campaign = CampaignConfig.from_yaml(CONFIG_DIR / "eval" / "campaign.yaml")
 
-    assert campaign.campaign_id == "campaign_001_parameter_grid"
+    assert campaign.campaign_id == "campaign_002_metric_fixes"
     assert campaign.statistical_settings["confidence_level"] == 0.95
     assert len(campaign.expand_parameter_grid()) == 12  # 3 agents x 2 modes x 2 reflect_rounds
 

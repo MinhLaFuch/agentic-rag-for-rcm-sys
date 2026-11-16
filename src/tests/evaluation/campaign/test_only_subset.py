@@ -79,9 +79,9 @@ def test_subset_run_only_touches_selected(tmp_path):
     for d in out.iterdir():
         if d.is_dir():
             assert d.name.startswith("exp_2_")
-    assert result.subset["comparisons"] == "skipped_subset_run"
+    assert result.subset["comparisons"] == "recomputed_over_merged_runs"
     assert len(result.subset["skipped"]) == 2
-    assert result.comparisons == {}
+    assert result.comparisons == {}  # no previous campaign_result.json -> nothing to merge into
     # new runs carry the git_sha of this run
     assert all(r.git_sha == "sha_subset" for r in result.runs)
 
@@ -143,8 +143,11 @@ def test_subset_run_merges_previous_result(tmp_path):
     assert by_name[n2]["success"] is True
     assert by_name[n2]["metrics"]["task_success_rate"] == 0.9
     assert by_name[n2]["git_sha"] == "sha2"
-    # comparisons preserved from previous full run
-    assert on_disk["comparisons"] == {f"{n1}_vs_{n3}": {"status": "success"}}
+    # comparisons RECOMPUTED over merged runs: auto-gen pairs vs first
+    # experiment now include the re-run exp_2 (previous run lacked its data)
+    assert set(on_disk["comparisons"]) == {f"{n1}_vs_{n2}", f"{n1}_vs_{n3}"}
+    assert on_disk["comparisons"][f"{n1}_vs_{n2}"]["status"] == "success"
+    assert on_disk["comparisons"][f"{n1}_vs_{n2}"]["deltas"]["task_success_rate"]["b"] == 0.9
     # summary recomputed over merged runs (3 entries, 3 successful now)
     assert on_disk["summary"]["total_runs"] == 3
     assert on_disk["summary"]["successful_runs"] == 3

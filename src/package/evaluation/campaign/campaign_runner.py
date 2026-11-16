@@ -90,14 +90,15 @@ class CampaignRunner:
                 print(f"  - SKIPPED {name}")
 
         # Auto-generate comparison pairs if empty and using parameter grid.
-        # Subset runs never compare: pairs would be missing skipped experiments,
-        # and the previous campaign_result.json comparisons must not be clobbered.
+        # Pairs are resolved over ALL experiments (not just the --only subset)
+        # so a subset merge can recompute comparisons over the merged runs.
         comparison_pairs = self.config.comparison_pairs
-        if only is None and not comparison_pairs and self.config.parameter_grid:
+        if not comparison_pairs and self.config.parameter_grid:
             # Compare all experiments against the first one (baseline)
-            baseline_exp = experiments[0]
-            comparison_pairs = [(baseline_exp.name, exp.name) for exp in experiments[1:]]
-            print(f"\nAuto-generated {len(comparison_pairs)} comparison pairs (vs baseline)")
+            baseline_exp = all_experiments[0]
+            comparison_pairs = [(baseline_exp.name, exp.name) for exp in all_experiments[1:]]
+            if only is None:
+                print(f"\nAuto-generated {len(comparison_pairs)} comparison pairs (vs baseline)")
 
         runs: list[ExperimentRun] = []
 
@@ -154,24 +155,34 @@ class CampaignRunner:
                 "only": [str(t) for t in only],
                 "ran": [e.name for e in experiments],
                 "skipped": skipped_names,
-                "comparisons": "skipped_subset_run",
+                "comparisons": "recomputed_over_merged_runs",
             }
 
         # Save campaign result
         result_path = output_dir / "campaign_result.json"
         if only is not None:
-            result = self._merge_subset_result(result, result_path)
+            result = self._merge_subset_result(
+                result, result_path, comparison_pairs=comparison_pairs, output_dir=output_dir
+            )
         with open(result_path, "w", encoding="utf-8") as f:
             json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)
 
         return result
 
-    def _merge_subset_result(self, result: CampaignResult, result_path: Path) -> CampaignResult:
+    def _merge_subset_result(
+        self,
+        result: CampaignResult,
+        result_path: Path,
+        comparison_pairs: list[tuple[str, str]] | None = None,
+        output_dir: Path | None = None,
+    ) -> CampaignResult:
         """Merge a subset run into the existing campaign_result.json.
 
-        Runs of skipped experiments keep their previous entries verbatim;
-        comparisons from the previous full run are preserved untouched (a
-        subset cannot recompute them). The previous file is backed up first.
+        Runs of skipped experiments keep their previous entries verbatim.
+        Comparisons and ablation contrasts are RECOMPUTED over the merged run
+        set — preserving the previous blocks would keep metrics computed
+        without the re-run experiment's data (the timeout-resume scenario).
+        The previous file is backed up first.
         """
         if not result_path.exists():
             return result
@@ -193,12 +204,16 @@ class CampaignRunner:
         merged.extend(new_runs.values())  # runs with no previous entry (shouldn't happen for same campaign)
 
         result.runs = merged
-        if prev.comparisons:
+        if comparison_pairs:
+            result.comparisons = self._run_comparisons(merged, output_dir, comparison_pairs)
+        elif prev.comparisons:
             result.comparisons = prev.comparisons
         result.summary = self._generate_summary(merged)
         result.multi_turn = self._collect_multi_turn_result(merged)
-        if prev.ablation:
-            result.ablation = prev.ablation
+        # Ablation contrasts resolve experiment names to run dirs; merged runs
+        # carry experiment_dir for both old and new entries, so recompute gives
+        # statuses consistent with the merged run set.
+        result.ablation = self._run_ablation(merged, output_dir) if output_dir is not None else prev.ablation
         return result
 
     def _run_ablation(self, runs: list[ExperimentRun], output_dir: Path) -> dict[str, Any]:
@@ -343,7 +358,7 @@ class CampaignRunner:
 
     # agent_config keys the overlay builder knows how to map; anything else is a config error
     _AGENT_CONFIG_KEYS = {"agents", "inference_mode", "reflect_rounds", "multi_turn", "exclude_tools", "jev"}
-    _EVALUATION_CONFIG_KEYS = {"per_segment"}
+    _EVALUATION_CONFIG_KEYS = {"per_segment", "request_scope"}
 
     # agent_config.multi_turn accepts bool or a dict; these keys map onto
     # agent_eval.multi_turn. output_dir is NOT accepted — the campaign owns
@@ -491,6 +506,10 @@ class CampaignRunner:
         per_segment = experiment.evaluation_config.get("per_segment")
         if per_segment is not None:
             agent_eval["per_segment"] = per_segment
+
+        request_scope = experiment.evaluation_config.get("request_scope")
+        if request_scope is not None:
+            agent_eval["request_scope"] = request_scope
 
         # Multi-turn fragment resolved by _multi_turn_plans; every other run
         # gets enabled=false explicitly so a base-yaml enabled=true cannot
