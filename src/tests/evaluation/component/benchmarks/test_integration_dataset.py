@@ -13,10 +13,7 @@ from package.evaluation.component._schema import BenchmarkResult
 from package.evaluation.component.benchmarks.integration_benchmark import (
     IntegrationBenchmark,
 )
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions,
-    create_test_mappings,
-)
+from package.evaluation.component.benchmarks import create_test_interactions, create_test_mappings
 
 DATASET = (
     Path(__file__).parents[4]

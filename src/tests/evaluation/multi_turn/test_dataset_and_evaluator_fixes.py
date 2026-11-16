@@ -16,10 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions,
-    create_test_mappings,
-)
+from package.evaluation.component.benchmarks import create_test_interactions, create_test_mappings
 from package.evaluation.multi_turn._schema import Conversation, TurnInput, TurnResult
 from package.evaluation.multi_turn.multi_turn_evaluator import MultiTurnEvaluator
 

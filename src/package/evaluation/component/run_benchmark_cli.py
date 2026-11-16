@@ -104,7 +104,7 @@ def _get_evaluator(component: str, config: dict[str, Any]):
     """Import and instantiate the appropriate evaluator for the component."""
     if component == "memory":
         from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
-        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+        from .benchmarks import create_test_interactions, create_test_meta, create_test_mappings
 
         interactions = create_test_interactions()
         user2id, item2id, _ = create_test_mappings(interactions)
@@ -112,7 +112,7 @@ def _get_evaluator(component: str, config: dict[str, Any]):
         return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
     elif component == "memory_correctness":
         from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
-        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+        from .benchmarks import create_test_interactions, create_test_meta, create_test_mappings
 
         interactions = create_test_interactions()
         user2id, item2id, _ = create_test_mappings(interactions)

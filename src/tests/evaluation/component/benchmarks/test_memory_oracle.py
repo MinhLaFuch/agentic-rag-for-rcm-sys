@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from package.evaluation.component.benchmarks.memory_oracle import compute_memory_oracle
+from package.evaluation.component.benchmarks import compute_memory_oracle
 
 
 @pytest.fixture

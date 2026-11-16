@@ -5,12 +5,11 @@ from __future__ import annotations
 import pytest
 
 from package.evaluation.component._loader import load_cases
-from package.evaluation.component.benchmarks import build_memory_correctness_dataset as builder
-from package.evaluation.component.benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions, create_test_mappings, create_test_meta,
+from package.evaluation.component.benchmarks import (
+    DATASET_PATH, DEFAULT_RECENT_N, compute_memory_oracle,
+    create_test_interactions, create_test_mappings, create_test_meta, render,
 )
-from package.evaluation.component.benchmarks.memory_oracle import DEFAULT_RECENT_N, compute_memory_oracle
+from package.evaluation.component.benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
 from package.memory.memory_tool import MemoryTool
 
 
@@ -78,7 +77,8 @@ def test_oracle_recent_n_matches_tool_config():
 
 def test_oracle_does_not_depend_on_tool_or_corpus():
     import ast
-    import package.evaluation.component.benchmarks.memory_oracle as mod
+    import importlib
+    mod = importlib.import_module("package.evaluation.component.benchmarks.compute_memory_oracle")
     tree = ast.parse(open(mod.__file__, encoding="utf-8").read())
     imported = {n.module or "" for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)} | {
         a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
@@ -90,9 +90,9 @@ def test_committed_dataset_matches_oracle():
     # loved_items/hated_items order IS part of the contract ("highest/lowest-rated
     # items" — ranking order), and the oracle/tool sort is now deterministic
     # (rating, then item_id tie-break), so strict equality must hold.
-    committed = builder.DATASET_PATH.read_text(encoding="utf-8")
-    assert committed == builder.render(), \
-        "run: python -m package.evaluation.component.benchmarks.build_memory_correctness_dataset"
+    committed = DATASET_PATH.read_text(encoding="utf-8")
+    assert committed == render(), \
+        "run: python -m scripts.evaluation.build_memory_correctness_dataset"
 
 
 def _evaluator(world, **kw):
@@ -101,7 +101,7 @@ def _evaluator(world, **kw):
 
 
 def test_real_tool_passes_every_case(world):
-    cases = load_cases(builder.DATASET_PATH)
+    cases = load_cases(DATASET_PATH)
     # Only test the original 20 cases (correctness_001 to correctness_020);
     # expansion cases (021-031, minus removed duplicates) are covered by
     # dedicated tests below.
@@ -114,7 +114,7 @@ def test_real_tool_passes_every_case(world):
 
 
 def test_leakage_guard_cases_present_and_raising(world):
-    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    cases = {c.case_id: c for c in load_cases(DATASET_PATH)}
     ev = _evaluator(world)
     assert ev.run_component(cases["correctness_015"].input)["error_type"] == "LeakageError"
     assert "error_type" not in ev.run_component(cases["correctness_016"].input)
@@ -130,7 +130,7 @@ def test_detector_catches_planted_leakage(world):
         def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
             super().__init__(inter, user2id, item2id, corpus, logger, as_of_timestamp=None)
 
-    cases = [c for c in load_cases(builder.DATASET_PATH) if "cutoff" in c.tags]
+    cases = [c for c in load_cases(DATASET_PATH) if "cutoff" in c.tags]
     summary = _evaluator(world, tool_factory=FullFrame).run_benchmark(cases, component_name="leaky")
     assert summary.metrics["future_leakage_max"] == 1.0
     by_id = {r.case_id: r for r in summary.per_case_results}
@@ -144,7 +144,7 @@ def test_detector_flags_guard_that_stops_raising(world):
         def __init__(self, interactions, user2id, item2id, corpus, logger=None, as_of_timestamp=None):
             super().__init__(interactions, user2id, item2id, corpus, logger, as_of_timestamp=None)
 
-    cases = [c for c in load_cases(builder.DATASET_PATH) if "leakage_guard" in c.tags and "negative" in c.tags]
+    cases = [c for c in load_cases(DATASET_PATH) if "leakage_guard" in c.tags and "negative" in c.tags]
     s = _evaluator(world, tool_factory=NoGuard).run_benchmark(cases, component_name="noguard")
     assert s.metrics["error_behavior_correct_mean"] == 0.0
 
@@ -153,7 +153,7 @@ def test_tool_side_asof_case_031_passes(world):
     """correctness_031 isolates the execute()-level ts<=as_of filter:
     untruncated frame + as_of assigned post-construction (guard bypassed).
     If that filter were removed, the profile would contain ts>4 rows."""
-    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    cases = {c.case_id: c for c in load_cases(DATASET_PATH)}
     case = cases["correctness_031"]
     assert case.input["snapshot_mode"] == "tool_side_asof"
     assert case.metadata["production_path"] is False
@@ -178,7 +178,7 @@ def test_tool_side_asof_catches_removed_execute_filter(world):
             finally:
                 self.as_of_timestamp = saved
 
-    cases = {c.case_id: c for c in load_cases(builder.DATASET_PATH)}
+    cases = {c.case_id: c for c in load_cases(DATASET_PATH)}
     case = cases["correctness_031"]
     ev = _evaluator(world, tool_factory=NoExecuteFilter)
     metrics = ev.score_component(ev.run_component(case.input), case.expected)

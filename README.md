@@ -53,14 +53,21 @@ Scripts trong `scripts/` cần `PYTHONPATH=.` (pytest tự set qua `pyproject.to
 PYTHONPATH=. python scripts/check_llm_provider.py
 ```
 
-## Chạy Phase 3 pipeline trên dữ liệu thật
+## Rebuild `src/resource/` (gitignored, ~17GB)
+
+`resource/` không nằm trong git — rebuild từ raw Amazon Reviews 2023:
 
 ```bash
-DOMAIN=Video_Games PYTHONPATH=. python scripts/run_phase3_pipeline_local.py \
-    --review-path /duong/dan/toi/review_Video_Games.jsonl.gz
+cd src
+DOMAIN=Video_Games PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games
+# lặp cho Toys_and_Games, Electronics; merged bundle = không truyền --domain
 ```
 
-Pipeline: clean → k-core filter (min_user=5, min_item=5 theo `configs/data.yaml`) → ID mapping → temporal split (80/10/10) → leakage check (3 loại check, dừng pipeline nếu fail) → lưu `data/mapped/`, `data/splits/`. Paste toàn bộ output console lại cho Claude để cập nhật docs với số liệu thật.
+4 stages: clean → k-core filter → ID mapping → temporal split + leakage check → corpus/ItemKNN artifacts. Thiếu `--force` sẽ không ghi đè output đã có.
+
+Benchmark `.jsonl` datasets (component benchmarks, multi-turn `conversations.jsonl`) **đã commit** trong `package/evaluation/` — không cần regenerate khi clone. `memory_correctness_dataset.jsonl` có drift-check: `python -m scripts.evaluation.build_memory_correctness_dataset --check` (regenerate bằng cách bỏ `--check`); các dataset planner/executor/grounding/integration là curated fixtures, sửa tay.
+
+Dense retrieval artifacts (optional): env riêng có torch + sentence-transformers → `python scripts/evaluation/build_semantic_embeddings.py pin/build` → điền `configs/eval/dense_retrieval.yaml`.
 
 ## Cấu trúc thư mục
 

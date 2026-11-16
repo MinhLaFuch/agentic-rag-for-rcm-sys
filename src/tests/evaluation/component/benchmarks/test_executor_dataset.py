@@ -9,10 +9,7 @@ import pytest
 
 from package.evaluation.component._loader import load_cases
 from package.evaluation.component.benchmarks.executor_benchmark import ExecutorBenchmark
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions,
-    create_test_mappings,
-)
+from package.evaluation.component.benchmarks import create_test_interactions, create_test_mappings
 
 DATASET = (
     Path(__file__).parents[4]
