@@ -20,8 +20,7 @@ def score_layer5_deployment(
                        inference_prompt_tokens, inference_completion_tokens,
                        inference_latency_seconds, provider_error, sql_time_budget_hits,
                        per_step_tokens, per_step_latency, per_step_cost,
-                       cost_per_request, cost_per_successful_request,
-                       cost_breakdown_by_component, latency_distribution
+                       cost_per_request, cost_breakdown_by_component, latency_distribution
     """
     agent = trajectory["agent"]
     is_planner = agent in PLANNER_AGENTS
@@ -85,10 +84,10 @@ def score_layer5_deployment(
     row["per_step_latency"] = per_step_latency
     row["per_step_cost"] = per_step_cost
 
-    # Cost per request and per successful request
+    # Cost per request; cost_per_successful_request is derived in score_trajectory
+    # (it needs task_success from layer2, which this layer cannot see).
     total_cost = sum(step.get("cost", 0.0) for step in steps) if is_planner else 0.0
     row["cost_per_request"] = total_cost
-    row["cost_per_successful_request"] = total_cost if trajectory.get("task_success") else None
 
     # Cost breakdown by component
     cost_breakdown = {}

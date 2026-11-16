@@ -145,7 +145,9 @@ def aggregate_metrics(
 
     aggregated = {}
     for key in sorted(metric_keys):
-        values = [m.get(key, 0) for m in metrics_list if key in m]
+        # Only numeric values count: missing keys and None/non-numeric values are
+        # excluded (count reflects runs that actually reported the metric).
+        values = [m[key] for m in metrics_list if isinstance(m.get(key), (int, float))]
         if values:
             values_arr = np.array(values)
             aggregated[key] = {

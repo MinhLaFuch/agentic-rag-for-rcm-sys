@@ -55,7 +55,7 @@ from package.evaluation import (
 )
 from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.trajectory import score_trajectory, summarize
-from package.evaluation.diagnostics import error_taxonomy, reflection_diagnostics
+from package.evaluation.diagnostics import error_taxonomy, pool_stage_diagnostics, reflection_diagnostics
 from package.evaluation.reporting import (
     build_report_results,
     generate_all_charts,
@@ -810,6 +810,7 @@ def main() -> None:
             [{**t, "kind": by_id[t["request_id"]].kind} for t in trajectories]
         ),
         "reflection": reflection_diagnostics(rows),
+        "pool_stage": pool_stage_diagnostics(rows),
     }
 
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],

@@ -111,6 +111,57 @@ def test_scored_rows_carry_the_oracle_flag(corpus):
     assert "oracle" not in summarize([row])["planner"]["exclusion"]["all"]  # flag, not a score
 
 
+def test_build_requests_populates_structured_exclusions(corpus):
+    exclusion = _requests(corpus)["exclusion-warm-0"]
+    # user 0 held-out = {VG_B(idx1), VG_C(idx2)}; the first held-out item is excluded
+    assert exclusion.excluded_item_ids == [VG_B]
+    assert exclusion.excluded_categories == ["Games"]  # deepest category of VG_B
+    assert VG_C not in exclusion.excluded_item_ids
+
+
+def _exclusion_row(corpus, recommended):
+    request = _requests(corpus)["exclusion-warm-0"]
+    traj = _trajectory(steps=[_step("SimilarTool")], recommended=recommended)
+    return score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+
+
+def test_exclusion_compliance_detects_item_and_category_violations(corpus):
+    # VG_C shares no excluded category and is not the excluded item -> compliant
+    row = _exclusion_row(corpus, [VG_C])
+    assert row["exclusion_compliance"] == 1.0
+    assert row["exclusion_compliance_detail"] == []
+    assert row["task_success"] is True
+
+    # Recommending the excluded item itself -> violation
+    row = _exclusion_row(corpus, [VG_B])
+    assert row["exclusion_compliance"] == 0.0
+    assert row["exclusion_compliance_detail"] == [VG_B]
+    assert row["task_success"] is False
+
+    # VG_A is a DIFFERENT item but shares the excluded "Games" category path -> violation
+    row = _exclusion_row(corpus, [VG_A])
+    assert row["exclusion_compliance"] == 0.0
+    assert row["exclusion_compliance_detail"] == [VG_A]
+    assert row["task_success"] is False
+
+    # Mixed: one clean + one violating -> partial compliance, still not success
+    row = _exclusion_row(corpus, [VG_C, VG_A])
+    assert row["exclusion_compliance"] == 0.5
+    assert row["exclusion_compliance_detail"] == [VG_A]
+    assert row["task_success"] is False
+
+
+def test_exclusion_compliance_unmeasurable_without_structured_fields(corpus):
+    # Requests built before the schema change (or hand-built) carry no exclusions:
+    # compliance stays None and task_success falls back to the rec-based check.
+    request = AgentRequest(request_id="exclusion-manual", kind="exclusion", segment="warm",
+                           text="t", targets=[2], oracle=True)
+    traj = _trajectory(steps=[_step("SimilarTool")], recommended=[VG_C])
+    row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["exclusion_compliance"] is None
+    assert row["task_success"] is True
+
+
 def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
     assert [r.to_dict() for r in _requests(corpus).values()] == [r.to_dict() for r in _requests(corpus).values()]
     with pytest.raises(ValueError):
@@ -335,7 +386,8 @@ def test_target_pool_detail_is_skipped_by_summarize(corpus):
     row = _pool_row(corpus, [1], itemcf_reachable={0})
     summary = summarize([row])
     assert "target_pool_detail" not in summary["planner"]["similar"]["all"]
-    assert "target_in_pool_sql" not in summary["planner"]["similar"]["all"]  # diagnostic, not a score
+    # verdicts DO aggregate as rates under the include-all-verdicts policy
+    assert summary["planner"]["similar"]["all"]["target_in_pool_sql"] == row["target_in_pool_sql"]
 
 
 def _stage_row(corpus, targets, steps, recommended=(), *, itemcf_reachable=None, itemcf_reachable_request=None,
@@ -499,6 +551,83 @@ def test_summarize_means_per_agent_kind_and_segment():
     out = summarize(rows)["a"]["similar"]
     assert out["warm"]["n"] == 2 and out["warm"]["task_success"] == 0.5 and out["warm"]["recall@10"] == 0.25
     assert out["all"]["n"] == 3 and out["all"]["recall@10"] == pytest.approx(0.5) and "x" not in out["all"]
+
+
+def test_summarize_aggregates_pool_verdicts_as_rates_and_skips_details():
+    rows = [
+        {"request_id": "r0", "agent": "a", "kind": "similar", "segment": "warm",
+         "target_in_pool": True, "target_in_pool_sql": True, "target_in_pool_semantic": None,
+         "target_reachable": True, "retrieved_by_itemcf": True,
+         "stage_lost": "rank", "target_pool_detail": {"x": 1},
+         "exclusion_compliance": 1.0},
+        {"request_id": "r1", "agent": "a", "kind": "similar", "segment": "warm",
+         "target_in_pool": False, "target_in_pool_sql": False, "target_in_pool_semantic": None,
+         "target_reachable": False, "retrieved_by_itemcf": False,
+         "stage_lost": "filter", "target_pool_detail": {"x": 2},
+         "exclusion_compliance": 0.5},
+    ]
+    seg = summarize(rows)["a"]["similar"]["all"]
+    # verdicts aggregate as rates over measurable rows
+    assert seg["target_in_pool"] == 0.5
+    assert seg["target_in_pool_sql"] == 0.5
+    assert seg["target_reachable"] == 0.5
+    assert seg["exclusion_compliance"] == 0.75
+    # all-None verdict -> key absent (unmeasurable, not zero)
+    assert "target_in_pool_semantic" not in seg
+    # dicts/strings stay out of summary
+    assert "target_pool_detail" not in seg and "stage_lost" not in seg
+
+
+def _memory_step(data):
+    return {"tool": "MemoryTool", "ok": True, "error": None, "invented_ids": [],
+            "latency_seconds": 0.01, "data": data}
+
+
+def _args_step(tool, args):
+    return {"tool": tool, "ok": True, "error": None, "invented_ids": [],
+            "latency_seconds": 0.01, "args": args}
+
+
+MEMORY_DATA = {
+    "user_id": "u0", "known": True, "n_interactions": 5,
+    "top_categories": ["Games"], "love_categories": ["Games"],
+    "hate_categories": [], "price_range": {"min": 5.0, "max": 20.0},
+    "recent_items": [VG_B], "loved_items": [VG_A], "hated_items": [],
+}
+
+
+def _memory_row(steps):
+    request = AgentRequest(request_id="personalized-warm-0", kind="personalized",
+                           segment="warm", text="t", targets=[1])
+    traj = _trajectory(steps=steps, recommended=[VG_C])
+    return score_trajectory(request, traj, item2id=ITEM2ID, corpus=None, k=2)
+
+
+def test_memory_profile_usage_detects_value_matched_reuse():
+    mem = _memory_step(MEMORY_DATA)
+    # $N.path reference still counts
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"categories_any": ["$1.top_categories"]}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # category value copied from memory (no $ref) now counts too
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"categories_any": ["Games"]}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # price_max equal to memory price_range.max counts
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"price_max": 20.0}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # loved/recent item used as SimilarTool seed counts
+    row = _memory_row([mem, _args_step("SimilarTool", {"items": [VG_A]})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+
+
+def test_memory_profile_usage_not_used_and_not_retrieved():
+    mem = _memory_step(MEMORY_DATA)
+    unrelated = _args_step("FilterTool", {"filters": {"categories_any": ["Electronics"], "price_max": 3.0}})
+    row = _memory_row([mem, unrelated])
+    assert row["memory_profile_retrieved"] is True
+    assert row["memory_profile_usage"] == "retrieved_not_used"
+    row = _memory_row([_args_step("FilterTool", {"filters": {"price_max": 20.0}})])
+    assert row["memory_profile_retrieved"] is False
+    assert row["memory_profile_usage"] is None  # usage only defined when memory was retrieved
 
 
 def test_memory_tool_refuses_interactions_from_the_future(corpus, cf_setup):

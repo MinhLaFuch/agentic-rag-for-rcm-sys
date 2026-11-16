@@ -18,6 +18,8 @@ class AgentRequest:
     targets: list[int] = field(default_factory=list)  # relevant held-out item_idx
     price_max: float | None = None  # "constrained"
     category: str | None = None  # "constrained" / "cold_text"
+    excluded_item_ids: list[str] = field(default_factory=list)  # "exclusion": item_ids the user asked to exclude
+    excluded_categories: list[str] = field(default_factory=list)  # "exclusion": category nodes to exclude
     oracle: bool = False  # True when constraints were derived from held-out items
 
     def to_dict(self) -> dict[str, Any]:

@@ -86,4 +86,10 @@ def score_trajectory(
         # a planner that cannot read the user's history has no honest way to personalize: not scored (asking back is fine)
         row["tool_selection_ok"] = row["task_success"] = None
 
+    # cost_per_successful_request needs the FINAL task_success (after overrides)
+    # and cost_per_request (layer5); neither layer sees both, so the combiner derives it.
+    row["cost_per_successful_request"] = (
+        row.get("cost_per_request") if row.get("task_success") else None
+    )
+
     return row

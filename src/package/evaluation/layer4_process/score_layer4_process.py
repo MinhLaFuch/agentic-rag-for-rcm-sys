@@ -35,7 +35,7 @@ def score_layer4_process(
         "plan_valid": plan_valid,
         "plan_attempts": usage.get("attempts") if is_planner else None,
         "plan_truncated": bool(trajectory.get("truncated")) if is_planner else None,
-        "n_steps": len(steps) if is_planner else None,
+        "n_steps": len(steps) if (is_planner or steps) else None,
         "steps_ok_rate": (sum(s["ok"] for s in steps) / len(steps)) if steps else None,
         "invented_ids": sum(len(s.get("invented_ids", [])) for s in steps) if is_planner else None,
         "reflections": int(trajectory.get("reflections") or 0) if is_planner else None,
@@ -137,38 +137,61 @@ def score_layer4_process(
         
         if memory_step:
             memory_profile_retrieved = True
-            data = memory_step.get("data", {})
-            # Check if memory profile was actually used in subsequent steps
-            profile_used = False
-            for step in steps:
-                args = step.get("args", {})
-                if isinstance(args, dict):
-                    filters = args.get("filters", {})
-                    if isinstance(filters, dict):
-                        # Check if memory profile fields were used
-                        if any(key in filters for key in ["categories_any", "categories_all", "price_max"]):
-                            # Check if values came from memory
-                            pass
-                        # Also check query for memory-derived keywords
-                        query = args.get("query", "")
-                        if query and memory_step.get("data", {}):
-                            # Could check if query uses memory categories
-                            pass
-            
-            # For now, just track if memory was retrieved and if any subsequent SQL/SemanticSearch used it
-            used_after_memory = False
-            memory_idx = steps.index(memory_step) if memory_step in steps else -1
-            for step in steps[memory_idx+1:]:
-                if step.get("tool") in ("FilterTool", "SearchTool", "SimilarTool"):
-                    args = step.get("args", {})
-                    if isinstance(args, dict):
-                        # Check for $N.path references to memory step
-                        for v in args.values():
-                            if isinstance(v, str) and v.startswith(f"${memory_idx+1}."):
-                                used_after_memory = True
-                                break
-            
-            memory_profile_usage = "retrieved_and_used" if used_after_memory else ("retrieved_not_used" if memory_profile_retrieved else "not_retrieved")
+            memory_idx = steps.index(memory_step)
+            data = memory_step.get("data") or {}
+            # Memory-derived values a later step could plausibly reuse.
+            mem_cats = set(data.get("top_categories") or []) | set(data.get("love_categories") or [])
+            mem_items = set(data.get("loved_items") or []) | set(data.get("recent_items") or [])
+            price_range = data.get("price_range") or {}
+            mem_price_max = price_range.get("max")
+
+            def _has_step_ref(value: Any) -> bool:
+                # "$N.path" references can be nested inside filters dicts/lists.
+                if isinstance(value, str):
+                    return value.startswith(f"${memory_idx + 1}.")
+                if isinstance(value, dict):
+                    return any(_has_step_ref(v) for v in value.values())
+                if isinstance(value, (list, tuple)):
+                    return any(_has_step_ref(v) for v in value)
+                return False
+
+            def _args_use_memory(args: dict) -> bool:
+                # Explicit "$N.path" reference to the memory step output.
+                if _has_step_ref(args):
+                    return True
+                filters = args.get("filters")
+                if isinstance(filters, dict):
+                    for key in ("categories_any", "categories_all"):
+                        vals = filters.get(key)
+                        if isinstance(vals, list) and mem_cats & {str(c) for c in vals}:
+                            return True
+                    pm = filters.get("price_max")
+                    if (mem_price_max is not None and isinstance(pm, (int, float))
+                            and abs(pm - mem_price_max) <= max(1e-9, abs(mem_price_max) * 1e-6)):
+                        return True
+                query = args.get("query")
+                if isinstance(query, str) and query:
+                    ql = query.lower()
+                    if any(str(c).lower() in ql for c in mem_cats):
+                        return True
+                items = args.get("items")
+                if isinstance(items, list) and mem_items & {str(i) for i in items}:
+                    return True
+                return False
+
+            # Value-matching is a heuristic: a coincidental price_max or shared
+            # category can false-positive, but it beats the old $N.path-only
+            # check which missed value-copied usage entirely.
+            used_after_memory = any(
+                step.get("tool") in ("FilterTool", "SearchTool", "SimilarTool")
+                and isinstance(step.get("args"), dict)
+                and _args_use_memory(step["args"])
+                for step in steps[memory_idx + 1:]
+            )
+
+            # memory_profile_usage stays None when no MemoryTool step ran —
+            # "not retrieved" is already carried by memory_profile_retrieved=False.
+            memory_profile_usage = "retrieved_and_used" if used_after_memory else "retrieved_not_used"
     row["memory_profile_retrieved"] = memory_profile_retrieved
     row["memory_profile_usage"] = memory_profile_usage
 
@@ -192,7 +215,10 @@ def score_layer4_process(
                         break
     row["semanticsearch_keyword_quality"] = semanticsearch_keyword_quality
 
-    # Tool argument correctness: check if args match expected schema
+    # Tool argument correctness: share of schema-scored steps that ran ok.
+    # NOT the same as args_valid_rate: unknown_tool/invented_id steps are excluded
+    # from the denominator here (they are tool-selection failures, not arg failures),
+    # while args_valid_rate counts them against the rate over ALL steps.
     tool_argument_correctness = None
     if is_planner and steps:
         correct = 0
@@ -226,14 +252,28 @@ def score_layer4_process(
 
     # Reflection tracking: was reflection actually invoked and did it succeed?
     reflection_invoked = trajectory.get("reflections", 0) > 0 if is_planner else False
-    # Reflection succeeded if first_attempt_ok was False but final result is ok
+    # Reflection succeeded if first_attempt_ok was False but the final outcome is
+    # appropriate for the kind — recommendations are NOT required for kinds whose
+    # correct answer is "ask back" or "cannot answer".
     reflection_succeeded = False
     if reflection_invoked:
         first_ok = trajectory.get("first_attempt_ok", False)
         final_steps_ok = all(s.get("ok", True) for s in trajectory.get("steps", []))
         final_has_rec = len(trajectory.get("recommended", [])) > 0
-        # Reflection succeeded if first attempt failed but final succeeded
-        reflection_succeeded = (not first_ok) and final_steps_ok and final_has_rec
+        kind = getattr(request, "kind", None)
+        if kind == "ambiguous":
+            final_ok = bool(trajectory.get("ask_user")) and not trajectory.get("steps")
+        elif kind == "unanswerable":
+            answer_status = trajectory.get("answer_status")
+            if answer_status is not None:
+                final_ok = answer_status in ("ask_user", "no_result") or (
+                    answer_status == "ok" and trajectory.get("answer_grounded") and not final_has_rec
+                )
+            else:
+                final_ok = final_steps_ok and not final_has_rec
+        else:
+            final_ok = final_steps_ok and final_has_rec
+        reflection_succeeded = (not first_ok) and final_ok
     row["reflection_invoked"] = reflection_invoked
     row["reflection_succeeded"] = reflection_succeeded
 

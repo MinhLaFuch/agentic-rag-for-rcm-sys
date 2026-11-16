@@ -37,6 +37,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -81,7 +82,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -95,7 +95,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-similar-1",
@@ -134,6 +135,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -178,7 +180,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -192,7 +193,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-similar-2",
@@ -231,6 +233,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -275,7 +278,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -289,7 +291,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-similar-3",
@@ -328,6 +331,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -372,7 +376,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -386,7 +389,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-personalized-4",
@@ -425,6 +429,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -469,7 +474,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -483,7 +487,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-personalized-5",
@@ -522,6 +527,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -566,7 +572,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -580,7 +585,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-personalized-6",
@@ -619,6 +625,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -663,7 +670,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -677,7 +683,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-personalized-7",
@@ -716,6 +723,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -760,7 +768,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -774,7 +781,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-constrained-8",
@@ -813,6 +821,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": 0.5,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -857,7 +866,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -871,7 +879,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "baseline-constrained-9",
@@ -910,6 +919,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -954,7 +964,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -968,7 +977,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-constrained-10",
@@ -1007,6 +1017,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1051,7 +1062,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1065,7 +1075,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-constrained-11",
@@ -1104,6 +1115,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1148,7 +1160,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1162,7 +1173,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-cold_text-12",
@@ -1201,6 +1213,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -1245,7 +1258,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1259,7 +1271,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "baseline-cold_text-13",
@@ -1298,6 +1311,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1342,7 +1356,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1356,7 +1369,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-cold_text-14",
@@ -1395,6 +1409,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1439,7 +1454,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1453,7 +1467,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-cold_text-15",
@@ -1492,6 +1507,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1536,7 +1552,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1550,7 +1565,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "baseline-ambiguous-16",
@@ -1589,6 +1605,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1633,7 +1650,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1647,7 +1663,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "type1-similar-17",
@@ -1686,6 +1703,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -1730,7 +1748,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1744,7 +1761,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-similar-18",
@@ -1783,6 +1801,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1827,7 +1846,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1841,7 +1859,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-similar-19",
@@ -1880,6 +1899,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -1924,7 +1944,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -1938,7 +1957,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-similar-20",
@@ -1977,6 +1997,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2021,7 +2042,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2035,7 +2055,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-personalized-21",
@@ -2074,6 +2095,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -2118,7 +2140,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2132,7 +2153,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-personalized-22",
@@ -2171,6 +2193,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2215,7 +2238,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2229,7 +2251,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-personalized-23",
@@ -2268,6 +2291,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2312,7 +2336,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2326,7 +2349,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-personalized-24",
@@ -2365,6 +2389,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2409,7 +2434,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2423,7 +2447,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-constrained-25",
@@ -2462,6 +2487,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": 0.5,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -2506,7 +2532,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2520,7 +2545,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "type1-constrained-26",
@@ -2559,6 +2585,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2603,7 +2630,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2617,7 +2643,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-constrained-27",
@@ -2656,6 +2683,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2700,7 +2728,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2714,7 +2741,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-constrained-28",
@@ -2753,6 +2781,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2797,7 +2826,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2811,7 +2839,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-cold_text-29",
@@ -2850,6 +2879,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -2894,7 +2924,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -2908,7 +2937,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "type1-cold_text-30",
@@ -2947,6 +2977,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -2991,7 +3022,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -3005,7 +3035,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-cold_text-31",
@@ -3044,6 +3075,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -3088,7 +3120,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -3102,7 +3133,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-cold_text-32",
@@ -3141,6 +3173,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -3185,7 +3218,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -3199,7 +3231,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "type1-ambiguous-33",
@@ -3238,6 +3271,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -3282,7 +3316,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -3296,7 +3329,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-similar-34",
@@ -3335,6 +3369,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -3423,7 +3458,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -3440,7 +3474,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-35",
@@ -3479,6 +3514,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -3567,7 +3603,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -3584,7 +3619,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-36",
@@ -3623,6 +3659,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -3711,7 +3748,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -3728,7 +3764,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-37",
@@ -3767,6 +3804,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -3855,7 +3893,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -3872,7 +3909,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-38",
@@ -3911,6 +3949,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -3999,7 +4038,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4016,7 +4054,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-39",
@@ -4055,6 +4094,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -4106,7 +4146,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -4120,7 +4159,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-similar-40",
@@ -4159,6 +4199,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -4247,7 +4288,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4264,7 +4304,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-similar-41",
@@ -4303,6 +4344,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -4391,7 +4433,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4408,7 +4449,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-personalized-42",
@@ -4447,6 +4489,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -4535,7 +4578,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4552,7 +4594,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-43",
@@ -4591,6 +4634,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -4679,7 +4723,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4696,7 +4739,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-44",
@@ -4735,6 +4779,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -4823,7 +4868,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4840,7 +4884,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-45",
@@ -4879,6 +4924,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -4967,7 +5013,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -4984,7 +5029,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-46",
@@ -5023,6 +5069,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -5111,7 +5158,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -5128,7 +5174,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-47",
@@ -5167,6 +5214,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -5218,7 +5266,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -5232,7 +5279,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-48",
@@ -5271,6 +5319,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -5359,7 +5408,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -5376,7 +5424,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-personalized-49",
@@ -5415,6 +5464,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -5503,7 +5553,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -5520,7 +5569,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-constrained-50",
@@ -5559,6 +5609,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": 0.5,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -5647,7 +5698,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SearchTool": 0.0,
         "RankTool": 0.0
@@ -5664,7 +5714,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-constrained-51",
@@ -5703,6 +5754,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -5791,7 +5843,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -5808,7 +5859,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-constrained-52",
@@ -5847,6 +5899,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -5935,7 +5988,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -5952,7 +6004,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-constrained-53",
@@ -5991,6 +6044,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -6079,7 +6133,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6096,7 +6149,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-constrained-54",
@@ -6135,6 +6189,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -6223,7 +6278,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6240,7 +6294,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-constrained-55",
@@ -6279,6 +6334,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -6330,7 +6386,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -6344,7 +6399,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-constrained-56",
@@ -6383,6 +6439,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -6471,7 +6528,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6488,7 +6544,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-constrained-57",
@@ -6527,6 +6584,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -6615,7 +6673,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6632,7 +6689,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-58",
@@ -6671,6 +6729,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -6759,7 +6818,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6776,7 +6834,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-cold_text-59",
@@ -6815,6 +6874,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -6903,7 +6963,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -6920,7 +6979,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-60",
@@ -6959,6 +7019,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -7047,7 +7108,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -7064,7 +7124,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-61",
@@ -7103,6 +7164,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -7191,7 +7253,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -7208,7 +7269,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-62",
@@ -7247,6 +7309,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -7335,7 +7398,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -7352,7 +7414,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-63",
@@ -7391,6 +7454,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -7442,7 +7506,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -7456,7 +7519,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner-cold_text-64",
@@ -7495,6 +7559,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -7583,7 +7648,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -7600,7 +7664,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-cold_text-65",
@@ -7639,6 +7704,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -7727,7 +7793,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -7744,7 +7809,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner-ambiguous-66",
@@ -7783,6 +7849,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -7834,7 +7901,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -7848,7 +7914,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0
     },
     {
       "request_id": "planner_memory-similar-67",
@@ -7887,6 +7954,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -7975,7 +8043,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "MemoryTool": 0.0,
         "RankTool": 0.0
@@ -7992,7 +8059,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-68",
@@ -8031,6 +8099,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -8119,7 +8188,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8136,7 +8204,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-69",
@@ -8175,6 +8244,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -8263,7 +8333,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8280,7 +8349,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-70",
@@ -8319,6 +8389,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -8407,7 +8478,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8424,7 +8494,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-71",
@@ -8463,6 +8534,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -8551,7 +8623,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8568,7 +8639,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-72",
@@ -8607,6 +8679,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -8658,7 +8731,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -8672,7 +8744,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-similar-73",
@@ -8711,6 +8784,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -8799,7 +8873,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8816,7 +8889,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-similar-74",
@@ -8855,6 +8929,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -8943,7 +9018,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -8960,7 +9034,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-personalized-75",
@@ -8999,6 +9074,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -9087,7 +9163,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "MemoryTool": 0.0,
         "RankTool": 0.0
@@ -9104,7 +9179,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-personalized-76",
@@ -9143,6 +9219,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -9231,7 +9308,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -9248,7 +9324,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-77",
@@ -9287,6 +9364,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -9375,7 +9453,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -9392,7 +9469,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-78",
@@ -9431,6 +9509,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -9519,7 +9598,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -9536,7 +9614,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-79",
@@ -9575,6 +9654,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -9663,7 +9743,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -9680,7 +9759,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-80",
@@ -9719,6 +9799,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -9770,7 +9851,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -9784,7 +9864,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-81",
@@ -9823,6 +9904,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -9911,7 +9993,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -9928,7 +10009,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-personalized-82",
@@ -9967,6 +10049,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": null,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -10055,7 +10138,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -10072,7 +10154,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-constrained-83",
@@ -10111,6 +10194,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": 0.5,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -10199,7 +10283,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SearchTool": 0.0,
         "RankTool": 0.0
@@ -10216,7 +10299,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-constrained-84",
@@ -10255,6 +10339,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -10343,7 +10428,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -10360,7 +10444,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-constrained-85",
@@ -10399,6 +10484,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -10487,7 +10573,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -10504,7 +10589,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-constrained-86",
@@ -10543,6 +10629,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -10631,7 +10718,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -10648,7 +10734,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-constrained-87",
@@ -10687,6 +10774,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -10775,7 +10863,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -10792,7 +10879,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-constrained-88",
@@ -10831,6 +10919,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -10882,7 +10971,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -10896,7 +10984,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-constrained-89",
@@ -10935,6 +11024,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -11023,7 +11113,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11040,7 +11129,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-constrained-90",
@@ -11079,6 +11169,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -11167,7 +11258,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11184,7 +11274,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-91",
@@ -11223,6 +11314,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": true,
       "answer_status_ask_user": false,
@@ -11311,7 +11403,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "MemoryTool": 0.0,
         "RankTool": 0.0
@@ -11328,7 +11419,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-cold_text-92",
@@ -11367,6 +11459,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": true,
@@ -11455,7 +11548,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11472,7 +11564,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-93",
@@ -11511,6 +11604,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -11599,7 +11693,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11616,7 +11709,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-94",
@@ -11655,6 +11749,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": false,
       "answer_status_ask_user": false,
@@ -11743,7 +11838,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11760,7 +11854,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-95",
@@ -11799,6 +11894,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -11887,7 +11983,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -11904,7 +11999,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-96",
@@ -11943,6 +12039,7 @@
       "constraint_satisfaction": 0.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": false,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -11994,7 +12091,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -12008,7 +12104,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": null
     },
     {
       "request_id": "planner_memory-cold_text-97",
@@ -12047,6 +12144,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -12135,7 +12233,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -12152,7 +12249,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-cold_text-98",
@@ -12191,6 +12289,7 @@
       "constraint_satisfaction": 1.0,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -12279,7 +12378,6 @@
         }
       ],
       "cost_per_request": 0.0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {
         "SimilarTool": 0.0,
         "RankTool": 0.0
@@ -12296,7 +12394,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0.0
     },
     {
       "request_id": "planner_memory-ambiguous-99",
@@ -12335,6 +12434,7 @@
       "constraint_satisfaction": null,
       "price_unknown_rate": null,
       "exclusion_compliance": null,
+      "exclusion_compliance_detail": null,
       "task_success": true,
       "answer_status_ok": null,
       "answer_status_ask_user": null,
@@ -12386,7 +12486,6 @@
       "per_step_latency": [],
       "per_step_cost": [],
       "cost_per_request": 0,
-      "cost_per_successful_request": null,
       "cost_breakdown_by_component": {},
       "latency_p50": null,
       "latency_p95": null,
@@ -12400,7 +12499,8 @@
       "target_rank_detail": null,
       "stage_lost": null,
       "target_stage_detail": null,
-      "query_hit_any_title_token": null
+      "query_hit_any_title_token": null,
+      "cost_per_successful_request": 0
     }
   ],
   "summary": {
@@ -12440,6 +12540,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12504,6 +12605,7 @@
           "n": 3,
           "constraint_satisfaction": 1.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.5,
           "map@2": 0.25,
@@ -12531,6 +12633,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12567,6 +12670,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12604,6 +12708,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12638,6 +12743,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12674,6 +12780,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12708,6 +12815,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -12744,6 +12852,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "invented_ids": 0.0,
           "llm_latency_seconds": 0.5,
           "llm_latency_seconds_p50": 0.5,
@@ -12774,6 +12883,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "invented_ids": 0.0,
           "llm_latency_seconds": 0.5,
           "llm_latency_seconds_p50": 0.5,
@@ -12814,6 +12924,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -12938,6 +13049,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.8571428571428571,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.16666666666666666,
           "inference_attempts": 1.0,
@@ -13003,6 +13115,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13067,6 +13180,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13254,6 +13368,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13316,6 +13431,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13375,6 +13491,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "invented_ids": 0.0,
           "llm_latency_seconds": 0.5,
           "llm_latency_seconds_p50": 0.5,
@@ -13405,6 +13522,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "invented_ids": 0.0,
           "llm_latency_seconds": 0.5,
           "llm_latency_seconds_p50": 0.5,
@@ -13445,6 +13563,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13569,6 +13688,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.8571428571428571,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.16666666666666666,
           "inference_attempts": 1.0,
@@ -13634,6 +13754,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13698,6 +13819,7 @@
           "completion_tokens_p95": 3.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13763,6 +13885,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13825,6 +13948,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13889,6 +14013,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -13951,6 +14076,7 @@
           "completion_tokens_p50": 3.0,
           "completion_tokens_p95": 3.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.2857142857142857,
           "inference_attempts": 1.0,
@@ -14037,6 +14163,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14101,6 +14228,7 @@
           "n": 3,
           "constraint_satisfaction": 1.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.5,
           "map@2": 0.25,
@@ -14128,6 +14256,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14164,6 +14293,7 @@
           "answer_status_tool_error": 0.0,
           "constraint_satisfaction": 0.75,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14201,6 +14331,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14235,6 +14366,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14271,6 +14403,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,
@@ -14305,6 +14438,7 @@
           "answer_status_ok": 1.0,
           "answer_status_tool_error": 0.0,
           "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
           "distinct_domains": 1.0,
           "hit_rate@2": 0.6666666666666666,
           "inference_attempts": 1.0,

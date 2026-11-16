@@ -412,7 +412,10 @@ Final Response + Trajectory (saved to JSONL)
 | **L4: Process** | `layer4_process/score_layer4_process.py` | Planning quality | tool_selection_ok, argument_ok, plan_validity, reflection_triggered, reflection_rescued |
 | **L5: Deployment** | `layer5_deployment/score_layer5_deployment.py` | Latency/cost | wall_seconds, token usage, provider_error_rate |
 
-**Entry point**: `package/evaluation/trajectory/score_trajectory.py` orchestrates all 5 layers per trajectory.
+**Entry point**: `package/evaluation/trajectory/score_trajectory.py` orchestrates all 5 layers per trajectory, then merges retrieval-funnel and stage-loss diagnostics. `summarize.py` aggregates scored rows into `agent → kind → segment → mean` (with `_NON_NUMERIC_KEYS` exclusions and `_PERCENTILE_COLUMNS` p50/p95).
+
+> **Complete per-module/per-def reference: see §0.17 (Evaluation System — Complete Reference), including the full scored-column catalog, every diagnostics/reporting/judge/ablation/campaign module, all eval scripts, the test-coverage map, and the known-issues register (§0.17.20).**
+
 ### 0.8.2. Component Benchmarks (package/evaluation/component/) — 6 Components
 
 **5 isolated component evaluators** with JSONL datasets + **multi-turn conversation evaluation**:
@@ -457,8 +460,8 @@ Final Response + Trajectory (saved to JSONL)
 
 | File | Purpose |
 |------|---------|
-| `evaluate_product_reply.py` | Evaluates generated answers against recommended items (grounding check, format validation) |
-| `evaluate_product_reply_with_jev.py` | LLM-as-judge (Jev/TypeSafe AI): faithfulness (claim extraction + support) + communication quality (1-5 scale: relevance, clarity, language, honesty_about_gaps) |
+| `evaluate_product_reply.py` | Deterministic heuristic evaluator: claim extraction + per-claim support check vs item fields + 4-axis communication scoring (relevance/clarity/language/honesty, 1–5). Standalone CLI — NOT wired into agent_eval. `_score_language` is an ASCII-script heuristic, explicitly not language detection. |
+| `evaluate_product_reply_with_jev.py` | LLM-as-judge (Jev/TypeSafe AI): faithfulness (claim extraction + Noul support questions) + communication quality (Score questions). Used by (a) component `grounding` benchmark on synthetic cases, and (b) `package/evaluation/judge/evaluate_trajectories_with_jev.py` — the post-hoc Jev pass wired into `run_agent_eval`/`campaign` (`agent_eval.jev`, opt-in, credential-gated). |
 
 ### 0.8.6. Campaign Runner (package/evaluation/campaign/)
 
@@ -468,7 +471,9 @@ Final Response + Trajectory (saved to JSONL)
 | `checkpoint_manager.py` | Resume/crash recovery for long-running campaigns |
 | `_schema.py` | Pydantic schemas for campaign config, experiment config, comparison pairs |
 
-**Config**: `configs/eval/campaign.yaml` (parameter_grid, comparison_pairs, repetition_count, output_dir, per-experiment timeout — now 7200s)
+**Config**: `configs/eval/campaign.yaml` (parameter_grid, comparison_pairs, repetition_count, output_dir, per-experiment timeout — now 7200s, `multi_turn` policy never/once/all, `ablation.contrasts`)
+
+**Post-run wiring (added 2026-11-16)**: after comparisons, configured `ablation.contrasts` run automatically via `run_ablation_contrasts` → `<campaign_dir>/ablation/<contrast>/` artifacts + `campaign_result.json["ablation"]` statuses (subset runs skip + preserve). Per-experiment opt-ins: `agent_config.multi_turn`, `agent_config.jev` (both normalized into the config overlay; explicit `enabled:false` prevents base-yaml leakage into grid runs).
 
 **CLI**: `PYTHONPATH=. python scripts/evaluation/run_campaign.py [--campaign-config PATH] [--only 7,8,11,12] [--dry-run] [--git-sha SHA]` — `--only` runs a subset of grid experiments while preserving completed ones (merge, not overwrite). Campaign overlays may set `agent_eval.exclude_tools` for tool-subset ablations.
 
@@ -1066,9 +1071,314 @@ Items from the comprehensive repository audit + TD-13 / Section 5B investigation
     - `package/evaluation/reporting/_visualizations.py` — 6 chart functions emit "PLACEHOLDER — chart not implemented" Markdown stubs; implement or remove from official report paths.
     - `package/evaluation/component/link_component_to_e2e.py` + `create_traceback_tool.py` — emit `placeholder_not_computed` / `keyword_heuristic_placeholder`; require explicit opt-in via `scripts/evaluation/link_e2e_cli.py` and/or exclude `placeholder_*` statuses from official summaries.
     - `scripts/evaluation/generate_example_report.py` — hardcoded fabricated metrics; keep isolated (already labeled "must not be cited") or move under `scripts/demo/`.
-    - `scripts/evaluation/opik_poc.py` — DRY-RUN simulated Opik with fixed placeholder scores; keep PoC labeling, ensure outputs can't enter eval summaries.---
+    - `scripts/evaluation/opik_poc.py` — DRY-RUN simulated Opik with fixed placeholder scores; keep PoC labeling, ensure outputs can't enter eval summaries.
+26. **[RESOLVED 2026-11-16] Evaluation metric integrity audit.** Full details in §0.17.20. Fixed: `exclusion_compliance` (structured request fields + real L2 computation), `cost_per_successful_request` (derived post-override in combiner), `error_taxonomy` `"no_error"` rename, `aggregate_metrics` hardening, L4 `n_steps`/`steps_ok_rate` gating, kind-aware `reflection_succeeded`, `memory_profile_usage` value-matching, include-all-verdicts summarize policy, new `diagnostics.pool_stage` aggregates. Deferred/open: `reachable_only_*@k` (reserved dead columns), `rank_in_pool` direction metadata, empty-bootstrap `(0,0,0)`, cosmetic report/progress labels. Verified: 458 eval tests + offline dry-run v2 (`dryrun_offline/`).
+    - `campaign_001` artifacts still predate all of the above: funnel counts are stale fake-zeros, `rank_in_pool` all-0, no diagnostic columns; `campaign_result.json` comparisons hold only the 43-metric legacy summary. Thesis-citable diagnostic metrics require a re-run.
+---
 
-## 0.17. Glossary of Important Components and Terms
+## 0.17. Evaluation System — Complete Reference (added 2026-11-16)
+
+Deep reference for the entire evaluation surface: every `package/evaluation/` module (per-def), every eval script, the test-coverage map, and the known-issues register (§0.17.20). Companion to §0.8 (high-level) — this section is the authoritative inventory.
+
+### 0.17.1. End-to-end pipeline map (`scripts/evaluation/run_agent_eval.py`)
+
+Stages inside `main()`, in order. Everything after "score" is post-hoc and LLM-free:
+
+| Stage | What happens | Artifacts |
+|---|---|---|
+| 1. Config+overlay | `load_config("agent/agent_eval")` etc.; `CONFIG_OVERLAY_PATH` deep-merges per-run overrides (campaign writes one per experiment) | — |
+| 2. Data load | `get_data_paths` → splits (`load_splits`), fit/target (`select_fit_target`), user/item mappings, corpus (`ItemCorpus` sqlite or prebuilt), temporal `as_of` | — |
+| 3. ItemKNN | fit fresh or reuse validated cache (`item_knn_reuse_cache` + `item_knn_dir`); `BaselineScorer`/`HybridScorer` per `agent/scoring.yaml` | cache under campaign dir when reused |
+| 4. Tools+provenance | `build_tools` (dense leg optional via `eval/dense_retrieval.yaml`), `build_run_provenance` (prompt/tool-schema/git/limits hashes) | — |
+| 5. LLM gate | `needs_llm = planner agents present OR (inference.mode=llm AND inference agents present)`; `build_llm_provider` + `health_check()` (real API ping) → `SystemExit` on failure. `agents=[baseline,type1]` + `mode=template` ⇒ **fully offline** | — |
+| 6. Requests | `build_requests` (deterministic given seed) → `filter_requests_by_scope` (`realistic`/`oracle`/`all`) | `requests.jsonl` |
+| 7. Trajectories | per request×agent with `applicable` filter (baseline needs `user_idx`; type1 only `kind=="similar"`; planners always); `--resume` reuses records matching `evaluation_protocol_hash` | `trajectories.jsonl` (appended live) |
+| 8. ItemCF reachability | `_itemcf_reachable` (global) + `_itemcf_reachable_for_seeds` (per-trajectory seeds from logged SimilarTool args) | — |
+| 9. Scoring | `score_trajectory` per trajectory → flat row (~90 cols) → `summarize(rows)` | `scored.jsonl`, `metrics.json` (`{k, summary, diagnostics}`) |
+| 10. Multi-turn (opt-in) | `run_optional_multi_turn` → `multi_turn.json` or campaign `multi_turn/` dir; statuses: success/resumed/skipped_no_credentials/timeout/error/failed | `multi_turn.json` + status sidecar |
+| 11. Jev (opt-in) | `run_optional_jev` → judges `answer_status=="ok"` trajectories → `jev_eval.jsonl`; `skipped_no_credentials` without `JEV_API_KEY`/`TYPESAFE_API_KEY`/`OPENROUTER_API_KEY` | `jev_eval.jsonl` |
+| 12. Diagnostics (always) | `error_taxonomy` (trajectory copies with injected `kind`) + `reflection_diagnostics` (scored rows) → `diagnostics` block in metrics.json + `diagnostics.json` | `diagnostics.json` |
+| 13. Reporting (always) | `build_report_results` → `report.md`, `report.csv`, `failures.md` (if any), `charts/*.svg`; try/except — render failure never sinks eval | `report.*`, `charts/` |
+| 14. Save | `save_experiment` → `config.yaml`, `metrics.json`, `README.md`; copies trajectories/requests/scored/jev/diagnostics into `exp_dir` | whole `exp_NNN/` (or campaign `run_N/`) |
+
+Campaign (`run_campaign.py` → `CampaignRunner`) wraps stage-per-experiment as a **subprocess** with a generated `config_overlay.yaml`, then adds: experiment comparisons (paired bootstrap + McNemar via `evaluation.statistics`), multi-turn aggregation, and post-run ablation contrasts.
+
+### 0.17.2. Scored-row column catalog (`scored.jsonl`, ~90 cols)
+
+Row = identity + L1–L5 + funnel + stage diagnostics. `None` = metric not defined for that agent/kind/trajectory (never a silent 0 — except where noted in §0.17.20).
+
+| Producer | Columns |
+|---|---|
+| identity | `request_id`, `agent`, `kind`, `segment`, `oracle` (bool: request built from held-out targets) |
+| L1 outcome | `n_recommended`; `precision@k`,`recall@k`,`hit_rate@k`,`ndcg@k`,`mrr@k`,`map@k` (k-formatted, e.g. `@10`); `seen_item_rate`; `seed_in_result`; `distinct_domains`; `distinct_main_categories` |
+| L1 pool diagnostics | `target_in_pool` (**always None by design** — no single eligible universe); `target_in_any_path_pool`; `target_in_pool_{sql,semantic,itemcf}`; `target_pool_detail` (dict); `target_reachable`; `target_rank_detail`, `target_stage_detail` (dicts); `stage_lost` (`pool`/`retrieve`/`survived`/`final`/`rank_*`/`mixed`); `rank_in_pool`; `retrieved_by_{sql,semantic,itemcf}`; `query_hit_any_title_token` |
+| L1 funnel | `candidate_generation_count`, `retrieved_count`, `filtered_count`, `ranked_count`; `reachable_only_{precision,recall,hit_rate,ndcg}@k` (**dead/deferred — see §0.17.20**) |
+| L1 kind-gated | `category_coverage` (constrained/cold_text only) |
+| L2 interaction | `task_success` (kind-specific v2); `constraint_satisfaction`, `price_unknown_rate` (constrained/cold_text only); `asked_clarification`; `exclusion_compliance` + `exclusion_compliance_detail` (exclusion kind, structured fields since fix — §0.17.20) |
+| L3 grounding | `answer_status_{ok,ask_user,no_result,tool_error}`; `answer_grounded`, `answer_fallback` (only when `answer_status=="ok"`, else None) |
+| L4 process | `plan_valid`, `plan_attempts`, `plan_truncated`, `n_steps`, `steps_ok_rate`, `invented_ids`, `reflections`, `first_attempt_ok`, `tool_selection_ok`, `args_valid_rate`, `price_arg_ok`, `category_arg_ok`, `used_ranker` (planner-only where gated); `itemcf_seed_correctness`, `memory_profile_retrieved`, `memory_profile_usage`, `semanticsearch_keyword_quality`, `tool_argument_correctness`, `component_failure_diagnosis`, `reflection_invoked`, `reflection_succeeded`, `component_states` (diagnostics; mostly planner-only) |
+| L5 deployment | `prompt_tokens`, `completion_tokens`, `llm_latency_seconds`, `tool_latency_seconds`, `wall_seconds` (all agents where applicable); `inference_{attempts,prompt_tokens,completion_tokens,latency_seconds}` (answered trajectories only); `provider_error`; `sql_time_budget_hits`; `per_step_{tokens,latency,cost}` (lists); `cost_per_request`, `cost_per_successful_request` (derived in `score_trajectory` after final `task_success`), `cost_breakdown_by_component`; `latency_{mean,p50,p95,p99,std}` (per-trajectory step-latency distribution) |
+
+`summarize(rows)` → `{agent: {kind: {segment|"all": {metric: mean}}}}` — means over **non-None** values only; `_NON_NUMERIC_KEYS` skips dict/list/str columns (incl. all `target_*_detail`, `stage_lost`, funnel counts, `category_coverage`, `reachable_only_*`); `_PERCENTILE_COLUMNS` adds `_p50`/`_p95` for latency/token columns. All other columns — bool verdicts (`target_in_pool*`, `target_reachable`, `retrieved_by_*`, `query_hit_any_title_token`, `target_in_any_path_pool`), `exclusion_compliance`, `rank_in_pool`, `n_steps`, … — **do** aggregate as 0/1 rates (or means) into `metrics.json.summary` → campaign comparisons (policy: include-all-verdicts, §0.17.20).
+
+### 0.17.3. `trajectory/` — orchestration + aggregation
+
+| Def | Signature essence | Purpose |
+|---|---|---|
+| `score_trajectory` | `(request, trajectory, *, item2id, corpus, k, seen_item_ids, id2item, itemcf_reachable, itemcf_reachable_request)` | Calls L1–L5 + `_extract_retrieval_funnel` + `_extract_stage_diagnostics`, merges into one flat row. Special override: `personalized` + planner without `MemoryTool` → `tool_selection_ok`/`task_success` = None (cannot honestly personalize). Failures score as zeros, not skipped samples. |
+| `summarize` | `(rows)` | agent→kind→segment("all")→mean; skips `_ID_KEYS` + `_NON_NUMERIC_KEYS`; non-None filter; `_PERCENTILE_COLUMNS` → `_p50`/`_p95`. |
+
+### 0.17.4. Scoring layers (per-def)
+
+**`layer1_outcome/score_layer1_outcome.py`** — outcome + all retrieval diagnostics:
+
+| Def | Purpose |
+|---|---|
+| `score_layer1_outcome` | Dedup recs → top-k; ranking metrics via `ranking_metrics_at_k` (only non-ambiguous kinds with targets, else None); pool verdicts via `_target_pool_detail`; funnel merge happens in `score_trajectory`, not here |
+| `_extract_retrieval_funnel` | S0–S5 counts from step `data` payloads; returns `{}` (→ None columns) when any relevant step lacks a `data` dict — **unmeasurable ≠ 0** |
+| `_target_pool_detail` | Per-target × per-path (`sql`/`semantic`/`itemcf`) pool membership; `None` = availability unknown |
+| `_any_path_pool_verdict` / `_pool_path_verdict` | Existential aggregation: any True → True; all measurable False → False; else None |
+| `_step_item_ids`, `_path_candidates`, `_search_query_tokens`, `_query_hit_title_verdict`, `_last_ranker` | Step-data extraction helpers for stage diagnostics |
+| `_extract_stage_diagnostics` | Per-target stage-loss: `pool`→`retrieve`→`survived`/`final`/`rank_unscored`/`rank_excluded_seen`/`rank_topk`/`rank_input`; emits `target_reachable`, `stage_lost`, `rank_in_pool` (= min target rank), `retrieved_by_*`, `query_hit_any_title_token`, detail dicts |
+
+**`layer2_interaction/score_layer2_interaction.py`** — single def `score_layer2_interaction(request, trajectory, *, corpus)`: kind-specific `task_success` v2 (ambiguous=asked; unanswerable=ask_user/no_result/grounded-empty; exclusion=plan+steps+recs **+ compliance check that is currently dead**; others=plan+steps+recs+constraint+answer ok&grounded for new trajectories). `constraint_satisfaction`/`price_unknown_rate` only for constrained/cold_text via `items_satisfying`/`items_without_price`.
+
+**`layer3_grounding/score_layer3_grounding.py`** — single def: `answer_status_*` flags (None when trajectory has no answer — baseline/old records); `answer_grounded`/`answer_fallback` only for `ok`. Deterministic surface check (items mentioned + numbers), NOT semantic faithfulness — Jev covers that.
+
+**`layer4_process/`** — `score_layer4_process(request, trajectory)` + `_helper._follows`/`check_tool_selection`: plan validity, step stats, tool selection vs `reference_groups` (from `_schema.REFERENCE_PLANS` filtered by `tools_available`), arg checks, and diagnostic columns (`itemcf_seed_correctness`, `memory_profile_*`, `semanticsearch_keyword_quality`, `tool_argument_correctness`, `component_failure_diagnosis`, `component_states`, `reflection_*`). See §0.17.20 for heuristic limitations.
+
+**`layer5_deployment/score_layer5_deployment.py`** — single def: token/latency usage (planner `usage` vs answer `inference_usage`), `provider_error`, `sql_time_budget_hits` (via `check_time_budget_error`), per-step breakdowns, `cost_per_request`, `cost_breakdown_by_component`, per-trajectory latency distribution. `cost_per_successful_request` is derived in `score_trajectory` (needs final `task_success`, unavailable at L5).
+
+Each layer has `_schema.py` with a `COLUMNS` tuple — a **subset** used for CLI summary printing (`SUMMARY_COLUMNS` in run_agent_eval); actual rows are wider (funnel/stage/diagnostic cols not listed there).
+
+### 0.17.5. `diagnostics/` — always-on aggregations (wired into every run)
+
+| Def | Input | Output | Notes |
+|---|---|---|---|
+| `error_taxonomy(trajectories)` | trajectory dicts (kind injected on copies by caller) | `{agent: {kind: {step_errors: {error_kind: n, "no_error": n_ok_steps}, plan_errors: {plan_invalid, provider_error}}}}` | `"no_error"` bucket = steps WITHOUT error (renamed from `"None"`, §0.17.20) |
+| `reflection_diagnostics(rows)` | scored rows | `{agent: {kind: {n_first_failed, rescue_rate, mean_reflections, constraint_blind_spot_rate}}}` | Conditional means; `None` when unmeasurable (no first-failures, non-oracle kinds) |
+| `pool_stage_diagnostics(rows)` | scored rows | `{agent: {kind: {n_rows, rates: {col: {rate, n}}, stage_lost_counts, rank_in_pool: {median, mean, n}}}}` | Added 2026-11-16; rates over measurable (non-None) rows only; `rank_in_pool` lower-is-better |
+
+`failure_rates.py` was removed (duplicated `summarize` means). Output → `metrics.json["diagnostics"]` + `diagnostics.json`; campaign flattening reads only `summary` → never enters comparisons.
+
+### 0.17.6. `reporting/` — real per-run reports (wired, always-on)
+
+| Def | Purpose |
+|---|---|
+| `build_report_results(rows, trajectories, *, k, trajectory_path, multi_turn)` (`_adapter.py`) | Converts scored rows + trajectories → legacy `results` shape: `request_kinds` keyed `"agent/kind"` with recomputed mean/std/min/max/count (None excluded); `metric_values` (headline metrics → CI + latency chart); `latency_values`; `retrieval_funnel` (mean of funnel counts); `failures` (`task_success` falsy-not-None or `provider_error` → stage/cause/trace ref); `summary` scalars. **Does not fabricate** `layers`/`components` sections — generators skip absent keys |
+| `_headline_keys`, `_metric_values`, `_group_stats` | Adapter internals |
+| `generate_markdown_report(results, output_path, include_confidence_intervals, confidence_level)` | Executive summary + per-kind tables + 95% bootstrap CIs |
+| `generate_csv_export(results, output_path)` | Flat CSV of request-kind metrics |
+| `generate_failure_report(failures, output_path)` | Failure list w/ stage + trajectory error + trace ref |
+| `generate_comparison_report(comparison, output_path)` | Two-experiment comparison (no current pipeline producer — campaign uses its own stats) |
+| `_visualizations.py` | Dependency-free SVG: `_bar_chart`, `_heatmap`, `generate_layer_comparison_chart` (needs `layers` — absent for agent_eval), `generate_request_kind_heatmap`, `generate_retrieval_funnel_chart`, `generate_latency_distribution_chart`, `generate_multi_turn_performance_chart`, `generate_all_charts` |
+
+Consumer warning in `__init__.py`: `generate_example_report.py` remains a **synthetic DO-NOT-CITE demo** (`experiments/agent_eval/example_report/`, gitignored, banner-stamped).
+
+### 0.17.7. `judge/` — Jev post-hoc pass (wired, opt-in)
+
+| Def | Purpose |
+|---|---|
+| `evaluate_trajectories_with_jev(trajectories, requests_by_id, corpus, *, max_requests, …)` | Judges trajectories with `answer_status=="ok"` only; gathers recommended-item metadata from corpus in recommendation order; returns one row per judged request → `jev_eval.jsonl` |
+| `_items_for(corpus, item_ids)` | Corpus metadata rows in request order |
+| `JevClient(api_key, model, base_url)` (`jev_client.py`) | TypeSafe AI System One wrapper (Noul/Score questions); env fallback `JEV_API_KEY`→`TYPESAFE_API_KEY`→`OPENROUTER_API_KEY` |
+| `jev_credentials_configured()` | Credential probe for gating (`skipped_no_credentials`) |
+
+Config: `agent_eval.jev.{enabled,max_requests}`; campaign per-experiment `agent_config.jev` (bool|dict) via `_normalize_jev_param`.
+
+### 0.17.8. `requests/` — request construction
+
+| Def | Purpose |
+|---|---|
+| `build_requests(*, seg_of, target_by_user, last_item_of, id2user, id2item, item2id, corpus, per_segment, n_ambiguous, language, k, price_slack, price_round_to, rng)` | Simulated requests from held-out data (no real query log): personalized (fit history), similar (seed=most recent fit item), ambiguous (no targets), unanswerable (impossible constraints), constrained/cold_text/exclusion (**oracle** — constraints from held-out items). Deterministic given seed |
+| `filter_requests_by_scope(requests, scope)` | `realistic` = drop `request.oracle`; `oracle` = only oracle; `all` = everything |
+| `reference_groups(kind, available_tools)` | Reference-plan tool groups for L4 `tool_selection_ok`, filtered to tools the agent actually has |
+| `AgentRequest` (`_dataclass`) | `request_id, kind, segment, text, user_id, user_idx, seed_item_id, targets[item_idx], price_max, category, excluded_item_ids, excluded_categories, oracle` — structured exclusion fields added 2026-11-16 (§0.17.20); schema change invalidates pre-change resume hashes |
+| `_helper._price_of/_deepest_category/items_satisfying/items_without_price` | Corpus lookups for constrained-kind scoring |
+
+### 0.17.9. `statistics/` — campaign-level stats (`_bootstrap.py`)
+
+| Def | Purpose | Caveat |
+|---|---|---|
+| `bootstrap_confidence_interval(values, confidence_level, n_bootstrap, random_seed)` | Percentile bootstrap CI → `(mean, lo, hi)`; `(0,0,0)` on empty | fake-zero on empty input |
+| `paired_bootstrap_difference(values_a, values_b, …)` | Paired bootstrap of B−A → `(mean_diff, lo, hi, p_value)`; p = tail proportion | — |
+| `aggregate_metrics(metrics_list)` | mean/std/min/max/count per key | Skips missing keys AND non-numeric/`None` values (hardened 2026-11-16); **no production caller** — campaign stats go through `summarize`/bootstrap paths |
+| `compute_percentiles(values, percentiles)` | p50/p95/p99 dict | — |
+| `significance_test(values_a, values_b, test_type, alpha)` | paired/independent significance | — |
+
+Campaign `_compare_experiments` uses `bootstrap_confidence_interval` + `paired_bootstrap_difference` driven by `statistical_settings` in campaign.yaml. Ablation has its own `_statistics.py` (bootstrap_ci + `mcnemar_test` + `wilson_interval`) — intentionally separate.
+
+### 0.17.10. `provenance/build_run_provenance.py`
+
+`_sha256`, `_json_sha256`, `_git_info` → `build_run_provenance(planner_tools, memory_tools)` — hashes of planner/memory prompts + tool schemas + git sha/dirty + limits; stored in `config.yaml`/experiment metadata for reproducibility.
+
+### 0.17.11. `ablation/` — case-level paired comparison (shared runner)
+
+| Def | Purpose |
+|---|---|
+| `run_ablation_contrasts(*, limits, groups, contrasts, output_dir)` (`_runner.py`) | Executes every contrast → per-contrast `report.md`/`comparison.json`/`comparison.csv`/`disagreements.jsonl`; per-contrast errors don't sink others; missing `scored.jsonl`/`config.yaml` = error status, not crash. Used by `compare_experiments.py` (paths) AND `CampaignRunner._run_ablation` (experiment names → run dirs) |
+| `load_scored_data/load_config_data/load_group_data/load_group_data_dirs` (`_loader.py`) | Read `scored.jsonl`/`config.yaml` per exp dir; `check_compatibility` (seed/per_segment/eval_on/policy/protocol match); `validate_contrast_config` |
+| `pair_by_request_id`, `average_across_runs`, `compute_metric_diff`, `compute_binary_disagreement`, `compare_two_groups`, `find_disagreements` (`_compare.py`) | Pair scored rows by `request_id` across runs/agents; bootstrap CI per metric; McNemar disagreements |
+| `pairwise_report`, `render_pairwise_markdown` (`_pairwise.py`) | **None-aware** pairwise analysis — drops None pairs explicitly (vs `compare_experiments` treating None≈absent); used by `scripts/experiments/pairwise_ablation.py` |
+| `bootstrap_ci`, `mcnemar_test`, `wilson_interval` (`_statistics.py`) | Stats primitives; Wilson returns None at n=0 |
+| `render_markdown_report`, `write_csv`, `write_json`, `write_disagreements` (`_report.py`) | Artifact writers |
+| `AblationLimits`, `get_ablation_limits()` (`_limits.py`) | Frozen config from `configs/agent/ablation.yaml`: `bootstrap_resamples`, `confidence`, `min_n_warn`, `seed`, `metrics`, `groups`, `contrasts`, `output_subdir` (validated >0/in-range) |
+
+### 0.17.12. `campaign/` — experiment orchestration
+
+| Def | Purpose |
+|---|---|
+| `ExperimentConfig` / `CampaignConfig` / `ExperimentRun` / `CampaignResult` (`_schema.py`, dataclasses) | `CampaignConfig`: `campaign_id, description, dataset, parameter_grid, experiments, evaluation_config, output_dir, comparison_pairs, statistical_settings, default_agents, allow_missing_corpus_sources, experiment_timeout_seconds, multi_turn(never/once/all), ablation{contrasts}`; `expand_parameter_grid`, `compute_hash`, yaml/json roundtrip |
+| `CampaignRunner.run_campaign(only)` | Select experiments (`--only` grid positions/ids, merge-not-overwrite) → per experiment: build overlay → subprocess `run_agent_eval.py` → parse `saved ->` dir → load `metrics.json.summary` → flatten `{agent}_{kind}_{metric}` (numeric only, `n` skipped) → comparisons → multi_turn aggregation → ablation contrasts → `campaign_result.json` + checkpoint |
+| `_run_experiment` | Subprocess w/ timeout; writes `config_overlay.yaml` first (reflects config even on early failure) |
+| `_build_config_overlay` | Maps `agent_config` keys → overlay fragments: `inference_mode`→`agent/inference`, `reflect_rounds`→`agent/agent`, `exclude_tools`, `jev`/`multi_turn` normalized, `random_seed`→`eval/baselines.seed`, campaign ItemKNN cache→`path/data_paths.item_knn_dir` + `item_knn_reuse_cache` |
+| `_normalize_multi_turn_param` / `_normalize_jev_param` | bool→`{enabled:true}`; dict passthrough; explicit `{enabled:false}` written for grid isolation |
+| `_multi_turn_plans` / `_multi_turn_run_dir` / `_run_multi_turn_fragment` / `_collect_multi_turn_result` | Policy never/once/all resolution; per-run multi_turn artifact status into `campaign_result.json["multi_turn"]` (coverage only — never in comparisons) |
+| `_run_ablation` | Resolves contrast `[agent, experiment_name]` pairs → successful `run_N` dirs → `run_ablation_contrasts` → `<campaign>/ablation/<contrast>/`; subset runs preserve prior `result.ablation` |
+| `_run_comparisons` / `_compare_experiments` / `_average_metrics` / `_generate_summary` | comparison_pairs → per-metric paired bootstrap CI + McNemar on repeated runs; averages across `repetition_count` |
+| `_load_experiment_metrics` | Reads ONLY `metrics.json["summary"]` → flat `{agent}_{kind}_{metric}` means — diagnostics/reporting blocks cannot leak into comparisons |
+| `CheckpointManager` | `save/load/clear_checkpoint` for crash recovery |
+
+### 0.17.13. `multi_turn/` — conversation evaluation (opt-in, real-LLM)
+
+| Def | Purpose |
+|---|---|
+| `MultiTurnEvaluator` (`multi_turn_evaluator.py`) | Per-turn scoring + conversation aggregation. Turn metrics: `turn_success`, `item_match_rate`, `exclusion_compliance` (**real impl lives here**, not trajectory L2), `tool_call_match_rate`, `no_result_compliance`, `clarification_compliance`, `reference_correctness`, `context_retention`, token usage. Conversation: `turn_success_rate`, `conversation_success`, `avg_item_match_rate`, aggregated compliance means |
+| `_score_turn`, `_tool_call_match_rate`, `_arg_contains`, `_resolve_session_value` (`$S.<path>` refs), `_update_session`, `_calculate_conversation_metrics`, `_aggregate_metrics` | Turn/conversation internals |
+| `RealAgentRunner` (`_agent_runner.py`) | PlanExecutor+Session per turn; `resolved_config()` echoes effective config; requires LLM |
+| `run_multi_turn_eval` / `run_multi_turn_for_eval` / `extract_multi_turn_metrics` / `_write_status` / `_llm_configured` (`_eval_step.py`) | Gate used by run_agent_eval/campaign; statuses success/resumed/skipped_no_credentials/timeout/error/failed; `extract_multi_turn_metrics` pulls report-worthy scalars (never comparisons) |
+| `_run.run_multi_turn_cli`, `load_conversations` | CLI + JSONL loader (`conversations.jsonl`, 13 convs incl. negative cases) |
+| `_reporting.generate_markdown_report/generate_csv_export/generate_failure_report` | Multi-turn reports |
+| `_schema` | `TurnInput`, `TurnResult`, `Conversation`, `ConversationResult`, `ConversationSummary` (all JSON-roundtrippable) |
+
+### 0.17.14. `product_reply/` — answer evaluators (two implementations)
+
+| Module | Role |
+|---|---|
+| `evaluate_product_reply.py` | Deterministic heuristic: `_extract_claims` → per-claim `_evaluate_claim` (price/rating/review/store/category support vs item fields + `_supported_by_title`) → `_check_items_in_order` → `_score_communication` (relevance/clarity/`_score_language` ASCII-heuristic/honesty, 1–5) → `_generate_summary`. CLI-only, NOT in agent_eval |
+| `evaluate_product_reply_with_jev.py` | Same claim pipeline but `_evaluate_faithfulness_with_jev` (Noul questions per claim) + `_evaluate_communication_with_jev` (Score questions). Consumers: component `grounding` benchmark + `judge/evaluate_trajectories_with_jev` |
+
+### 0.17.15. `component/` — component benchmarks (separate pipeline)
+
+Framework: `_schema` (`BenchmarkCase/Result/Summary/RegressionReport`), `_loader` (JSONL load/save/tag+metadata filters), `_evaluator.ComponentEvaluator` (template: `run_component`→`score_component`→`run_case`→`run_benchmark`→aggregate metrics/latency/tags + `evaluate_thresholds` quality gate), `_regression` (`compare_benchmarks` → improved/regressed/neutral), `_run_all` (`run_all_benchmarks` → per-component CLI subprocesses → `unified_report_*.json/.md`; `_jev_configured`/`_llm_configured` gating; multi_turn step; `skipped_no_credentials`/`skipped_backlog` visible-not-failed), `run_benchmark_cli` (provenance: secret-scrubbed config hash + dataset sha256 + provider/judge info + evidence kinds), `run_regression_cli`, `run.py` dispatcher.
+
+Benchmarks (`benchmarks/`): `memory_correctness_evaluator` (MemoryTool vs independent `compute_memory_oracle` + `leakage_probe` detector), `planner_benchmark` (`PlannerBenchmark` + `_step_error` schema validation + `_token_f1` clarification scoring), `executor_benchmark` (`ExecutorBenchmark` — real PlanExecutor._execute over fixture tools + per-step output assertions), `grounding_benchmark` (`GroundingBenchmark` — Jev claim-level; `ScriptedJudge` fake for tests; provider errors fail cases, never fake scores), `integration_benchmark` (`IntegrationBenchmark` — executor→inference boundary, `presented_ids`/`item_fields` metrics), `build_cases`/`render` (memory dataset gen), `analyze`/`analyze_metric`/`collect`/`default_metrics`/`memory_utility`/`render_markdown`/`scope_of` (paired multi-run memory-utility analysis — clear_effect verdicts require sufficient pairs+runs else inconclusive), fixtures (`create_test_*` synthetic corpus/interactions/mappings/meta), misc helpers (`get_interactions_without_rating`, `leakage_probe`, `week47` cases in datasets).
+
+Helpers: `create_traceback_tool` (failure→component attribution; emits `placeholder_not_computed`/`keyword_heuristic_placeholder` statuses — gated opt-in), `link_component_to_e2e` (component↔e2e correlation, `_pearson`), `get_git_sha`.
+
+### 0.17.16. `recommender/` — offline recommender evaluation (separate pipeline)
+
+| Subpackage | Contents |
+|---|---|
+| `metrics/ranking/` | `precision_at_k`, `recall_at_k`, `hit_rate_at_k`, `ndcg_at_k` (binary gain), `mrr_at_k`, `average_precision_at_k` (MAP), `ranking_metrics_at_k` (validated batch entry — used by trajectory L1) |
+| `metrics/retrieval/` | `candidate_retrieval_metrics` (dedup/pad candidate lists → retrieval quality/reach), `item_familiarity_metrics` (breakdown by target-in-fit) |
+| `core/` | `evaluate_recommender` (model×exclude×target×ks×segments), `evaluate_ranking` (macro-avg over users w/ held-out), `evaluation_protocol` (provenance dict), `_dataclass.EvaluationResult.to_metrics`, `_helper.assign_segments`/`_git_commit` |
+| `config/` | `parameter_grid` (cartesian expand), `merge_model_params`, `segment_users_by_history` (cold/sparse/warm) |
+| `experiment/` | `save_experiment` (`_source_fingerprint` = hash of src/package+src/configs, env versions, dataset info, README), `next_experiment_dir` (`exp_NNN` allocator — shared with agent_eval), `RankingRunStore`/`RankingStreamSummary` (streaming ranking-eval storage) |
+| `analysis/` | Read-only diagnostics ported for offline use: `diagnose_hit_losses`, `retrieval_loss_breakdown`, `classify_cf_link`, `candidate_policy_order`, `recent_priority_order`, `policy_chain_compare`, `cohort_policy_for_paths`, `confirmation_cohort`, `core_inputs`, `global_core_pairs`, `build_core_model`, `history_title_query`, `outside_core_content_retriever` — **no target labels enter policies** |
+| `utils/` | `sha256_file`, `latency_summary`, `hardware_info`, `normalize_query_text`, `stage_progress` |
+
+### 0.17.17. `package/evaluation/_schema.py` — fixed contracts
+
+`KINDS`, `KIND_SEGMENTS`, `ORACLE_KINDS=("constrained","cold_text","exclusion")`, `PLANNER_AGENTS`, `INFERENCE_AGENTS=("type1","planner","planner_memory")`, `ANSWER_STATUSES`, `AGENTS`, `REFERENCE_PLANS` (per-kind expected tool groups for L4), `SUMMARY_COLUMNS` (k-formatted print columns), reference-plans lazy loader (`get_reference_plans`, cache invalidated on config/overlay change).
+
+### 0.17.18. Scripts reference
+
+**`scripts/evaluation/`** (34 files):
+
+| Script | Role | Pipeline? |
+|---|---|---|
+| `run_agent_eval.py` | Main trajectory eval (see §0.17.1) | ✅ core |
+| `run_campaign.py` | Campaign CLI → `CampaignRunner` | ✅ core |
+| `run_component_benchmarks.py` | Thin wrapper → `component.run_all_benchmarks` + unified report | separate pipeline |
+| `compare_experiments.py` *(scripts/experiments/)* | Ablation contrasts over exp dirs via shared `run_ablation_contrasts` | post-hoc manual |
+| `pairwise_ablation.py` *(scripts/experiments/)* | None-aware pairwise via `_pairwise.pairwise_report` | post-hoc manual |
+| `evaluate_product_reply.py` | Heuristic reply CLI (`--input-file` JSONL) | manual |
+| `evaluate_with_jev.py` | Generic Jev evaluator for `{request,items,answer}` JSONL | manual escape hatch |
+| `jev_smoke_test.py` | Jev connectivity + 1 real judgment (`configs/eval/judge.yaml`) | dev tool |
+| `jev_negative_control.py` | Judge discrimination check w/ known-verdict fabricated cases (manual, needs key) | dev tool |
+| `generate_example_report.py` | **SYNTHETIC DEMO — DO NOT CITE**; stamps banner + README into `example_report/` | demo only |
+| `link_e2e_cli.py` | Wrapper → `link_component_to_e2e` + `create_traceback_tool` on an exp dir | manual opt-in |
+| `memory_utility_analysis.py` | Wrapper → `benchmarks.memory_utility` (config-driven) | manual analysis |
+| `build_memory_correctness_dataset.py` | Regenerate/check memory dataset (`--check` drift gate) | dataset tooling |
+| `build_semantic_embeddings.py` | Standalone encoder pin + resumable embedding build (separate env) | data tooling |
+| `prepare_semantic_candidate_cohort.py` | Freeze sparse validation cohort + one-seed CF lists | data tooling |
+| `semantic_candidate_preflight.py` / `semantic_candidate_eval.py` | Read-only semantic pilot readiness / candidate eval | manual |
+| `candidate_recall.py` | Do retrieval tools surface held-out items (history vs category_oracle modes) | offline eval |
+| `ranking_eval.py` | Fixed-candidate ranking eval for deterministic tools | offline eval |
+| `tune_item_knn_hybrid.py` | Tune CF/popularity blend on disjoint validation cohorts (never test) | offline tuning |
+| `full_data_preflight.py` | Read-only readiness check (splits/mappings/corpus/KNN/semantic) → JSON | preflight |
+| `diagnose_hit_losses.py` | CLI → `analysis.diagnose_hit_losses` on saved records | manual analysis |
+| `retrieval_loss_diagnostic.py` | Read-only target/fit availability + source/merge loss | manual analysis |
+| `analyze_ranking_bottlenecks.py` | Retrieval loss / ranking headroom / source fusion on saved candidates | manual analysis |
+| `policy_chain_eval.py` | Frozen/fresh policy+fetch comparison, no labels to callbacks | manual analysis |
+| `outside_core_content_probe.py` | History-title BM25 probe on outside-core targets (validation only) | manual analysis |
+| `benchmark_categories_any.py` | SearchTool `categories_any`+FTS perf / EXPLAIN QUERY PLAN benchmark | perf tooling |
+| `sparse_*.py` (6 scripts: `sparse_content_replay`, `sparse_data_diagnostic`, `sparse_guard_replay`, `sparse_ranking_replay`, `sparse_retrieval_probe`, `sparse_seed_eval`) | Fixed-sample read-only sparse-cohort diagnostics/replays — no refit, no LLM, no production changes | manual analysis |
+
+**Adjacent eval-relevant scripts**: `scripts/demo/run_demo.py` (Gradio UI, inference-only — **no eval code**), `scripts/demo/demo_full_agent.py` (5-tool PlanExecutor demo), `scripts/llm_agent/smoke_real_llm.py` (PlanExecutor+tools on synthetic fixture, real LLM), `scripts/tools/check_llm_provider.py`, `scripts/tools/run_tools.py` (tools on real stage-3 data), `scripts/eda_diagnostic/` (`diagnose_splits` — why recall@10≡0; `oracle_fixture_knn` — independent KNN oracle for fixture datasets; `analyze_campaign_001_planner_errors`/`analyze_reflection_campaign_001` — read-only campaign_001 trajectory analyses; `run_eda`).
+
+### 0.17.19. `tests/evaluation/` coverage map
+
+| Dir | Files (tests) | Covers |
+|---|---|---|
+| `agent/` | `test_agent_eval` (60), `test_eval_integration` (19), `test_behavior_snapshot` (2), `test_config_resume_integration` (4), `test_reference_plans_config` (4), `test_scorer_yaml_cli` (1), `test_type1_audit` (1) | Requests/build/scope/oracle-flag/structured-exclusions, scoring incl. funnel None-vs-empty + step-data + exclusion compliance, memory-usage detection, summarize verdict policy, inference columns + resume identity, reference-plan config cache, scorer yaml, type1 step fidelity, behavior snapshot |
+| `ablation/` | `test_compare` (7), `test_loader` (14), `test_pairwise` (7), `test_report` (6), `test_runner` (3), `test_statistics` (6), `test_limits` (1), `test_integration` (1) | Pairing/averaging/CIs, loader+compatibility gates, None-aware pairwise, report writers, shared runner error isolation, stats primitives |
+| `campaign/` | `test_campaign` (29), `test_only_subset` (5), `test_ablation_wiring` (6), `test_multi_turn_wiring` (class-based) | Schema roundtrips, grid expansion, overlay mapping, stdout metric loading, comparisons, subset merge, ablation/jev/multi_turn wiring |
+| `component/` | `test_loader` (10), `test_regression` (9), `test_thresholds` (10), `test_run_all` (13), `test_run_all_provenance` (4), `test_cli_reproducibility` (5), `test_provenance` (5), `test_memory_correctness` (11), `test_memory_utility` (10), `conftest` | Loader/filters, regression verdicts, threshold gate, run_all no-fake-PASS + credential visibility, provenance hashing, oracle correctness, paired memory-utility stats |
+| `component/benchmarks/` | `test_controlled_tools` (4), `test_executor_dataset` (8), `test_grounding_benchmark` (1), `test_grounding_dataset` (7), `test_grounding_phase1` (6), `test_integration_dataset` (10), `test_memory_oracle` (3), `test_planner_dataset` (12), `test_week47_cases` (6), `fakes/` | Dataset lints, oracle independence, judge-error honesty, controlled-tool contracts, week-47 regression cases |
+| `diagnostics/` | `test_diagnostics` (9) | error_taxonomy grouping/plan errors/`no_error`, reflection rescue/blind-spot/None rates, pool_stage rates/distributions/rank |
+| `judge/` | `test_trajectories_with_jev` (5) | Eligibility (`answer_status==ok`), corpus context, `max_requests` cap, credential gating |
+| `multi_turn/` | `test_evaluator` (8), `test_eval_step` (class-based), `test_dataset_and_evaluator_fixes` (15), `test_negative_expectations` (10), `test_reporting_and_loader` (8), `test_summary_turn_counts` (9), `test_with_session` (8) | Schemas, turn/conversation metrics, expect_* flags, session isolation/retention, reporting, honest p95/failed counts, eval-step gating |
+| `recommender/` | `test_source_fingerprint` (4) | Fingerprint covers src/package+src/configs |
+| `reporting/` | `test_adapter` (6) | agent/kind keys, None-exclusion, failures, generator acceptance |
+| `stats/` | `test_bootstrap` (12) | CI/diff/aggregate/percentiles/significance incl. edge cases |
+| root | `test_jev_reliability` (class-based), `test_judge_error_handling` (5) | Jev provider fake, judge errors never scored as unsupported |
+
+### 0.17.20. Known issues & ambiguous-metric register (audit 2026-11-16, fixes applied same day)
+
+Confirmed by code review + offline dry-run (`agents=[baseline,type1]`, `inference.mode=template` → `experiments/agent_eval/dryrun_offline/`). Backlog item 26. **Status column: FIXED = implemented + tested 2026-11-16; DEFERRED = consciously postponed; OPEN = still unresolved.**
+
+**Dead/broken metrics**
+
+| Metric | Status | Detail |
+|---|---|---|
+| `exclusion_compliance` | **FIXED** | `AgentRequest` gained `excluded_item_ids`/`excluded_categories` (defaults `[]`, `build_requests` populates from held-out exclude item + deepest category). L2 computes compliance = 1 − violating/total; violation = item_id match OR `item_categories` path contains an excluded category node. `exclusion_compliance_detail` = sorted violating ids. `task_success` for exclusion requires `== 1.0` when measurable. Schema change → pre-2026-11-16 resume hashes invalid (accepted; campaign_001 stale anyway). Real impl also exists in `multi_turn_evaluator` (unchanged) |
+| `reachable_only_{precision,recall,hit_rate,ndcg}@k` | **DEFERRED** | Still set `None` at layer1, never computed; literal `@k` never formatted. Kept as reserved columns; implement or remove in a later pass |
+| `exclusion_compliance_detail` | **FIXED** | Now has a real producer (L2, exclusion kind) |
+| `cost_per_successful_request` | **FIXED** | L5 emits `cost_per_request` only; `score_trajectory` derives `cost_per_successful_request = cost_per_request if final task_success else None`, computed AFTER the personalized planner-override so `task_success=None` rows stay `None` |
+
+**Ambiguous semantics (documented but easy to misread)**
+
+| Metric | Status | Issue |
+|---|---|---|
+| `error_taxonomy` `step_errors` | **FIXED** | `"None"` bucket renamed `"no_error"` — counts steps without `error_kind` |
+| `memory_profile_usage` | **IMPROVED (heuristic)** | Now detects `$N.path` refs **nested anywhere in args** (was top-level strings only — a real miss) plus value-matching: memory `top_categories`/`love_categories` ∩ `filters.categories_*`, `price_max` ≈ `price_range.max`, category substring in `query`, `loved/recent_items` ∩ `SimilarTool.items`. Still heuristic — coincidental matches can false-positive; documented in code. `usage` stays `None` when no MemoryTool step ran (`not_retrieved` label removed as dead code) |
+| `args_valid_rate` vs `tool_argument_correctness` | **DOCUMENTED** | Kept separate: `args_valid_rate` = share of ALL steps without pre-call errors; `tool_argument_correctness` = share of schema-scored steps ok (`unknown_tool`/`invented_id` excluded from denominator). Distinction now commented in code |
+| `reflection_succeeded` | **FIXED** | Kind-aware: `ambiguous` → success = asked + no steps; `unanswerable` → success = `ask_user`/`no_result`/grounded-ok-no-recs (legacy trajectories without `answer_status` → steps_ok + no recs); other kinds → unchanged (steps_ok + has recs) |
+| `plan_valid`, `steps_ok_rate`, `n_steps` gating | **FIXED (partial)** | `n_steps` + `steps_ok_rate` now both compute whenever `steps` exist (type1 gets `n_steps`); `plan_*`/`invented_ids`/`reflections`/`first_attempt_ok` stay planner-gated. `plan_valid=True` for baseline still means "no error" — documented semantics, not changed |
+| `rank_in_pool` in campaign comparisons | **OPEN (interpretation)** | Mean of per-row min-target-rank; lower-is-better. Now also in `diagnostics.pool_stage.rank_in_pool` (median/mean/n). No direction metadata in flat comparisons — cite carefully |
+| `cost_per_request`/`cost_*` | **OPEN (context)** | Step `cost` fields rarely populated → 0.0 under template inference; honest but needs inference-mode context when cited |
+| `statistics.aggregate_metrics` | **FIXED + CORRECTED CLAIM** | Original audit claim (`m.get(key,0)` fake-zero) was **inaccurate** — code already filtered `if key in m`. Hardened anyway: skips `None`/non-numeric values; `count` = runs that actually reported the metric. Note: function has **no production caller** |
+| `bootstrap_confidence_interval([])` | **OPEN** | Returns `(0,0,0)` on empty input |
+| summarize `_NON_NUMERIC_KEYS` split | **FIXED (policy: include-all-verdicts)** | `target_in_pool`, `target_in_pool_{sql,semantic,itemcf}`, `target_reachable`, `exclusion_compliance` removed from skip-list → aggregate as rates into summary → campaign comparisons. Still excluded: detail dicts, `stage_lost` (str), funnel counts, `category_coverage`, `reachable_only_*`. All-None columns absent from summary (unmeasurable ≠ 0) |
+| pool/stage aggregate diagnostics | **FIXED** | New `diagnostics.pool_stage_diagnostics(rows)` → per agent×kind rates (all pool verdicts + `retrieved_by_*` + `query_hit_any_title_token`, each with measurable `n`), `stage_lost_counts`, `rank_in_pool` median/mean → `diagnostics.json` + `metrics.json["diagnostics"]` |
+| report `requests` count | **OPEN (cosmetic)** | Adapter counts unique request_ids present in scored rows (requests with no applicable agent are invisible) |
+| run progress denominator | **OPEN (cosmetic)** | `total = requests × agents` counts inapplicable agent-request pairs |
+
+**Stale artifacts**
+
+- `experiments/agent_eval/campaigns/campaign_001/**` scored/metrics predate TD-13 + step-`data` persistence: funnel counts are legacy fake-zeros, `rank_in_pool` all-0, zero diagnostic columns; `campaign_result.json` comparisons = 43-metric legacy summary only. **Any thesis number from campaign_001 covers only legacy metrics — diagnostic metrics (funnel/pool/stage/Jev) require a fresh campaign run.**
+
+**Verified working (dry-run 2026-11-16)**
+
+- Offline path: `agents=[baseline,type1]` + `inference.mode=template` needs no LLM; full chain produced real funnel counts (20→10), per-path pool verdicts, `stage_lost`, `diagnostics.json`, `report.md/.csv`, SVG charts.
+- None-conventions hold: unexercised paths → `retrieved_by_*`=None; missing step data → funnel=None (post-fix); unmeasurable conditional rates → None.
+- Wiring: diagnostics/reporting always-on; Jev/multi_turn/ablation opt-in and credential/policy-gated; campaign comparisons read `summary` only.
+
+---
+
+## 0.18. Glossary of Important Components and Terms
 
 | Term | Definition |
 |------|------------|
@@ -1081,21 +1391,21 @@ Items from the comprehensive repository audit + TD-13 / Section 5B investigation
 | **Jev (TypeSafe AI)** | LLM-as-judge service for faithfulness (claim support) and communication quality (1-5 scale). Integrated via `JevProvider` at `src/package/api/jev_provider.py` |
 | **Grounding** | Validation that answer only mentions items from `recommended` list, with correct numbers. |
 | **Retrieval Funnel** | S0(target in pool)→S1(candidate gen)→S2(retrieval)→S3(filtering)→S4(ranking)→S5(final inclusion). |
-| **Oracle Request Kinds** | `constrained`, `cold_text` — use held-out target categories/prices. Upper bound, not real queries. |
+| **Oracle Request Kinds** | `constrained`, `cold_text`, `exclusion` — use held-out target categories/prices/exclusions. Upper bound, not real queries. |
 | **CONFIG_OVERLAY_PATH** | Env var for per-experiment config overrides (used by campaign runner). |
 | **Run Tag** | Identifier for artifact directories (from `run_tag.yaml`, default `multi_domain`). |
 | **Provenance** | Artifact tracking: file_hash, mapping_hash, fit_provenance, git_sha, config hash. Path: `src/package/evaluation/provenance/` |
-| **ScriptedLLM** | Test double in `package/evaluation/doubles/`: returns pre-scripted responses for testing. |
-| **ScriptedJudge** | Test double in `package/evaluation/doubles/`: returns pre-scripted Jev-like judgments. |
-| **Fake*Tool** | Test doubles in `package/evaluation/doubles/`: deterministic fake tools for benchmarks. |
+| **ScriptedLLM** | Test double in `tests/agents/fakes/scripted_llm.py`: returns pre-scripted responses for testing. |
+| **ScriptedJudge** | Test double implemented inline in `package/evaluation/component/benchmarks/grounding_benchmark.py`: returns pre-scripted Jev-like judgments. |
+| **Fake*Tool** | Test doubles in `tests/agents/fakes/fake_tools.py`: deterministic fake tools for benchmarks. |
 | **Campaign** | Orchestrated experiment runner managing grid experiments with per-experiment artifacts. Path: `src/package/evaluation/campaign/` |---
 
-## 0.18. Document Provenance
+## 0.19. Document Provenance
 
 | Field | Value |
 |-------|-------|
 | **Document** | `src/Project repository reading 29.10.md` (updated in place) |
-| **Update date** | 2026-11-14 |
+| **Update date** | 2026-11-16 (added §0.17 Evaluation System Complete Reference, backlog item 26, §0.8/§0.18 fixes) |
 | **Branch** | `tools-building` (evidence: `git rev-parse --abbrev-ref HEAD`) |
 | **Commit** | `880bf5c` ("0749_1110") (evidence: `git log --oneline -1`) |
 | **Working tree** | ~40 modified + ~70 untracked (evidence: `git status --short` → 112 lines; uncommitted evaluation work per §0.1.3) |

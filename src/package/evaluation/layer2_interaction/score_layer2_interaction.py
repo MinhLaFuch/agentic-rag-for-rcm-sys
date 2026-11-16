@@ -48,12 +48,39 @@ def score_layer2_interaction(
         row["constraint_satisfaction"] = None
         row["price_unknown_rate"] = None
 
-    # Exclusion compliance for exclusion kind
+    # Exclusion compliance for exclusion kind: fraction of recommendations that do
+    # NOT violate the requested exclusions (excluded item_ids or category nodes).
+    # None when the request carries no structured exclusions (unmeasurable, not 1.0).
     exclusion = request.kind == "exclusion"
     if exclusion:
-        row["exclusion_compliance"] = None
+        excluded_items = set(getattr(request, "excluded_item_ids", None) or [])
+        excluded_cats = set(getattr(request, "excluded_categories", None) or [])
+        violating: set[str] = set()
+        if rec and (excluded_items or excluded_cats):
+            ids = list(dict.fromkeys(rec))
+            ph = ",".join("?" * len(ids))
+            if excluded_items:
+                eph = ",".join("?" * len(excluded_items))
+                rows, _ = corpus.select(
+                    f"SELECT item_id FROM items WHERE item_id IN ({ph}) AND item_id IN ({eph})",
+                    ids + list(excluded_items), max_rows=len(ids),
+                )
+                violating |= {r["item_id"] for r in rows}
+            if excluded_cats:
+                cph = ",".join("?" * len(excluded_cats))
+                rows, _ = corpus.select(
+                    f"SELECT DISTINCT item_id FROM item_categories WHERE item_id IN ({ph}) AND category IN ({cph})",
+                    ids + list(excluded_cats), max_rows=len(ids),
+                )
+                violating |= {r["item_id"] for r in rows}
+            row["exclusion_compliance"] = 1.0 - len(violating) / len(rec)
+            row["exclusion_compliance_detail"] = sorted(violating)
+        else:
+            row["exclusion_compliance"] = None
+            row["exclusion_compliance_detail"] = None
     else:
         row["exclusion_compliance"] = None
+        row["exclusion_compliance_detail"] = None
 
     # Task success depends on kind
     steps_ok = all(s["ok"] for s in steps)

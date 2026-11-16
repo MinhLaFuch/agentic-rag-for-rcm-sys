@@ -43,7 +43,7 @@ def test_error_taxonomy_counts_step_and_plan_errors():
     ]
     out = error_taxonomy(trajs)
     kd = out["planner"]["constrained"]
-    assert kd["step_errors"] == {"None": 1, "unknown_tool": 2, "tool_error": 1}
+    assert kd["step_errors"] == {"no_error": 1, "unknown_tool": 2, "tool_error": 1}
     assert kd["plan_errors"] == {"plan_invalid": 1, "provider_error": 1}
 
 
@@ -53,7 +53,7 @@ def test_error_taxonomy_groups_by_agent_and_kind_and_defaults_unknown():
         {"agent": "planner", "steps": [{"error_kind": "exception"}]},  # no kind -> "unknown"
     ]
     out = error_taxonomy(trajs)
-    assert out["baseline"]["cold_text"]["step_errors"] == {"None": 1}
+    assert out["baseline"]["cold_text"]["step_errors"] == {"no_error": 1}
     assert out["planner"]["unknown"]["step_errors"] == {"exception": 1}
     # plan_errors always present even with no plan-level errors
     assert out["planner"]["unknown"]["plan_errors"] == {"plan_invalid": 0, "provider_error": 0}
@@ -108,3 +108,46 @@ def test_reflection_diagnostics_blind_spot_none_for_unmeasurable_kinds():
     # exclusion is oracle but scores exclusion_compliance -> stays None too
     kd = reflection_diagnostics([_row(kind="exclusion", constraint_satisfaction=None)])["planner"]["exclusion"]
     assert kd["constraint_blind_spot_rate"] is None
+
+
+def test_pool_stage_diagnostics_rates_distributions_and_rank():
+    from package.evaluation.diagnostics import pool_stage_diagnostics
+
+    rows = [
+        {"agent": "type1", "kind": "similar",
+         "target_in_any_path_pool": True, "target_in_pool_itemcf": True,
+         "target_in_pool_sql": None, "target_reachable": True,
+         "retrieved_by_itemcf": True, "retrieved_by_sql": None,
+         "query_hit_any_title_token": False,
+         "stage_lost": "filter", "rank_in_pool": 3},
+        {"agent": "type1", "kind": "similar",
+         "target_in_any_path_pool": False, "target_in_pool_itemcf": False,
+         "target_in_pool_sql": None, "target_reachable": False,
+         "retrieved_by_itemcf": False, "retrieved_by_sql": None,
+         "query_hit_any_title_token": None,
+         "stage_lost": "rank", "rank_in_pool": 7},
+        {"agent": "baseline", "kind": "similar",
+         "target_in_any_path_pool": None, "stage_lost": None, "rank_in_pool": None},
+    ]
+    out = pool_stage_diagnostics(rows)
+
+    t1 = out["type1"]["similar"]
+    assert t1["n_rows"] == 2
+    # rate over measurable rows only: sql columns all-None -> absent, not 0
+    assert "target_in_pool_sql" not in t1["rates"]
+    assert t1["rates"]["target_in_any_path_pool"] == {"rate": 0.5, "n": 2}
+    assert t1["rates"]["retrieved_by_itemcf"]["rate"] == 0.5
+    # query_hit: one False, one None -> rate 0.0 over n=1
+    assert t1["rates"]["query_hit_any_title_token"] == {"rate": 0.0, "n": 1}
+    assert t1["stage_lost_counts"] == {"filter": 1, "rank": 1}
+    assert t1["rank_in_pool"] == {"median": 5.0, "mean": 5.0, "n": 2}
+
+    # all-None group still appears with n_rows but no rates/stage/rank blocks
+    b = out["baseline"]["similar"]
+    assert b["n_rows"] == 1
+    assert "rates" not in b and "stage_lost_counts" not in b and "rank_in_pool" not in b
+
+
+def test_pool_stage_diagnostics_empty_input():
+    from package.evaluation.diagnostics import pool_stage_diagnostics
+    assert pool_stage_diagnostics([]) == {}
