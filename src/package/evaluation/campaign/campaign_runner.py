@@ -104,6 +104,37 @@ class CampaignRunner:
             f"({len(needing)}/{len(experiments)} experiments need it)"
         )
 
+    def _preflight_jev(self, experiments: list[Any]) -> None:
+        """Warn up-front when Jev is enabled but no judge credential exists.
+
+        Jev is auxiliary (coverage-only, never in comparisons, per-answer
+        failures are recorded inside jev_eval.jsonl), so a missing key warns
+        instead of aborting the campaign — every run would otherwise only
+        discover ``skipped_no_credentials`` after finishing.
+        """
+        if os.environ.get("CAMPAIGN_SKIP_LLM_PREFLIGHT"):
+            return
+        enabled = [
+            exp.name
+            for exp in experiments
+            if self._normalize_jev_param(
+                {**self.config.agent_config_defaults, **exp.agent_config}.get("jev")
+            ).get("enabled")
+        ]
+        if not enabled:
+            return
+        from package.evaluation.judge import jev_credentials_configured
+
+        if jev_credentials_configured():
+            print(f"Jev preflight OK: credentials found ({len(enabled)}/{len(experiments)} experiments enabled)")
+        else:
+            print(
+                f"WARNING: Jev enabled for {len(enabled)}/{len(experiments)} experiments "
+                f"(e.g. {enabled[0]}) but no judge credential — every run will record "
+                "skipped_no_credentials. Set JEV_API_KEY (or TYPESAFE_API_KEY / "
+                "OPENROUTER_API_KEY), or disable agent_config.jev."
+            )
+
     def run_campaign(self, only: list[str] | None = None) -> CampaignResult:
         """Execute the full campaign.
 
@@ -130,6 +161,7 @@ class CampaignRunner:
         # Fail fast: when any selected experiment needs the LLM, verify the
         # provider once up-front instead of dying inside the Nth subprocess.
         self._preflight_llm(experiments)
+        self._preflight_jev(experiments)
 
         print(f"\n=== Campaign Summary ===")
         print(f"Total experiments: {len(all_experiments)}")

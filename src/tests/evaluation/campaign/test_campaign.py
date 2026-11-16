@@ -770,3 +770,27 @@ def test_preflight_respects_experiment_inference_override(monkeypatch):
     )
     _preflight_runner()._preflight_llm([exp])
     assert called == []
+
+
+def test_preflight_jev_warns_without_credentials(monkeypatch, capsys):
+    """Jev enabled + no credential -> loud warning, campaign not aborted."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    for var in ("JEV_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    import package.evaluation.campaign.campaign_runner as cr  # noqa: F401
+    # _preflight_jev imports the symbol lazily from the package -> patch there.
+    import package.evaluation.judge as judge_pkg
+    monkeypatch.setattr(judge_pkg, "jev_credentials_configured", lambda: False)
+    runner = _preflight_runner(agent_config_defaults={"jev": True})
+    exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
+    runner._preflight_jev([exp])
+    out = capsys.readouterr().out
+    assert "WARNING: Jev enabled" in out and "skipped_no_credentials" in out
+
+
+def test_preflight_jev_silent_when_disabled(monkeypatch, capsys):
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    runner = _preflight_runner()
+    exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
+    runner._preflight_jev([exp])
+    assert capsys.readouterr().out == ""
