@@ -1090,7 +1090,8 @@ Stages inside `main()`, in order. Everything after "score" is post-hoc and LLM-f
 | 2. Data load | `get_data_paths` → splits (`load_splits`), fit/target (`select_fit_target`), user/item mappings, corpus (`ItemCorpus` sqlite or prebuilt), temporal `as_of` | — |
 | 3. ItemKNN | fit fresh or reuse validated cache (`item_knn_reuse_cache` + `item_knn_dir`); `BaselineScorer`/`HybridScorer` per `agent/scoring.yaml` | cache under campaign dir when reused |
 | 4. Tools+provenance | `build_tools` (dense leg optional via `eval/dense_retrieval.yaml`), `build_run_provenance` (prompt/tool-schema/git/limits hashes) | — |
-| 5. LLM gate | `needs_llm = planner agents present OR (inference.mode=llm AND inference agents present)`; `build_llm_provider` + `health_check()` (real API ping) → `SystemExit` on failure. `agents=[baseline,type1]` + `mode=template` ⇒ **fully offline** | — |
+| 5. LLM gate | `needs_llm = planner agents present OR (inference.mode=llm AND inference agents present)`; `build_llm_provider` + ping `complete()` (real API call, errors surfaced) → `SystemExit` on failure. `agents=[baseline,type1]` + `mode=template` ⇒ **fully offline** | — |
+| trajectory log location | `trajectory_file` resolves into `experiment_dir` when the campaign overlay pins it (run dir → deleted with the campaign); otherwise `data_paths.log_dir`. Legacy log_dir files remain a `--resume` source and migrate on next resume | `run_agent_eval.py` ~L676 |
 | 6. Requests | `build_requests` (deterministic given seed) → `filter_requests_by_scope` (`realistic`/`oracle`/`all`) | `requests.jsonl` |
 | 7. Trajectories | per request×agent with `applicable` filter (baseline needs `user_idx`; type1 only `kind=="similar"`; planners always); `--resume` reuses records matching `evaluation_protocol_hash` | `trajectories.jsonl` (appended live) |
 | 8. ItemCF reachability | `_itemcf_reachable` (global) + `_itemcf_reachable_for_seeds` (per-trajectory seeds from logged SimilarTool args) | — |

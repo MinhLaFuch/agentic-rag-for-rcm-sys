@@ -676,13 +676,32 @@ def main() -> None:
     trajectory_name = str(cfg["trajectory_file"])
     if Path(trajectory_name).name != trajectory_name or not trajectory_name.endswith(".jsonl"):
         raise SystemExit("agent_eval.trajectory_file must be a simple .jsonl filename")
-    traj_path = data_paths.log_dir / trajectory_name
+    # Campaign runs pin experiment_dir -> keep the trajectory log inside the run
+    # dir so deleting the campaign removes its trajectories too (no global
+    # log_dir residue, no cross-campaign filename collisions). Legacy campaign
+    # logs still in log_dir remain a valid resume source and are migrated on
+    # the next --resume; standalone runs keep the log_dir location.
+    exp_dir_override = cfg.get("experiment_dir")
+    traj_path = (
+        Path(exp_dir_override) / trajectory_name if exp_dir_override
+        else data_paths.log_dir / trajectory_name
+    )
+    legacy_traj_path = (
+        data_paths.log_dir / trajectory_name
+        if exp_dir_override and traj_path != data_paths.log_dir / trajectory_name
+        else None
+    )
     traj_path.parent.mkdir(parents=True, exist_ok=True)
-    if traj_path.exists() and not args.resume:
-        raise SystemExit(f"Trajectory already exists: {traj_path}; use --resume with the identical protocol or set a new agent_eval.trajectory_file")
+    source_path = traj_path if traj_path.exists() else (
+        legacy_traj_path
+        if legacy_traj_path is not None and legacy_traj_path.exists()
+        else None
+    )
+    if source_path is not None and not args.resume:
+        raise SystemExit(f"Trajectory already exists: {source_path}; use --resume with the identical protocol or set a new agent_eval.trajectory_file")
     done: dict[tuple[str, str], dict[str, Any]] = {}
-    if args.resume and traj_path.exists():
-        for line in traj_path.read_text(encoding="utf-8").splitlines():
+    if args.resume and source_path is not None:
+        for line in source_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
             if rec.get("evaluation_protocol_hash") != protocol_hash:
                 raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; set a new agent_eval.trajectory_file")
