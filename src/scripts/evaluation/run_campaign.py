@@ -28,6 +28,42 @@ from package.evaluation.campaign import CampaignConfig, CampaignRunner
 DEFAULT_CAMPAIGN_CONFIG = str(ROOT / "configs" / "eval" / "campaign.yaml")
 
 
+def _auto_next_campaign_version(campaign: CampaignConfig) -> CampaignConfig:
+    """Bump campaign_id/output_dir to one past the highest existing campaign_NNN.
+
+    Scans sibling dirs of the configured output_dir (under experiments_dir for
+    relative paths) for ``campaign_<digits>`` names — this covers campaigns
+    created by earlier auto-versioned runs that have no YAML of their own.
+    Never downgrades: the YAML's own number is the floor. Configs without a
+    digit group are returned unchanged.
+    """
+    import re
+
+    from package.config import get_data_paths
+
+    m = re.search(r"\d+", campaign.campaign_id)
+    if m is None:
+        return campaign
+    yaml_num = int(m.group(0))
+
+    out = Path(campaign.output_dir)
+    root = out.parent if out.is_absolute() else get_data_paths().experiments_dir / out.parent
+    existing = [
+        int(mm.group(1))
+        for p in root.glob("campaign_*")
+        if p.is_dir() and (mm := re.fullmatch(r"campaign_(\d+).*", p.name))
+    ]
+    target = max(existing + [yaml_num - 1]) + 1
+    if target <= yaml_num:
+        return campaign
+    bumped = campaign.next_version(times=target - yaml_num)
+    print(
+        f"auto-version: highest existing campaign_NNN={max(existing) if existing else 'none'} "
+        f"-> {bumped.campaign_id} ({bumped.output_dir})"
+    )
+    return bumped
+
+
 def get_git_sha() -> str:
     """Get current git commit SHA."""
     try:
@@ -70,13 +106,6 @@ def main() -> None:
         help="Comma-separated experiment selectors (e.g. 7,8,11,12 or exp_7,exp_8); "
              "runs ONLY those experiments and merges into the existing campaign_result.json",
     )
-    ap.add_argument(
-        "--next",
-        action="store_true",
-        help="Auto-increment the campaign number (campaign_002 -> campaign_003) in "
-             "campaign_id and output_dir before running — use for a fresh full run; "
-             "cannot be combined with --only (reruns must target the existing campaign)",
-    )
     args = ap.parse_args()
 
     only = None
@@ -92,14 +121,11 @@ def main() -> None:
 
     campaign = CampaignConfig.from_yaml(campaign_path)
 
-    if args.next:
-        if only is not None:
-            raise SystemExit("--next cannot be combined with --only: reruns must target the existing campaign")
-        try:
-            campaign = campaign.next_version()
-        except ValueError as exc:
-            raise SystemExit(f"--next: {exc}")
-        print(f"--next: campaign_id -> {campaign.campaign_id}, output_dir -> {campaign.output_dir}")
+    # Full runs auto-version like run_agent_eval's exp_NNN: scan existing
+    # campaign dirs and take max+1. --only reruns must keep the existing
+    # campaign identity so results merge into the right output_dir.
+    if only is None:
+        campaign = _auto_next_campaign_version(campaign)
 
     # Expand parameter grid to get actual experiments
     experiments = campaign.expand_parameter_grid()
