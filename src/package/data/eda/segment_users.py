@@ -22,8 +22,10 @@ def segment_users(
     Gán mỗi user vào 1 trong 4 nhóm theo mục XVIII: warm / new / sparse /
     evolving. Đây là implementation tối giản cho warm/new/sparse (dùng số
     lượng interaction <= as_of_timestamp); "evolving" cần dữ liệu category
-    thật để so sánh category ưa thích trước/sau — nếu không có
-    evolving_category_col, cột 'evolving_interest' sẽ luôn là False
+    thật để so sánh category ưa thích trước/sau — logic chưa implement và dữ
+    liệu category time-series đang BLOCKED (xem acquire.py). Vì vậy cột
+    'evolving_interest' luôn là pd.NA (nullable boolean): NA = "không đủ dữ
+    liệu để đánh giá", KHÁC với False = "đã kiểm tra, không phát hiện"
     (KHÔNG suy diễn khi thiếu dữ liệu — mục XXVIII: không tạo số liệu giả).
     """
     past = interactions[interactions["timestamp"] <= as_of_timestamp]
@@ -39,11 +41,8 @@ def segment_users(
         default="warm",
     )
 
-    if evolving_category_col and evolving_category_col in interactions.columns:
-        # placeholder cho logic evolving-interest thật — sẽ hoàn thiện khi
-        # có dữ liệu category thật (BLOCKED hiện tại)
-        segments["evolving_interest"] = False
-    else:
-        segments["evolving_interest"] = False
+    # evolving-interest: unavailable cho tới khi có category time-series và
+    # logic so sánh trước/sau được implement — NA, không phải False.
+    segments["evolving_interest"] = pd.Series(pd.NA, index=segments.index, dtype="boolean")
 
     return segments.reset_index()

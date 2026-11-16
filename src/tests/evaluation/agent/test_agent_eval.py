@@ -18,7 +18,6 @@ from package.evaluation import (
 )
 from package.evaluation.requests._helper import _deepest_category
 from package.evaluation.layer1_outcome import _extract_retrieval_funnel
-from package.evaluation.layer3_grounding import _extract_retrieval_diagnostics
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from package.tools import get_tool_limits
@@ -221,16 +220,6 @@ def test_retrieval_funnel_counts_real_and_genuinely_empty_results():
     assert lookup_only["candidate_generation_count"] == 0
 
 
-def test_retrieval_diagnostics_require_step_data():
-    assert _extract_retrieval_diagnostics({"steps": [_step("SearchTool"), _step("RankTool")]}) == {}
-    mixed = {"steps": [_data_step("SearchTool", {"candidates": []}), _step("RankTool")]}
-    assert _extract_retrieval_diagnostics(mixed) == {}
-    data_steps = [_data_step("SearchTool", {"candidates": [{"item_id": "a"}]}),
-                  _data_step("RankTool", {"ranked": [{"item_id": "a"}]})]
-    diag = _extract_retrieval_diagnostics({"steps": data_steps})
-    assert diag["rank_in_pool"] == 1  # current semantics: count of ranked items (R3 rework pending)
-
-
 def test_score_trajectory_keeps_funnel_none_without_step_data(corpus):
     request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
     traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A])
@@ -308,6 +297,25 @@ def test_target_in_pool_empty_targets_and_missing_inputs(corpus):
     # itemcf_reachable=None -> only that path is unavailable
     row3 = _pool_row(corpus, [1], itemcf_reachable=None)
     assert row3["target_in_pool_sql"] is True and row3["target_in_pool_itemcf"] is None
+
+
+def test_target_in_any_path_pool(corpus):
+    # existential across all (target, path): True when any path can reach a target
+    row = _pool_row(corpus, [1], itemcf_reachable={0, 5})
+    assert row["target_in_any_path_pool"] is True
+    # divergence: absent from corpus but reachable via ItemCF -> still True
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    row2 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row2["target_in_any_path_pool"] is True
+    # measurable absence on every path -> False
+    row3 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable=set())
+    assert row3["target_in_any_path_pool"] is False
+    # any unknown -> None, never a silent False
+    row4 = _pool_row(corpus, [99], itemcf_reachable={99})
+    assert row4["target_in_any_path_pool"] is None
+    # empty targets -> unmeasurable
+    row5 = _pool_row(corpus, [])
+    assert row5["target_in_any_path_pool"] is None
 
 
 def test_target_in_pool_multiple_targets_existential(corpus):
@@ -454,6 +462,32 @@ def test_stage_diagnostics_new_keys_skipped_by_summarize(corpus):
     entry = summary["planner"]["similar"]["all"]
     for key in ("stage_lost", "target_stage_detail", "target_rank_detail"):
         assert key not in entry
+
+
+def test_query_hit_any_title_token(corpus):
+    # target idx 1 = VG_B "Mario 100%": query token "mario" hits the title
+    steps = [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})]
+    assert _stage_row(corpus, [1], steps)["query_hit_any_title_token"] is True
+    # measurable miss -> False
+    steps = [_data_step("SearchTool", {"query_tokens": ["zzz"], "candidates": []})]
+    assert _stage_row(corpus, [1], steps)["query_hit_any_title_token"] is False
+    # union across multiple SearchTool steps: second query carries the hit
+    steps = [_data_step("SearchTool", {"query_tokens": ["zzz"], "candidates": []}),
+             _data_step("SearchTool", {"query_tokens": ["game"], "candidates": []})]
+    assert _stage_row(corpus, [0], steps)["query_hit_any_title_token"] is True  # VG_A "Super Video Game"
+    # no SearchTool exercised -> unmeasurable
+    assert _stage_row(corpus, [1], [_step("SimilarTool")])["query_hit_any_title_token"] is None
+    # SearchTool without persisted data -> unmeasurable (pre-R1 trajectory)
+    assert _stage_row(corpus, [1], [_step("SearchTool")])["query_hit_any_title_token"] is None
+    # unmapped target index -> None
+    steps = [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})]
+    assert _stage_row(corpus, [99], steps)["query_hit_any_title_token"] is None
+    # target absent from corpus -> title unmeasurable -> None
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    assert _stage_row(corpus, [5], steps, id2item=id2item)["query_hit_any_title_token"] is None
+    # aggregates as a rate, unlike the per-target diagnostics
+    summary = summarize([_stage_row(corpus, [1], [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})])])
+    assert summary["planner"]["similar"]["all"]["query_hit_any_title_token"] == 1.0
 
 
 def test_summarize_means_per_agent_kind_and_segment():

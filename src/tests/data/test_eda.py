@@ -75,9 +75,10 @@ def test_segment_users_assigns_new_sparse_warm(synthetic_interactions):
     assert seg_map["u2"] == "sparse_history"  # 2 interaction == threshold
     assert seg_map["u3"] == "sparse_history"  # 1 interaction <= threshold
 
-    # evolving_interest phải là False khi không có category data — không
-    # được tự suy diễn khi thiếu dữ liệu (mục XXVIII)
-    assert not segments["evolving_interest"].any()
+    # evolving_interest là NA (unavailable), không phải False — thiếu category
+    # time-series nên không được suy diễn "không có evolving interest"
+    # (mục XXVIII: không tạo số liệu giả)
+    assert segments["evolving_interest"].isna().all()
 
 
 def test_segment_users_respects_as_of_timestamp(synthetic_interactions):

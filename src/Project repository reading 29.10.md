@@ -1047,12 +1047,15 @@ PYTHONPATH=. python scripts/data_pipeline/verify_tag.py --tag <tag>
 
 Items from the comprehensive repository audit + TD-13 / Section 5B investigations. `[INVESTIGATE]` = read-only analysis task producing a recommendation per item; `[CLEANUP]` = gated implementation task. Do NOT implement inside investigation tasks.
 
-23. **[INVESTIGATE] TD-13 — Incomplete evaluation metrics.** Trace each metric source → computation → aggregation → report; recommend implement / exclude / remove per research value and data availability. Do not assume every `None` metric must be implemented.
-    - `package/evaluation/layer1_outcome/score_layer1_outcome.py` — `target_in_pool`, `target_reachable` always `None` (needs `item_idx → item_id` reverse mapping; see dead `pass` block ~line 55).
-    - `package/evaluation/layer3_grounding/score_layer3_grounding.py` — `target_in_pool` always `None` (lines ~39, ~86); check whether the same mapping limitation applies.
-    - `package/evaluation/product_reply/evaluate_product_reply.py` — `_score_language` ASCII heuristic (returns 5/3); assess vs. real language detection. Note: Jev variant `evaluate_product_reply_with_jev.py` is what `grounding_benchmark.py` actually uses.
-    - `package/data/eda/segment_users.py:43` — `evolving_interest` column permanently `False` ("BLOCKED" comment); decide implement / explicitly exclude / remove.
-    - Verify missing metrics stay `None` (not silently `0`) through `trajectory/summarize.py` aggregation — current behavior confirmed safe (`summarize` skips `None`), re-verify after any change.
+23. **[DONE] TD-13 — Incomplete evaluation metrics.** Resolved 2026-11-16 after R1–R3 had already landed per-path pool verdicts and stage-loss diagnostics. Decisions per metric:
+    - `target_in_pool` (flat) — stays `None` **by design**: no single eligible item universe across SQL/Semantic/ItemCF paths. Added `target_in_any_path_pool` instead (existential verdict over all target×path pool entries: any True → True, all measurable False → False, else None) in `score_layer1_outcome.py`.
+    - `target_reachable` — already real via `_extract_stage_diagnostics` (True if any target retrieved by any exercised path).
+    - `target_in_pool_{sql,semantic,itemcf}`, `target_pool_detail`, `stage_lost`, `target_stage_detail`, `rank_in_pool` — real per-path/per-target diagnostics from R2/R3.
+    - `query_hit_any_title_token` — **implemented** in `_extract_stage_diagnostics`: existential per-request verdict; union of `query_tokens` across ok SearchTool steps vs `tokenize_search_query(target title)`; aggregates in `summarize` (bool → rate). Measures lexical reachability of the BM25 path.
+    - `_extract_retrieval_diagnostics` (layer3) — **removed**: fully dead after R3 (all its keys were overwritten by stage diagnostics or permanently None). `score_layer3_grounding` now emits only answer-status/grounding keys.
+    - `_score_language` — **kept, documented**: ASCII-script heuristic (5/3), explicitly marked NOT language detection in module/function docstrings; official language quality is the Jev judge (`evaluate_product_reply_with_jev`).
+    - `evolving_interest` — **False → pd.NA** (nullable boolean): unavailable ≠ "checked, none found". Logic still unimplemented; blocked on category time-series data (`acquire.py`).
+    - `summarize.py` None-safety re-verified: `None` values are filtered before means; diagnostic keys remain in `_NON_NUMERIC_KEYS`; `target_in_any_path_pool` and `query_hit_any_title_token` intentionally aggregate as rates.
 24. **[INVESTIGATE] Section 5B — Simulated inputs in real evaluation.** Document how simulated requests/queries are constructed, flagged, and reported; check for target leakage into "realistic" requests.
     - `package/evaluation/requests/build_requests.py` — requests synthesized from held-out data; trace `request.oracle` flag and `query_provenance` propagation into `run_agent_eval.py`, `trajectory/score_trajectory.py`, `ablation/_report.py` (`is_oracle`).
     - `package/evaluation/requests/filter_requests_by_scope.py` + `configs/agent/agent_eval.yaml:request_scope` — `realistic` | `oracle` | `all` semantics.

@@ -10,6 +10,7 @@ import numpy as np
 from package.data import ITEM_ID_SEPARATOR
 from package.corpus import ItemCorpus
 from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
+from package.tools.retrieval.tokenize_search_query import tokenize_search_query
 
 
 def score_layer1_outcome(
@@ -37,7 +38,8 @@ def score_layer1_outcome(
     Returns:
         Dict with keys: n_recommended, precision@k, recall@k, hit_rate@k, ndcg@k, mrr@k, map@k,
                        seen_item_rate, seed_in_result, distinct_domains, distinct_main_categories,
-                       target_in_pool, target_reachable, candidate_generation_count, retrieved_count,
+                       target_in_pool, target_in_any_path_pool, target_reachable,
+                       candidate_generation_count, retrieved_count,
                        filtered_count, ranked_count, reachable_only_precision@k, reachable_only_recall@k,
                        reachable_only_hit_rate@k, reachable_only_ndcg@k, category_coverage,
                        target_reachability
@@ -55,6 +57,7 @@ def score_layer1_outcome(
     # `target_in_pool_{sql,semantic,itemcf}` and per-target detail in
     # `target_pool_detail` (input to stage-loss diagnostics, not to Recall).
     row["target_in_pool"] = None
+    row["target_in_any_path_pool"] = None
     row["target_reachable"] = None  # defined together with stage_lost (R3)
     row["target_pool_detail"] = None
     for _path in ("sql", "semantic", "itemcf"):
@@ -64,6 +67,7 @@ def score_layer1_outcome(
         row["target_pool_detail"] = detail
         for path in ("sql", "semantic", "itemcf"):
             row[f"target_in_pool_{path}"] = _pool_path_verdict(detail, path)
+        row["target_in_any_path_pool"] = _any_path_pool_verdict(detail)
 
     # Calculate ranking metrics only for non-ambiguous requests with targets
     ranking_keys = (f"precision@{k}", f"recall@{k}", f"hit_rate@{k}", f"ndcg@{k}", f"mrr@{k}", f"map@{k}")
@@ -266,6 +270,19 @@ def _target_pool_detail(
     return detail
 
 
+def _any_path_pool_verdict(detail: dict[str, dict[str, bool | None]]) -> bool | None:
+    """Existential verdict across every (target, path) pool entry: True if any
+    target is eligible on any path, False only when every entry is measurably
+    absent, None when any entry is unknown. Unlike `target_in_pool` (no single
+    eligible universe), this answers "could some path have delivered a target"."""
+    values = [v for entry in detail.values() for v in entry.values()]
+    if any(v is True for v in values):
+        return True
+    if not values or any(v is None for v in values):
+        return None
+    return False
+
+
 def _pool_path_verdict(detail: dict[str, dict[str, bool | None]], path: str) -> bool | None:
     """Existential verdict for one retrieval path: True if any target is eligible,
     False only when every target is measurably absent, None when any is unknown."""
@@ -327,6 +344,54 @@ def _path_candidates(steps: list[dict[str, Any]], tools: tuple[str, ...]) -> tup
     return True, ids
 
 
+def _search_query_tokens(steps: list[dict[str, Any]]) -> set[str] | None:
+    """Union of query_tokens across ok SearchTool steps; None when unmeasurable
+    (no SearchTool ran, or any ran without persisted data — pre-R1 trajectories)."""
+    search_steps = [s for s in steps if s.get("tool") == "SearchTool" and s.get("ok")]
+    if not search_steps:
+        return None
+    if not all(isinstance(s.get("data"), dict) for s in search_steps):
+        return None
+    tokens: set[str] = set()
+    for s in search_steps:
+        for t in s["data"].get("query_tokens") or []:
+            if isinstance(t, str):
+                tokens.add(t)
+    return tokens
+
+
+def _query_hit_title_verdict(
+    targets: list[int],
+    id2item: Mapping[int, str],
+    corpus: ItemCorpus,
+    query_tokens: set[str] | None,
+) -> bool | None:
+    """Existential verdict: True if any target's title shares a token with any
+    issued search query (lexical reachability of the BM25 path); False only when
+    every target title is measurable and misses; None when unmeasurable."""
+    if query_tokens is None:
+        return None
+    values: list[bool | None] = []
+    for target_idx in targets:
+        item_id = id2item.get(target_idx)
+        title = None
+        if item_id is not None:
+            rows, _ = corpus.select(
+                "SELECT title FROM items WHERE item_id = ?", (item_id,), max_rows=1
+            )
+            if rows and isinstance(rows[0].get("title"), str):
+                title = rows[0]["title"]
+        if not title:
+            values.append(None)
+            continue
+        values.append(bool(set(tokenize_search_query(title)) & query_tokens))
+    if any(v is True for v in values):
+        return True
+    if not values or any(v is None for v in values):
+        return None
+    return False
+
+
 def _last_ranker(steps: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Data of the last ok RankTool step, or None when absent/unmeasurable.
 
@@ -378,6 +443,7 @@ def _extract_stage_diagnostics(
         "target_rank_detail": None,
         "stage_lost": None,
         "target_stage_detail": None,
+        "query_hit_any_title_token": None,
     }
     steps = trajectory.get("steps") or []
     targets = list(getattr(request, "targets", None) or [])
@@ -406,6 +472,10 @@ def _extract_stage_diagnostics(
         ranker_input = list(raw_input) if isinstance(raw_input, list) else None
 
     recommended_ids = set(trajectory.get("recommended") or [])
+
+    out["query_hit_any_title_token"] = _query_hit_title_verdict(
+        targets, id2item, corpus, _search_query_tokens(steps)
+    )
 
     def _downstream_stage(item_id: str) -> str | None:
         """Stage after a successful retrieval, or None when unmeasurable."""

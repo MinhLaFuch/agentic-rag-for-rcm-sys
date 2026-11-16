@@ -1,4 +1,11 @@
-"""Evaluate product recommendation assistant replies for faithfulness and communication quality."""
+"""Evaluate product recommendation assistant replies for faithfulness and communication quality.
+
+Heuristic CLI evaluator — NOT the official grounding benchmark. The official
+faithfulness/communication evaluation is `evaluate_product_reply_with_jev`
+(Jev LLM-as-judge). Sub-scores here, especially `communication.language`
+(see `_score_language`), are coarse ASCII-script heuristics and must not be
+cited as language-quality measurements.
+"""
 
 from __future__ import annotations
 
@@ -265,7 +272,11 @@ def _check_items_in_order(answer: str, items: list[dict[str, Any]]) -> bool:
 
 
 def _score_communication(request: str, items: list[dict[str, Any]], answer: str) -> dict[str, int]:
-    """Score communication quality on four criteria (1-5 scale)."""
+    """Score communication quality on four criteria (1-5 scale).
+
+    `language` is a coarse ASCII-script heuristic (see `_score_language`), not a
+    language-quality measurement; the other three are simple structural checks.
+    """
     return {
         "relevance": _score_relevance(request, items, answer),
         "clarity": _score_clarity(answer),
@@ -311,14 +322,19 @@ def _score_clarity(answer: str) -> int:
 
 
 def _score_language(request: str, answer: str) -> int:
-    """Score if reply is in the same language as request."""
-    # Very basic check: if request is English, answer should be English
-    # This is a placeholder; real implementation would use language detection
+    """Coarse ASCII-script heuristic, NOT language detection.
+
+    Returns 5 when request and answer share the same script class (both ASCII
+    or both non-ASCII) and 3 when they differ. It cannot detect real language
+    mismatches (e.g. an English answer to a Vietnamese request may still score
+    3 = "undetermined", not a failure). Real language-quality evaluation is
+    the Jev judge's job (`evaluate_product_reply_with_jev`).
+    """
     if request.isascii() and answer.isascii():
         return 5
     elif not request.isascii() and not answer.isascii():
         return 5
-    return 3  # Default to acceptable
+    return 3  # Script classes differ: undetermined, not a measured defect
 
 
 def _score_honesty(items: list[dict[str, Any]], answer: str) -> int:
@@ -347,7 +363,12 @@ def _score_honesty(items: list[dict[str, Any]], answer: str) -> int:
 
 
 def _generate_summary(claims: list[dict[str, Any]], communication: dict[str, int]) -> str:
-    """Generate a brief summary of main strength and flaw (max 40 words)."""
+    """Generate a brief summary of main strength and flaw (max 40 words).
+
+    `avg_comm` averages the four communication sub-scores, one of which
+    (`language`) is an ASCII-script heuristic — treat the resulting wording as
+    a rough CLI hint, not an official quality verdict.
+    """
     supported_count = sum(1 for c in claims if c["verdict"] == "supported")
     total_claims = len(claims)
 
