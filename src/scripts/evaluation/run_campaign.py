@@ -32,8 +32,10 @@ def _auto_next_campaign_version(campaign: CampaignConfig) -> CampaignConfig:
     """Bump campaign_id/output_dir to one past the highest existing campaign_NNN.
 
     Scans sibling dirs of the configured output_dir (under experiments_dir for
-    relative paths) for ``campaign_<digits>`` names — this covers campaigns
-    created by earlier auto-versioned runs that have no YAML of their own.
+    relative paths) for ``campaign_<digits>`` names AND the shared trajectory
+    log dir for ``campaign_<digits>_*_trajectories.jsonl`` files — trajectory
+    logs outlive campaign output dirs, so a deleted campaign's id must still
+    count as used or its filenames collide on the next auto-versioned run.
     Never downgrades: the YAML's own number is the floor. Configs without a
     digit group are returned unchanged.
     """
@@ -46,13 +48,20 @@ def _auto_next_campaign_version(campaign: CampaignConfig) -> CampaignConfig:
         return campaign
     yaml_num = int(m.group(0))
 
+    data_paths = get_data_paths()
     out = Path(campaign.output_dir)
-    root = out.parent if out.is_absolute() else get_data_paths().experiments_dir / out.parent
+    root = out.parent if out.is_absolute() else data_paths.experiments_dir / out.parent
     existing = [
         int(mm.group(1))
         for p in root.glob("campaign_*")
         if p.is_dir() and (mm := re.fullmatch(r"campaign_(\d+).*", p.name))
     ]
+    if data_paths.log_dir.is_dir():
+        existing += [
+            int(mm.group(1))
+            for p in data_paths.log_dir.glob("campaign_*_trajectories.jsonl")
+            if (mm := re.fullmatch(r"campaign_(\d+)_.*", p.name))
+        ]
     target = max(existing + [yaml_num - 1]) + 1
     if target <= yaml_num:
         return campaign
