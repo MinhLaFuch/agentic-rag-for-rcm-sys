@@ -30,7 +30,7 @@ from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import select_fit_target
 from package.evaluation.recommender.utils import sha256_file
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.shared import build_interaction_matrix, build_model
 from package.utils import ensure_utf8_stdout
 

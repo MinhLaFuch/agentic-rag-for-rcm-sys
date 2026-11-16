@@ -468,7 +468,7 @@ Final Response + Trajectory (saved to JSONL)
 | `checkpoint_manager.py` | Resume/crash recovery for long-running campaigns |
 | `_schema.py` | Pydantic schemas for campaign config, experiment config, comparison pairs |
 
-**Config**: `configs/evaluation/campaign.yaml` (parameter_grid, comparison_pairs, repetition_count, output_dir, per-experiment timeout — now 7200s)
+**Config**: `configs/eval/campaign.yaml` (parameter_grid, comparison_pairs, repetition_count, output_dir, per-experiment timeout — now 7200s)
 
 **CLI**: `PYTHONPATH=. python scripts/evaluation/run_campaign.py [--campaign-config PATH] [--only 7,8,11,12] [--dry-run] [--git-sha SHA]` — `--only` runs a subset of grid experiments while preserving completed ones (merge, not overwrite). Campaign overlays may set `agent_eval.exclude_tools` for tool-subset ablations.
 
@@ -539,7 +539,7 @@ outputs:  # Relative to experiments_dir
 | `configs/agent/` | `agent.yaml`, `llm.yaml`, `agent_eval.yaml`, `inference.yaml`, `demo.yaml`, `demo_profiles.yaml`, `memory.yaml`, `tools.yaml`, `scoring.yaml`, `ablation.yaml`, `reference_plans.yaml` | Agent limits, LLM provider, eval agents, inference mode, demo settings, memory config, tool runtime limits, scorer mode, ablation agents, planner reference plans |
 | `configs/data/` | `cleaning.yaml`, `filtering.yaml`, `split.yaml` | Pipeline stages 1–4 |
 | `configs/eval/` | `component_benchmarks.yaml`, `judge.yaml`, `baselines.yaml`, `candidate_recall.yaml`, `memory_utility.yaml`, `ranking_eval.yaml`, `ranking_diagnostics.yaml`, `tool_validation.yaml`, `tuning.yaml`, `recommendation_metrics.yaml`, `segment_thresholds.yaml`, `semantic_candidate_pilot.yaml`, `sparse_content_eval.yaml`, `sparse_seed_eval.yaml`, `policy_acceptance.yaml` | Component benchmarks, Jev judge, baseline models, recall budgets, ranking eval, diagnostics, tool validation, hyperparameter tuning, metrics K-values, segment thresholds, semantic/sparse pilots |
-| `configs/evaluation/` | `campaign.yaml` | Campaign orchestration (parameter grid, comparison pairs, repetition) |
+| `configs/eval/` | `campaign.yaml` | Campaign orchestration (parameter grid, comparison pairs, repetition) |
 | `configs/path/` | `data_paths.yaml`, `domains.yaml`, `run_tag.yaml` | All filesystem paths, domain list, run tag for artifact directories |---
 
 ## 0.10. Scripts and Execution Workflows
@@ -697,7 +697,7 @@ PYTHONPATH=. python scripts/evaluation/run_campaign.py --campaign-config /path/t
 
 | Arg | Default | Description |
 |-----|---------|-------------|
-| `--campaign-config` | `configs/evaluation/campaign.yaml` | Path to campaign YAML |
+| `--campaign-config` | `configs/eval/campaign.yaml` | Path to campaign YAML |
 | `--dry-run` | false | Print experiments without executing |
 | `--git-sha` | auto-detected | Git commit SHA for reproducibility |
 
@@ -796,7 +796,7 @@ All tunable parameters live in YAML. CLI flags are only operational selectors (`
 | `eval/sparse_content_eval` | `configs/eval/sparse_content_eval.yaml` | Sparse content eval settings |
 | `eval/sparse_seed_eval` | `configs/eval/sparse_seed_eval.yaml` | Sparse seed eval settings |
 | `eval/policy_acceptance` | `configs/eval/policy_acceptance.yaml` | Policy acceptance thresholds |
-| `evaluation/campaign` | `configs/evaluation/campaign.yaml` | Campaign orchestration (parameter_grid, comparison_pairs, repetition) |
+| `eval/campaign` | `configs/eval/campaign.yaml` | Campaign orchestration (parameter_grid, comparison_pairs, repetition) |
 | `path/data_paths` | `configs/path/data_paths.yaml` | All filesystem paths (src_root, config_dir, resource/*, experiments/*) |
 | `path/run_tag` | `configs/path/run_tag.yaml` | Current run tag (default: `multi_domain`) |
 | `path/domains` | `configs/path/domains.yaml` | Domain list (Video_Games, Toys_and_Games, Electronics) |
@@ -963,7 +963,7 @@ PYTHONPATH=. pytest tests/ --cov=package --cov-report=term-missing
 | `PYTHONPATH=. python scripts/evaluation/run_agent_eval.py --eval-on validation --resume --domain Video_Games` | ✅ | `--resume` reuses trajectories with same request text, agent, reflect_rounds, inference_mode |
 | `PYTHONPATH=. python scripts/evaluation/run_component_benchmarks.py` | ✅ | Thin wrapper; runs all 6 components + multi-turn; writes unified_report |
 | `PYTHONPATH=. python -m package.evaluation.component.run --component memory --dataset package/evaluation/component/benchmarks/memory_correctness_dataset.jsonl` | ✅ | `--tags`, `--metadata`, `--git-sha` |
-| `PYTHONPATH=. python scripts/evaluation/run_campaign.py --dry-run --campaign-config configs/evaluation/campaign.yaml` | ✅ | `--git-sha` auto-detected |
+| `PYTHONPATH=. python scripts/evaluation/run_campaign.py --dry-run --campaign-config configs/eval/campaign.yaml` | ✅ | `--git-sha` auto-detected |
 | `PYTHONPATH=. python scripts/demo/run_demo.py --mock` | ✅ | `--domain`, `--host`, `--port` for live mode; demo config from YAML |
 | `PYTHONPATH=. python scripts/tools/run_tools.py --tool SearchTool --args '{"query": "test"}'` | ✅ | `--chain`, `--init-args`, `--interactions`, `--list` |
 | `PYTHONPATH=. python scripts/experiments/compare_experiments.py --contrast reflect_0_vs_reflect_1` | ✅ | Ablation comparison |

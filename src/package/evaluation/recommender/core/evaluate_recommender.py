@@ -92,10 +92,10 @@ def evaluate_recommender(
     if progress_every < 0:
         raise ValueError("progress_every must be non-negative")
     # Sparse recommendation only touches neighbors and Top-K, not B x catalog.
-    from package.recommenders.evaluation.popularity_matrix_recommender import PopularityMatrixRecommender
-    from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
-    from package.recommenders.evaluation.fallback_recommender import FallbackRecommender
-    from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+    from package.recommenders.offline.popularity_matrix_recommender import PopularityMatrixRecommender
+    from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
+    from package.recommenders.offline.fallback_recommender import FallbackRecommender
+    from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
     sparse_model = (type(model) in (PopularityMatrixRecommender, ItemKNNMatrixRecommender, HybridItemKNNRecommender)
                     or (type(model) is FallbackRecommender
                         and type(model.primary) is ItemKNNMatrixRecommender

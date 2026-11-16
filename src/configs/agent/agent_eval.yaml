@@ -36,7 +36,7 @@ agent_eval:
   # Multi-turn conversation evaluation — runs once per run_agent_eval invocation,
   # after the main eval. Disabled by default. Per-experiment opt-in via campaign
   # agent_config.multi_turn (bool or dict); campaign policy never/once/all caps
-  # how many runs execute it (see configs/evaluation/campaign.yaml).
+  # how many runs execute it (see configs/eval/campaign.yaml).
   multi_turn:
     enabled: false
     dataset: "package/evaluation/multi_turn/conversations.jsonl"  # src/-relative

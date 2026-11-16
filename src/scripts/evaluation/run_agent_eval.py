@@ -68,8 +68,8 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, HybridScorer, ToolCallLogger
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
-from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment

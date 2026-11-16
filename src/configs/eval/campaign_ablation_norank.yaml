@@ -1,7 +1,7 @@
 # Ablation campaign: -Rank (planner_memory, template, reflect=1, KHÔNG RankTool).
 # So sánh với campaign_001 exp_10 (cùng cấu hình nhưng full toolset) bằng
 # scripts/experiments/compare_experiments.py + pairwise_ablation.py sau khi chạy.
-# Chạy: python scripts/evaluation/run_campaign.py --campaign-config configs/evaluation/campaign_ablation_norank.yaml
+# Chạy: python scripts/evaluation/run_campaign.py --campaign-config configs/eval/campaign_ablation_norank.yaml
 #
 # multi_turn=false: ablation scope là single-turn scored.jsonl; bật lại nếu cần
 # multi-turn metrics cho arm này (tốn thêm LLM calls).

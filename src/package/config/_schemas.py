@@ -599,7 +599,7 @@ class DemoConfig(BaseModel):
 
 
 class CampaignExperimentFileConfig(BaseModel):
-    """One experiment entry inside configs/evaluation/campaign.yaml."""
+    """One experiment entry inside configs/eval/campaign.yaml."""
 
     model_config = _BASE_CONFIG
 
@@ -614,7 +614,7 @@ class CampaignExperimentFileConfig(BaseModel):
 
 
 class CampaignFileConfig(BaseModel):
-    """configs/evaluation/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
+    """configs/eval/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
 
     model_config = _BASE_CONFIG
 
@@ -740,7 +740,7 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/judge": (None, JudgeConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),
-        "evaluation/campaign": (None, CampaignFileConfig),  # No key wrapper
+        "eval/campaign": (None, CampaignFileConfig),  # No key wrapper
     }
 
     if name not in config_map:

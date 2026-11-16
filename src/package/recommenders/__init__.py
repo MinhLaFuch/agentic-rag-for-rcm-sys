@@ -2,7 +2,7 @@
 
 This module is organized into three subdirectories:
 - runtime/: Runtime-capable models used in agent tools (DataFrame API)
-- evaluation/: Evaluation-only models used in offline experiments (Matrix API)
+- offline/: Evaluation-only models used in offline experiments (Matrix API)
 - shared/: Shared components (protocols, factories, utilities)
 
 Re-export for backward compatibility:
@@ -16,8 +16,8 @@ from .runtime import (
     BaselineItemKNNRecommender,
 )
 
-# Evaluation models (Matrix API, used in offline experiments)
-from .evaluation import (
+# Offline-eval models (Matrix API, used in offline experiments)
+from .offline import (
     PopularityMatrixRecommender,
     ItemKNNMatrixRecommender,
     BPRMFRecommender,

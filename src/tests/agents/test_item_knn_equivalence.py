@@ -9,7 +9,7 @@ import pandas as pd
 import scipy.sparse as sp
 
 from package.recommenders.runtime.baseline_item_knn_recommender import BaselineItemKNNRecommender as DataFrameKNN
-from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender as MatrixKNN
+from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender as MatrixKNN
 
 
 def _interactions(seed: int = 0, users: int = 30, items: int = 12) -> pd.DataFrame:

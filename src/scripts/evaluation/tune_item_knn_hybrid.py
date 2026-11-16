@@ -15,7 +15,7 @@ from package.evaluation.recommender.analysis.core_inputs import core_inputs
 from package.evaluation.recommender.analysis.global_core_pairs import global_core_pairs
 from package.evaluation.recommender.core.evaluate_recommender import evaluate_recommender
 from package.recommenders import build_interaction_matrix, ItemKNNMatrixRecommender, PopularityMatrixRecommender
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.shared import file_hash
 
 
