@@ -11,6 +11,7 @@ from package.config import DataPaths, get_domains
 from package.config import PROJECT_ROOT
 from package.recommenders.shared import file_hash as sha256_file
 from .verify_manifest import verify_manifest
+from .load_audit_profile import load_audit_profile
 
 
 def verify_tag_manifest(
@@ -20,6 +21,7 @@ def verify_tag_manifest(
     project_root: str | Path = PROJECT_ROOT,
 ) -> dict[str, Any]:
     """Verify stage manifests for a tag; report legacy only when no stage manifest exists."""
+    audit_profile = load_audit_profile(paths, project_root=project_root)
     domain_list = domains or get_domains()
     stage2_manifest = paths.filtered_path.parent / "stage_2.manifest.json"
     if stage2_manifest.is_file():
@@ -41,7 +43,8 @@ def verify_tag_manifest(
     records = []
     warnings: list[str] = []
     for index, manifest_path in enumerate(expected):
-        result = verify_manifest(manifest_path, project_root=project_root)
+        options = {} if audit_profile is None else {"historical_config_root": audit_profile["historical_config_root"]}
+        result = verify_manifest(manifest_path, project_root=project_root, **options)
         expected_stage = "clean_domain" if index < len(stage1) else ("merge_filter_domains", "map_split", "build_artifacts")[index - len(stage1)]
         if result["manifest"].get("stage") != expected_stage or result["manifest"].get("tag") != paths.tag:
             raise ValueError(f"Manifest identity mismatch at {manifest_path.name}: expected stage={expected_stage}, tag={paths.tag}")
@@ -57,5 +60,6 @@ def verify_tag_manifest(
         digest.update(b"\0")
         digest.update(sha256_file(manifest_path).encode("ascii"))
         digest.update(b"\0")
-    return {"status": "match_with_warnings" if warnings else "match", "manifest_sha256": digest.hexdigest(), "manifests": records, "warnings": warnings}
+    return {"status": "match_with_warnings" if warnings else "match", "manifest_sha256": digest.hexdigest(), "manifests": records, "warnings": warnings,
+            "audit_profile": audit_profile}
 

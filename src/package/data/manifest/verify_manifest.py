@@ -15,6 +15,7 @@ def verify_manifest(
     *,
     project_root: str | Path,
     allow_mismatch: bool = False,
+    historical_config_root: str | Path | None = None,
 ) -> dict[str, Any]:
     """Validate every input, output, config and upstream-manifest hash in one manifest."""
     root = Path(project_root).resolve()
@@ -27,7 +28,7 @@ def verify_manifest(
     mismatches: list[str] = []
     unverified_external: list[str] = []
     recorded_files = document.get("inputs", []) + document.get("outputs", [])
-    recorded_files += [{"path": name, "sha256": digest} for name, digest in document.get("config_sha256", {}).items()]
+    recorded_files += [{"path": name, "sha256": digest, "historical_config": True} for name, digest in document.get("config_sha256", {}).items()]
     recorded_files += document.get("upstream_manifests", [])
     for record in recorded_files:
         relative = record["path"]
@@ -36,7 +37,10 @@ def verify_manifest(
         if record.get("external"):
             unverified_external.append(relative)
             continue
-        artifact = (root / relative).resolve()
+        evidence_root = Path(historical_config_root).resolve() if record.get("historical_config") and historical_config_root is not None else root
+        artifact = (evidence_root / relative).resolve()
+        if not artifact.is_relative_to(evidence_root):
+            raise ValueError(f"Manifest path escapes evidence root: {relative}")
         expected = record["sha256"]
         actual = sha256_file(artifact) if artifact.is_file() else "missing"
         if actual != expected:

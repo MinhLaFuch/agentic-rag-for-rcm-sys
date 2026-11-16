@@ -28,6 +28,7 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import json
+import mmap
 import os
 import platform
 import sys
@@ -83,6 +84,27 @@ def _is_default_repr(obj: Any) -> bool:
     return type(obj).__repr__ is object.__repr__
 
 
+def _mapped_array_summary(obj: Any) -> str | None:
+    """Inspect ownership metadata only; reading a closed mmap can kill Python.
+
+    np.asarray/slicing can hide a memmap behind an ordinary ndarray, so walk
+    the base chain before either sampling ndarray values or invoking repr.
+    Live mapped arrays are summarized without reading their contents too.
+    """
+    numpy = sys.modules.get("numpy")
+    if numpy is None or not isinstance(obj, numpy.ndarray):
+        return None
+    current, visited = obj, set()
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        if isinstance(current, (numpy.memmap, mmap.mmap)):
+            backing = getattr(current, "_mmap", current)
+            state = "closed" if getattr(backing, "closed", False) else "open"
+            return f"{type(obj).__name__} shape={obj.shape} dtype={obj.dtype} mmap={state} (contents omitted)"
+        current = current.obj if isinstance(current, memoryview) else getattr(current, "base", None)
+    return None
+
+
 def fmt(obj: Any, depth: int = 0, _seen: frozenset[int] = frozenset()) -> str:
     """Short human-readable rendering of ``obj``. Never raises."""
     try:
@@ -92,6 +114,9 @@ def fmt(obj: Any, depth: int = 0, _seen: frozenset[int] = frozenset()) -> str:
 
 
 def _fmt(obj: Any, depth: int, seen: frozenset[int]) -> str:
+    mapped = _mapped_array_summary(obj)
+    if mapped is not None:
+        return mapped
     if obj is None or isinstance(obj, (bool, int, float, complex)):
         return repr(obj)
     if isinstance(obj, str):

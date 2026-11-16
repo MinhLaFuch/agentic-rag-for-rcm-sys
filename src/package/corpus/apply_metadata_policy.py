@@ -5,7 +5,7 @@ import sqlite3
 from ._helper import read_only_authorizer
 from ._sql import FTS_POPULATE_SQL, FTS_TABLE_SCHEMA
 
-POLICIES = ("historical_static_catalog", "snapshot")
+POLICIES = ("historical_static_catalog", "snapshot", "no_filter")
 MUTABLE_FIELDS = ("price", "average_rating", "rating_number")
 _PROTECTED_MAIN_TABLES = {"items", "item_categories"}
 
@@ -20,6 +20,64 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
         if previous["name"] != policy or previous["as_of_timestamp"] != as_of_timestamp:
             raise ValueError("metadata policy/cutoff already fixed; reload corpus to change")
         return dict(previous)
+
+    # ------------------------------------------------------------------
+    # no_filter: legacy corpus without first_seen_ts; expose full catalog.
+    # No temporal filtering is applied; mutable fields are always visible.
+    # ------------------------------------------------------------------
+    if policy == "no_filter":
+        conn = corpus._conn
+        conn.set_authorizer(None)
+        try:
+            columns = [row[1] for row in conn.execute("PRAGMA main.table_info(items)")]
+            projection = ", ".join(f'"{col}"' for col in columns)
+            conn.execute("PRAGMA query_only = OFF")
+            conn.execute(
+                "CREATE TEMP VIEW IF NOT EXISTS items AS "
+                f"SELECT rowid AS rowid, {projection} FROM main.items"
+            )
+            conn.execute(
+                "CREATE TEMP VIEW IF NOT EXISTS item_categories AS "
+                "SELECT c.rowid AS rowid, c.item_id, c.category FROM main.item_categories AS c "
+                "JOIN temp.items AS i ON i.item_id = c.item_id"
+            )
+            temp_fts_schema = FTS_TABLE_SCHEMA.replace(
+                "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
+            )
+            conn.execute(temp_fts_schema)
+            conn.execute(FTS_POPULATE_SQL)
+            conn.commit()
+        except Exception:
+            conn.execute("PRAGMA query_only = OFF")
+            for kind, name in (("table", "items_fts"), ("view", "item_categories"), ("view", "items")):
+                try:
+                    conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
+                except Exception:
+                    pass
+            conn.commit()
+            raise
+        finally:
+            conn.execute("PRAGMA query_only = ON")
+            base = read_only_authorizer()
+            conn.set_authorizer(base)
+        record = {
+            "name": "no_filter",
+            "version": 2,
+            "as_of_timestamp": as_of_timestamp,
+            "masked_fields": [],
+            "first_seen_filter": False,
+            "first_seen_proxy": "N/A — legacy corpus without first_seen_ts; full catalog exposed",
+            "aggregate_observed_at": None,
+            "metadata_temporal_validity": "none — static metadata only, no temporal filtering",
+            "catalog_assumption": (
+                "all items in corpus are visible; no first_seen_ts filter applied; "
+                "legacy corpus (format_version=1) without temporal metadata"
+            ),
+            "historical_causal_claim": False,
+            "snapshot_mutable_fields_used": True,
+        }
+        corpus._evaluation_metadata_policy = record
+        return dict(record)
 
     conn = corpus._conn
     masked = list(MUTABLE_FIELDS) if policy == "historical_static_catalog" else []

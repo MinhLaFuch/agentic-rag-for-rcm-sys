@@ -1,0 +1,11 @@
+# Domains config (mục V, XX).
+# Danh sách domain bật trong hệ thống (xem docs/decisions.md D-010).
+# Thứ tự ở đây là thứ tự các script .sh lặp qua.
+
+domains:
+  - name: "Video_Games"
+    role: "primary"
+  - name: "Toys_and_Games"
+    role: "secondary"
+  - name: "Electronics"
+    role: "secondary"

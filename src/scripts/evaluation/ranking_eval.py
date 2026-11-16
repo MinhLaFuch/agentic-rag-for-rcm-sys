@@ -141,6 +141,7 @@ def main() -> None:
     ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
+    ap.add_argument("--tag", help="Explicit existing bundle; does not bypass manifest validation")
     args = ap.parse_args()
 
     # Mọi tham số đánh giá đọc từ configs/eval/ranking_eval.yaml (+ baselines/segment_thresholds/tools).
@@ -182,7 +183,8 @@ def main() -> None:
         ap.error("--resume requires --work-dir")
     if args.candidate_budget > int(load_config("agent/tools")["tools"]["max_candidates"]):
         raise SystemExit("candidate-budget exceeds tools.max_candidates")
-    paths = get_data_paths(domains=args.domain)
+    from package.config.resolve_bundle_paths import resolve_bundle_paths
+    paths = resolve_bundle_paths(tag=args.tag, domains=args.domain)
     tag_manifest = verify_tag_manifest(paths, domains=args.domain or get_domains())
     if tag_manifest["status"] == "legacy_unmanifested":
         print("!!! WARNING: tag has legacy artifacts without pipeline manifests; results will be marked legacy_unmanifested.", flush=True)
@@ -195,6 +197,7 @@ def main() -> None:
     provenance_started = time.perf_counter()
     print("[provenance] hashing input files; ETA unknown until completed", flush=True)
     identity = {
+        "audit_profile": tag_manifest.get("audit_profile"),
         "format": 1, "source_fingerprint": _source_fingerprint(), "environment": _environment_versions(),
         "parameters": {k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()
                        if k not in {"resume", "work_dir", "batch_size", "progress_every", "experiments_dir"}},
@@ -339,6 +342,7 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     config = {
         "manifest_status": tag_manifest["status"],
         "manifest_sha256": tag_manifest["manifest_sha256"],
+        "audit_profile": tag_manifest.get("audit_profile"),
         "protocol": protocol_manifest,
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
         "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),

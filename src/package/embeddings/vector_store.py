@@ -6,8 +6,29 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Sequence
+from collections.abc import Mapping
 
 import numpy as np
+
+
+class _SortedItemIndex(Mapping):
+    """Mapping over sorted mmap IDs, avoiding a multi-million-entry Python dict."""
+    def __init__(self, ids):
+        self.ids = ids
+
+    def __len__(self):
+        return len(self.ids)
+
+    def __iter__(self):
+        return iter(self.ids)
+
+    def __getitem__(self, key):
+        if not isinstance(key, str):
+            raise KeyError(key)
+        index = int(np.searchsorted(self.ids, key))
+        if index >= len(self.ids) or self.ids[index] != key:
+            raise KeyError(key)
+        return index
 
 
 class VectorStore:
@@ -98,6 +119,15 @@ class VectorStore:
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"VectorStore file not found: {p}")
+        if p.is_dir():
+            from .load_vector_artifact import load_vector_artifact
+            ids, vectors, meta = load_vector_artifact(p)
+            store = cls.__new__(cls)
+            store.item_ids = ids
+            store.embeddings = vectors
+            store.id2idx = _SortedItemIndex(ids)
+            store.artifact_metadata = meta
+            return store
         data = np.load(p, allow_pickle=True)
         item_ids = [str(x) for x in data["item_ids"]]
         embeddings = data["embeddings"].astype(np.float32)
