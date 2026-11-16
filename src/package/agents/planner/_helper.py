@@ -320,38 +320,26 @@ def _compute_recommendation_quality(results: list[dict[str, Any]]) -> float:
         float: quality score from 0.0 to 1.0
     """
     from ..results import extract_recommendations
-    
-    # Check if any items were returned
+
     items = extract_recommendations(results, 1)
     if not items:
         return 0.0
-    
-    # Identify which tools were used successfully
+
     used_tools = {r["tool"] for r in results if r["ok"]}
 
-    # Check for collaborative signal
     has_collaborative = "SimilarTool" in used_tools or "MemoryTool" in used_tools
-
-    # Check for ranking step
     has_ranking = "RankTool" in used_tools
-
-    # Check for retrieval
     has_retrieval = any(t in used_tools for t in ["SearchTool", "FilterTool", "SimilarTool"])
 
-    # Compute quality score
     if not has_retrieval and not has_ranking:
-        # Only LookupTool or similar - no actual recommendation logic
         return 0.2
     elif has_retrieval and not has_ranking:
-        # Retrieval only, no ranking
         return 0.5
     elif has_ranking and not has_collaborative:
-        # Ranking from semantic search only (no personalization)
         return 0.7
     elif has_ranking and has_collaborative:
-        # Full pipeline with collaborative signal
         return 1.0
-    
+
     # Fallback
     return 0.5
 
@@ -403,25 +391,21 @@ def _is_quality_improvement(old_quality: dict[str, Any], new_quality: dict[str, 
     Returns:
         True if new_quality is not worse than old_quality
     """
-    # Priority 1: Fewer failed steps is always better
     if new_quality["failed_steps"] < old_quality["failed_steps"]:
         return True
     if new_quality["failed_steps"] > old_quality["failed_steps"]:
         return False
 
-    # Priority 2: Higher recommendation quality is better
     if new_quality["rec_quality"] > old_quality["rec_quality"]:
         return True
     if new_quality["rec_quality"] < old_quality["rec_quality"]:
         return False
 
-    # Priority 3: More items is better (if same failed steps and rec_quality)
     if new_quality["n_items"] > old_quality["n_items"]:
         return True
     if new_quality["n_items"] < old_quality["n_items"]:
         return False
 
-    # Priority 4: Fewer error kinds is better
     if len(new_quality["error_kinds"]) < len(old_quality["error_kinds"]):
         return True
     if len(new_quality["error_kinds"]) > len(old_quality["error_kinds"]):

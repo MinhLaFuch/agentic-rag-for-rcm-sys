@@ -48,8 +48,6 @@ def create_traceback_tool(
         request_id = failure.get("request_id", "unknown")
         error_type = failure.get("error_type", "unknown")
 
-        # Simple attribution logic (placeholder)
-        # In real usage, this would use component scores for this specific request
         attribution = {
             "request_id": request_id,
             "error_type": error_type,

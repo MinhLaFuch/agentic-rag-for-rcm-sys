@@ -14,7 +14,7 @@ Research-grade project: Traditional RecSys + Sequential Recommendation + Retriev
 
 # Tóm tắt trong folder `src`
 
-Tài liệu trung tâm: **`src/reading.md`** — repository reading đầy đủ (kiến trúc, evaluation framework, known issues, future work). Bản snapshot có ngày: `Project repository reading 29.10.md` ở repo root.
+Tài liệu trung tâm: **`src/reading.md`** — repository reading đầy đủ (kiến trúc, evaluation framework, known issues, future work). Bản snapshot có ngày: `src/docs/Project repository reading 29.10.md`.
 
 Tài liệu hỗ trợ trong `src/docs/` (các investigation/eval-surface docs tuần 47):
 

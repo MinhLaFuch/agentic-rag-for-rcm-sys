@@ -294,7 +294,6 @@ def compare_two_groups(
     variance_info = {}
     if len(group_a["scored"]) > 1:
         variance_info["group_a_runs"] = len(group_a["scored"])
-        # Could compute std across runs here
     
     if len(group_b["scored"]) > 1:
         variance_info["group_b_runs"] = len(group_b["scored"])

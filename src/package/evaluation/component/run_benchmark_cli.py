@@ -267,7 +267,3 @@ def run_benchmark_cli() -> None:
         )
     passed = sum(1 for r in summary.per_case_results if r.success)
     print(f"Total cases: {len(summary.per_case_results)}, Passed: {passed}")
-
-    # Regression report only when comparing two runs (not for single runs)
-    # format_regression_report expects a RegressionReport object, not JSON
-    # Skip regression report for single-run benchmarks

@@ -101,7 +101,7 @@ def build_run_provenance(
         "max_steps": agent_limits.max_steps,
         "plan_retries": agent_limits.plan_retries,
         "reflect_rounds": agent_limits.reflect_rounds,
-        "llm_retries": None,  # Not in agent limits, will be added if needed
+        "llm_retries": None,  # Not in agent limits
     }
 
     # Inference limits

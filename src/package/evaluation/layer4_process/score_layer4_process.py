@@ -110,7 +110,7 @@ def score_layer4_process(
     else:
         row["used_ranker"] = None
 
-    # ===== Component-Specific Diagnostics ====
+    # ===== Component-Specific Diagnostics =====
     
     # ItemCF seed correctness: for similar kind, check if seed item was used correctly
     itemcf_seed_correctness = None

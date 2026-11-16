@@ -58,8 +58,6 @@ def link_component_to_e2e(
 
             analysis["component_scores"][component] = mean_metrics
 
-    # Simple correlation analysis (placeholder)
-    # In real usage, this would use statistical correlation
     analysis["correlation"] = {
         "status": "placeholder_not_computed",
         "note": "Correlation analysis requires matching request IDs between component and e2e results",

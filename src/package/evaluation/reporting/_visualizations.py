@@ -23,8 +23,6 @@ def generate_layer_comparison_chart(
         results: Evaluation results with layer data
         output_path: Path to save the chart
     """
-    # For this implementation, generate a placeholder
-    # In a real implementation, this would use matplotlib or plotly
     placeholder = """# Layer Comparison Chart (PLACEHOLDER — chart not implemented)
 
 This would render a bar chart comparing metrics across evaluation layers.
