@@ -92,6 +92,7 @@ from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
+from package.evaluation.recommender.analysis.build_core_model import build_core_model
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -531,7 +532,13 @@ def main() -> None:
     # falls back to a fresh fit, which is always the gold standard.
     reuse_cache = bool(cfg.get("item_knn_reuse_cache", False))
     knn = None
-    if reuse_cache and item_knn_path.exists():
+    core_knn = build_core_model(data_paths, args.eval_on, knn_k, fit_df, user2id, item2id)
+    if core_knn is not None:
+        knn = core_knn
+        knn_artifact_status = knn._evaluation_artifact_status
+        knn_fit_data_hash = knn._fit_data_hash
+        print(f"ItemKNN: {knn_artifact_status} (train_core)", flush=True)
+    if knn is None and reuse_cache and item_knn_path.exists():
         try:
             t0 = time.perf_counter()
             knn = load_item_knn(

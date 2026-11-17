@@ -113,7 +113,10 @@ def build_dense_retrieval(
     artifacts_path = Path(artifacts_dir)
     manifest, item_ids, vectors, valid = _verify_semantic_artifacts(artifacts_path)
     keep_ids = [item_ids[i] for i in range(len(item_ids)) if valid[i]]
-    store = VectorStore(keep_ids, np.asarray(vectors[valid], dtype=np.float32))
+    if bool(valid.all()) and vectors.dtype == np.float32:
+        store = VectorStore(keep_ids, vectors)
+    else:
+        store = VectorStore(keep_ids, np.asarray(vectors[valid], dtype=np.float32))
 
     if encoder_factory is None:
         if encoder_lock is None:

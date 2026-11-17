@@ -37,10 +37,11 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
                 f"SELECT rowid AS rowid, {projection} FROM main.items"
             )
             conn.execute(
-                "CREATE TEMP VIEW IF NOT EXISTS item_categories AS "
+                "CREATE TEMP TABLE IF NOT EXISTS item_categories AS "
                 "SELECT c.rowid AS rowid, c.item_id, c.category FROM main.item_categories AS c "
                 "JOIN temp.items AS i ON i.item_id = c.item_id"
             )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_temp_item_categories_item_id ON item_categories(item_id)")
             temp_fts_schema = FTS_TABLE_SCHEMA.replace(
                 "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
             )
@@ -49,7 +50,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
             conn.commit()
         except Exception:
             conn.execute("PRAGMA query_only = OFF")
-            for kind, name in (("table", "items_fts"), ("view", "item_categories"), ("view", "items")):
+            for kind, name in (("table", "items_fts"), ("table", "item_categories"), ("view", "items")):
                 try:
                     conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
                 except Exception:
@@ -122,10 +123,11 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
             f"WHERE first_seen_ts IS NOT NULL AND first_seen_ts <= {int(as_of_timestamp)}"
         )
         conn.execute(
-            "CREATE TEMP VIEW item_categories AS "
+            "CREATE TEMP TABLE item_categories AS "
             "SELECT c.rowid AS rowid, c.item_id, c.category FROM main.item_categories AS c "
             "JOIN temp.items AS i ON i.item_id = c.item_id"
         )
+        conn.execute("CREATE INDEX idx_temp_item_categories_item_id ON item_categories(item_id)")
         temp_fts_schema = FTS_TABLE_SCHEMA.replace(
             "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
         )
@@ -134,7 +136,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
         conn.commit()
     except Exception:
         conn.execute("PRAGMA query_only = OFF")
-        for kind, name in (("table", "items_fts"), ("view", "item_categories"), ("view", "items")):
+        for kind, name in (("table", "items_fts"), ("table", "item_categories"), ("view", "items")):
             try:
                 conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
             except sqlite3.Error:

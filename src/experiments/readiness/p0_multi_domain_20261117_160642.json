@@ -1,0 +1,798 @@
+{
+  "tag": "multi_domain",
+  "artifact_checks": [
+    {
+      "path": "resource/raw/Video_Games.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "52d8762c94a5b99d3bccdb31c15cc6c99e05c89f9042cd3753b3b623a44bc193",
+      "actual_sha256": "52d8762c94a5b99d3bccdb31c15cc6c99e05c89f9042cd3753b3b623a44bc193",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\Video_Games.jsonl.gz"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/raw/Toys_and_Games.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "0ba8278988b3b83d99d51fe8c521ec18b7e87d4339404b534942792f5ef845cc",
+      "actual_sha256": "0ba8278988b3b83d99d51fe8c521ec18b7e87d4339404b534942792f5ef845cc",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\Toys_and_Games.jsonl.gz"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/raw/Electronics.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "17b2c5f3736d4c0cb874859076436ebd4513f4c2396c528440a63204084e6a28",
+      "actual_sha256": "17b2c5f3736d4c0cb874859076436ebd4513f4c2396c528440a63204084e6a28",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\Electronics.jsonl.gz"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/filtered/multi_domain/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "actual_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Electronics/manifests/multi_domain/stage_1.manifest.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "6d6f2c037112f579c17195b4c8e0ab13cb129657b4986fa6c4900bc102029351",
+      "actual_sha256": "6d6f2c037112f579c17195b4c8e0ab13cb129657b4986fa6c4900bc102029351",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/manifests/multi_domain/stage_1.manifest.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "d128652a92d077f52aee4e1d43f20184840fd4e3e77a2896f09795d32333232b",
+      "actual_sha256": "d128652a92d077f52aee4e1d43f20184840fd4e3e77a2896f09795d32333232b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/manifests/multi_domain/stage_1.manifest.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "f0a71d22b04776661dca6c0579ca1888ce1546528f5476162104533896d32df9",
+      "actual_sha256": "f0a71d22b04776661dca6c0579ca1888ce1546528f5476162104533896d32df9",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json"
+    },
+    {
+      "path": "resource/filtered/multi_domain/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "actual_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\interactions.parquet"
+    },
+    {
+      "path": "resource/mapped/multi_domain/fit_core/item2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "actual_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\fit_core\\item2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/fit_core/user2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "actual_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\fit_core\\user2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/item2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "actual_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\item2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/user2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "actual_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\user2id.json"
+    },
+    {
+      "path": "resource/splits/multi_domain/evaluation_cohort.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "a6061d8af29b82dda2cceebf261b76ea86cd68095a1d7f2382e601d6bfc01e8b",
+      "actual_sha256": "a6061d8af29b82dda2cceebf261b76ea86cd68095a1d7f2382e601d6bfc01e8b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\evaluation_cohort.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/test.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "actual_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\test.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/train.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "actual_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\train.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/train_core.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "actual_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\train_core.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/validation.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "actual_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\validation.parquet"
+    },
+    {
+      "path": "resource/filtered/multi_domain/stage_2.manifest.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "5777b445f11188ffd1976d85fa151bb33ba641644b50f68e89a3e7a50e95374c",
+      "actual_sha256": "5777b445f11188ffd1976d85fa151bb33ba641644b50f68e89a3e7a50e95374c",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\interactions.parquet"
+    },
+    {
+      "path": "resource/mapped/multi_domain/fit_core/item2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "actual_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\fit_core\\item2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/fit_core/user2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "actual_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\fit_core\\user2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/item2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "actual_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\item2id.json"
+    },
+    {
+      "path": "resource/mapped/multi_domain/user2id.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "actual_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\mapped\\multi_domain\\user2id.json"
+    },
+    {
+      "path": "resource/raw/meta_Electronics.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "a4a196a1c8e443e0942d8a5c79b5a5d2d68e29d483f2badec1126690b4b2790d",
+      "actual_sha256": "a4a196a1c8e443e0942d8a5c79b5a5d2d68e29d483f2badec1126690b4b2790d",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\meta_Electronics.jsonl.gz"
+    },
+    {
+      "path": "resource/raw/meta_Toys_and_Games.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "c69383112c0c0b0f10439eada942f2cf430511b993d2af8c665a5349c8749f07",
+      "actual_sha256": "c69383112c0c0b0f10439eada942f2cf430511b993d2af8c665a5349c8749f07",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\meta_Toys_and_Games.jsonl.gz"
+    },
+    {
+      "path": "resource/raw/meta_Video_Games.jsonl.gz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "ced9696b0874121327a438bfe9d3d01aba45da158e58f94f4920352d75fc1fc9",
+      "actual_sha256": "ced9696b0874121327a438bfe9d3d01aba45da158e58f94f4920352d75fc1fc9",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\raw\\meta_Video_Games.jsonl.gz"
+    },
+    {
+      "path": "resource/splits/multi_domain/test.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "actual_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\test.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/train.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "actual_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\train.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/train_core.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "actual_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\train_core.parquet"
+    },
+    {
+      "path": "resource/splits/multi_domain/validation.parquet",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "actual_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\validation.parquet"
+    },
+    {
+      "path": "resource/corpus/multi_domain/corpus_multi_domain.meta.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "5193034c9ae96c2637e00dcbc1bf1a74c9819daaa1c3d02441e199b1745f9594",
+      "actual_sha256": "5193034c9ae96c2637e00dcbc1bf1a74c9819daaa1c3d02441e199b1745f9594",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\corpus_multi_domain.meta.json"
+    },
+    {
+      "path": "resource/corpus/multi_domain/corpus_multi_domain.sqlite",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b",
+      "actual_sha256": "0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\corpus_multi_domain.sqlite"
+    },
+    {
+      "path": "resource/item_knn/multi_domain/item_knn_multi_domain_test.meta.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "32c7b0edae4dfb6671e0ab9e6b6b26911a16b48b7698d075b317a23cb0e25ffc",
+      "actual_sha256": "32c7b0edae4dfb6671e0ab9e6b6b26911a16b48b7698d075b317a23cb0e25ffc",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain\\item_knn_multi_domain_test.meta.json"
+    },
+    {
+      "path": "resource/item_knn/multi_domain/item_knn_multi_domain_test.npz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "actual_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain\\item_knn_multi_domain_test.npz"
+    },
+    {
+      "path": "resource/item_knn/multi_domain/item_knn_multi_domain_validation.meta.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "3872724515a3b0e49f03ec5e64926a8da2240087c18a9fd8ca47587851e97c4d",
+      "actual_sha256": "3872724515a3b0e49f03ec5e64926a8da2240087c18a9fd8ca47587851e97c4d",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain\\item_knn_multi_domain_validation.meta.json"
+    },
+    {
+      "path": "resource/item_knn/multi_domain/item_knn_multi_domain_validation.npz",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "actual_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\item_knn\\multi_domain\\item_knn_multi_domain_validation.npz"
+    },
+    {
+      "path": "resource/splits/multi_domain/stage_3.manifest.json",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "eba274d781fe3146f20eb7d4c6b0314d0b402c095f47969729c9b961f4dd5a3c",
+      "actual_sha256": "eba274d781fe3146f20eb7d4c6b0314d0b402c095f47969729c9b961f4dd5a3c",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json"
+    }
+  ],
+  "config_checks": [
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/eval/segment_thresholds.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643",
+      "actual_sha256": "4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\eval\\segment_thresholds.yaml",
+      "current_runtime_file_sha256": "4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    },
+    {
+      "path": "configs/agent/agent_eval.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "e9f091489efd5753fcd4ea6a38b07f29b3ace01d21e8ee065a62eb3751efb1da",
+      "actual_sha256": "e9f091489efd5753fcd4ea6a38b07f29b3ace01d21e8ee065a62eb3751efb1da",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\agent\\agent_eval.yaml",
+      "current_runtime_file_sha256": "e9f091489efd5753fcd4ea6a38b07f29b3ace01d21e8ee065a62eb3751efb1da"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\cleaning.yaml",
+      "current_runtime_file_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\filtering.yaml",
+      "current_runtime_file_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "actual_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\data\\split.yaml",
+      "current_runtime_file_sha256": "56019f0bbc37e2022595518fcd324701411ae177ad564040536239b26c606f51"
+    },
+    {
+      "path": "configs/eval/baselines.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "a2e926fa1e9aec3dd6cf89851c4b3cd3b3286970179e70d13aec6659179fd383",
+      "actual_sha256": "a2e926fa1e9aec3dd6cf89851c4b3cd3b3286970179e70d13aec6659179fd383",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\eval\\baselines.yaml",
+      "current_runtime_file_sha256": "a2e926fa1e9aec3dd6cf89851c4b3cd3b3286970179e70d13aec6659179fd383"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "expected_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MATCH",
+      "evidence_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain\\configs\\path\\domains.yaml",
+      "current_runtime_file_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf"
+    }
+  ],
+  "manifests": [
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "sha256": "f0a71d22b04776661dca6c0579ca1888ce1546528f5476162104533896d32df9",
+      "stage": "clean_domain",
+      "tag": "multi_domain"
+    },
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain\\stage_1.manifest.json",
+      "sha256": "d128652a92d077f52aee4e1d43f20184840fd4e3e77a2896f09795d32333232b",
+      "stage": "clean_domain",
+      "tag": "multi_domain"
+    },
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain\\stage_1.manifest.json",
+      "sha256": "6d6f2c037112f579c17195b4c8e0ab13cb129657b4986fa6c4900bc102029351",
+      "stage": "clean_domain",
+      "tag": "multi_domain"
+    },
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain\\stage_2.manifest.json",
+      "sha256": "5777b445f11188ffd1976d85fa151bb33ba641644b50f68e89a3e7a50e95374c",
+      "stage": "merge_filter_domains",
+      "tag": "multi_domain"
+    },
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain\\stage_3.manifest.json",
+      "sha256": "eba274d781fe3146f20eb7d4c6b0314d0b402c095f47969729c9b961f4dd5a3c",
+      "stage": "map_split",
+      "tag": "multi_domain"
+    },
+    {
+      "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\stage_4.manifest.json",
+      "sha256": "aabe5d7b5688a4324acdedcf0a0b0a98f14a51f3da79340fb683448bdc44ecf9",
+      "stage": "build_artifacts",
+      "tag": "multi_domain"
+    }
+  ],
+  "blockers": [],
+  "warnings": [],
+  "split_scan": {
+    "train": {
+      "rows": 48766894,
+      "min_timestamp": 848336280000,
+      "max_timestamp": 1617737606134
+    },
+    "validation": {
+      "rows": 7787433,
+      "min_timestamp": 1617737606549,
+      "max_timestamp": 1651701127817
+    },
+    "test": {
+      "rows": 7511892,
+      "min_timestamp": 1651701131688,
+      "max_timestamp": 1694625981867
+    },
+    "overlapping_events": 0,
+    "temporal_order_valid": true,
+    "status": "checked"
+  },
+  "audit_profile": {
+    "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain.profile.yaml",
+    "sha256": "1886160eaea4065449283e2a5d6b5374e032ae88df50041469c926cc99ff586c",
+    "tag": "multi_domain",
+    "historical_config_root": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain",
+    "overlay_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain.overlay.yaml",
+    "overlay_sha256": "032b5d4a7f4e9d5e0a7ab07e95ea5c104cc8c23b967e173c43f889e5472c5474",
+    "runtime_contract": {
+      "path/domains": {
+        "merged_name": "multi_domain",
+        "domains": [
+          {
+            "name": "Video_Games"
+          },
+          {
+            "name": "Toys_and_Games"
+          },
+          {
+            "name": "Electronics"
+          }
+        ]
+      },
+      "data/split": {
+        "split": {
+          "data_protocol": "temporal_train_core",
+          "temporal_train_core": {
+            "train_end_inclusive_ms": 1617737606134,
+            "validation_end_inclusive_ms": 1651701127817
+          }
+        }
+      },
+      "eval/baselines": {
+        "baselines": {
+          "seed": 42,
+          "item_knn": {
+            "k": 20
+          }
+        }
+      },
+      "eval/candidate_recall": {
+        "candidate_recall": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      },
+      "eval/ranking_eval": {
+        "ranking_eval": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      }
+    },
+    "historical_and_runtime_configs_are_separate": true
+  },
+  "config_drift": [],
+  "protocol": {
+    "recorded": "temporal_train_core",
+    "stage3_flags": {
+      "cutoff_1": 1617737606134,
+      "cutoff_2": 1651701127817,
+      "data_protocol": "temporal_train_core",
+      "fit_core_counts": "unique_train_user_item_pairs",
+      "fit_core_max_iterations": 20,
+      "fit_core_min_item_pairs": 5,
+      "fit_core_min_user_pairs": 5,
+      "force": true,
+      "mapping_strategy": "first_occurrence_disk_backed_sqlite",
+      "sparse_max_history": 4,
+      "split_assignment": "train<=cutoff_1; validation<=cutoff_2; test>cutoff_2",
+      "streaming_batch_rows": 100000,
+      "test_ratio": 0.1,
+      "train_ratio": 0.8,
+      "validation_ratio": 0.1
+    },
+    "runtime_split": {
+      "train_ratio": 0.8,
+      "validation_ratio": 0.1,
+      "test_ratio": 0.1,
+      "item_knn_splits": [
+        "validation",
+        "test"
+      ],
+      "data_protocol": "temporal_train_core",
+      "temporal_train_core": {
+        "train_end_inclusive_ms": 1617737606134,
+        "validation_end_inclusive_ms": 1651701127817
+      }
+    },
+    "historical_config_verified": true
+  },
+  "corpus": {
+    "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain\\corpus_multi_domain.sqlite",
+    "mapped_items": 2637776,
+    "corpus_rows": 2637776,
+    "mapping_hash": "5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d",
+    "coverage": 1.0,
+    "counts_by_domain": {
+      "Electronics": 1609860,
+      "Toys_and_Games": 890667,
+      "Video_Games": 137249
+    },
+    "first_seen_rows": 2637776,
+    "declared_coverage_by_domain": {
+      "Electronics": {
+        "mapping_items": 1609860,
+        "metadata_items": 1609860,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      },
+      "Toys_and_Games": {
+        "mapping_items": 890667,
+        "metadata_items": 890667,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      },
+      "Video_Games": {
+        "mapping_items": 137249,
+        "metadata_items": 137249,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      }
+    }
+  },
+  "ready_for_evaluation": true,
+  "status": "ready_for_protocol_review"
+}

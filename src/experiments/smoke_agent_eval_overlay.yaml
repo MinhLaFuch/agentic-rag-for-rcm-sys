@@ -1,0 +1,7 @@
+agent/agent_eval:
+  agent_eval:
+    agents: ["baseline", "type1"]
+    per_segment: 5
+agent/inference:
+  inference:
+    mode: template
