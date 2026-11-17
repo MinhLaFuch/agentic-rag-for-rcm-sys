@@ -1,35 +1,76 @@
-.*
-!.gitignore
-!.gitmodules
-!.gitattributes
-resource
+# Local credentials, editor settings and agent indexes.
+# Do not ignore all dotfiles: .github workflows and .gitattributes belong in Git.
+.env
+.env.*
+!.env.example
+!.env.template
+.aws/
+.codex/
+.agents/
+.claude/
+.gitnexus/
+.vscode/
+.idea/
+.mcp.json
+.DS_Store
+Thumbs.db
 
-# Durable local evaluation checkpoints include models and full candidate payloads.
-src/src.zip
-
-# Ignore all data/output JSON files
-*.jsonl
-
-# Virtual environment
-.venv/
-src/.venv/
-
-# Python cache
+# Python environments, caches and generated package metadata.
+.venv*/
+venv/
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
-
-# pytest
+build/
+dist/
 .pytest_cache/
-src/experiments/test_logs/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
 
-# Synthetic demo report output (DO-NOT-CITE)
-src/experiments/agent_eval/example_report/
+# Pipeline inputs, splits, mappings, corpus, model caches and local archives.
+# Keep config/history snapshots under src/configs versioned.
+/resource/
+/src/resource/
+/src/src.zip
+/src/graphify-out/
 
-# Local resources
-src/resource/item_knn/
-src/resource/corpus/
+# Output accidentally created relative to repository root.
+/experiments/
 
-# Graphify output
-src/graphify-out/
+# Keep small experiment reports/configs/metrics in src/experiments versioned.
+# Bulk checkpoints and full-build artifacts remain local, including their manifests.
+/src/experiments/checkpoints/
+/src/experiments/**/checkpoints/
+/src/experiments/**/_checkpoints/
+/src/experiments/embedding_builds/
+/src/experiments/**/scratch/
+/src/experiments/test_logs/
+/src/experiments/logs/
+
+# Raw candidate/trajectory payloads and binary arrays/models under experiments.
+# Do not ignore JSON/JSONL globally: source configs and test fixtures may need them.
+/src/experiments/**/*.jsonl
+/src/experiments/**/*.npy
+/src/experiments/**/*.npz
+/src/experiments/**/*.parquet
+/src/experiments/**/*.sqlite
+/src/experiments/**/*.sqlite-*
+/src/experiments/**/*.db
+/src/experiments/**/*.db-*
+/src/experiments/**/*.pt
+/src/experiments/**/*.pth
+/src/experiments/**/*.safetensors
+/src/experiments/**/*.bin
+/src/experiments/**/*.log
+/src/experiments/**/*.tmp
+/src/experiments/**/*.lock
+
+# Crash dumps and Windows shell artifacts.
+*.dmp
+*.stackdump
 nul
+/powershell.cmd

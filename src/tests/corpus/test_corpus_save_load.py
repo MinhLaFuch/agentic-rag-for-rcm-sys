@@ -396,3 +396,41 @@ def test_legacy_corpus_keeps_strict_fingerprint_checks(tmp_path):
     source.write_text("different content")
     with pytest.raises(ValueError, match="Source file metadata mismatch"):
         load_corpus(path, files, mapping, .5)
+
+
+@pytest.mark.parametrize('change', ['schema', 'mapping', 'count', 'source'])
+def test_allow_missing_sources_does_not_disable_integrity(tmp_path, change):
+    corpus = ItemCorpus.from_dataframe(_make_sample_meta())
+    path = tmp_path / 'corpus.sqlite'
+    source = tmp_path / 'meta.jsonl'
+    source.write_text('source')
+    files = [('TestDomain', str(source))]
+    mapping = {'TestDomain::B001': 0, 'TestDomain::B002': 1}
+    save_corpus(corpus, path, files, mapping, .5, 1., {})
+    meta_path = path.with_suffix('.meta.json')
+    meta = json.loads(meta_path.read_text())
+    if change == 'schema':
+        meta['schema_fingerprint'] = 'wrong'
+    elif change == 'count':
+        meta['num_items'] = 99
+    elif change == 'mapping':
+        mapping = {'TestDomain::B001': 1, 'TestDomain::B002': 0}
+    else:
+        source.write_text('changed source')
+    meta_path.write_text(json.dumps(meta))
+    with pytest.raises(ValueError):
+        load_corpus(path, files, mapping, .5, allow_missing_sources=True)
+
+
+def test_allow_missing_source_still_loads_matching_corpus(tmp_path):
+    corpus = ItemCorpus.from_dataframe(_make_sample_meta())
+    path = tmp_path / 'corpus.sqlite'
+    source = tmp_path / 'meta.jsonl'
+    source.write_text('source')
+    files = [('TestDomain', str(source))]
+    mapping = {'TestDomain::B001': 0, 'TestDomain::B002': 1}
+    save_corpus(corpus, path, files, mapping, .5, 1., {})
+    source.unlink()
+    loaded, coverage = load_corpus(path, files, mapping, .5, allow_missing_sources=True)
+    assert coverage == 1.
+    assert loaded._source_provenance['missing_sources'] == [str(source)]

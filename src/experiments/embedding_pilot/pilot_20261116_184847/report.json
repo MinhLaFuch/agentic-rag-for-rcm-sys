@@ -1,0 +1,152 @@
+{
+  "status": "failed",
+  "tag": "multi_domain_v2_audit_20261030",
+  "purpose": "resource_pilot_only",
+  "partial_catalog": true,
+  "usable_for_quality_benchmark": false,
+  "contract": {
+    "version": 1,
+    "tag": "multi_domain_v2_audit_20261030",
+    "data_protocol": "temporal_train_core",
+    "metadata_policy": "historical_static_catalog",
+    "seed": 42,
+    "pilot": {
+      "provider": "sentence_transformers",
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "expected_dimension": 384,
+      "max_seq_length": 256,
+      "text_protocol": "title_store_main_category_categories_sorted_v2",
+      "sampling": "seeded_reservoir_balanced_by_domain_v1",
+      "default_limit": 1000,
+      "repeats": 2,
+      "warmup_items": 8
+    },
+    "retrieval": {
+      "evaluation_split": "validation",
+      "budgets": [
+        50,
+        100,
+        200
+      ],
+      "primary_metric": "macro_recall_at_100",
+      "sources": [
+        "popularity",
+        "item_cf",
+        "bm25",
+        "dense",
+        "hybrid"
+      ],
+      "fusion": "rrf",
+      "rrf_k": 60,
+      "cohort_identity": "freeze_user_ids_and_query_artifact_before_comparison",
+      "confidence_interval": "paired_bootstrap_95_percent",
+      "history_track": {
+        "query_source": "fit_history_titles_only",
+        "query_items": 3,
+        "cold_without_history": "no_input_and_report_fallback_separately",
+        "segments": [
+          "cold",
+          "sparse",
+          "warm"
+        ]
+      },
+      "cold_query_track": {
+        "status": "dataset_pending",
+        "rule": "query_and_judgments_independent_of_held_out_targets"
+      },
+      "category_oracle": "diagnostic_upper_bound_only",
+      "error_handling": "record_error_separately_from_retrieval_miss",
+      "gates": {
+        "status": "set_after_resource_pilot_before_large_validation",
+        "quality_delta_minimum": null,
+        "cohort_regression_limit": null,
+        "p95_query_latency_ms": null,
+        "peak_ram_gib": null
+      }
+    },
+    "test_policy": "freeze_configuration_before_test_no_test_tuning"
+  },
+  "contract_sha256": "a20967c5f77c582255b769444ccc00f357fef99f9f1920e1ec95223dc2b46186",
+  "readiness_path": "src\\experiments\\readiness\\p0_profile_20261116_182515.json",
+  "readiness_sha256": "89c338b79219d6537b8db3c8fac4ee12d02081b29f6b0249ccfcf0f756c357f1",
+  "audit_profile": {
+    "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain_v2_audit_20261030.profile.yaml",
+    "sha256": "8e95c9ed2ce980d956f4d8a2141cee753e6410c9e124a3992a3610d2dabbfbda",
+    "tag": "multi_domain_v2_audit_20261030",
+    "historical_config_root": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain_v2_audit_20261030",
+    "overlay_path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain_v2_audit_20261030.overlay.yaml",
+    "overlay_sha256": "22011b6585c781c63976b053d1f6a87e6620f038b6bfd5e8cd53fcd8f16ed528",
+    "runtime_contract": {
+      "path/domains": {
+        "merged_name": "multi_domain_v2_audit_20261030",
+        "domains": [
+          {
+            "name": "Video_Games"
+          },
+          {
+            "name": "Toys_and_Games"
+          },
+          {
+            "name": "Electronics"
+          }
+        ]
+      },
+      "data/split": {
+        "split": {
+          "data_protocol": "temporal_train_core",
+          "temporal_train_core": {
+            "train_end_inclusive_ms": 1617737606134,
+            "validation_end_inclusive_ms": 1651701127817
+          }
+        }
+      },
+      "eval/baselines": {
+        "baselines": {
+          "seed": 42,
+          "item_knn": {
+            "k": 20
+          }
+        }
+      },
+      "eval/candidate_recall": {
+        "candidate_recall": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      },
+      "eval/ranking_eval": {
+        "ranking_eval": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      }
+    },
+    "historical_and_runtime_configs_are_separate": true
+  },
+  "hardware": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_count": 20
+  },
+  "batch_size": 64,
+  "requested_device": "cpu",
+  "corpus_sha256": "004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8",
+  "catalog_counts_by_domain": {
+    "Electronics": 1609860,
+    "Toys_and_Games": 890667,
+    "Video_Games": 137249
+  },
+  "sample_counts_by_domain": {
+    "Electronics": 334,
+    "Toys_and_Games": 333,
+    "Video_Games": 333
+  },
+  "sample_count": 1000,
+  "sample_sha256": "def00da094009d67aa1d5153e293f67bb05dda79d95c82d1f10156b02f33c62d",
+  "missing_metadata_signal": 0,
+  "sample_seconds": 46.36096990000078,
+  "error": "OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed. Error loading \"D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\.venv-semantic\\Lib\\site-packages\\torch\\lib\\c10.dll\" or one of its dependencies.",
+  "wall_seconds": 93.18698670000595,
+  "baseline_rss_gib": 0.09905242919921875,
+  "peak_rss_gib": 0.74200439453125,
+  "memory_scope": "whole pilot process RSS, sampled at 50ms; Windows includes process lifetime peak working set"
+}

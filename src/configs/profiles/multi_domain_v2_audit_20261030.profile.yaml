@@ -1,0 +1,31 @@
+version: 1
+tag: multi_domain_v2_audit_20261030
+snapshot_root: configs/historical/multi_domain_v2_audit_20261030
+overlay_path: configs/profiles/multi_domain_v2_audit_20261030.overlay.yaml
+overlay_sha256: 22011b6585c781c63976b053d1f6a87e6620f038b6bfd5e8cd53fcd8f16ed528
+required_runtime_configs:
+  path/domains:
+    merged_name: multi_domain_v2_audit_20261030
+    domains:
+    - name: Video_Games
+    - name: Toys_and_Games
+    - name: Electronics
+  data/split:
+    split:
+      data_protocol: temporal_train_core
+      temporal_train_core:
+        train_end_inclusive_ms: 1617737606134
+        validation_end_inclusive_ms: 1651701127817
+  eval/baselines:
+    baselines:
+      seed: 42
+      item_knn:
+        k: 20
+  eval/candidate_recall:
+    candidate_recall:
+      metadata_policy: historical_static_catalog
+      allow_missing_corpus_sources: false
+  eval/ranking_eval:
+    ranking_eval:
+      metadata_policy: historical_static_catalog
+      allow_missing_corpus_sources: false
