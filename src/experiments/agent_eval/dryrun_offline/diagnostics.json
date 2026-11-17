@@ -1,0 +1,137 @@
+{
+  "error_taxonomy": {
+    "baseline": {
+      "personalized": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "similar": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "step_errors": {
+          "no_error": 18
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    }
+  },
+  "reflection": {
+    "baseline": {
+      "personalized": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "similar": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    },
+    "type1": {
+      "similar": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    }
+  },
+  "pool_stage": {
+    "baseline": {
+      "personalized": {
+        "n_rows": 6,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.6666666666666666,
+            "n": 6
+          },
+          "target_in_pool_sql": {
+            "rate": 0.6666666666666666,
+            "n": 6
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.6666666666666666,
+            "n": 6
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.6666666666666666,
+            "n": 6
+          }
+        }
+      },
+      "similar": {
+        "n_rows": 6,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.8333333333333334,
+            "n": 6
+          }
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "n_rows": 6,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 6
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.8333333333333334,
+            "n": 6
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 6
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 6
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 1,
+          "pool": 1,
+          "retrieve": 4
+        }
+      }
+    }
+  }
+}

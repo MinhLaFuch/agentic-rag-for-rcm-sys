@@ -1,0 +1,82 @@
+{
+  "error_taxonomy": {
+    "baseline": {
+      "cold_text": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "exclusion": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    }
+  },
+  "reflection": {
+    "baseline": {
+      "cold_text": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": 0.0
+      },
+      "exclusion": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    }
+  },
+  "pool_stage": {
+    "baseline": {
+      "cold_text": {
+        "n_rows": 3,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_itemcf": {
+            "rate": 1.0,
+            "n": 3
+          }
+        }
+      },
+      "exclusion": {
+        "n_rows": 6,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 3
+          },
+          "target_in_pool_itemcf": {
+            "rate": 1.0,
+            "n": 3
+          }
+        }
+      }
+    }
+  }
+}

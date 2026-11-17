@@ -1,0 +1,211 @@
+{
+  "k": 10,
+  "summary": {
+    "baseline": {
+      "cold_text": {
+        "all": {
+          "n": 3,
+          "constraint_satisfaction": 0.03333333333333333,
+          "cost_per_request": 0.0,
+          "distinct_domains": 1.0,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 1.0,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.0,
+          "wall_seconds": 0.0003333333333333333,
+          "wall_seconds_p50": 0.0,
+          "wall_seconds_p95": 0.0009
+        },
+        "cold": {
+          "n": 3,
+          "constraint_satisfaction": 0.03333333333333333,
+          "cost_per_request": 0.0,
+          "distinct_domains": 1.0,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 1.0,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.0,
+          "wall_seconds": 0.0003333333333333333,
+          "wall_seconds_p50": 0.0,
+          "wall_seconds_p95": 0.0009
+        }
+      },
+      "exclusion": {
+        "all": {
+          "n": 6,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.5,
+          "exclusion_compliance": 0.9333333333333332,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 1.0,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.8333333333333334,
+          "wall_seconds": 0.002,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
+        },
+        "sparse": {
+          "n": 3,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.3333333333333335,
+          "exclusion_compliance": 0.8666666666666667,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 1.0,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.6666666666666666,
+          "wall_seconds": 0.002,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
+        },
+        "warm": {
+          "n": 3,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.6666666666666665,
+          "exclusion_compliance": 1.0,
+          "hit_rate@10": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 1.0,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 1.0,
+          "wall_seconds": 0.002,
+          "wall_seconds_p50": 0.002,
+          "wall_seconds_p95": 0.002
+        }
+      }
+    }
+  },
+  "diagnostics": {
+    "error_taxonomy": {
+      "baseline": {
+        "cold_text": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        },
+        "exclusion": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        }
+      }
+    },
+    "reflection": {
+      "baseline": {
+        "cold_text": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": 0.0
+        },
+        "exclusion": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": null
+        }
+      }
+    },
+    "pool_stage": {
+      "baseline": {
+        "cold_text": {
+          "n_rows": 3,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_sql": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_semantic": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_itemcf": {
+              "rate": 1.0,
+              "n": 3
+            }
+          }
+        },
+        "exclusion": {
+          "n_rows": 6,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_sql": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_semantic": {
+              "rate": 1.0,
+              "n": 3
+            },
+            "target_in_pool_itemcf": {
+              "rate": 1.0,
+              "n": 3
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+Summary
+scored_rows,9
+requests,9
+agents,baseline
+k,10
+
+Request Kind Metrics
+Request Kind,Metric,Mean,Std
+baseline/cold_text,constraint_satisfaction,0.03333333333333333,0.047140452079103175
+baseline/cold_text,hit_rate@10,0.0,0.0
+baseline/cold_text,map@10,0.0,0.0
+baseline/cold_text,mrr@10,0.0,0.0
+baseline/cold_text,ndcg@10,0.0,0.0
+baseline/cold_text,precision@10,0.0,0.0
+baseline/cold_text,recall@10,0.0,0.0
+baseline/cold_text,task_success,0.0,0.0
+baseline/exclusion,exclusion_compliance,0.9333333333333332,0.14907119849998599
+baseline/exclusion,hit_rate@10,0.0,0.0
+baseline/exclusion,map@10,0.0,0.0
+baseline/exclusion,mrr@10,0.0,0.0
+baseline/exclusion,ndcg@10,0.0,0.0
+baseline/exclusion,precision@10,0.0,0.0
+baseline/exclusion,recall@10,0.0,0.0
+baseline/exclusion,task_success,0.8333333333333334,0.372677996249965
+
