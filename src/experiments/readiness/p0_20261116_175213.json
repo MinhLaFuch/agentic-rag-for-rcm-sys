@@ -1,0 +1,637 @@
+{
+  "tag": "multi_domain_v2_audit_20261030",
+  "artifact_checks": [
+    {
+      "path": "resource/raw/Video_Games/Video_Games.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "7bde9e0a039bdb321e993bfe78a6c7d438fb1504b1ad152c0cb6a33a8b7cb26a",
+      "actual_sha256": "7bde9e0a039bdb321e993bfe78a6c7d438fb1504b1ad152c0cb6a33a8b7cb26a",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/raw/Toys_and_Games/Toys_and_Games.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "2e6157468ea97963098fe6b14749eda8d16a4443e718dcf6cbd0726c781fd938",
+      "actual_sha256": "2e6157468ea97963098fe6b14749eda8d16a4443e718dcf6cbd0726c781fd938",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/raw/Electronics/Electronics.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "bf11cf9c94c23ead7d3ffb174d18231fad8fcd76e72ad167f538a5599a38de8e",
+      "actual_sha256": "bf11cf9c94c23ead7d3ffb174d18231fad8fcd76e72ad167f538a5599a38de8e",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/filtered/multi_domain_v2_audit_20261030/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "actual_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Electronics/manifests/multi_domain_v2_audit_20261030/stage_1.manifest.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "6726f94cd71ca152d1f28a087d7c17f46e31fa6da50954517ded98038de67da6",
+      "actual_sha256": "6726f94cd71ca152d1f28a087d7c17f46e31fa6da50954517ded98038de67da6",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/manifests/multi_domain_v2_audit_20261030/stage_1.manifest.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "9f52e05087fb1d996cf16fed156b0c30f7a24c16a83bdb8fe38d6bd7ed25c95c",
+      "actual_sha256": "9f52e05087fb1d996cf16fed156b0c30f7a24c16a83bdb8fe38d6bd7ed25c95c",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/manifests/multi_domain_v2_audit_20261030/stage_1.manifest.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "e146c64b9a7008f1a130c1b04cc1be8940d2838ea5ca3c1e377cb118b4d63e03",
+      "actual_sha256": "e146c64b9a7008f1a130c1b04cc1be8940d2838ea5ca3c1e377cb118b4d63e03",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/filtered/multi_domain_v2_audit_20261030/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "actual_sha256": "4762d6b3e0e1a8bf64c642741861988e985f5509f1bb88135a015795bb5926b2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/fit_core/item2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "actual_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/fit_core/user2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "actual_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/item2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "actual_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/user2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "actual_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/evaluation_cohort.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "a6061d8af29b82dda2cceebf261b76ea86cd68095a1d7f2382e601d6bfc01e8b",
+      "actual_sha256": "a6061d8af29b82dda2cceebf261b76ea86cd68095a1d7f2382e601d6bfc01e8b",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/test.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "actual_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/train.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "actual_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/train_core.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "actual_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/validation.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "actual_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/filtered/multi_domain_v2_audit_20261030/stage_2.manifest.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "06270bea65740844f96f067868a307cb99bac8fe25f2d2f0770e44b01353c59d",
+      "actual_sha256": "06270bea65740844f96f067868a307cb99bac8fe25f2d2f0770e44b01353c59d",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Electronics/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "actual_sha256": "618b11e2257784c11c76b4057e02ccda0f5548d77ba5a2111230a070578628db",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Toys_and_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "actual_sha256": "dd9ac7719b4384f1dd7eb005fa26c11367c9529a422244e736aa10ee910504c0",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/cleaned/Video_Games/interactions.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "actual_sha256": "1a00648096a410533d318d5f3acde7af50b2703e95b84a7d68b8bec9049c2274",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/fit_core/item2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "actual_sha256": "89f97df5a3509d0ed1c976c7af8a15e235c624cb8ed3a536575fffdd3a647a83",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/fit_core/user2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "actual_sha256": "9ea3ea073bbbb850999f2f54b668b0d500db0cd4eaf230071bf23e4c7a0577e4",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/item2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "actual_sha256": "49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/mapped/multi_domain_v2_audit_20261030/user2id.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "actual_sha256": "16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/metadata/meta_Electronics.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "5eb4dabd539586c49654297319ef178b62a2fe8e43108376feda125f04455d93",
+      "actual_sha256": "5eb4dabd539586c49654297319ef178b62a2fe8e43108376feda125f04455d93",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/metadata/meta_Toys_and_Games.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "caca4bc34518426d45e2924d1042923d9d3cd89eb69f4daeb0b3a9c87e278a9a",
+      "actual_sha256": "caca4bc34518426d45e2924d1042923d9d3cd89eb69f4daeb0b3a9c87e278a9a",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/metadata/meta_Video_Games.jsonl",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "3ad94dfaa8dfed23c5f420aa9ddec415d00f2b8ec9f2d796f487b4b2c4d256de",
+      "actual_sha256": "3ad94dfaa8dfed23c5f420aa9ddec415d00f2b8ec9f2d796f487b4b2c4d256de",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/test.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "actual_sha256": "52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/train.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "actual_sha256": "7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/train_core.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "actual_sha256": "696d45b1b0f3abfe788a4c2d994711e1566dff8e35149d1a675af9ebd0e10cf2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/validation.parquet",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "actual_sha256": "b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/corpus/multi_domain_v2_audit_20261030/corpus_multi_domain_v2_audit_20261030.meta.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "1ef02ecb9c6bb88dbbd1ea29f6114abd71581c526ab333b3301e9004bf048019",
+      "actual_sha256": "1ef02ecb9c6bb88dbbd1ea29f6114abd71581c526ab333b3301e9004bf048019",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/corpus/multi_domain_v2_audit_20261030/corpus_multi_domain_v2_audit_20261030.sqlite",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8",
+      "actual_sha256": "004319b8cd7807425e0d5b85058f53d2a084206de89bfb9117fad100551a56a8",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/item_knn/multi_domain_v2_audit_20261030/item_knn_multi_domain_v2_audit_20261030_test.meta.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "cd0299a28767e88b9c64f521bb5fbb3565d12abc0e1a44fc37a66f290b791fff",
+      "actual_sha256": "cd0299a28767e88b9c64f521bb5fbb3565d12abc0e1a44fc37a66f290b791fff",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/item_knn/multi_domain_v2_audit_20261030/item_knn_multi_domain_v2_audit_20261030_test.npz",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "actual_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/item_knn/multi_domain_v2_audit_20261030/item_knn_multi_domain_v2_audit_20261030_validation.meta.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "49301af68776ad4152f51930865745e62c9e4e360130f10ee280f90e598e5ce2",
+      "actual_sha256": "49301af68776ad4152f51930865745e62c9e4e360130f10ee280f90e598e5ce2",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/item_knn/multi_domain_v2_audit_20261030/item_knn_multi_domain_v2_audit_20261030_validation.npz",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "actual_sha256": "f99ec3d9fc921fd2692090dd9ec27bccbbe093e61dafb57b461005742d842f0b",
+      "status": "MATCH"
+    },
+    {
+      "path": "resource/splits/multi_domain_v2_audit_20261030/stage_3.manifest.json",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "c9a0961fcf307cb2345bc5b23b10d4a53f9268f347b7927fbaaa9d9a1e538bfd",
+      "actual_sha256": "c9a0961fcf307cb2345bc5b23b10d4a53f9268f347b7927fbaaa9d9a1e538bfd",
+      "status": "MATCH"
+    }
+  ],
+  "config_checks": [
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/eval/segment_thresholds.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643",
+      "actual_sha256": "4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/agent/agent_eval.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "acc50f35b00ffa253461d69805b29981af26b8e52ec6c3c280d0861f48b72e20",
+      "actual_sha256": "ad9abf86b663c78c21e4355447a447fb038846c80e0378c098466193179f9438",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/data/cleaning.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "actual_sha256": "f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/filtering.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "actual_sha256": "b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b",
+      "status": "MATCH"
+    },
+    {
+      "path": "configs/data/split.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78",
+      "actual_sha256": "fc9852a1304540ea2432b10feeff6cd97977b6009e946096ed42848ac151e36b",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/eval/baselines.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "7ed7de13e7f60dcece0e082018ba257b6fd9aafaca37239411ca43e0e7cc8e37",
+      "actual_sha256": "c4398b68575bedcb91f2806c3ce5d4e5a4d6b454e0c973cedc8ca76e1d277adf",
+      "status": "MISMATCH"
+    },
+    {
+      "path": "configs/path/domains.yaml",
+      "manifest": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "expected_sha256": "6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc",
+      "actual_sha256": "7561a483cf6d9d7e8e797e244293ae651dcfe88a84f334fa2d3e9fa009972ecf",
+      "status": "MISMATCH"
+    }
+  ],
+  "manifests": [
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Video_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "sha256": "e146c64b9a7008f1a130c1b04cc1be8940d2838ea5ca3c1e377cb118b4d63e03",
+      "stage": "clean_domain",
+      "tag": "multi_domain_v2_audit_20261030"
+    },
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Toys_and_Games\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "sha256": "9f52e05087fb1d996cf16fed156b0c30f7a24c16a83bdb8fe38d6bd7ed25c95c",
+      "stage": "clean_domain",
+      "tag": "multi_domain_v2_audit_20261030"
+    },
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\cleaned\\Electronics\\manifests\\multi_domain_v2_audit_20261030\\stage_1.manifest.json",
+      "sha256": "6726f94cd71ca152d1f28a087d7c17f46e31fa6da50954517ded98038de67da6",
+      "stage": "clean_domain",
+      "tag": "multi_domain_v2_audit_20261030"
+    },
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\filtered\\multi_domain_v2_audit_20261030\\stage_2.manifest.json",
+      "sha256": "06270bea65740844f96f067868a307cb99bac8fe25f2d2f0770e44b01353c59d",
+      "stage": "merge_filter_domains",
+      "tag": "multi_domain_v2_audit_20261030"
+    },
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\splits\\multi_domain_v2_audit_20261030\\stage_3.manifest.json",
+      "sha256": "c9a0961fcf307cb2345bc5b23b10d4a53f9268f347b7927fbaaa9d9a1e538bfd",
+      "stage": "map_split",
+      "tag": "multi_domain_v2_audit_20261030"
+    },
+    {
+      "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\stage_4.manifest.json",
+      "sha256": "5fc3507d2f1af74025606981f3ff41aef33daa8b41809be2aee89abd2d1343bc",
+      "stage": "build_artifacts",
+      "tag": "multi_domain_v2_audit_20261030"
+    }
+  ],
+  "blockers": [
+    "Historical config drift requires snapshot verification and runtime compatibility review",
+    "Recorded data protocol differs from current runtime split configuration",
+    "Split temporal/event-overlap scan not run; rerun with --scan-splits"
+  ],
+  "warnings": [],
+  "split_scan": {
+    "status": "not_run"
+  },
+  "config_drift": [
+    "configs/agent/agent_eval.yaml",
+    "configs/data/split.yaml",
+    "configs/eval/baselines.yaml",
+    "configs/path/domains.yaml"
+  ],
+  "protocol": {
+    "recorded": "temporal_train_core",
+    "stage3_flags": {
+      "cutoff_1": 1617737606134,
+      "cutoff_2": 1651701127817,
+      "data_protocol": "temporal_train_core",
+      "fit_core_counts": "unique_train_user_item_pairs",
+      "fit_core_max_iterations": 20,
+      "fit_core_min_item_pairs": 5,
+      "fit_core_min_user_pairs": 5,
+      "force": true,
+      "mapping_strategy": "first_occurrence_disk_backed_sqlite",
+      "sparse_max_history": 4,
+      "split_assignment": "train<=cutoff_1; validation<=cutoff_2; test>cutoff_2",
+      "streaming_batch_rows": 100000,
+      "test_ratio": 0.1,
+      "train_ratio": 0.8,
+      "validation_ratio": 0.1
+    },
+    "runtime_split": {
+      "train_ratio": 0.8,
+      "validation_ratio": 0.1,
+      "test_ratio": 0.1,
+      "item_knn_splits": [
+        "validation",
+        "test"
+      ],
+      "data_protocol": "legacy_kcore_before_split",
+      "temporal_train_core": {
+        "train_end_inclusive_ms": 1617737606134,
+        "validation_end_inclusive_ms": 1651701127817
+      }
+    },
+    "historical_config_verified": false
+  },
+  "corpus": {
+    "path": "D:\\DACNTT\\src\\agentic-rag-for-rcm-sys\\src\\resource\\corpus\\multi_domain_v2_audit_20261030\\corpus_multi_domain_v2_audit_20261030.sqlite",
+    "mapped_items": 2637776,
+    "corpus_rows": 2637776,
+    "mapping_hash": "5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d",
+    "coverage": 1.0,
+    "counts_by_domain": {
+      "Electronics": 1609860,
+      "Toys_and_Games": 890667,
+      "Video_Games": 137249
+    },
+    "first_seen_rows": 2637776,
+    "declared_coverage_by_domain": {
+      "Electronics": {
+        "mapping_items": 1609860,
+        "metadata_items": 1609860,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      },
+      "Toys_and_Games": {
+        "mapping_items": 890667,
+        "metadata_items": 890667,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      },
+      "Video_Games": {
+        "mapping_items": 137249,
+        "metadata_items": 137249,
+        "coverage": 1.0,
+        "min_coverage": 0.5,
+        "duplicate_metadata_rows_dropped": 0
+      }
+    }
+  },
+  "ready_for_evaluation": false,
+  "status": "blocked"
+}

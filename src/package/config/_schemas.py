@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Allowed values duplicated here (not imported) to keep package.config a leaf layer.
 AGENT_NAMES = ("baseline", "type1", "planner", "planner_memory")
-METADATA_POLICIES = ("historical_static_catalog", "snapshot")
+METADATA_POLICIES = ("historical_static_catalog", "snapshot", "no_filter")
 QUERY_NORMALIZATIONS = ("raw", "ascii_fold")
 QUERY_MODES = ("history", "category_oracle")
 SPLIT_NAMES = ("validation", "test")

@@ -45,6 +45,7 @@ src/package/config/_schemas.py
 src/package/config/get_data_paths.py
 src/package/config/get_domains.py
 src/package/config/load_config.py
+src/package/config/resolve_bundle_paths.py
 src/package/config/resolve_dataset_tag.py
 src/package/corpus/__init__.py
 src/package/corpus/_error.py
@@ -96,6 +97,7 @@ src/package/data/loader/optimize_interaction_dtypes.py
 src/package/data/manifest/__init__.py
 src/package/data/manifest/_helper.py
 src/package/data/manifest/check_upstream_manifests.py
+src/package/data/manifest/load_audit_profile.py
 src/package/data/manifest/pipeline_config_files.py
 src/package/data/manifest/verify_manifest.py
 src/package/data/manifest/verify_tag_manifest.py
@@ -145,6 +147,10 @@ src/package/demo/view/format_items.py
 src/package/demo/view/format_memory.py
 src/package/demo/view/format_trace.py
 src/package/demo/view/status_badge.py
+src/package/embeddings/__init__.py
+src/package/embeddings/encoder.py
+src/package/embeddings/text_encoder.py
+src/package/embeddings/vector_store.py
 src/package/evaluation/__init__.py
 src/package/evaluation/_schema.py
 src/package/evaluation/ablation/__init__.py
@@ -219,6 +225,7 @@ src/package/evaluation/layer5_deployment/_schema.py
 src/package/evaluation/layer5_deployment/score_layer5_deployment.py
 src/package/evaluation/multi_turn/__init__.py
 src/package/evaluation/multi_turn/_agent_runner.py
+src/package/evaluation/multi_turn/_eval_step.py
 src/package/evaluation/multi_turn/_reporting.py
 src/package/evaluation/multi_turn/_run.py
 src/package/evaluation/multi_turn/_schema.py

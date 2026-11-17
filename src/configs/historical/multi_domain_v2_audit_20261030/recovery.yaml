@@ -1,0 +1,27 @@
+tag: multi_domain_v2_audit_20261030
+configs:
+- original_path: configs/agent/agent_eval.yaml
+  sha256: acc50f35b00ffa253461d69805b29981af26b8e52ec6c3c280d0861f48b72e20
+  git_blob: 887e4c57ef60e9b23c54df136154ec0dd7ae7dfb
+  byte_transform: lf_to_crlf
+- original_path: configs/data/cleaning.yaml
+  sha256: f1a26c1901081fafa4067bab31548df3903539da0d0084e51fcf8bafcd938045
+  source: current_file_matching_manifest
+- original_path: configs/data/filtering.yaml
+  sha256: b989a4563a242abf02468c5c142cf24bf4b993fde6c9faf7cea3b0b712ac319b
+  source: current_file_matching_manifest
+- original_path: configs/data/split.yaml
+  sha256: 2043346455d93072510c27239a8d139037168bcc0f17068a456e49d156a3ac78
+  git_blob: 3c53ecea5e33da94b4f921219b33203ce676e0ed
+  byte_transform: lf_to_crlf
+- original_path: configs/eval/baselines.yaml
+  sha256: 7ed7de13e7f60dcece0e082018ba257b6fd9aafaca37239411ca43e0e7cc8e37
+  git_blob: 2e80f29af4d5b46bb67939f112da504967097080
+  byte_transform: lf_to_crlf
+- original_path: configs/path/domains.yaml
+  sha256: 6db1633effe8ecd7dc3aafd59e22cbbda30b62f76db7ca74aa932f6e5a4e6dbc
+  git_blob: c7dfd899af36c695b064686296f1e127aabdfe1c
+  byte_transform: lf_to_crlf
+- original_path: configs/eval/segment_thresholds.yaml
+  sha256: 4fc34eeb5535e14ae58b8ceb67d7db8dfe36f9371172fdc3cfa1b261a272f643
+  source: current_file_matching_manifest

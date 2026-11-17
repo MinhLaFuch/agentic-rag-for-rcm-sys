@@ -9,6 +9,7 @@ from pathlib import Path
 from package.config import get_data_paths, get_domains
 from package.data.manifest import verify_tag_manifest
 from package.config import PROJECT_ROOT
+from package.config.resolve_bundle_paths import resolve_bundle_paths
 from package.evaluation.recommender.utils import sha256_file
 
 
@@ -16,8 +17,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain", action="append",
                         help="Domain của bundle dữ liệu (lặp lại). Mặc định: tất cả -> 'multi_domain'.")
+    parser.add_argument("--tag", help="Explicit existing bundle; all validation remains enabled")
     args = parser.parse_args()
-    paths = get_data_paths(domains=args.domain)
+    paths = resolve_bundle_paths(tag=args.tag, domains=args.domain)
     stage2 = paths.filtered_path.parent / "stage_2.manifest.json"
     domains = get_domains()
     if stage2.is_file():
@@ -45,16 +47,20 @@ def main() -> None:
             continue
         doc = json.loads(manifest_path.read_text(encoding="utf-8"))
         artifacts = doc.get("inputs", []) + doc.get("outputs", []) + doc.get("upstream_manifests", []) + [
-            {"path": p, "sha256": h} for p, h in doc.get("config_sha256", {}).items()
+            {"path": p, "sha256": h, "historical_config": True} for p, h in doc.get("config_sha256", {}).items()
         ]
         for artifact in artifacts:
             rel, expected = artifact["path"], artifact["sha256"]
             if artifact.get("external"):
                 actual, state = "-", "EXTERNAL_RECORDED"
             else:
-                target = (PROJECT_ROOT / rel).resolve()
+                profile = result.get("audit_profile")
+                evidence_root = Path(profile["historical_config_root"]) if profile and artifact.get("historical_config") else PROJECT_ROOT
+                target = (evidence_root / rel).resolve()
                 actual = sha256_file(target) if target.is_file() else "missing"
                 state = "MATCH" if actual == expected else "MISMATCH"
+                if profile and artifact.get("historical_config"):
+                    state = "HISTORICAL_" + state
             print(f"{rel:70} {expected:64} {actual:64} {state}")
     for warning in result.get("warnings", []):
         print(f"WARNING: {warning}")
