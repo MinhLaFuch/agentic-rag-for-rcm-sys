@@ -1,11 +1,29 @@
 ---
 created: 2026-09-27-15:07
-updated: 2026-11-14-14:00
-viewed: 2026-11-14-14:00
+updated: 2026-11-19
+viewed: 2026-11-19
 branch: tools-building
-commit: 880bf5c
+commit: d85c9a0
 ---
 > **NOTE (2026-11-15):** This is a dated snapshot. The current central document is `src/reading.md` — it supersedes this file and includes the evaluation-integrity fixes (R1–R3, items 23–25).
+
+## 0.0. Update 2026-11-19 — new data bundle, dense retrieval, metrics fixes
+
+Snapshot below (§0.1–§0.17) reflects 2026-11-14. Since then:
+
+| Area | Change | Evidence |
+|------|--------|----------|
+| **Data bundle `multi_domain` rebuilt** | `data_protocol` → `temporal_train_core`; pipeline stages 1–4 rerun: 64.07M merged interactions → train 48.77M / val 7.79M / test 7.51M; catalog **2,637,776 items** (~4x legacy ~678k k-core bundle); stage-4 corpus SQLite ~3.2GB + ItemKNN `train_core` artifacts | `configs/data/split.yaml`, `resource/splits/multi_domain/`, `experiments/readiness/p0_multi_domain_20261117_160642.json` (`ready_for_evaluation=true`, 0 blockers) |
+| **Audit profile/overlay auto-derive** | `load_audit_profile` falls back to convention `configs/profiles/{tag}.profile.yaml` + `.overlay.yaml` when `EVAL_BUNDLE_PROFILE`/`CONFIG_OVERLAY_PATH` unset; `CONFIG_OVERLAY_PATH` now accepts os.pathsep-separated **overlay chains** (merged in order); `campaign_runner` auto-sets both env vars per experiment subprocess (bundle overlay prepended, experiment fragment wins). Env vars still override. | `package/data/manifest/load_audit_profile.py`, `package/config/_helper.py`, `package/evaluation/campaign/campaign_runner.py` |
+| **Dense retrieval implemented + opt-in** | Full GPU embedding build done: 2,637,776 × 384-dim (`all-MiniLM-L6-v2@1110a243`, `title_store_main_category_categories_sorted_v2`), format-B artifacts `experiments/embedding_builds/multi_domain_full/` + converted format-A `multi_domain_semantic/` + `encoder.lock.json`. `SearchTool` supports dense leg via RRF (`configs/eval/dense_retrieval.yaml`, `enabled` flag — currently `true` for ablation). `candidate_recall` exp_002: dense/hybrid **did not beat BM25** (recall@100 warm: bm25 0.010 vs hybrid 0.008) → kept opt-in | `scripts/data_pipeline/convert_full_to_semantic_artifacts.py`, `package/embeddings/build_dense_retrieval.py`, `experiments/candidate_recall/exp_002/` |
+| **Scale bug fixes** | `apply_metadata_policy`: TEMP view→table+index (query 101s→ms); `run_agent_eval` ItemKNN→`build_core_model` train_core cache; `VectorStore` chunked norm (no 3.77GB copy); `mapping_hash` still MemoryErrors on 23.3M-user mapping at save time (known, unfixed) | `package/corpus/apply_metadata_policy.py`, `scripts/evaluation/run_agent_eval.py`, `package/embeddings/vector_store.py` |
+| **Metrics additions/fixes** | `cost_per_request` now = planner + inference token cost via `pricing` in `configs/agent/llm.yaml` (was dead placeholder ≡0 — steps never record cost); unpriced+tokens→`None`. New `task_success_relevant` column (= task_success AND ≥1 rec ∈ targets; `task_success` unchanged for comparability). `_tool_call_match_rate` empty→`None` (was free 1.0) | `package/evaluation/layer5_deployment/`, `layer2_interaction/`, `trajectory/score_trajectory.py`, `multi_turn/multi_turn_evaluator.py`, `package/config/_schemas.py` (`LLMPricing`) |
+| **Retrieval→ranking bottleneck found** | RankTool/HybridScorer ignores retrieval scores entirely (popularity×4 + ItemKNN CF only); ~82% of catalog (outside 487k train_core) scores 0.0 → long-tail unreachable via RankTool path. Full analysis + fix direction: **`src/RETRIEVAL_RANKING_BOTTLENECK.md`** | `package/tools/scoring/hybrid_scorer.py`, `package/evaluation/recommender/analysis/build_core_model.py` |
+| **Campaign** | `campaign_002` ran on OLD bundle; `campaign_003` auto-versioned, running on new bundle (requires `.venv` python — subprocess inherits `sys.executable`) | `experiments/agent_eval/campaigns/` |
+
+**Env setup note:** `.venv` = eval runtime (now incl. torch 2.6.0+cu124 + sentence-transformers for dense); `.venv-semantic` = embedding build env. Run eval scripts with `.venv\Scripts\python.exe` from `src/` — no env vars needed for `multi_domain` (auto-derive).
+
+---
 
 **agentic-rag-for-rcm-sys / src** — An LLM-agent product recommender running on Amazon Reviews 2023 (3 domains: Video_Games, Toys_and_Games, Electronics).
 
@@ -233,12 +251,13 @@ The end-to-end pipeline consists of a **data pipeline** (4 stages), a **componen
 
 ## 0.5. Recommendation Foundation (Updated)
 
-### 0.5.1. Embedding — **NOT IMPLEMENTED in runtime**
+### 0.5.1. Embedding — dense retrieval OPT-IN (updated 2026-11-19)
 
-**Status**: `package/embeddings/__init__.py` exists but is **optional dense retrieval primitives** — not wired into the agent tool chain [[evidence: embeddings/__init__.py lines 1-10]].
+**Status**: dense retrieval is now **implemented and wired** into `SearchTool` as an optional RRF leg, gated by `configs/eval/dense_retrieval.yaml` (`enabled` flag). See §0.0 for the full build/provenance story.
 
-- **Runtime has no model dependency**: callers provide an encoder or vectors; offline model pinning and catalog encoding remain in `scripts/evaluation/` [[evidence: embeddings/__init__.py lines 3-4]].
-- **Current retrieval**: **SQLite FTS5 + BM25** over `title`, `store`, `main_category`, `categories` (lexical only) — no embedding-based retrieval in the agent tool chain.
+- **Runtime has no model dependency**: callers provide an encoder or vectors; offline model pinning and catalog encoding remain in `scripts/evaluation/` + `scripts/data_pipeline/` [[evidence: embeddings/__init__.py lines 3-4]].
+- **Current retrieval**: **SQLite FTS5 + BM25** over `title`, `store`, `main_category`, `categories` (lexical) **+ optional dense vector RRF leg** when `dense_retrieval.enabled=true` (artifacts + encoder lock required, fail-closed).
+- **Recall evidence (exp_002)**: dense/hybrid did not beat BM25 on candidate recall → kept opt-in, not default.
 - **BPR-MF recommender** uses embeddings internally but is separate from candidate retrieval (evaluation only).
 - **Files in `package/embeddings/`** (available but not used by agents):
   - `encoder.py` — `Encoder` class (TextEncoder alias) [[evidence: encoder.py lines 1-12]]
@@ -275,6 +294,8 @@ The end-to-end pipeline consists of a **data pipeline** (4 stages), a **componen
 | **BPR-MF** | Bayesian Personalized Ranking (matrix factorization) | Evaluation only (offline) |
 
 **BaselineScorer** combines popularity (tiny weight 1e-6 for tie-breaking) + ItemKNN CF signal. Users with no CF signal get popularity only.
+
+**HybridScorer** (`package/tools/scoring/hybrid_scorer.py`, `scorer_mode: hybrid` in run_agent_eval) = `pop_norm × popularity_weight(4.0) + ItemKNN CF / per-user max`. **Known bottleneck (2026-11-19): it ignores retrieval/BM25/dense scores entirely, and items outside the 487k train_core score 0.0** — see `src/RETRIEVAL_RANKING_BOTTLENECK.md` for the full analysis and proposed retrieval-score blending fix.
 
 **RankTool output**: `ranked` (rank, item_id, score, domain), `model` name, `cold_start` flag, `excluded_seen`, `unscored_item_ids`, `has_personal_signal`, `note` (explanation if empty).
 
@@ -532,7 +553,7 @@ outputs:  # Relative to experiments_dir
 ### 0.9.2. Configuration Loading (package/config/load_config.py)
 
 - `load_config("agent/llm")` → loads `configs/agent/llm.yaml` with Pydantic validation
-- **Overlay support**: `CONFIG_OVERLAY_PATH` env var points to YAML that overrides base config (used by campaign runner)
+- **Overlay support**: `CONFIG_OVERLAY_PATH` env var points to YAML that overrides base config (used by campaign runner). **Updated 2026-11-19**: accepts os.pathsep-separated **chains** — multiple overlays merge in order (later wins); used to prepend the bundle contract overlay before per-experiment fragments. Separately, `load_audit_profile` auto-derives `configs/profiles/{tag}.profile.yaml`/`.overlay.yaml` when `EVAL_BUNDLE_PROFILE` is unset — see §0.0.
 - **Env var expansion**: `${VAR:-default}` syntax in YAML (e.g., `${LLM_BASE_URL:-}`)
 - **Strict schemas**: `extra="forbid"` — unknown keys raise error
 - **All scripts use `load_config`** — no direct `yaml.safe_load` (enforced by Jev reliability fix)

@@ -1,0 +1,1418 @@
+{
+  "report": {
+    "exp_dir": "experiments\\candidate_recall\\exp_003",
+    "n_targets": 155,
+    "filtertool_single_category_popularity": {
+      "recall@50": 0.0387,
+      "recall@200": 0.2129,
+      "recall@500": 0.2839,
+      "recall@1000": 0.4
+    },
+    "in_top1000_frac": 0.4,
+    "mean_cats_per_target": 3.225806451612903,
+    "rank_buckets": {
+      "absent_or_deep": 93,
+      "501-1000": 18,
+      "51-200": 27,
+      "201-500": 11,
+      "<=50": 6
+    }
+  },
+  "targets": [
+    {
+      "user_idx": 3665981,
+      "seg": "cold",
+      "item_idx": 1041442,
+      "item_id": "Electronics::B09PBKHRYZ",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 4405757,
+      "seg": "cold",
+      "item_idx": 159665,
+      "item_id": "Toys_and_Games::B08GG7S8ZS",
+      "n_cats": 3,
+      "best_cat": "Board Games",
+      "sql_rank": 836
+    },
+    {
+      "user_idx": 11382046,
+      "seg": "cold",
+      "item_idx": 1275735,
+      "item_id": "Electronics::B09CPMTWK6",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16325083,
+      "seg": "cold",
+      "item_idx": 1039275,
+      "item_id": "Electronics::B0BT98MVYD",
+      "n_cats": 5,
+      "best_cat": "Repeaters",
+      "sql_rank": 52
+    },
+    {
+      "user_idx": 16325083,
+      "seg": "cold",
+      "item_idx": 1027990,
+      "item_id": "Electronics::B08DLSLCF3",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 9979907,
+      "seg": "cold",
+      "item_idx": 1026255,
+      "item_id": "Toys_and_Games::B07XQKCN6V",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 20539473,
+      "seg": "cold",
+      "item_idx": 1116306,
+      "item_id": "Electronics::B07C53XZ2K",
+      "n_cats": 5,
+      "best_cat": "Replacement Screens",
+      "sql_rank": 683
+    },
+    {
+      "user_idx": 12283037,
+      "seg": "cold",
+      "item_idx": 1132332,
+      "item_id": "Electronics::B08DP6TYW6",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 8968858,
+      "seg": "cold",
+      "item_idx": 1084198,
+      "item_id": "Electronics::B08TR635QP",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 20907986,
+      "seg": "cold",
+      "item_idx": 1181477,
+      "item_id": "Electronics::B09WGLV9N6",
+      "n_cats": 4,
+      "best_cat": "Smartwatches",
+      "sql_rank": 70
+    },
+    {
+      "user_idx": 21793674,
+      "seg": "cold",
+      "item_idx": 1037297,
+      "item_id": "Electronics::B06XRTFG29",
+      "n_cats": 6,
+      "best_cat": "Tablet Accessories",
+      "sql_rank": 724
+    },
+    {
+      "user_idx": 3641103,
+      "seg": "cold",
+      "item_idx": 1048793,
+      "item_id": "Electronics::B07WMPKYGD",
+      "n_cats": 6,
+      "best_cat": "TV Wall & Ceiling Mounts",
+      "sql_rank": 600
+    },
+    {
+      "user_idx": 3641103,
+      "seg": "cold",
+      "item_idx": 1028509,
+      "item_id": "Electronics::B08F1P3BCC",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 3641103,
+      "seg": "cold",
+      "item_idx": 138039,
+      "item_id": "Toys_and_Games::B08F59VXCD",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16880967,
+      "seg": "cold",
+      "item_idx": 1085088,
+      "item_id": "Electronics::B08F696X62",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 19616061,
+      "seg": "cold",
+      "item_idx": 1391541,
+      "item_id": "Electronics::B07NGNWFCM",
+      "n_cats": 6,
+      "best_cat": "Messenger & Shoulder Bags",
+      "sql_rank": 94
+    },
+    {
+      "user_idx": 5319938,
+      "seg": "cold",
+      "item_idx": 1090173,
+      "item_id": "Electronics::B095W1ZRYZ",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5319938,
+      "seg": "cold",
+      "item_idx": 191333,
+      "item_id": "Toys_and_Games::B074HN2DL2",
+      "n_cats": 5,
+      "best_cat": "Outdoor Play",
+      "sql_rank": 719
+    },
+    {
+      "user_idx": 2701994,
+      "seg": "cold",
+      "item_idx": 1060272,
+      "item_id": "Electronics::B09JC9LDYD",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2701994,
+      "seg": "cold",
+      "item_idx": 23651,
+      "item_id": "Video_Games::B0C55642KG",
+      "n_cats": 5,
+      "best_cat": "Gaming Keyboards",
+      "sql_rank": 298
+    },
+    {
+      "user_idx": 2701994,
+      "seg": "cold",
+      "item_idx": 3261,
+      "item_id": "Video_Games::B0BYVR3R9Z",
+      "n_cats": 5,
+      "best_cat": "Headsets",
+      "sql_rank": 414
+    },
+    {
+      "user_idx": 11791844,
+      "seg": "cold",
+      "item_idx": 1294684,
+      "item_id": "Electronics::B08PL1X945",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 12290754,
+      "seg": "cold",
+      "item_idx": 1028123,
+      "item_id": "Electronics::B08XVF418R",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 12290754,
+      "seg": "cold",
+      "item_idx": 1029773,
+      "item_id": "Electronics::B07VXXBTX4",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 12290754,
+      "seg": "cold",
+      "item_idx": 1043141,
+      "item_id": "Electronics::B07Q585X37",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 12290754,
+      "seg": "cold",
+      "item_idx": 1028062,
+      "item_id": "Electronics::B07PGL2N7J",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16887330,
+      "seg": "cold",
+      "item_idx": 1041949,
+      "item_id": "Electronics::B06XKPQ6YZ",
+      "n_cats": 6,
+      "best_cat": "Vehicle Backup Cameras",
+      "sql_rank": 63
+    },
+    {
+      "user_idx": 16040147,
+      "seg": "cold",
+      "item_idx": 1364691,
+      "item_id": "Electronics::B0BXNYGRMS",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5670767,
+      "seg": "cold",
+      "item_idx": 777611,
+      "item_id": "Toys_and_Games::B0B6Z5HCPB",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 15251777,
+      "seg": "cold",
+      "item_idx": 1030341,
+      "item_id": "Electronics::B09YVMS3B1",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5869213,
+      "seg": "cold",
+      "item_idx": 155809,
+      "item_id": "Toys_and_Games::B0C7QZLYXY",
+      "n_cats": 4,
+      "best_cat": "Karaoke Machines",
+      "sql_rank": 22
+    },
+    {
+      "user_idx": 22487542,
+      "seg": "cold",
+      "item_idx": 1031301,
+      "item_id": "Electronics::B07DPC98DT",
+      "n_cats": 6,
+      "best_cat": "Graphics Tablets",
+      "sql_rank": 113
+    },
+    {
+      "user_idx": 9574035,
+      "seg": "cold",
+      "item_idx": 195274,
+      "item_id": "Toys_and_Games::B07X2TZF77",
+      "n_cats": 4,
+      "best_cat": "Music & Sound",
+      "sql_rank": 161
+    },
+    {
+      "user_idx": 9574035,
+      "seg": "cold",
+      "item_idx": 154798,
+      "item_id": "Toys_and_Games::B0895MW2C9",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 9149606,
+      "seg": "cold",
+      "item_idx": 917607,
+      "item_id": "Toys_and_Games::B09DP4KCKY",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 10651898,
+      "seg": "cold",
+      "item_idx": 1030455,
+      "item_id": "Electronics::B07T8XV7CN",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 14032041,
+      "seg": "cold",
+      "item_idx": 1068078,
+      "item_id": "Electronics::B07Q8H3P7G",
+      "n_cats": 6,
+      "best_cat": "In-Mirror Video",
+      "sql_rank": 59
+    },
+    {
+      "user_idx": 108540,
+      "seg": "cold",
+      "item_idx": 33,
+      "item_id": "Video_Games::B09TXR8F3C",
+      "n_cats": 5,
+      "best_cat": "Remotes",
+      "sql_rank": 140
+    },
+    {
+      "user_idx": 108540,
+      "seg": "cold",
+      "item_idx": 1202710,
+      "item_id": "Electronics::B07ND4SJYW",
+      "n_cats": 5,
+      "best_cat": "Repeaters",
+      "sql_rank": 162
+    },
+    {
+      "user_idx": 3215102,
+      "seg": "cold",
+      "item_idx": 164583,
+      "item_id": "Toys_and_Games::B0B12J4TYB",
+      "n_cats": 4,
+      "best_cat": "Trucks",
+      "sql_rank": 144
+    },
+    {
+      "user_idx": 7406013,
+      "seg": "cold",
+      "item_idx": 174585,
+      "item_id": "Toys_and_Games::B07VWCK246",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7769036,
+      "seg": "sparse",
+      "item_idx": 1280905,
+      "item_id": "Electronics::B07X2QSBHD",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7769036,
+      "seg": "sparse",
+      "item_idx": 1042754,
+      "item_id": "Electronics::B087G8PFFZ",
+      "n_cats": 5,
+      "best_cat": "Refractors",
+      "sql_rank": 126
+    },
+    {
+      "user_idx": 7769036,
+      "seg": "sparse",
+      "item_idx": 1364291,
+      "item_id": "Electronics::B08JC8D47R",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2238901,
+      "seg": "sparse",
+      "item_idx": 1028557,
+      "item_id": "Electronics::B08LH2B5YW",
+      "n_cats": 5,
+      "best_cat": "Video Converters",
+      "sql_rank": 419
+    },
+    {
+      "user_idx": 2238901,
+      "seg": "sparse",
+      "item_idx": 10863,
+      "item_id": "Video_Games::B0C6Q5DW7M",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2238901,
+      "seg": "sparse",
+      "item_idx": 39806,
+      "item_id": "Video_Games::B0952RRMKD",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2238901,
+      "seg": "sparse",
+      "item_idx": 1382042,
+      "item_id": "Electronics::B0BVV55XQ1",
+      "n_cats": 5,
+      "best_cat": "Video Converters",
+      "sql_rank": 99
+    },
+    {
+      "user_idx": 2238901,
+      "seg": "sparse",
+      "item_idx": 1104318,
+      "item_id": "Electronics::B09RYP6JCB",
+      "n_cats": 4,
+      "best_cat": "Monitors",
+      "sql_rank": 897
+    },
+    {
+      "user_idx": 1426342,
+      "seg": "sparse",
+      "item_idx": 1045293,
+      "item_id": "Electronics::B08LF33WJ7",
+      "n_cats": 5,
+      "best_cat": "Camera Mounts & Clamps",
+      "sql_rank": 563
+    },
+    {
+      "user_idx": 21347934,
+      "seg": "sparse",
+      "item_idx": 1029846,
+      "item_id": "Electronics::B07N4DHFZM",
+      "n_cats": 4,
+      "best_cat": "GPS Trackers",
+      "sql_rank": 66
+    },
+    {
+      "user_idx": 2119306,
+      "seg": "sparse",
+      "item_idx": 145,
+      "item_id": "Video_Games::B07V5CFMY4",
+      "n_cats": 5,
+      "best_cat": "Mac",
+      "sql_rank": 672
+    },
+    {
+      "user_idx": 2119306,
+      "seg": "sparse",
+      "item_idx": 1037118,
+      "item_id": "Electronics::B08Z35YKWQ",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1844707,
+      "seg": "sparse",
+      "item_idx": 1010,
+      "item_id": "Video_Games::B07BJKZ7ZS",
+      "n_cats": 8,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 18920985,
+      "seg": "sparse",
+      "item_idx": 1078612,
+      "item_id": "Electronics::B07RHVNFQ6",
+      "n_cats": 7,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 18920985,
+      "seg": "sparse",
+      "item_idx": 1155174,
+      "item_id": "Electronics::B0C42BW3MJ",
+      "n_cats": 5,
+      "best_cat": "Surveillance Camera Cables",
+      "sql_rank": 993
+    },
+    {
+      "user_idx": 22190420,
+      "seg": "sparse",
+      "item_idx": 1031423,
+      "item_id": "Electronics::B0B62KK9J7",
+      "n_cats": 6,
+      "best_cat": "Keyboard Cases",
+      "sql_rank": 77
+    },
+    {
+      "user_idx": 9651872,
+      "seg": "sparse",
+      "item_idx": 535279,
+      "item_id": "Toys_and_Games::B09KC2YKKQ",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22276210,
+      "seg": "sparse",
+      "item_idx": 1883892,
+      "item_id": "Electronics::B08TBJYYD1",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 10836534,
+      "seg": "sparse",
+      "item_idx": 1081345,
+      "item_id": "Electronics::B084DQY6TK",
+      "n_cats": 5,
+      "best_cat": "USB Flash Drives",
+      "sql_rank": 280
+    },
+    {
+      "user_idx": 10836534,
+      "seg": "sparse",
+      "item_idx": 1029043,
+      "item_id": "Electronics::B0B59QBY9G",
+      "n_cats": 6,
+      "best_cat": "Computer Speakers",
+      "sql_rank": 106
+    },
+    {
+      "user_idx": 8565125,
+      "seg": "sparse",
+      "item_idx": 1029142,
+      "item_id": "Electronics::B0BXM18YDP",
+      "n_cats": 5,
+      "best_cat": "Earbud Headphones",
+      "sql_rank": 626
+    },
+    {
+      "user_idx": 174674,
+      "seg": "sparse",
+      "item_idx": 152168,
+      "item_id": "Toys_and_Games::B07SRVJSB2",
+      "n_cats": 3,
+      "best_cat": "Brain Teasers",
+      "sql_rank": 974
+    },
+    {
+      "user_idx": 174674,
+      "seg": "sparse",
+      "item_idx": 1196661,
+      "item_id": "Electronics::B0BS5WPZGW",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 174674,
+      "seg": "sparse",
+      "item_idx": 49061,
+      "item_id": "Video_Games::B09C7BW19G",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16098464,
+      "seg": "sparse",
+      "item_idx": 1042419,
+      "item_id": "Electronics::B07DWB96X4",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16098464,
+      "seg": "sparse",
+      "item_idx": 1203879,
+      "item_id": "Electronics::B08VNKM8BW",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2501095,
+      "seg": "sparse",
+      "item_idx": 2433106,
+      "item_id": "Electronics::B08173X752",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 18089184,
+      "seg": "sparse",
+      "item_idx": 1080984,
+      "item_id": "Electronics::B07ST3VXLG",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 3353708,
+      "seg": "sparse",
+      "item_idx": 155616,
+      "item_id": "Toys_and_Games::B08YJTTXLL",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 6195063,
+      "seg": "sparse",
+      "item_idx": 1037563,
+      "item_id": "Electronics::B0B2K24RQT",
+      "n_cats": 4,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5419699,
+      "seg": "sparse",
+      "item_idx": 141899,
+      "item_id": "Toys_and_Games::B07RXPDJTK",
+      "n_cats": 4,
+      "best_cat": "Pool Rafts & Inflatable Ride-ons",
+      "sql_rank": 126
+    },
+    {
+      "user_idx": 5419699,
+      "seg": "sparse",
+      "item_idx": 1485743,
+      "item_id": "Electronics::B09FRRT6Y1",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 8815345,
+      "seg": "sparse",
+      "item_idx": 1033655,
+      "item_id": "Electronics::B09Y3C34CN",
+      "n_cats": 5,
+      "best_cat": "USB Microscopes",
+      "sql_rank": 87
+    },
+    {
+      "user_idx": 12698316,
+      "seg": "sparse",
+      "item_idx": 1538177,
+      "item_id": "Electronics::B07HJ49VN8",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 12698316,
+      "seg": "sparse",
+      "item_idx": 1030595,
+      "item_id": "Electronics::B091ZHX225",
+      "n_cats": 5,
+      "best_cat": "Modems",
+      "sql_rank": 54
+    },
+    {
+      "user_idx": 12698316,
+      "seg": "sparse",
+      "item_idx": 1197065,
+      "item_id": "Electronics::B089GZVXCX",
+      "n_cats": 4,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1840188,
+      "seg": "sparse",
+      "item_idx": 178522,
+      "item_id": "Toys_and_Games::B0BG229NTB",
+      "n_cats": 4,
+      "best_cat": "Pool Rafts & Inflatable Ride-ons",
+      "sql_rank": 350
+    },
+    {
+      "user_idx": 1840188,
+      "seg": "sparse",
+      "item_idx": 146791,
+      "item_id": "Toys_and_Games::B084626D8S",
+      "n_cats": 4,
+      "best_cat": "Pool Rafts & Inflatable Ride-ons",
+      "sql_rank": 503
+    },
+    {
+      "user_idx": 22934763,
+      "seg": "sparse",
+      "item_idx": 1028808,
+      "item_id": "Electronics::B079PBR4VV",
+      "n_cats": 5,
+      "best_cat": "External Hard Drives",
+      "sql_rank": 228
+    },
+    {
+      "user_idx": 829278,
+      "seg": "sparse",
+      "item_idx": 170280,
+      "item_id": "Toys_and_Games::B0B7RVTGL1",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 3089203,
+      "seg": "sparse",
+      "item_idx": 278169,
+      "item_id": "Toys_and_Games::B08KGHDTGG",
+      "n_cats": 4,
+      "best_cat": "Stuffed Animals & Toys",
+      "sql_rank": 93
+    },
+    {
+      "user_idx": 8675059,
+      "seg": "sparse",
+      "item_idx": 1675149,
+      "item_id": "Electronics::B099222WZ2",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7698526,
+      "seg": "sparse",
+      "item_idx": 1721466,
+      "item_id": "Electronics::B08MDCW6KQ",
+      "n_cats": 5,
+      "best_cat": "Running GPS Units",
+      "sql_rank": 30
+    },
+    {
+      "user_idx": 621587,
+      "seg": "sparse",
+      "item_idx": 1938332,
+      "item_id": "Electronics::B083N3W3V9",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16444122,
+      "seg": "sparse",
+      "item_idx": 1148906,
+      "item_id": "Electronics::B096DJ39B3",
+      "n_cats": 5,
+      "best_cat": "Adapters & Converters",
+      "sql_rank": 617
+    },
+    {
+      "user_idx": 7013101,
+      "seg": "sparse",
+      "item_idx": 184162,
+      "item_id": "Toys_and_Games::B01BOYCRNS",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7013101,
+      "seg": "sparse",
+      "item_idx": 150341,
+      "item_id": "Toys_and_Games::B096Y2YPM5",
+      "n_cats": 5,
+      "best_cat": "Cars",
+      "sql_rank": 614
+    },
+    {
+      "user_idx": 7013101,
+      "seg": "sparse",
+      "item_idx": 266231,
+      "item_id": "Toys_and_Games::B07JBS2B4N",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1936560,
+      "seg": "warm",
+      "item_idx": 16010,
+      "item_id": "Video_Games::B08YJBT64Z",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1936560,
+      "seg": "warm",
+      "item_idx": 1112300,
+      "item_id": "Electronics::B01MEG2HXR",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 4857852,
+      "seg": "warm",
+      "item_idx": 410965,
+      "item_id": "Toys_and_Games::B07J5QHJN4",
+      "n_cats": 3,
+      "best_cat": "Jigsaw Puzzles",
+      "sql_rank": 880
+    },
+    {
+      "user_idx": 11095010,
+      "seg": "warm",
+      "item_idx": 1052530,
+      "item_id": "Electronics::B072VYSCDN",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 11095010,
+      "seg": "warm",
+      "item_idx": 1214635,
+      "item_id": "Electronics::B00LX03T6S",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 11095010,
+      "seg": "warm",
+      "item_idx": 1592029,
+      "item_id": "Electronics::B08T79JWNM",
+      "n_cats": 7,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1916845,
+      "seg": "warm",
+      "item_idx": 1028161,
+      "item_id": "Electronics::B07H65KP63",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1916845,
+      "seg": "warm",
+      "item_idx": 1211581,
+      "item_id": "Electronics::B09NJHK9D7",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1916845,
+      "seg": "warm",
+      "item_idx": 1102895,
+      "item_id": "Electronics::B09FPJ5YY2",
+      "n_cats": 6,
+      "best_cat": "Memory Card Readers",
+      "sql_rank": 41
+    },
+    {
+      "user_idx": 8248355,
+      "seg": "warm",
+      "item_idx": 1028356,
+      "item_id": "Electronics::B07GZFM1ZM",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 3264382,
+      "seg": "warm",
+      "item_idx": 1085032,
+      "item_id": "Electronics::B08R239BW6",
+      "n_cats": 5,
+      "best_cat": "Docking Stations",
+      "sql_rank": 137
+    },
+    {
+      "user_idx": 9987671,
+      "seg": "warm",
+      "item_idx": 1255687,
+      "item_id": "Electronics::B0856QVM2F",
+      "n_cats": 6,
+      "best_cat": "Traditional Laptops",
+      "sql_rank": 452
+    },
+    {
+      "user_idx": 1771918,
+      "seg": "warm",
+      "item_idx": 1084208,
+      "item_id": "Electronics::B0BZV36S8G",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1771918,
+      "seg": "warm",
+      "item_idx": 1071609,
+      "item_id": "Electronics::B0B5LCZY7N",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1771918,
+      "seg": "warm",
+      "item_idx": 1329025,
+      "item_id": "Electronics::B0BQYVVF7T",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 1771918,
+      "seg": "warm",
+      "item_idx": 324667,
+      "item_id": "Toys_and_Games::B087GTHB4D",
+      "n_cats": 4,
+      "best_cat": "Squirt Guns",
+      "sql_rank": 125
+    },
+    {
+      "user_idx": 1967820,
+      "seg": "warm",
+      "item_idx": 234461,
+      "item_id": "Toys_and_Games::B0916ZN6PH",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2583418,
+      "seg": "warm",
+      "item_idx": 187592,
+      "item_id": "Toys_and_Games::B0CCK7PYLG",
+      "n_cats": 4,
+      "best_cat": "Sand Art",
+      "sql_rank": 209
+    },
+    {
+      "user_idx": 2583418,
+      "seg": "warm",
+      "item_idx": 141061,
+      "item_id": "Toys_and_Games::B08GG7BTPJ",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2583418,
+      "seg": "warm",
+      "item_idx": 344287,
+      "item_id": "Toys_and_Games::B08XBX183N",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 16170875,
+      "seg": "warm",
+      "item_idx": 1852968,
+      "item_id": "Electronics::B096YJNP1T",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 8884598,
+      "seg": "warm",
+      "item_idx": 1428915,
+      "item_id": "Electronics::B0924ZY2DT",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 1643808,
+      "item_id": "Electronics::B081VD335G",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 1151498,
+      "item_id": "Electronics::B0BVZTPC4V",
+      "n_cats": 5,
+      "best_cat": "Racks & Cabinets",
+      "sql_rank": 139
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 1287182,
+      "item_id": "Electronics::B07GJCN6KG",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 1151583,
+      "item_id": "Electronics::B01MYQ1GHD",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 2139826,
+      "item_id": "Electronics::B098NGBWT7",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 22911914,
+      "seg": "warm",
+      "item_idx": 1031455,
+      "item_id": "Electronics::B0933BVK6T",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 20000368,
+      "seg": "warm",
+      "item_idx": 1059896,
+      "item_id": "Electronics::B07VHK9132",
+      "n_cats": 6,
+      "best_cat": "Case Hardware & Latches",
+      "sql_rank": 34
+    },
+    {
+      "user_idx": 20000368,
+      "seg": "warm",
+      "item_idx": 1070523,
+      "item_id": "Electronics::B09HXL6BHC",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 20000368,
+      "seg": "warm",
+      "item_idx": 1321231,
+      "item_id": "Electronics::B0BVZSVF9T",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5918888,
+      "seg": "warm",
+      "item_idx": 1079413,
+      "item_id": "Electronics::B09492C8J2",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 19940286,
+      "seg": "warm",
+      "item_idx": 1030968,
+      "item_id": "Electronics::B0B2V9KS41",
+      "n_cats": 6,
+      "best_cat": "Dome Cameras",
+      "sql_rank": 277
+    },
+    {
+      "user_idx": 9309375,
+      "seg": "warm",
+      "item_idx": 1046624,
+      "item_id": "Electronics::B09L67MHSK",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 9749096,
+      "seg": "warm",
+      "item_idx": 1359267,
+      "item_id": "Electronics::B09B3KR2XS",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5530807,
+      "seg": "warm",
+      "item_idx": 1053785,
+      "item_id": "Electronics::B08L4WYF4N",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5530807,
+      "seg": "warm",
+      "item_idx": 1028471,
+      "item_id": "Electronics::B07XBNWBC1",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7196,
+      "seg": "warm",
+      "item_idx": 1090980,
+      "item_id": "Electronics::B0856R9J86",
+      "n_cats": 6,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7196,
+      "seg": "warm",
+      "item_idx": 1090982,
+      "item_id": "Electronics::B096S8L5K8",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7196,
+      "seg": "warm",
+      "item_idx": 168077,
+      "item_id": "Toys_and_Games::B07ZK2V4NS",
+      "n_cats": 3,
+      "best_cat": "Animals",
+      "sql_rank": 119
+    },
+    {
+      "user_idx": 7196,
+      "seg": "warm",
+      "item_idx": 1046713,
+      "item_id": "Electronics::B089M1N41F",
+      "n_cats": 4,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 7196,
+      "seg": "warm",
+      "item_idx": 1028509,
+      "item_id": "Electronics::B08F1P3BCC",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5166656,
+      "seg": "warm",
+      "item_idx": 1028661,
+      "item_id": "Electronics::B087D9VRGC",
+      "n_cats": 5,
+      "best_cat": "Portable Bluetooth Speakers",
+      "sql_rank": 752
+    },
+    {
+      "user_idx": 18657504,
+      "seg": "warm",
+      "item_idx": 1428410,
+      "item_id": "Electronics::B0952SNYSZ",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 18657504,
+      "seg": "warm",
+      "item_idx": 1072875,
+      "item_id": "Electronics::B0BGQJ7PC7",
+      "n_cats": 6,
+      "best_cat": "Speaker Systems",
+      "sql_rank": 172
+    },
+    {
+      "user_idx": 18657504,
+      "seg": "warm",
+      "item_idx": 1043803,
+      "item_id": "Electronics::B0C33824RM",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 5899337,
+      "seg": "warm",
+      "item_idx": 716653,
+      "item_id": "Toys_and_Games::B09JWLDZHD",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 23198586,
+      "seg": "warm",
+      "item_idx": 1118617,
+      "item_id": "Electronics::B08C4K4SMW",
+      "n_cats": 5,
+      "best_cat": "Internal Solid State Drives",
+      "sql_rank": 143
+    },
+    {
+      "user_idx": 9526522,
+      "seg": "warm",
+      "item_idx": 143545,
+      "item_id": "Toys_and_Games::B076C5YVCK",
+      "n_cats": 2,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 8833154,
+      "seg": "warm",
+      "item_idx": 201386,
+      "item_id": "Toys_and_Games::B08DNFGTYN",
+      "n_cats": 3,
+      "best_cat": "Gag Toys & Practical Jokes",
+      "sql_rank": 633
+    },
+    {
+      "user_idx": 8833154,
+      "seg": "warm",
+      "item_idx": 367579,
+      "item_id": "Toys_and_Games::B07XPTYVFG",
+      "n_cats": 3,
+      "best_cat": "Costumes",
+      "sql_rank": 169
+    },
+    {
+      "user_idx": 1765286,
+      "seg": "warm",
+      "item_idx": 1031054,
+      "item_id": "Electronics::B0B38CQ26M",
+      "n_cats": 7,
+      "best_cat": "Lightning Cables",
+      "sql_rank": 369
+    },
+    {
+      "user_idx": 2373446,
+      "seg": "warm",
+      "item_idx": 1133944,
+      "item_id": "Electronics::B0892ML5YD",
+      "n_cats": 4,
+      "best_cat": "Household Batteries, Chargers & Accessories",
+      "sql_rank": 289
+    },
+    {
+      "user_idx": 2373446,
+      "seg": "warm",
+      "item_idx": 1097992,
+      "item_id": "Electronics::B08SL9BJG1",
+      "n_cats": 7,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 17221294,
+      "seg": "warm",
+      "item_idx": 1058936,
+      "item_id": "Electronics::B01FWNEUIM",
+      "n_cats": 6,
+      "best_cat": "Cleaning Kits",
+      "sql_rank": 32
+    },
+    {
+      "user_idx": 17221294,
+      "seg": "warm",
+      "item_idx": 2067580,
+      "item_id": "Electronics::B074FPSJFY",
+      "n_cats": 5,
+      "best_cat": "Telescope Accessories",
+      "sql_rank": 948
+    },
+    {
+      "user_idx": 17221294,
+      "seg": "warm",
+      "item_idx": 1896605,
+      "item_id": "Electronics::B098N66SWF",
+      "n_cats": 5,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 568577,
+      "item_id": "Toys_and_Games::B07BP9MS26",
+      "n_cats": 0,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 463366,
+      "item_id": "Toys_and_Games::B07KXH6N4J",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 655528,
+      "item_id": "Toys_and_Games::B07KW3D2LS",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 1193643,
+      "item_id": "Electronics::B07MBYFJ6T",
+      "n_cats": 6,
+      "best_cat": "RCA",
+      "sql_rank": 85
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 407661,
+      "item_id": "Toys_and_Games::B078JCPP26",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 1028152,
+      "item_id": "Electronics::B0B3JQ1HMZ",
+      "n_cats": 5,
+      "best_cat": "Bullet Cameras",
+      "sql_rank": 23
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 161881,
+      "item_id": "Toys_and_Games::B07YP233BN",
+      "n_cats": 3,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 1028025,
+      "item_id": "Electronics::B07KTYJ769",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    },
+    {
+      "user_idx": 2192877,
+      "seg": "warm",
+      "item_idx": 1028509,
+      "item_id": "Electronics::B08F1P3BCC",
+      "n_cats": 1,
+      "best_cat": null,
+      "sql_rank": null
+    }
+  ]
+}

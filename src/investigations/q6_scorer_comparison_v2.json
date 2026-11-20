@@ -1,0 +1,50 @@
+{
+  "conditioning": "requests with >=1 non-target retrieved candidate",
+  "n_eligible": 126,
+  "variants": {
+    "v1a": {
+      "rescue@10": "40/126 = 0.3175",
+      "rescue@20": "87/126 = 0.6905",
+      "median_rank": 16.0
+    },
+    "v1b": {
+      "rescue@10": "76/126 = 0.6032",
+      "rescue@20": "99/126 = 0.7857",
+      "median_rank": 5.0
+    },
+    "v2": {
+      "rescue@10": "36/126 = 0.2857",
+      "rescue@20": "67/126 = 0.5317",
+      "median_rank": 20.0
+    },
+    "v3": {
+      "rescue@10": "8/126 = 0.0635",
+      "rescue@20": "44/126 = 0.3492",
+      "median_rank": 41.0
+    },
+    "v4": {
+      "rescue@10": "32/126 = 0.2540",
+      "rescue@20": "69/126 = 0.5476",
+      "median_rank": 19.0
+    },
+    "v5_honest": {
+      "rescue@10": "90/126 = 0.7143",
+      "rescue@20": "103/126 = 0.8175",
+      "median_rank": 3.0
+    }
+  },
+  "per_kind": {
+    "v1a": {
+      "cold_text": "9/12",
+      "exclusion": "4/6",
+      "personalized": "19/46",
+      "similar": "8/62"
+    },
+    "v5_honest": {
+      "cold_text": "9/12",
+      "exclusion": "4/6",
+      "personalized": "16/46",
+      "similar": "61/62"
+    }
+  }
+}

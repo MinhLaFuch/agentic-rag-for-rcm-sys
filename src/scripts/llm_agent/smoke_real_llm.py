@@ -20,6 +20,7 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.corpus import ItemCorpus
 from package.recommenders import ItemKNNRecommender
+from package.tools import BaselineScorer
 
 PRINT_DATA_CHARS = 300  # cắt data từng step khi in để log gọn
 

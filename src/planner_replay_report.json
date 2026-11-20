@@ -1,0 +1,5775 @@
+[
+  {
+    "run": "experiments\\agent_eval\\campaigns\\campaign_005\\exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True\\run_1",
+    "trajectory_file": "campaign_005_metric_fixes_exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl",
+    "policy": "historical_static_catalog",
+    "as_of": 1617737606549,
+    "budgets": [
+      200,
+      500
+    ],
+    "steps": {
+      "SimilarTool": 40,
+      "FilterTool": 32,
+      "SearchTool": 16
+    },
+    "fidelity_exact": 86,
+    "fidelity_mismatch": 2,
+    "target_step_hits_recorded": {
+      "SimilarTool": 0,
+      "FilterTool": 0,
+      "SearchTool": 0
+    },
+    "target_step_hits_budget": {
+      "200": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 1
+      },
+      "500": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 4
+      }
+    },
+    "requests_with_targets": 116,
+    "requests_hit_recorded": 0,
+    "requests_hit_budget": {
+      "200": 1,
+      "500": 4
+    },
+    "requests_no_retrieval_step": 28,
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 6,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 9,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 11,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 5,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": true,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": true
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      }
+    ],
+    "best_rank_extended": {
+      "n": 4,
+      "median": 208.0,
+      "p90": 272.2,
+      "max": 280
+    },
+    "elapsed_s": 406.7
+  },
+  {
+    "run": "experiments\\agent_eval\\campaigns\\campaign_005\\exp_9_agents_planner_memory_inference_mode_template_reflect_rounds_0_multi_turn_True\\run_1",
+    "trajectory_file": "campaign_005_metric_fixes_exp_9_agents_planner_memory_inference_mode_template_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl",
+    "policy": "historical_static_catalog",
+    "as_of": 1617737606549,
+    "budgets": [
+      200,
+      500
+    ],
+    "steps": {
+      "SimilarTool": 74,
+      "FilterTool": 3,
+      "SearchTool": 5
+    },
+    "fidelity_exact": 69,
+    "fidelity_mismatch": 13,
+    "target_step_hits_recorded": {
+      "SimilarTool": 0,
+      "FilterTool": 0,
+      "SearchTool": 0
+    },
+    "target_step_hits_budget": {
+      "200": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 1
+      },
+      "500": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 1
+      }
+    },
+    "requests_with_targets": 116,
+    "requests_hit_recorded": 0,
+    "requests_hit_budget": {
+      "200": 1,
+      "500": 1
+    },
+    "requests_no_retrieval_step": 34,
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 6,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 9,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 11,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": true,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      }
+    ],
+    "best_rank_extended": {
+      "n": 1,
+      "median": 154.0,
+      "p90": 154.0,
+      "max": 154
+    },
+    "elapsed_s": 154.5
+  },
+  {
+    "run": "experiments\\agent_eval\\campaigns\\campaign_005\\exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True\\run_1",
+    "error": "no requests.jsonl",
+    "elapsed_s": 0.0
+  },
+  {
+    "run": "experiments\\agent_eval\\campaigns\\campaign_005\\exp_11_agents_planner_memory_inference_mode_llm_reflect_rounds_0_multi_turn_True\\run_1",
+    "trajectory_file": "campaign_005_metric_fixes_exp_11_agents_planner_memory_inference_mode_llm_reflect_rounds_0_multi_turn_True_run1_trajectories.jsonl",
+    "policy": "historical_static_catalog",
+    "as_of": 1617737606549,
+    "budgets": [
+      200,
+      500
+    ],
+    "steps": {
+      "SimilarTool": 78,
+      "FilterTool": 5,
+      "SearchTool": 7
+    },
+    "fidelity_exact": 75,
+    "fidelity_mismatch": 15,
+    "target_step_hits_recorded": {
+      "SimilarTool": 0,
+      "FilterTool": 0,
+      "SearchTool": 0
+    },
+    "target_step_hits_budget": {
+      "200": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 0
+      },
+      "500": {
+        "SimilarTool": 0,
+        "FilterTool": 0,
+        "SearchTool": 1
+      }
+    },
+    "requests_with_targets": 116,
+    "requests_hit_recorded": 0,
+    "requests_hit_budget": {
+      "200": 0,
+      "500": 1
+    },
+    "requests_no_retrieval_step": 26,
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 6,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 9,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 11,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      }
+    ],
+    "best_rank_extended": {
+      "n": 1,
+      "median": 347.0,
+      "p90": 347.0,
+      "max": 347
+    },
+    "elapsed_s": 206.7
+  },
+  {
+    "run": "experiments\\agent_eval\\campaigns\\campaign_005\\exp_12_agents_planner_memory_inference_mode_llm_reflect_rounds_1_multi_turn_True\\run_1",
+    "trajectory_file": "campaign_005_metric_fixes_exp_12_agents_planner_memory_inference_mode_llm_reflect_rounds_1_multi_turn_True_run1_trajectories.jsonl",
+    "policy": "historical_static_catalog",
+    "as_of": 1617737606549,
+    "budgets": [
+      200,
+      500
+    ],
+    "steps": {
+      "SimilarTool": 79,
+      "SearchTool": 5,
+      "FilterTool": 3
+    },
+    "fidelity_exact": 74,
+    "fidelity_mismatch": 13,
+    "target_step_hits_recorded": {
+      "SimilarTool": 0,
+      "SearchTool": 0,
+      "FilterTool": 0
+    },
+    "target_step_hits_budget": {
+      "200": {
+        "SimilarTool": 0,
+        "SearchTool": 1,
+        "FilterTool": 0
+      },
+      "500": {
+        "SimilarTool": 0,
+        "SearchTool": 1,
+        "FilterTool": 0
+      }
+    },
+    "requests_with_targets": 116,
+    "requests_hit_recorded": 0,
+    "requests_hit_budget": {
+      "200": 1,
+      "500": 1
+    },
+    "requests_no_retrieval_step": 29,
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 6,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 9,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 11,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 3,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 5,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": true,
+          "500": true
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "segment": "cold",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 2,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "segment": "sparse",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 3,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 4,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 1,
+        "n_retrieval_steps": 1,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "segment": "warm",
+        "n_targets": 2,
+        "n_retrieval_steps": 0,
+        "hit_recorded": false,
+        "hit_budget": {
+          "200": false,
+          "500": false
+        }
+      }
+    ],
+    "best_rank_extended": {
+      "n": 1,
+      "median": 46.0,
+      "p90": 46.0,
+      "max": 46
+    },
+    "elapsed_s": 179.6
+  }
+]

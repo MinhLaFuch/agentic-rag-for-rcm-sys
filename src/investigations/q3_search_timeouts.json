@@ -1,0 +1,2290 @@
+{
+  "engine": "SQLite FTS5 items_fts (porter unicode61) BM25 + JOIN items; separate COUNT(*) MATCH; eval masks rating_number -> item_id tiebreak (Q18)",
+  "budget_seconds": 5.0,
+  "n_searchtool_steps": 108,
+  "n_unique_queries": 40,
+  "n_steps_over_budget_or_error": 100,
+  "step_latency": {
+    "median": 6.1193275,
+    "p90": 9.990283,
+    "max": 16.696657
+  },
+  "replay": {
+    "slow": null,
+    "fast": {
+      "n": 40,
+      "select_s_median": 0.488,
+      "select_s_max": 2.901,
+      "count_s_median": 0.2225,
+      "count_s_max": 0.588,
+      "mean_tokens": 2.9,
+      "mean_token_df_median": 240613.3375,
+      "frac_with_filters": 0.775,
+      "frac_target_hit": 0.0
+    }
+  },
+  "slow_queries": [],
+  "explain_slowest": null,
+  "per_step": [
+    {
+      "run": "run_1",
+      "request_id": "personalized-warm-1",
+      "kind": "personalized",
+      "query": "popular highly rated products",
+      "filters": {},
+      "limit": 100,
+      "ok": true,
+      "latency": 5.756344,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 5
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-0",
+      "kind": "cold_text",
+      "query": "baby floats",
+      "filters": {
+        "domain": "Toys_and_Games"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.419813,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-1",
+      "kind": "cold_text",
+      "query": "building toys",
+      "filters": {
+        "categories_any": [
+          "Building Toys"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 5.361197,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-3",
+      "kind": "cold_text",
+      "query": "TV antennas",
+      "filters": {},
+      "limit": 100,
+      "ok": true,
+      "latency": 4.940143,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-5",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {
+        "categories_any": [
+          "External Hard Drives"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 9.945296,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-6",
+      "kind": "cold_text",
+      "query": "plush interactive toy figures",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Plush Interactive Toy Figures"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 13.120219,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-8",
+      "kind": "cold_text",
+      "query": "Felt Kits",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.827503,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-9",
+      "kind": "cold_text",
+      "query": "shortwave radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.419387,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-10",
+      "kind": "cold_text",
+      "query": "controllers",
+      "filters": {
+        "categories_any": [
+          "Controllers"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.172677,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-12",
+      "kind": "cold_text",
+      "query": "trucks",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.607945,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-13",
+      "kind": "cold_text",
+      "query": "portable Bluetooth speakers",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.023695,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-14",
+      "kind": "cold_text",
+      "query": "horns sirens",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.665465,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-15",
+      "kind": "cold_text",
+      "query": "binoculars",
+      "filters": {
+        "categories_any": [
+          "Binoculars"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.254274,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-16",
+      "kind": "cold_text",
+      "query": "Hubs",
+      "filters": {
+        "categories_any": [
+          "Hubs"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.226638,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-17",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.498849,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-18",
+      "kind": "cold_text",
+      "query": "screen protectors",
+      "filters": {
+        "categories_any": [
+          "Screen Protectors"
+        ]
+      },
+      "limit": 30,
+      "ok": true,
+      "latency": 6.870423,
+      "error_kind": null,
+      "n_candidates": 30,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-19",
+      "kind": "cold_text",
+      "query": "squirt guns water guns",
+      "filters": {
+        "categories_any": [
+          "Squirt Guns"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.304984,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-7",
+      "kind": "exclusion",
+      "query": "popular products not earbud headphones",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B0C72D4J46"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.13168,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-9",
+      "kind": "exclusion",
+      "query": "toys games NOT tile games",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "exclude_item_ids": [
+          "Toys_and_Games::B093GK4ZN2"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.21181,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-2",
+      "kind": "exclusion",
+      "query": "consumer products excluding vehicle backup cameras",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07S8X4RJ4"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.442269,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-4",
+      "kind": "exclusion",
+      "query": "products excluding cases",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B081GR9SYZ"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.345208,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 3
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-7",
+      "kind": "exclusion",
+      "query": "popular toys games video games",
+      "filters": {
+        "domain": [
+          "Toys_and_Games",
+          "Video_Games"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 6.17659,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-12",
+      "kind": "exclusion",
+      "query": "electronics toys games",
+      "filters": {
+        "exclude_item_ids": [
+          "Video_Games::B07XF98C1Z"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.244841,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-18",
+      "kind": "exclusion",
+      "query": "electronics computer accessories",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B07Y2HKN37"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.955108,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "personalized-warm-1",
+      "kind": "personalized",
+      "query": "popular highly rated products",
+      "filters": {},
+      "limit": 100,
+      "ok": true,
+      "latency": 5.756344,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 5
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-0",
+      "kind": "cold_text",
+      "query": "baby floats",
+      "filters": {
+        "domain": "Toys_and_Games"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.419813,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-1",
+      "kind": "cold_text",
+      "query": "building toys",
+      "filters": {
+        "categories_any": [
+          "Building Toys"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 5.361197,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-3",
+      "kind": "cold_text",
+      "query": "TV antennas",
+      "filters": {},
+      "limit": 100,
+      "ok": true,
+      "latency": 4.940143,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-5",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {
+        "categories_any": [
+          "External Hard Drives"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 9.945296,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-6",
+      "kind": "cold_text",
+      "query": "plush interactive toy figures",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Plush Interactive Toy Figures"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 13.120219,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-8",
+      "kind": "cold_text",
+      "query": "Felt Kits",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.827503,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-9",
+      "kind": "cold_text",
+      "query": "shortwave radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.419387,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-10",
+      "kind": "cold_text",
+      "query": "controllers",
+      "filters": {
+        "categories_any": [
+          "Controllers"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.172677,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-12",
+      "kind": "cold_text",
+      "query": "trucks",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.607945,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-13",
+      "kind": "cold_text",
+      "query": "portable Bluetooth speakers",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.023695,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-14",
+      "kind": "cold_text",
+      "query": "horns sirens",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 4.665465,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-15",
+      "kind": "cold_text",
+      "query": "binoculars",
+      "filters": {
+        "categories_any": [
+          "Binoculars"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.254274,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-16",
+      "kind": "cold_text",
+      "query": "Hubs",
+      "filters": {
+        "categories_any": [
+          "Hubs"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.226638,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-17",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.498849,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-18",
+      "kind": "cold_text",
+      "query": "screen protectors",
+      "filters": {
+        "categories_any": [
+          "Screen Protectors"
+        ]
+      },
+      "limit": 30,
+      "ok": true,
+      "latency": 6.870423,
+      "error_kind": null,
+      "n_candidates": 30,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-19",
+      "kind": "cold_text",
+      "query": "squirt guns water guns",
+      "filters": {
+        "categories_any": [
+          "Squirt Guns"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 5.304984,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-7",
+      "kind": "exclusion",
+      "query": "popular products not earbud headphones",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B0C72D4J46"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.13168,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-9",
+      "kind": "exclusion",
+      "query": "toys games NOT tile games",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "exclude_item_ids": [
+          "Toys_and_Games::B093GK4ZN2"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.21181,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-2",
+      "kind": "exclusion",
+      "query": "consumer products excluding vehicle backup cameras",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07S8X4RJ4"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.442269,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-4",
+      "kind": "exclusion",
+      "query": "products excluding cases",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B081GR9SYZ"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 5.345208,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 3
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-7",
+      "kind": "exclusion",
+      "query": "popular toys games video games",
+      "filters": {
+        "domain": [
+          "Toys_and_Games",
+          "Video_Games"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 6.17659,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-12",
+      "kind": "exclusion",
+      "query": "electronics toys games",
+      "filters": {
+        "exclude_item_ids": [
+          "Video_Games::B07XF98C1Z"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.244841,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-18",
+      "kind": "exclusion",
+      "query": "electronics computer accessories",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B07Y2HKN37"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.955108,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-0",
+      "kind": "cold_text",
+      "query": "Baby Floats",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 9.775911,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-1",
+      "kind": "cold_text",
+      "query": "building toys",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Building Toys"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 7.67133,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-2",
+      "kind": "cold_text",
+      "query": "personal radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.913184,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-3",
+      "kind": "cold_text",
+      "query": "TV antennas",
+      "filters": {
+        "categories_any": [
+          "TV Antennas"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.466879,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-6",
+      "kind": "cold_text",
+      "query": "plush interactive toy figures",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Plush Interactive Toy Figures"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 16.696657,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-7",
+      "kind": "cold_text",
+      "query": "running GPS units",
+      "filters": {
+        "categories_any": [
+          "Running GPS Units"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 11.121668,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-8",
+      "kind": "cold_text",
+      "query": "felt kits",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 6.961412,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-9",
+      "kind": "cold_text",
+      "query": "shortwave radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.920926,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-11",
+      "kind": "cold_text",
+      "query": "arm wristband accessories",
+      "filters": {
+        "categories_any": [
+          "Arm & Wristband Accessories"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 5.478825,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-12",
+      "kind": "cold_text",
+      "query": "trucks",
+      "filters": {
+        "categories_any": [
+          "Trucks"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.153169,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-13",
+      "kind": "cold_text",
+      "query": "portable Bluetooth speakers",
+      "filters": {
+        "domain": "Electronics",
+        "categories_any": [
+          "Portable Bluetooth Speakers"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.528771,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-15",
+      "kind": "cold_text",
+      "query": "binoculars",
+      "filters": {
+        "categories_any": [
+          "Binoculars"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.369167,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-16",
+      "kind": "cold_text",
+      "query": "Hubs",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.692577,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-17",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 6.062065,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-18",
+      "kind": "cold_text",
+      "query": "Screen Protectors",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.652198,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-19",
+      "kind": "cold_text",
+      "query": "squirt guns",
+      "filters": {
+        "domain": "Toys_and_Games"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.438272,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-0",
+      "kind": "exclusion",
+      "query": "popular products",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B09S3N6X3L"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.556975,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-5",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B08F2XGR92"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 7.099694,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-14",
+      "kind": "exclusion",
+      "query": "industrial electrical control components",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B06VX1PKQ7"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.927601,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-15",
+      "kind": "exclusion",
+      "query": "popular products toys video games home accessories",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07T85W8P7"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 10.503919,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-16",
+      "kind": "exclusion",
+      "query": "electronics toys games video games accessories",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B00A976GAC"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 11.011107,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-19",
+      "kind": "exclusion",
+      "query": "popular products",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07JBZGDQ9",
+          [
+            "Electronics::B07BJ7ZZL7",
+            "Electronics::B01N1TCT1Z",
+            "Electronics::B07Y8T5GTV",
+            "Electronics::B0B1M29CMT",
+            "Electronics::B00B22NUZC",
+            "Electronics::B08SCLGXRV",
+            "Electronics::B08KFJTWBV",
+            "Electronics::B07MDLZ1VC",
+            "Electronics::B0BLC5Z6SG",
+            "Electronics::B089VK84SC",
+            "Electronics::B07KM2PCNK",
+            "Electronics::B07GVGDRR7",
+            "Electronics::B08KY36YGC",
+            "Electronics::B07ZTDB8RL",
+            "Electronics::B08131DLP8",
+            "Electronics::B08CXH1GNK",
+            "Electronics::B0B24WM7BM",
+            "Electronics::B08JQ9YDTS",
+            "Electronics::B08L6FBWX3",
+            "Electronics::B08ML88KGG",
+            "Electronics::B09917WDWX",
+            "Electronics::B0BLVG3H7Q",
+            "Electronics::B07KY3SY9T",
+            "Electronics::B07W7HL5KY",
+            "Electronics::B099DCDFCF",
+            "Electronics::B0B4SD9BLR",
+            "Electronics::B0814WC1Y2",
+            "Electronics::B07QT18Y5K",
+            "Electronics::B089Y6PLFB",
+            "Electronics::B07WRBSKD1",
+            "Electronics::B0894MY5JK",
+            "Electronics::B087NDDDHY",
+            "Electronics::B08BJ5S3HK",
+            "Electronics::B085KZ6S3Y",
+            "Electronics::B09H5FXS41",
+            "Electronics::B089RB6CNR",
+            "Electronics::B0BBVC5ZTB",
+            "Electronics::B07XX11DQ7",
+            "Electronics::B08MLFZ58K",
+            "Electronics::B01HNNOQZ6",
+            "Electronics::B07DGR2NMY",
+            "Electronics::B08JYB88QR",
+            "Electronics::B07FKHZ2ZC",
+            "Electronics::B091H1G558",
+            "Electronics::B081Y2W5PW",
+            "Electronics::B0742CY381",
+            "Electronics::B07XKGWKW5",
+            "Electronics::B0B9M9D561",
+            "Electronics::B08S6Z19FZ",
+            "Electronics::B09NKZ4H9Q",
+            "Electronics::B07CWC8CKL",
+            "Electronics::B07415B2P9",
+            "Electronics::B07ZCSL46C",
+            "Electronics::B08PXVWXN4",
+            "Electronics::B01D0YMPZA",
+            "Electronics::B07XT4PN6Q",
+            "Electronics::B07HSN96C8",
+            "Electronics::B091HFDMSD",
+            "Electronics::B09BPY1XBT",
+            "Electronics::B0756GMRJ9",
+            "Electronics::B08PC3KB2P",
+            "Electronics::B083WH5W2F",
+            "Electronics::B06Y1XW58L",
+            "Electronics::B0B3XWP4PM",
+            "Electronics::B088BJ85P2",
+            "Electronics::B08728KW63",
+            "Electronics::B09KB873FB",
+            "Electronics::B07Q5KX38M",
+            "Electronics::B077SFTGYW",
+            "Electronics::B094V7S7D7",
+            "Electronics::B08FQVLYRC",
+            "Electronics::B07ZCRBL12",
+            "Electronics::B087LTC7VM",
+            "Electronics::B09B9356CQ",
+            "Electronics::B08T724DCZ",
+            "Electronics::B09G3654KV",
+            "Electronics::B08BFQ9WP7",
+            "Electronics::B08F72YD8T",
+            "Electronics::B084FRYNL2",
+            "Electronics::B07RG821MF",
+            "Electronics::B0BFXDX24C",
+            "Electronics::B08FB5JPKX",
+            "Electronics::B07ZRYGM3R",
+            "Electronics::B073LZYQCR",
+            "Electronics::B08PND3V3P",
+            "Electronics::B0835851HS",
+            "Electronics::B08ZS8WMP5",
+            "Electronics::B089D3RWGX",
+            "Electronics::B08GKVWL9G",
+            "Electronics::B09BJK8KJV",
+            "Electronics::B081391P4D",
+            "Electronics::B089SK4RR4",
+            "Electronics::B082NQDRB1",
+            "Electronics::B01L6RCIQ4",
+            "Electronics::B08S731481",
+            "Electronics::B08M3FPP1T",
+            "Electronics::B079FCPD5Z",
+            "Electronics::B0BRNC4S1C",
+            "Electronics::B08NXC2F9R",
+            "Electronics::B07Y5YVXPF"
+          ]
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 0.355559,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-6",
+      "kind": "exclusion",
+      "query": "popular products gifts",
+      "filters": {
+        "exclude_item_ids": [
+          "Toys_and_Games::B07NW6SDYG"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 8.424958,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-7",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          [
+            "Electronics::B07KMQLSQ9",
+            "Electronics::B07FP6NZB7",
+            "Electronics::B0C33Z5X4B",
+            "Electronics::B076KFBSZJ",
+            "Electronics::B0C3BLDWR6",
+            "Electronics::B07RXQK7D1",
+            "Electronics::B09NWGVKZ3",
+            "Electronics::B000FTO00M",
+            "Electronics::B0BFDH59QH",
+            "Electronics::B0BM5XV2GV",
+            "Electronics::B091G1ZYC8",
+            "Electronics::B08X3YRW6X",
+            "Electronics::B0B5CTKVRG",
+            "Electronics::B0C6PRR41P",
+            "Electronics::B00EW3WS9M",
+            "Electronics::B07VMD7XZR",
+            "Electronics::B007ZG03DG",
+            "Electronics::B01INRAC2C",
+            "Electronics::B00IQBSW28",
+            "Electronics::B08PCGF4QM",
+            "Electronics::B009ZIILLI",
+            "Electronics::B072PXTQ9V",
+            "Electronics::B079H9CBDP",
+            "Electronics::B09ZQRBBVY",
+            "Electronics::B07Z1FR6GY",
+            "Electronics::B08GKSL6T9",
+            "Electronics::B00B143KJM",
+            "Electronics::B0894M3Q4X",
+            "Electronics::B01MG1WTGL",
+            "Electronics::B08M1VJHVD",
+            "Electronics::B00607CMU8",
+            "Electronics::B00H73967Q",
+            "Electronics::B081WRGL31",
+            "Electronics::B000P6500E",
+            "Electronics::B00WGPKZ8Y",
+            "Electronics::B07RTYJ6N9",
+            "Electronics::B077LLB8GD",
+            "Electronics::B006E50TE2",
+            "Electronics::B085XN9B7N",
+            "Electronics::B074GMQ6G3",
+            "Electronics::B01N5MGEUS",
+            "Electronics::B0BVJ4DHFQ",
+            "Electronics::B009DAFJRM",
+            "Electronics::B00OH09OXS",
+            "Electronics::B001JEPC72",
+            "Electronics::B089QL35T2",
+            "Electronics::B07VMQWZN4",
+            "Electronics::B087CNVQ7R",
+            "Electronics::B00NZTL1Y2",
+            "Electronics::B07B9WRRTG",
+            "Electronics::B019PMTU6S",
+            "Electronics::B007Q45EF4",
+            "Electronics::B07D6TY6YR",
+            "Electronics::B016NUTG5K",
+            "Electronics::B0881X4MB2",
+            "Electronics::B00BCU4TZE",
+            "Electronics::B00E57LKGC",
+            "Electronics::B00IO75NLM",
+            "Electronics::B07MNVKY2V",
+            "Electronics::B0002K6RK0",
+            "Electronics::B015S22N54",
+            "Electronics::B09W9VDT2F",
+            "Electronics::B00NTUEDMY",
+            "Electronics::B0058OU8VY",
+            "Electronics::B07HJGMJSX",
+            "Electronics::B07FK6433F",
+            "Electronics::B07CNPJDRW",
+            "Electronics::B07FNC6L34",
+            "Electronics::B078MMD5XK",
+            "Electronics::B01G9KSAF6",
+            "Electronics::B07FNHSH1M",
+            "Electronics::B00IEHYTK8",
+            "Electronics::B08F757WPX",
+            "Electronics::B078KPY4VW",
+            "Electronics::B002AQSTXM",
+            "Electronics::B0787TT2HX",
+            "Electronics::B07DWMN4N4",
+            "Electronics::B087NRRFJH",
+            "Electronics::B0728D7W6L",
+            "Electronics::B0CCD3VDQN",
+            "Electronics::B076VX7TN7",
+            "Electronics::B078HV2292",
+            "Electronics::B00SKWGPE0",
+            "Electronics::B01N702YWO",
+            "Electronics::B072JW9LT8",
+            "Electronics::B00BTMSPBY",
+            "Electronics::B0BN1ZXT42",
+            "Electronics::B06Y5LHFWR",
+            "Electronics::B00IRV2DL8",
+            "Electronics::B01BHD7WR2",
+            "Electronics::B07KWQZVDZ",
+            "Electronics::B004N1NK0E",
+            "Electronics::B01G3J1I5M",
+            "Electronics::B00F5ILTDE",
+            "Electronics::B01MYTE1XR",
+            "Electronics::B07JVBFVRX",
+            "Electronics::B074LHS9L4",
+            "Electronics::B082216QGR",
+            "Electronics::B0000DZET4",
+            "Electronics::B0018MFJMI"
+          ],
+          "Electronics::B0C33Z5X4B"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 0.473908,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-9",
+      "kind": "exclusion",
+      "query": "popular products electronics toys video games",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B0BKQWX8ZJ"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 9.990283,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-14",
+      "kind": "exclusion",
+      "query": "toys games",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "exclude_item_ids": [
+          "Toys_and_Games::B07ZYC25XN"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.399553,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 4
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-15",
+      "kind": "exclusion",
+      "query": "popular products -TV Mount Stands",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B09ZLL36JF"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 8.411855,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-18",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B07Y2HKN37"
+        ]
+      },
+      "limit": 200,
+      "ok": false,
+      "latency": 7.332298,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-19",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B0B9BNFG42"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.768858,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "unanswerable-none-4",
+      "kind": "unanswerable",
+      "query": "NonExistentCategory999",
+      "filters": {
+        "price_max": 0.99
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.216393,
+      "error_kind": null,
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-0",
+      "kind": "cold_text",
+      "query": "Baby Floats",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 9.775911,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-1",
+      "kind": "cold_text",
+      "query": "building toys",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Building Toys"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 7.67133,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-2",
+      "kind": "cold_text",
+      "query": "personal radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.913184,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-3",
+      "kind": "cold_text",
+      "query": "TV antennas",
+      "filters": {
+        "categories_any": [
+          "TV Antennas"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.466879,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-6",
+      "kind": "cold_text",
+      "query": "plush interactive toy figures",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "categories_any": [
+          "Plush Interactive Toy Figures"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 16.696657,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-7",
+      "kind": "cold_text",
+      "query": "running GPS units",
+      "filters": {
+        "categories_any": [
+          "Running GPS Units"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 11.121668,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-8",
+      "kind": "cold_text",
+      "query": "felt kits",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 6.961412,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-9",
+      "kind": "cold_text",
+      "query": "shortwave radios",
+      "filters": {
+        "domain": "Electronics"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.920926,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-11",
+      "kind": "cold_text",
+      "query": "arm wristband accessories",
+      "filters": {
+        "categories_any": [
+          "Arm & Wristband Accessories"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 5.478825,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-12",
+      "kind": "cold_text",
+      "query": "trucks",
+      "filters": {
+        "categories_any": [
+          "Trucks"
+        ]
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.153169,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-13",
+      "kind": "cold_text",
+      "query": "portable Bluetooth speakers",
+      "filters": {
+        "domain": "Electronics",
+        "categories_any": [
+          "Portable Bluetooth Speakers"
+        ]
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.528771,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-15",
+      "kind": "cold_text",
+      "query": "binoculars",
+      "filters": {
+        "categories_any": [
+          "Binoculars"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.369167,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-16",
+      "kind": "cold_text",
+      "query": "Hubs",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.692577,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-17",
+      "kind": "cold_text",
+      "query": "external hard drives",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 6.062065,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-18",
+      "kind": "cold_text",
+      "query": "Screen Protectors",
+      "filters": {},
+      "limit": 50,
+      "ok": true,
+      "latency": 5.652198,
+      "error_kind": null,
+      "n_candidates": 50,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "cold_text-cold-19",
+      "kind": "cold_text",
+      "query": "squirt guns",
+      "filters": {
+        "domain": "Toys_and_Games"
+      },
+      "limit": 50,
+      "ok": false,
+      "latency": 5.438272,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-0",
+      "kind": "exclusion",
+      "query": "popular products",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B09S3N6X3L"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.556975,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-5",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B08F2XGR92"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 7.099694,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-14",
+      "kind": "exclusion",
+      "query": "industrial electrical control components",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B06VX1PKQ7"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 7.927601,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-15",
+      "kind": "exclusion",
+      "query": "popular products toys video games home accessories",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07T85W8P7"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 10.503919,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-16",
+      "kind": "exclusion",
+      "query": "electronics toys games video games accessories",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B00A976GAC"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 11.011107,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-sparse-19",
+      "kind": "exclusion",
+      "query": "popular products",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B07JBZGDQ9",
+          [
+            "Electronics::B07BJ7ZZL7",
+            "Electronics::B01N1TCT1Z",
+            "Electronics::B07Y8T5GTV",
+            "Electronics::B0B1M29CMT",
+            "Electronics::B00B22NUZC",
+            "Electronics::B08SCLGXRV",
+            "Electronics::B08KFJTWBV",
+            "Electronics::B07MDLZ1VC",
+            "Electronics::B0BLC5Z6SG",
+            "Electronics::B089VK84SC",
+            "Electronics::B07KM2PCNK",
+            "Electronics::B07GVGDRR7",
+            "Electronics::B08KY36YGC",
+            "Electronics::B07ZTDB8RL",
+            "Electronics::B08131DLP8",
+            "Electronics::B08CXH1GNK",
+            "Electronics::B0B24WM7BM",
+            "Electronics::B08JQ9YDTS",
+            "Electronics::B08L6FBWX3",
+            "Electronics::B08ML88KGG",
+            "Electronics::B09917WDWX",
+            "Electronics::B0BLVG3H7Q",
+            "Electronics::B07KY3SY9T",
+            "Electronics::B07W7HL5KY",
+            "Electronics::B099DCDFCF",
+            "Electronics::B0B4SD9BLR",
+            "Electronics::B0814WC1Y2",
+            "Electronics::B07QT18Y5K",
+            "Electronics::B089Y6PLFB",
+            "Electronics::B07WRBSKD1",
+            "Electronics::B0894MY5JK",
+            "Electronics::B087NDDDHY",
+            "Electronics::B08BJ5S3HK",
+            "Electronics::B085KZ6S3Y",
+            "Electronics::B09H5FXS41",
+            "Electronics::B089RB6CNR",
+            "Electronics::B0BBVC5ZTB",
+            "Electronics::B07XX11DQ7",
+            "Electronics::B08MLFZ58K",
+            "Electronics::B01HNNOQZ6",
+            "Electronics::B07DGR2NMY",
+            "Electronics::B08JYB88QR",
+            "Electronics::B07FKHZ2ZC",
+            "Electronics::B091H1G558",
+            "Electronics::B081Y2W5PW",
+            "Electronics::B0742CY381",
+            "Electronics::B07XKGWKW5",
+            "Electronics::B0B9M9D561",
+            "Electronics::B08S6Z19FZ",
+            "Electronics::B09NKZ4H9Q",
+            "Electronics::B07CWC8CKL",
+            "Electronics::B07415B2P9",
+            "Electronics::B07ZCSL46C",
+            "Electronics::B08PXVWXN4",
+            "Electronics::B01D0YMPZA",
+            "Electronics::B07XT4PN6Q",
+            "Electronics::B07HSN96C8",
+            "Electronics::B091HFDMSD",
+            "Electronics::B09BPY1XBT",
+            "Electronics::B0756GMRJ9",
+            "Electronics::B08PC3KB2P",
+            "Electronics::B083WH5W2F",
+            "Electronics::B06Y1XW58L",
+            "Electronics::B0B3XWP4PM",
+            "Electronics::B088BJ85P2",
+            "Electronics::B08728KW63",
+            "Electronics::B09KB873FB",
+            "Electronics::B07Q5KX38M",
+            "Electronics::B077SFTGYW",
+            "Electronics::B094V7S7D7",
+            "Electronics::B08FQVLYRC",
+            "Electronics::B07ZCRBL12",
+            "Electronics::B087LTC7VM",
+            "Electronics::B09B9356CQ",
+            "Electronics::B08T724DCZ",
+            "Electronics::B09G3654KV",
+            "Electronics::B08BFQ9WP7",
+            "Electronics::B08F72YD8T",
+            "Electronics::B084FRYNL2",
+            "Electronics::B07RG821MF",
+            "Electronics::B0BFXDX24C",
+            "Electronics::B08FB5JPKX",
+            "Electronics::B07ZRYGM3R",
+            "Electronics::B073LZYQCR",
+            "Electronics::B08PND3V3P",
+            "Electronics::B0835851HS",
+            "Electronics::B08ZS8WMP5",
+            "Electronics::B089D3RWGX",
+            "Electronics::B08GKVWL9G",
+            "Electronics::B09BJK8KJV",
+            "Electronics::B081391P4D",
+            "Electronics::B089SK4RR4",
+            "Electronics::B082NQDRB1",
+            "Electronics::B01L6RCIQ4",
+            "Electronics::B08S731481",
+            "Electronics::B08M3FPP1T",
+            "Electronics::B079FCPD5Z",
+            "Electronics::B0BRNC4S1C",
+            "Electronics::B08NXC2F9R",
+            "Electronics::B07Y5YVXPF"
+          ]
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 0.355559,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-6",
+      "kind": "exclusion",
+      "query": "popular products gifts",
+      "filters": {
+        "exclude_item_ids": [
+          "Toys_and_Games::B07NW6SDYG"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 8.424958,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-7",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          [
+            "Electronics::B07KMQLSQ9",
+            "Electronics::B07FP6NZB7",
+            "Electronics::B0C33Z5X4B",
+            "Electronics::B076KFBSZJ",
+            "Electronics::B0C3BLDWR6",
+            "Electronics::B07RXQK7D1",
+            "Electronics::B09NWGVKZ3",
+            "Electronics::B000FTO00M",
+            "Electronics::B0BFDH59QH",
+            "Electronics::B0BM5XV2GV",
+            "Electronics::B091G1ZYC8",
+            "Electronics::B08X3YRW6X",
+            "Electronics::B0B5CTKVRG",
+            "Electronics::B0C6PRR41P",
+            "Electronics::B00EW3WS9M",
+            "Electronics::B07VMD7XZR",
+            "Electronics::B007ZG03DG",
+            "Electronics::B01INRAC2C",
+            "Electronics::B00IQBSW28",
+            "Electronics::B08PCGF4QM",
+            "Electronics::B009ZIILLI",
+            "Electronics::B072PXTQ9V",
+            "Electronics::B079H9CBDP",
+            "Electronics::B09ZQRBBVY",
+            "Electronics::B07Z1FR6GY",
+            "Electronics::B08GKSL6T9",
+            "Electronics::B00B143KJM",
+            "Electronics::B0894M3Q4X",
+            "Electronics::B01MG1WTGL",
+            "Electronics::B08M1VJHVD",
+            "Electronics::B00607CMU8",
+            "Electronics::B00H73967Q",
+            "Electronics::B081WRGL31",
+            "Electronics::B000P6500E",
+            "Electronics::B00WGPKZ8Y",
+            "Electronics::B07RTYJ6N9",
+            "Electronics::B077LLB8GD",
+            "Electronics::B006E50TE2",
+            "Electronics::B085XN9B7N",
+            "Electronics::B074GMQ6G3",
+            "Electronics::B01N5MGEUS",
+            "Electronics::B0BVJ4DHFQ",
+            "Electronics::B009DAFJRM",
+            "Electronics::B00OH09OXS",
+            "Electronics::B001JEPC72",
+            "Electronics::B089QL35T2",
+            "Electronics::B07VMQWZN4",
+            "Electronics::B087CNVQ7R",
+            "Electronics::B00NZTL1Y2",
+            "Electronics::B07B9WRRTG",
+            "Electronics::B019PMTU6S",
+            "Electronics::B007Q45EF4",
+            "Electronics::B07D6TY6YR",
+            "Electronics::B016NUTG5K",
+            "Electronics::B0881X4MB2",
+            "Electronics::B00BCU4TZE",
+            "Electronics::B00E57LKGC",
+            "Electronics::B00IO75NLM",
+            "Electronics::B07MNVKY2V",
+            "Electronics::B0002K6RK0",
+            "Electronics::B015S22N54",
+            "Electronics::B09W9VDT2F",
+            "Electronics::B00NTUEDMY",
+            "Electronics::B0058OU8VY",
+            "Electronics::B07HJGMJSX",
+            "Electronics::B07FK6433F",
+            "Electronics::B07CNPJDRW",
+            "Electronics::B07FNC6L34",
+            "Electronics::B078MMD5XK",
+            "Electronics::B01G9KSAF6",
+            "Electronics::B07FNHSH1M",
+            "Electronics::B00IEHYTK8",
+            "Electronics::B08F757WPX",
+            "Electronics::B078KPY4VW",
+            "Electronics::B002AQSTXM",
+            "Electronics::B0787TT2HX",
+            "Electronics::B07DWMN4N4",
+            "Electronics::B087NRRFJH",
+            "Electronics::B0728D7W6L",
+            "Electronics::B0CCD3VDQN",
+            "Electronics::B076VX7TN7",
+            "Electronics::B078HV2292",
+            "Electronics::B00SKWGPE0",
+            "Electronics::B01N702YWO",
+            "Electronics::B072JW9LT8",
+            "Electronics::B00BTMSPBY",
+            "Electronics::B0BN1ZXT42",
+            "Electronics::B06Y5LHFWR",
+            "Electronics::B00IRV2DL8",
+            "Electronics::B01BHD7WR2",
+            "Electronics::B07KWQZVDZ",
+            "Electronics::B004N1NK0E",
+            "Electronics::B01G3J1I5M",
+            "Electronics::B00F5ILTDE",
+            "Electronics::B01MYTE1XR",
+            "Electronics::B07JVBFVRX",
+            "Electronics::B074LHS9L4",
+            "Electronics::B082216QGR",
+            "Electronics::B0000DZET4",
+            "Electronics::B0018MFJMI"
+          ],
+          "Electronics::B0C33Z5X4B"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 0.473908,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-9",
+      "kind": "exclusion",
+      "query": "popular products electronics toys video games",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B0BKQWX8ZJ"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 9.990283,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-14",
+      "kind": "exclusion",
+      "query": "toys games",
+      "filters": {
+        "domain": "Toys_and_Games",
+        "exclude_item_ids": [
+          "Toys_and_Games::B07ZYC25XN"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.399553,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 4
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-15",
+      "kind": "exclusion",
+      "query": "popular products -TV Mount Stands",
+      "filters": {
+        "exclude_item_ids": [
+          "Electronics::B09ZLL36JF"
+        ]
+      },
+      "limit": 100,
+      "ok": true,
+      "latency": 8.411855,
+      "error_kind": null,
+      "n_candidates": 100,
+      "target_hits": 0,
+      "n_targets": 1
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-18",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B07Y2HKN37"
+        ]
+      },
+      "limit": 200,
+      "ok": false,
+      "latency": 7.332298,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 2
+    },
+    {
+      "run": "run_1",
+      "request_id": "exclusion-warm-19",
+      "kind": "exclusion",
+      "query": "electronics products",
+      "filters": {
+        "domain": "Electronics",
+        "exclude_item_ids": [
+          "Electronics::B0B9BNFG42"
+        ]
+      },
+      "limit": 100,
+      "ok": false,
+      "latency": 6.768858,
+      "error_kind": "tool_error",
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    },
+    {
+      "run": "run_1",
+      "request_id": "unanswerable-none-4",
+      "kind": "unanswerable",
+      "query": "NonExistentCategory999",
+      "filters": {
+        "price_max": 0.99
+      },
+      "limit": 50,
+      "ok": true,
+      "latency": 7.216393,
+      "error_kind": null,
+      "n_candidates": 0,
+      "target_hits": 0,
+      "n_targets": 0
+    }
+  ]
+}

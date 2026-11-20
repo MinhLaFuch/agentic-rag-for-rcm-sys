@@ -398,7 +398,22 @@ class CampaignRunner:
             # Set environment variables
             env = dict(subprocess.os.environ)
             env["PYTHONPATH"] = str(get_data_paths().src_root)
-            env["CONFIG_OVERLAY_PATH"] = str(overlay_path)
+            # Auto-activate the bundle audit profile/overlay by convention
+            # (configs/profiles/<tag>.*) so campaigns need no manual env vars.
+            # The bundle overlay is prepended to the per-experiment fragment —
+            # experiment tunables still win on conflicts.
+            from package.config.resolve_dataset_tag import resolve_dataset_tag
+            bundle_tag = resolve_dataset_tag(domains or None)
+            profile_path = (
+                get_data_paths().src_root / "configs" / "profiles" / f"{bundle_tag}.profile.yaml"
+            )
+            overlay_files = [str(overlay_path)]
+            if profile_path.is_file():
+                bundle_overlay = profile_path.parent / f"{bundle_tag}.overlay.yaml"
+                env["EVAL_BUNDLE_PROFILE"] = str(profile_path)
+                if bundle_overlay.is_file():
+                    overlay_files.insert(0, str(bundle_overlay.resolve()))
+            env["CONFIG_OVERLAY_PATH"] = os.pathsep.join(overlay_files)
 
             # Run the script
             print(f"\n=== Running {experiment.name} (run {run_number}) ===")

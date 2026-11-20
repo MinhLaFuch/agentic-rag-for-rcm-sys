@@ -1,0 +1,176 @@
+{
+  "method": "iterative bipartite k-core on unique train pairs (min_user=min_item=K), converged <=20 iters; cooc = exact cosine over filtered pairs; history = unique train items per user; targets = exp_5+union requests",
+  "n_unique_train_pairs": 48694801,
+  "Ks": {
+    "none": {
+      "surviving_pairs": 48694801,
+      "core_users": 18743004,
+      "core_items": 2003873,
+      "attrition_by_domain": {
+        "Electronics": {
+          "before": 33381968,
+          "after": 33381968,
+          "kept_pct": 100.0
+        },
+        "Toys_and_Games": {
+          "before": 11632293,
+          "after": 11632293,
+          "kept_pct": 100.0
+        },
+        "Video_Games": {
+          "before": 3680540,
+          "after": 3680540,
+          "kept_pct": 100.0
+        }
+      },
+      "targets": {
+        "n": 392,
+        "in_core": 280,
+        "in_core_frac": 0.7143,
+        "with_cooc": 98,
+        "with_cooc_frac_of_core": 0.35,
+        "max_sim_median": 0.0,
+        "max_sim_p90": 0.0024938110433192625,
+        "max_sim_max": 0.02341464528954235,
+        "frac_max_sim_gt_0": 0.35
+      },
+      "note": "top-20 threshold comparison not recomputed per K; K=5 baseline entered_k20=0 (probe §6.8)"
+    },
+    "2": {
+      "surviving_pairs": 37819483,
+      "core_users": 8511760,
+      "core_items": 1230252,
+      "attrition_by_domain": {
+        "Electronics": {
+          "before": 33381968,
+          "after": 25779609,
+          "kept_pct": 77.23
+        },
+        "Toys_and_Games": {
+          "before": 11632293,
+          "after": 9046653,
+          "kept_pct": 77.77
+        },
+        "Video_Games": {
+          "before": 3680540,
+          "after": 2993221,
+          "kept_pct": 81.33
+        }
+      },
+      "targets": {
+        "n": 392,
+        "in_core": 270,
+        "in_core_frac": 0.6888,
+        "with_cooc": 98,
+        "with_cooc_frac_of_core": 0.363,
+        "max_sim_median": 0.0,
+        "max_sim_p90": 0.0035898601853866646,
+        "max_sim_max": 0.026650089544451302,
+        "frac_max_sim_gt_0": 0.363
+      },
+      "note": "top-20 threshold comparison not recomputed per K; K=5 baseline entered_k20=0 (probe §6.8)"
+    },
+    "3": {
+      "surviving_pairs": 29724159,
+      "core_users": 4767905,
+      "core_items": 861125,
+      "attrition_by_domain": {
+        "Electronics": {
+          "before": 33381968,
+          "after": 20208183,
+          "kept_pct": 60.54
+        },
+        "Toys_and_Games": {
+          "before": 11632293,
+          "after": 7063685,
+          "kept_pct": 60.72
+        },
+        "Video_Games": {
+          "before": 3680540,
+          "after": 2452291,
+          "kept_pct": 66.63
+        }
+      },
+      "targets": {
+        "n": 392,
+        "in_core": 266,
+        "in_core_frac": 0.6786,
+        "with_cooc": 96,
+        "with_cooc_frac_of_core": 0.3609,
+        "max_sim_median": 0.0,
+        "max_sim_p90": 0.003685485608426776,
+        "max_sim_max": 0.029049644688706338,
+        "frac_max_sim_gt_0": 0.3609
+      },
+      "note": "top-20 threshold comparison not recomputed per K; K=5 baseline entered_k20=0 (probe §6.8)"
+    },
+    "5": {
+      "surviving_pairs": 19421489,
+      "core_users": 2020266,
+      "core_items": 487420,
+      "attrition_by_domain": {
+        "Electronics": {
+          "before": 33381968,
+          "after": 13239532,
+          "kept_pct": 39.66
+        },
+        "Toys_and_Games": {
+          "before": 11632293,
+          "after": 4469542,
+          "kept_pct": 38.42
+        },
+        "Video_Games": {
+          "before": 3680540,
+          "after": 1712415,
+          "kept_pct": 46.53
+        }
+      },
+      "targets": {
+        "n": 392,
+        "in_core": 246,
+        "in_core_frac": 0.6276,
+        "with_cooc": 94,
+        "with_cooc_frac_of_core": 0.3821,
+        "max_sim_median": 0.0,
+        "max_sim_p90": 0.004732909262626708,
+        "max_sim_max": 0.038604571824109146,
+        "frac_max_sim_gt_0": 0.3821
+      },
+      "note": "top-20 threshold comparison not recomputed per K; K=5 baseline entered_k20=0 (probe §6.8)"
+    },
+    "10": {
+      "surviving_pairs": 7553005,
+      "core_users": 439009,
+      "core_items": 158485,
+      "attrition_by_domain": {
+        "Electronics": {
+          "before": 33381968,
+          "after": 5313688,
+          "kept_pct": 15.92
+        },
+        "Toys_and_Games": {
+          "before": 11632293,
+          "after": 1470234,
+          "kept_pct": 12.64
+        },
+        "Video_Games": {
+          "before": 3680540,
+          "after": 769083,
+          "kept_pct": 20.9
+        }
+      },
+      "targets": {
+        "n": 392,
+        "in_core": 178,
+        "in_core_frac": 0.4541,
+        "with_cooc": 74,
+        "with_cooc_frac_of_core": 0.4157,
+        "max_sim_median": 0.0,
+        "max_sim_p90": 0.00810791388250772,
+        "max_sim_max": 0.029411764705882353,
+        "frac_max_sim_gt_0": 0.4157
+      },
+      "note": "top-20 threshold comparison not recomputed per K; K=5 baseline entered_k20=0 (probe §6.8)"
+    }
+  }
+}

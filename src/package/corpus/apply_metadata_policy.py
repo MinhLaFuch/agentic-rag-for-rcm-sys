@@ -42,6 +42,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
                 "JOIN temp.items AS i ON i.item_id = c.item_id"
             )
             conn.execute("CREATE INDEX IF NOT EXISTS idx_temp_item_categories_item_id ON item_categories(item_id)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_temp_item_categories_category ON item_categories(category)")
             temp_fts_schema = FTS_TABLE_SCHEMA.replace(
                 "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
             )
@@ -128,6 +129,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
             "JOIN temp.items AS i ON i.item_id = c.item_id"
         )
         conn.execute("CREATE INDEX idx_temp_item_categories_item_id ON item_categories(item_id)")
+        conn.execute("CREATE INDEX idx_temp_item_categories_category ON item_categories(category)")
         temp_fts_schema = FTS_TABLE_SCHEMA.replace(
             "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
         )

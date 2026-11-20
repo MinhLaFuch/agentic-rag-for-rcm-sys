@@ -1,0 +1,225 @@
+{
+  "Q11_cross_domain": {
+    "method": "train.parquet drop_duplicates(user_id,domain) -> bitmask per user (Electronics=1,Toys=2,VG=4); user2id keys inspected for namespace prefix",
+    "train_users": 18743004,
+    "multi_domain_users": 3794676,
+    "pct_multi_domain": 20.246,
+    "domain_combo_counts": {
+      "Electronics+Toys_and_Games": 2329500,
+      "Electronics+Video_Games": 834523,
+      "Electronics+Toys_and_Games+Video_Games": 471440,
+      "Toys_and_Games+Video_Games": 159213
+    },
+    "examples": [
+      {
+        "user_id": "AE2222FRPDMNOMYOMCWIANTX",
+        "interactions_by_domain": {
+          "Electronics": 3,
+          "Toys_and_Games": 1
+        },
+        "distinct_items": 4,
+        "total_rows": 4
+      },
+      {
+        "user_id": "AE2222VGHFD37G7NOCWXASYY",
+        "interactions_by_domain": {
+          "Electronics": 1,
+          "Toys_and_Games": 1
+        },
+        "distinct_items": 2,
+        "total_rows": 2
+      },
+      {
+        "user_id": "AE22236AFRRSMQIKGG7TPTB7",
+        "interactions_by_domain": {
+          "Electronics": 21,
+          "Toys_and_Games": 13,
+          "Video_Games": 2
+        },
+        "distinct_items": 36,
+        "total_rows": 36
+      }
+    ],
+    "user2id_sample_keys": [
+      "AE22236AFRRSMQIKGG7TPTB75QEA",
+      "AE2225HJRQQIGMZR57PLHE4F3PSA",
+      "AE2225K3KY4D3KKSN6I2AHBVR4QQ"
+    ],
+    "user2id_has_domain_prefix": false,
+    "note": "tag_domain.py docstring: user_id intentionally NOT namespaced — same raw Amazon reviewer ID across domains is treated as one user (deliberate). Collision risk: Amazon reviewer IDs are account-level so same ID = same person is plausible; no positive evidence of collision found, but cannot be proven from data alone.",
+    "user2id_n": 23332162
+  },
+  "Q13_first_seen": {
+    "method": "min(timestamp) per namespaced item over cleaned parquet (build_first_seen_timestamps.py); cleaning = drop missing required fields + dedup (user,parent_asin,timestamp) keep-last (+ optional validate_values rating[1,5], ts in [1995,2024)); NO verified-purchase filter",
+    "n_items_with_first_seen": 2637776,
+    "distribution": {
+      "<=cutoff_1": 2003873,
+      ">cutoff_2": 319664,
+      "(c1,c2]": 314239
+    },
+    "pct_after_cutoff_1": 24.032,
+    "pct_after_cutoff_2": 12.119,
+    "by_domain": {
+      "Electronics": {
+        "n": 1609860,
+        "pct_after_c1": 20.976,
+        "pct_after_c2": 10.246
+      },
+      "Toys_and_Games": {
+        "n": 890667,
+        "pct_after_c1": 30.061,
+        "pct_after_c2": 15.765
+      },
+      "Video_Games": {
+        "n": 137249,
+        "pct_after_c1": 20.745,
+        "pct_after_c2": 10.423
+      }
+    },
+    "hidden_targets_at_cutoff_1": {
+      "n_targets": 196,
+      "n_hidden": 36,
+      "by_domain": {
+        "Electronics": 24,
+        "Toys_and_Games": 9,
+        "Video_Games": 3
+      },
+      "examples": [
+        {
+          "item_id": "Electronics::B00C6A1IB2",
+          "domain": "Electronics",
+          "first_seen_ts": 1617858580088
+        },
+        {
+          "item_id": "Electronics::B088BKY69Y",
+          "domain": "Electronics",
+          "first_seen_ts": 1643519739356
+        },
+        {
+          "item_id": "Electronics::B08Q7RDZ27",
+          "domain": "Electronics",
+          "first_seen_ts": 1625337107152
+        },
+        {
+          "item_id": "Electronics::B08SQBMV1H",
+          "domain": "Electronics",
+          "first_seen_ts": 1619762119480
+        },
+        {
+          "item_id": "Electronics::B08TGXFZJT",
+          "domain": "Electronics",
+          "first_seen_ts": 1619714951577
+        }
+      ]
+    }
+  },
+  "Q14_asin_titles": {
+    "method": "original_item_id = raw parent_asin; group by ASIN across domains; normalized title = lowercase alnum-only prefix(120) hashed by exact match",
+    "total_catalog_items": 2637776,
+    "asins_in_multiple_domains": 0,
+    "pct_asins_multi_domain": 0.0,
+    "items_in_multi_domain_asins": 0,
+    "within_domain_asin_duplicates": [],
+    "exact_norm_title_dup_groups": 95783,
+    "dup_groups_spanning_domains": 1073,
+    "title_dup_examples": [
+      {
+        "norm": "steelseriesarctisprogamedacwiredgamingheadsetcertifiedhiresaudiodedicateddacandampforps5ps4andpcwhite",
+        "items": [
+          "Video_Games::B07J1TD61J",
+          "Video_Games::B0BBBSLZB7"
+        ]
+      },
+      {
+        "norm": "tigerhelinintendones",
+        "items": [
+          "Video_Games::B00004SVXD",
+          "Video_Games::B000FI2Z82"
+        ]
+      },
+      {
+        "norm": "zombiplaystation4",
+        "items": [
+          "Video_Games::B0185MMKYS",
+          "Video_Games::B01AK5RVCE"
+        ]
+      },
+      {
+        "norm": "tonyhawksproject8playstation2",
+        "items": [
+          "Video_Games::B000G810DC",
+          "Video_Games::B0012GOECQ"
+        ]
+      },
+      {
+        "norm": "tropico5completecollectionxboxone",
+        "items": [
+          "Video_Games::B06Y2HBFR3",
+          "Video_Games::B06Y3SRCTN"
+        ]
+      }
+    ]
+  },
+  "Q15_categories": {
+    "by_domain": {
+      "Video_Games": {
+        "n": 137249,
+        "with_item_categories": 124621,
+        "with_main_category": 126214,
+        "pct_with_item_categories": 90.799,
+        "pct_with_main_category": 91.96
+      },
+      "Toys_and_Games": {
+        "n": 890667,
+        "with_item_categories": 801748,
+        "with_main_category": 868814,
+        "pct_with_item_categories": 90.017,
+        "pct_with_main_category": 97.546
+      },
+      "Electronics": {
+        "n": 1609860,
+        "with_item_categories": 1481432,
+        "with_main_category": 1503530,
+        "pct_with_item_categories": 92.022,
+        "pct_with_main_category": 93.395
+      }
+    },
+    "method": "corpus items LEFT JOIN item_categories presence; main_category non-empty",
+    "missing_cat_rate_by_rating_number_bucket": {
+      "5-49": {
+        "n": 1184149,
+        "missing_cat": 114211,
+        "missing_cat_pct": 9.64
+      },
+      "50-499": {
+        "n": 592227,
+        "missing_cat": 32900,
+        "missing_cat_pct": 5.56
+      },
+      "<5": {
+        "n": 716716,
+        "missing_cat": 78379,
+        "missing_cat_pct": 10.94
+      },
+      ">=500": {
+        "n": 144684,
+        "missing_cat": 4485,
+        "missing_cat_pct": 3.1
+      }
+    }
+  },
+  "Q16_rating_number": {
+    "method": "rating_number = raw meta 'rating_number' string coerced numeric (Amazon global rating count); distribution over 2.64M catalog items",
+    "n_items": 2637776,
+    "n_null": 0,
+    "median": 15.0,
+    "p90": 239.0,
+    "max": 1034896.0,
+    "pct_lt5": 27.171,
+    "pct_null": 0.0,
+    "spearman_vs_train_interaction_count": 0.7311477806701949,
+    "spearman_vs_heldout_interaction_count": 0.6495728764652968,
+    "n_common_train": 2003873,
+    "n_common_heldout": 1155638
+  }
+}

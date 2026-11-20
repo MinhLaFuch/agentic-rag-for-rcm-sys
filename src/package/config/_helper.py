@@ -48,59 +48,76 @@ def _deep_merge(base: dict, overlay: dict) -> dict:
     return base
 
 
-def _overlay_path() -> Path | None:
-    """Resolved overlay file path, or None when CONFIG_OVERLAY_PATH is unset."""
+def _overlay_paths() -> list[Path]:
+    """Resolved overlay file paths in merge order (later wins), [] when unset.
+
+    ``CONFIG_OVERLAY_PATH`` may hold several paths separated by ``os.pathsep``
+    (e.g. a bundle contract overlay followed by a per-experiment fragment).
+    """
     from .get_data_paths import get_data_paths
-    path = os.environ.get(OVERLAY_ENV_VAR)
-    if not path:
-        return None
-    overlay_path = Path(path)
-    if not overlay_path.is_absolute():
-        overlay_path = get_data_paths().src_root / overlay_path
-    return overlay_path
+    raw = os.environ.get(OVERLAY_ENV_VAR)
+    if not raw:
+        return []
+    paths = []
+    for part in raw.split(os.pathsep):
+        part = part.strip()
+        if not part:
+            continue
+        overlay_path = Path(part)
+        if not overlay_path.is_absolute():
+            overlay_path = get_data_paths().src_root / overlay_path
+        paths.append(overlay_path)
+    return paths
 
 
 def _overlay_signature() -> tuple:
-    """(resolved path, mtime_ns, size) of the configured overlay — for cache invalidation.
+    """Per-file (path, mtime_ns, size) signatures of the configured overlays.
 
-    Returns () when no overlay is configured or the file does not exist yet.
+    Missing files still contribute a signature entry so the cache cannot
+    confuse "no overlay" with "overlay file not yet written".
     """
-    overlay_path = _overlay_path()
-    if overlay_path is None or not overlay_path.exists():
-        return ()
-    st = overlay_path.stat()
-    return (str(overlay_path), st.st_mtime_ns, st.st_size)
+    parts = []
+    for overlay_path in _overlay_paths():
+        if overlay_path.exists():
+            st = overlay_path.stat()
+            parts.append((str(overlay_path), st.st_mtime_ns, st.st_size))
+        else:
+            parts.append((str(overlay_path), -1, -1))
+    return tuple(parts)
 
 
 _overlay_cache: dict[tuple, tuple[Path, dict]] = {}
 
 
 def _overlay_doc() -> tuple[Path, dict] | None:
-    """Return (overlay_path, parsed doc); None when no overlay is configured.
+    """Return (highest-precedence overlay path, merged doc); None when unset.
 
-    Fails closed: the file must exist, be a mapping, and every top-level key must
-    name an existing ``configs/<name>.yaml`` — a typo'd config name is an error,
-    not a silent no-op.
+    Fails closed per file: each must exist, be a mapping, and every top-level
+    key must name an existing ``configs/<name>.yaml`` — a typo'd config name
+    is an error, not a silent no-op. Multiple overlays merge in order.
     """
-    overlay_path = _overlay_path()
-    if overlay_path is None:
+    overlay_paths = _overlay_paths()
+    if not overlay_paths:
         return None
     signature = _overlay_signature()
-    if not signature:
-        raise ConfigError(f"{OVERLAY_ENV_VAR} points to a missing file: {overlay_path}")
     cached = _overlay_cache.get(signature)
     if cached is not None:
         return cached
-    doc = yaml.safe_load(overlay_path.read_text(encoding="utf-8")) or {}
-    if not isinstance(doc, dict):
-        raise ConfigError(f"{OVERLAY_ENV_VAR}: {overlay_path} must contain a mapping, got {type(doc).__name__}")
-    for key in doc:
-        if not isinstance(key, str) or not (CONFIG_DIR / f"{key}.yaml").is_file():
-            raise ConfigError(
-                f"{OVERLAY_ENV_VAR}: {overlay_path} sets unknown config {key!r} "
-                f"(no configs/{key}.yaml)"
-            )
-    result = (overlay_path, doc)
+    merged: dict = {}
+    for overlay_path in overlay_paths:
+        if not overlay_path.exists():
+            raise ConfigError(f"{OVERLAY_ENV_VAR} points to a missing file: {overlay_path}")
+        doc = yaml.safe_load(overlay_path.read_text(encoding="utf-8")) or {}
+        if not isinstance(doc, dict):
+            raise ConfigError(f"{OVERLAY_ENV_VAR}: {overlay_path} must contain a mapping, got {type(doc).__name__}")
+        for key in doc:
+            if not isinstance(key, str) or not (CONFIG_DIR / f"{key}.yaml").is_file():
+                raise ConfigError(
+                    f"{OVERLAY_ENV_VAR}: {overlay_path} sets unknown config {key!r} "
+                    f"(no configs/{key}.yaml)"
+                )
+        _deep_merge(merged, doc)
+    result = (overlay_paths[-1], merged)
     _overlay_cache[signature] = result
     return result
 
@@ -148,10 +165,12 @@ def get_overlay_info() -> dict[str, Any] | None:
     loaded = _overlay_doc()
     if loaded is None:
         return None
-    overlay_path, doc = loaded
+    _, doc = loaded
+    paths = _overlay_paths()
     return {
-        "path": str(overlay_path),
-        "sha256": hashlib.sha256(overlay_path.read_bytes()).hexdigest(),
+        "path": os.pathsep.join(str(p) for p in paths),
+        "paths": [str(p) for p in paths],
+        "sha256": hashlib.sha256(b"".join(p.read_bytes() for p in paths)).hexdigest(),
         "content": doc,
     }
 

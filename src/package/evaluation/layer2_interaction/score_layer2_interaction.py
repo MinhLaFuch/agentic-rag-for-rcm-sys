@@ -12,6 +12,7 @@ def score_layer2_interaction(
     trajectory: dict[str, Any],
     *,
     corpus: ItemCorpus,
+    item2id: dict | None = None,
 ) -> dict[str, Any]:
     """
     Score interaction quality and output constraints.
@@ -24,7 +25,8 @@ def score_layer2_interaction(
                      AND (if answer_status exists: answer_status == "ok" AND answer_grounded)
       - Old trajectories without answer_status use version 1 definition (no answer check)
     Returns: 
-        Dict with keys: task_success, constraint_satisfaction, price_unknown_rate, asked_clarification,
+        Dict with keys: task_success, task_success_relevant, constraint_satisfaction,
+                      price_unknown_rate, asked_clarification,
                       exclusion_compliance (for exclusion kind)
     """
     agent = trajectory["agent"]
@@ -112,4 +114,15 @@ def score_layer2_interaction(
                 plan_valid and steps_ok and rec and
                 (row["constraint_satisfaction"] == 1.0 if constrained else True)
             )
+
+    # task_success_relevant = task_success AND at least one recommended item is a
+    # held-out target. Separate column so task_success keeps its process-metric
+    # meaning and stays comparable with earlier campaigns. None when the request
+    # has no targets (ambiguous/unanswerable) or the id mapping is unavailable.
+    targets = set(getattr(request, "targets", None) or [])
+    if targets and item2id is not None and isinstance(row.get("task_success"), bool):
+        hit = any(item2id.get(item) in targets for item in rec)
+        row["task_success_relevant"] = bool(row["task_success"] and hit)
+    else:
+        row["task_success_relevant"] = None
     return row

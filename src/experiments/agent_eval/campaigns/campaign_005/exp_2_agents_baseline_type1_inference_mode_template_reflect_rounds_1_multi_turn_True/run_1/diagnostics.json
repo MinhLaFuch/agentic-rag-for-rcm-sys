@@ -1,0 +1,205 @@
+{
+  "error_taxonomy": {
+    "baseline": {
+      "cold_text": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "exclusion": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "personalized": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "similar": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "step_errors": {
+          "no_error": 116
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    }
+  },
+  "reflection": {
+    "baseline": {
+      "cold_text": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": 0.0
+      },
+      "exclusion": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "personalized": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "similar": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    },
+    "type1": {
+      "similar": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    }
+  },
+  "pool_stage": {
+    "baseline": {
+      "cold_text": {
+        "n_rows": 20,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 20
+          }
+        }
+      },
+      "exclusion": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_sql": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.8125,
+            "n": 16
+          }
+        }
+      },
+      "personalized": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 40
+          }
+        }
+      },
+      "similar": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.9,
+            "n": 40
+          }
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.9,
+            "n": 40
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 40
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 40
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 9,
+          "pool": 4,
+          "retrieve": 27
+        }
+      }
+    }
+  }
+}

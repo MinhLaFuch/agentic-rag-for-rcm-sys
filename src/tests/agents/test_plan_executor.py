@@ -196,7 +196,7 @@ def test_output_summary_is_size_limited(corpus):
 
 def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     """SYSTEM_PROMPT should include FilterTool, MemoryTool, and the new examples."""
-    from package.agents.planner._prompt import SYSTEM_PROMPT
+    from package.agents.planner import SYSTEM_PROMPT
     from package.agents import build_tools
     import json
 
@@ -332,3 +332,98 @@ def test_session_with_none_preserves_existing_behavior(corpus):
     results = executor.run(f"tell me about {VG_A}")
     assert results[0]["ok"]
     assert results[0]["invented_ids"] == []
+
+
+def _retrieval_step(tool, candidates, ok=True):
+    return {"tool": tool, "ok": ok, "data": {"candidates": candidates}}
+
+
+def test_union_candidates_merges_all_retrieval_tools_deduped():
+    """$union.candidates merges SearchTool+FilterTool+SimilarTool outputs, deduped, first-seen order."""
+    from package.agents.planner._helper import _resolve_refs
+
+    results = [
+        _retrieval_step("SearchTool", [{"item_id": "a"}, {"item_id": "b", "score": 0.5}]),
+        _retrieval_step("RankTool", [{"item_id": "z"}]),  # not a retrieval tool
+        _retrieval_step("SimilarTool", [{"item_id": "b", "similarity": 0.9}, {"item_id": "c"}]),
+        _retrieval_step("FilterTool", [{"item_id": "d"}], ok=False),  # failed step excluded
+    ]
+    out = _resolve_refs("$union.candidates", results)
+    assert [c["item_id"] for c in out] == ["a", "b", "c"]
+    assert out[1]["retrieved_by"] == ["SearchTool", "SimilarTool"]
+    assert out[0]["retrieved_by"] == ["SearchTool"]
+    # the scored SearchTool entry wins over the unscored SimilarTool duplicate
+    assert out[1].get("score") == 0.5
+
+
+def test_union_candidates_prefers_scored_entry_and_handles_strings():
+    from package.agents.planner._helper import _resolve_refs
+
+    results = [
+        _retrieval_step("FilterTool", ["x", "y"]),
+        _retrieval_step("SearchTool", [{"item_id": "x", "score": 0.3}]),
+    ]
+    out = _resolve_refs({"candidates": "$union.candidates"}, results)["candidates"]
+    assert [c["item_id"] for c in out] == ["x", "y"]
+    assert out[0]["score"] == 0.3 and out[0]["retrieved_by"] == ["FilterTool", "SearchTool"]
+    assert out[1] == {"item_id": "y", "retrieved_by": ["FilterTool"]}
+
+
+def test_union_candidates_empty_before_any_retrieval_step():
+    from package.agents.planner._helper import _resolve_refs
+
+    assert _resolve_refs("$union.candidates", []) == []
+    results = [_retrieval_step("LookupTool", [{"item_id": "a"}])]
+    assert _resolve_refs("$union.candidates", results) == []
+
+
+def test_union_candidates_respects_step_order():
+    """A RankTool mid-plan only unions retrieval steps that already ran."""
+    from package.agents.planner._helper import _resolve_refs
+
+    results = [
+        _retrieval_step("SearchTool", [{"item_id": "a"}]),
+        _retrieval_step("RankTool", [{"ranked": []}]),
+    ]
+    assert [c["item_id"] for c in _resolve_refs("$union.candidates", results)] == ["a"]
+    results.append(_retrieval_step("SimilarTool", [{"item_id": "b"}]))
+    assert [c["item_id"] for c in _resolve_refs("$union.candidates", results)] == ["a", "b"]
+
+
+def test_simplify_args_keeps_id_lists_whole():
+    """items/item_ids args must survive logging intact so trajectories stay replayable."""
+    from package.agents.planner._helper import _simplify_args_for_log
+
+    items = [f"Domain::B{i:08d}" for i in range(10)]
+    out = _simplify_args_for_log({"items": items, "candidates": [{"item_id": f"i{i}"} for i in range(10)]})
+    assert out["items"] == items
+    assert isinstance(out["candidates"], str) and "length=10" in out["candidates"]
+
+
+def test_planner_ranks_the_union_of_retrieval_steps(corpus, cf_setup):
+    """End-to-end: RankTool with candidates='$union.candidates' sees FilterTool+SimilarTool merged."""
+    from package.tools import RankTool
+    from package.agents.session import Session
+
+    interactions, user2id, item2id = cf_setup
+    knn = ItemKNNRecommender(5).fit(interactions)
+    steps = [
+        {"tool": "FilterTool", "args": {"limit": 3}},
+        {"tool": "SimilarTool", "args": {"items": [VG_A], "top_k": 3}},
+        {"tool": "RankTool", "args": {"user_id": "u3", "candidates": "$union.candidates", "top_k": 3}},
+    ]
+    tools = [
+        FilterTool(corpus), SimilarTool(knn, item2id, corpus=corpus),
+        RankTool(BaselineScorer(knn), user2id, item2id, corpus=corpus),
+    ]
+    results = PlanExecutor(ScriptedLLM(plan(*steps)), tools, session=Session(), reflect_rounds=0).run(f"for user u3, recommend items similar to {VG_A}")
+    assert [r["ok"] for r in results] == [True, True, True]
+
+    expected = []
+    for step in results[:2]:
+        for c in step["data"]["candidates"]:
+            iid = c["item_id"] if isinstance(c, dict) else c
+            if iid not in expected:
+                expected.append(iid)
+    assert results[2]["data"]["candidate_item_ids"] == expected
+    assert len(results[2]["data"]["ranked"]) <= 3

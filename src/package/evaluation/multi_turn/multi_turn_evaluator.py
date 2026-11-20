@@ -269,11 +269,12 @@ class MultiTurnEvaluator:
         expected_calls: list[dict[str, Any]],
         turn_output: dict[str, Any],
         session_state: dict[str, Any],
-    ) -> float:
+    ) -> float | None:
         """Fraction of expected tool calls found in the executed steps.
 
         Each spec: {"tool": name, "args_contain": {arg: expected}} — at least
         one executed step with that tool must satisfy every args_contain pair.
+        None when no calls are expected (not measurable, not a free 1.0).
         """
         steps = ((turn_output.get("trace") or {}).get("steps")) or []
         matched = 0
@@ -295,7 +296,7 @@ class MultiTurnEvaluator:
                     ok = True
                     break
             matched += 1 if ok else 0
-        return matched / len(expected_calls) if expected_calls else 1.0
+        return matched / len(expected_calls) if expected_calls else None
 
     def _extract_token_usage(self, turn_output: dict[str, Any] | None) -> dict[str, int] | None:
         """Extract token usage from turn output."""

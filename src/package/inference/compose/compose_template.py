@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from ...config.load_config import load_config
 from .._dataclass import AgentOutcome, Answer
 from .cut_title import cut_title
-from ._prompt import ID_ONLY_NOTE, NO_RESULT_TEXT, OK_HEADER, PARTIAL_HEADER, TOOL_ERROR_TEXT
 from ..empty_usage import empty_usage
 from ..outcome import classify_outcome
+
+_reply_texts = load_config("agent/reply_texts")
+NO_RESULT_TEXT = _reply_texts["no_result_text"]
+TOOL_ERROR_TEXT = _reply_texts["tool_error_text"]
+OK_HEADER = _reply_texts["ok_header"]
+PARTIAL_HEADER = _reply_texts["partial_header"]
+ID_ONLY_NOTE = _reply_texts["id_only_note"]
 
 
 def _item_lines(number: int, item: dict) -> list[str]:

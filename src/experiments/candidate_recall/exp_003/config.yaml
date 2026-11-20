@@ -1,0 +1,857 @@
+run:
+  timestamp: '2026-11-20T14:05:05.040954+00:00'
+  seed: 42
+  git_commit: d85c9a0fc4cb897fb5c6fdb7c01bb3fc43290175
+  source_fingerprint: 6268923b395d1cf1818a5ee91502b3023b688ba351a502715b76fd96919e797f
+  environment:
+    numpy: 2.5.3
+    pandas: 3.0.6
+    scipy: 1.18.1
+    pyarrow: 18.1.0
+    PyYAML: 6.0.3
+    pytest: 9.1.1
+    torch: 2.6.0+cu124
+    python: 3.12.10
+  hardware:
+    platform: Windows-11-10.0.26200-SP0
+    python: 3.12.10
+    cpu_count: 16
+  runtime_seconds: 1110.78
+  dataset:
+    tag: multi_domain
+    splits_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain
+    eval_on: validation
+    num_users: 23332162
+    num_items: 2637776
+    id_format: namespaced
+    metadata_coverage: 1.0
+    mapping_hash: 5fea448393fedac09c7499e29c6fa3b350ad4f6908650b96d9e41e5c7c6e9a9d
+    user_mapping_hash: e9523cde0c00fd1093ff7b026fe9fb50ec88584ca6489c4647a370fffa029504
+    mapping_hash_protocol: sorted_key_index_json_v1
+    split_files:
+      train:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\train.parquet
+        size_bytes: 1607020531
+        mtime_ns: 1794904666424594100
+        sha256: 7c9da89bc8ab67ccbeee930b0f131a342538c5365b641d798f4bd7c2b399f467
+      validation:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\validation.parquet
+        size_bytes: 309812597
+        mtime_ns: 1794904666431594400
+        sha256: b14e4e0bdd7141a8e301316bcb970ee25d32a19da7075b144ac8cc821e88ec81
+      test:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\splits\multi_domain\test.parquet
+        size_bytes: 293320171
+        mtime_ns: 1794904666438146300
+        sha256: 52aa74ce31c3b2c310ebabe889f02e1ecc69e77c25a69fc06bd6d960ba1737f2
+config:
+  retrieval: hybrid
+  embedding_provenance:
+    format_version: 2
+    status: complete
+    kind: full_catalog_embeddings
+    partial_catalog: false
+    count: 2637776
+    catalog_count: 2637776
+    dimension: 384
+    build_id: 3648ba8aca13b6141b0e5538ae3d35e861bddcf8b71bf157376b354b7d00e2e9
+    identity:
+      format_version: 1
+      corpus_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.sqlite
+      corpus_sha256: 0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b
+      catalog_count: 2637776
+      output_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\embedding_builds\multi_domain_full
+      config:
+        provider: sentence_transformers
+        model: sentence-transformers/all-MiniLM-L6-v2
+        revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+        dimension: 384
+        max_seq_length: 256
+        text_protocol: title_store_main_category_categories_sorted_v2
+        batch_size: 64
+        chunk_size: 4096
+        device: cuda
+      source_hashes:
+        builder: 194ebb08eeda0c4d7b0e174f3eef160a2b2528b096243d85765da5713015ec54
+        encoder: 81885b6bdcb4e227ef1a3888fe92299008ed7f04581f0d09b43131a5edca3ea1
+        text: fd51920d34b4b14c950ac7a9863857052cd3779bb088aee98516472addfe561e
+        reader: 2da54ec04bd20a287f61c9782631c7057f811b889fc8c1bdff81aec8f7fd2b96
+      environment:
+        python: 3.12.10
+        numpy: 2.5.5
+        sentence-transformers: 6.3.0
+        transformers: 5.23.0
+        torch: 2.6.0+cu124
+      evidence:
+        tag: multi_domain
+        audit_profile:
+          path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\profiles\multi_domain.profile.yaml
+          sha256: 1886160eaea4065449283e2a5d6b5374e032ae88df50041469c926cc99ff586c
+          tag: multi_domain
+          historical_config_root: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\historical\multi_domain
+          overlay_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\profiles\multi_domain.overlay.yaml
+          overlay_sha256: 032b5d4a7f4e9d5e0a7ab07e95ea5c104cc8c23b967e173c43f889e5472c5474
+          runtime_contract:
+            path/domains:
+              merged_name: multi_domain
+              domains:
+              - name: Video_Games
+              - name: Toys_and_Games
+              - name: Electronics
+            data/split:
+              split:
+                data_protocol: temporal_train_core
+                temporal_train_core:
+                  train_end_inclusive_ms: 1617737606134
+                  validation_end_inclusive_ms: 1651701127817
+            eval/baselines:
+              baselines:
+                seed: 42
+                item_knn:
+                  k: 20
+            eval/candidate_recall:
+              candidate_recall:
+                metadata_policy: historical_static_catalog
+                allow_missing_corpus_sources: false
+            eval/ranking_eval:
+              ranking_eval:
+                metadata_policy: historical_static_catalog
+                allow_missing_corpus_sources: false
+          historical_and_runtime_configs_are_separate: true
+        readiness_sha256: b9f2578df2313eb0199dced010c60df6827cdb01abd46ed5c7a15f3a4bcc3492
+        pilot_sha256: 3c3803cf0b587ffeb0dbd984025e244c8b2c3b11b4a9da1886ca70465920c3e9
+        corpus_sha256: 0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b
+        mapping_files:
+          C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\mapped\multi_domain\item2id.json: 49e93bc25da33fa20fc7a3a3bea692b818e307dbe6cc60dd0b0702f214696803
+          C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\mapped\multi_domain\user2id.json: 16309d88c1f282e1709b9fb5ef92c558b6503afbc15fbbf81bc915e5b7cb0182
+          ? C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.meta.json
+          : 5193034c9ae96c2637e00dcbc1bf1a74c9819daaa1c3d02441e199b1745f9594
+        contract:
+          version: 1
+          tag: multi_domain
+          data_protocol: temporal_train_core
+          metadata_policy: historical_static_catalog
+          seed: 42
+          pilot:
+            provider: sentence_transformers
+            model: sentence-transformers/all-MiniLM-L6-v2
+            expected_dimension: 384
+            max_seq_length: 256
+            text_protocol: title_store_main_category_categories_sorted_v2
+            sampling: seeded_reservoir_balanced_by_domain_v1
+            default_limit: 1000
+            repeats: 2
+            warmup_items: 8
+          retrieval:
+            evaluation_split: validation
+            budgets:
+            - 50
+            - 100
+            - 200
+            primary_metric: macro_recall_at_100
+            sources:
+            - popularity
+            - item_cf
+            - bm25
+            - dense
+            - hybrid
+            fusion: rrf
+            rrf_k: 60
+            cohort_identity: freeze_user_ids_and_query_artifact_before_comparison
+            confidence_interval: paired_bootstrap_95_percent
+            history_track:
+              query_source: fit_history_titles_only
+              query_items: 3
+              cold_without_history: no_input_and_report_fallback_separately
+              segments:
+              - cold
+              - sparse
+              - warm
+            cold_query_track:
+              status: dataset_pending
+              rule: query_and_judgments_independent_of_held_out_targets
+            category_oracle: diagnostic_upper_bound_only
+            error_handling: record_error_separately_from_retrieval_miss
+            gates:
+              status: set_after_resource_pilot_before_large_validation
+              quality_delta_minimum: null
+              cohort_regression_limit: null
+              p95_query_latency_ms: null
+              peak_ram_gib: null
+          test_policy: freeze_configuration_before_test_no_test_tuning
+    provider: sentence_transformers
+    model: sentence-transformers/all-MiniLM-L6-v2
+    revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+    device: cuda
+    max_seq_length: 256
+    text_protocol: title_store_main_category_categories_sorted_v2
+    encoder_probe:
+    - - -0.023494085296988487
+      - -0.07185207307338715
+      - -0.008125835098326206
+      - -0.02720220945775509
+      - -0.009060896001756191
+      - 0.007938336580991745
+      - -0.05561476945877075
+      - -0.070550836622715
+      - -0.1165788322687149
+      - -0.10972152650356293
+      - 0.03612243011593819
+      - -0.03479478135704994
+      - -0.019608985632658005
+      - 0.026645855978131294
+      - -0.0288681760430336
+      - 0.0357295460999012
+      - 0.05233633518218994
+      - 0.06238900125026703
+      - -0.04837675392627716
+      - -0.04220551997423172
+      - 0.005314909853041172
+      - 0.013021193444728851
+      - 0.0013241609558463097
+      - 0.0132412388920784
+      - -0.0642457976937294
+      - -0.041352566331624985
+      - -0.012712301686406136
+      - 0.010512814857065678
+      - -0.005140800029039383
+      - -0.03824222832918167
+      - 0.04480888321995735
+      - 0.039815086871385574
+      - -0.0009497743449173868
+      - 0.11024209856987
+      - 0.0651172548532486
+      - -0.017039470374584198
+      - 0.01196544710546732
+      - -0.02334345504641533
+      - 0.042684249579906464
+      - -0.05477859452366829
+      - -0.0415966771543026
+      - 0.022667299956083298
+      - -0.010160337202250957
+      - 0.04685273393988609
+      - -0.02473543770611286
+      - -0.014749147929251194
+      - -0.0440559908747673
+      - -0.013626477681100368
+      - -0.04566749930381775
+      - 0.017740922048687935
+      - -0.06373492628335953
+      - 0.02014804631471634
+      - -0.0371861569583416
+      - -0.04727199673652649
+      - 0.06312953680753708
+      - -0.019967475906014442
+      - -0.01799691654741764
+      - -0.008101669140160084
+      - -0.016752226278185844
+      - 0.029543494805693626
+      - -0.036574605852365494
+      - -0.07203514128923416
+      - -0.03451518341898918
+      - 0.028206724673509598
+      - 0.03484503924846649
+      - -0.011625855229794979
+      - 0.05745503306388855
+      - 0.00013441688497550786
+      - 0.010521052405238152
+      - -0.07564330846071243
+      - -0.07027410715818405
+      - -0.047964900732040405
+      - -0.10532639175653458
+      - 0.07877269387245178
+      - 0.040211115032434464
+      - 0.13723419606685638
+      - 0.03497553989291191
+      - -0.029045788571238518
+      - 0.030133994296193123
+      - -0.10204687714576721
+      - -0.027180135250091553
+      - -0.003287009196355939
+      - 0.0361957922577858
+      - 0.05046790465712547
+      - 0.09849748760461807
+      - -0.06535724550485611
+      - 0.060023605823516846
+      - -0.01866302080452442
+      - 0.0529269203543663
+      - 0.013767711818218231
+      - -0.033971987664699554
+      - -0.13700081408023834
+      - 0.0019285539165139198
+      - -0.03432377427816391
+      - -0.03698793053627014
+      - 0.03295968472957611
+      - 0.0473494753241539
+      - -0.005969998426735401
+      - 0.08390459418296814
+      - 0.04149967432022095
+      - 0.013735204003751278
+      - -0.01671401783823967
+      - 0.010800227522850037
+      - -0.07276654243469238
+      - -0.05456303432583809
+      - 0.033768393099308014
+      - 0.10153819620609283
+      - 0.049735721200704575
+      - 0.07064137607812881
+      - -0.03343984857201576
+      - 0.0094078928232193
+      - -0.012132854200899601
+      - -0.02747017703950405
+      - -0.04364072158932686
+      - -0.02182507887482643
+      - -0.027266142889857292
+      - -0.032009612768888474
+      - -0.026445310562849045
+      - 0.030450919643044472
+      - -0.04686271399259567
+      - -0.026315812021493912
+      - -0.01754061132669449
+      - -0.028306998312473297
+      - -0.046376194804906845
+      - 0.007650432176887989
+      - -0.012847053818404675
+      - -0.04988710954785347
+      - 1.1242478480787245e-33
+      - -0.021633297204971313
+      - -0.023655805736780167
+      - -0.028554458171129227
+      - 0.0218059029430151
+      - -0.02535981312394142
+      - -0.01737361028790474
+      - 0.005080653354525566
+      - 0.06616935133934021
+      - -0.07135225087404251
+      - 0.022300541400909424
+      - -0.04294166713953018
+      - 0.10423703491687775
+      - -0.08693299442529678
+      - 0.039156775921583176
+      - 0.06480353325605392
+      - 0.0988701805472374
+      - -0.03114529885351658
+      - 0.053129635751247406
+      - -0.031870998442173004
+      - 0.009194277226924896
+      - 0.02181788720190525
+      - 0.005182061810046434
+      - -0.044487614184617996
+      - -0.04735396429896355
+      - -0.0394468754529953
+      - 0.008102599531412125
+      - -0.07982545346021652
+      - -0.02722271904349327
+      - 0.022594362497329712
+      - -0.0005506532615981996
+      - 0.018743284046649933
+      - -0.03217598423361778
+      - 0.031053554266691208
+      - 0.013639145530760288
+      - 0.005935851950198412
+      - -0.05144019424915314
+      - 0.005238075740635395
+      - 0.0013692796928808093
+      - -0.02671782672405243
+      - -0.01897500455379486
+      - 0.015144004486501217
+      - 0.07015713304281235
+      - -0.00610588863492012
+      - -0.041046392172575
+      - -0.017907915636897087
+      - -0.015888312831521034
+      - -0.003529225941747427
+      - -0.042926397174596786
+      - 0.022554073482751846
+      - -0.024271879345178604
+      - 0.058193139731884
+      - 0.024250363931059837
+      - -0.038139764219522476
+      - -0.02300094999372959
+      - 0.09835018217563629
+      - -0.022365130484104156
+      - 0.03222530335187912
+      - -0.006955730728805065
+      - 0.08021344244480133
+      - 0.1209356039762497
+      - 0.008472247049212456
+      - 0.00528088491410017
+      - 0.11242397874593735
+      - -0.09312610328197479
+      - 0.057168830186128616
+      - 0.0016716582467779517
+      - 0.06737033277750015
+      - -0.024289142340421677
+      - 0.022181231528520584
+      - 0.10605093836784363
+      - -0.03982638940215111
+      - 0.003169155679643154
+      - 0.014324421994388103
+      - -0.04548479616641998
+      - 0.0630091056227684
+      - -0.04694944620132446
+      - -0.043648455291986465
+      - -0.0027252319268882275
+      - 0.014186367392539978
+      - -0.019086791202425957
+      - -0.0395573154091835
+      - -0.06728759407997131
+      - 0.015598679892718792
+      - 0.05544964224100113
+      - -0.06417509913444519
+      - -0.03535515069961548
+      - -0.006113357376307249
+      - -0.05274113640189171
+      - -0.01915799081325531
+      - 0.0557372011244297
+      - 0.042172323912382126
+      - 0.05167704075574875
+      - -0.08812715858221054
+      - -0.01708359643816948
+      - 0.07523934543132782
+      - -1.387681917734257e-33
+      - 0.0034169673454016447
+      - -0.017158865928649902
+      - 0.08018308132886887
+      - 0.04601551964879036
+      - -0.09266737848520279
+      - -0.03925718739628792
+      - -0.03570093959569931
+      - -0.00033074873499572277
+      - -0.035449422895908356
+      - -0.007183191832154989
+      - 0.0500120110809803
+      - -0.04264651983976364
+      - 0.0036166321951895952
+      - -0.04097192361950874
+      - -0.009465918876230717
+      - 0.010777895338833332
+      - -0.07111046463251114
+      - 2.025317371590063e-05
+      - -0.027802689000964165
+      - 0.07878825068473816
+      - 0.03703486546874046
+      - 0.11299775540828705
+      - -0.05079485848546028
+      - 0.031021568924188614
+      - 0.006314219441264868
+      - 0.04040766507387161
+      - 0.039280667901039124
+      - 0.017061276361346245
+      - 0.053893785923719406
+      - -0.05305543169379234
+      - 0.010779456235468388
+      - -0.055657368153333664
+      - 0.010005606338381767
+      - 0.013654008507728577
+      - -0.040796827524900436
+      - -0.017208900302648544
+      - 0.06522849947214127
+      - -0.010515146888792515
+      - -0.03455854952335358
+      - 0.06358759850263596
+      - 0.008236756548285484
+      - 0.06423532962799072
+      - -0.10186994820833206
+      - 0.10027824342250824
+      - 0.01824929006397724
+      - -0.043357472866773605
+      - -0.04427550733089447
+      - 0.02736574225127697
+      - 0.1549588143825531
+      - -0.035476986318826675
+      - 0.0888342633843422
+      - 0.06694091856479645
+      - 0.008192193694412708
+      - -0.031715087592601776
+      - -0.0006372055504471064
+      - -0.013748688623309135
+      - -0.04366220161318779
+      - -0.04009383171796799
+      - -0.029560642316937447
+      - 0.08060791343450546
+      - -0.010929690673947334
+      - -0.030080152675509453
+      - 0.08634296804666519
+      - -0.02908015251159668
+      - 0.0028853053227066994
+      - -0.09018644690513611
+      - -0.01734439842402935
+      - 0.006482507102191448
+      - -0.07171045988798141
+      - 0.00034520236658863723
+      - 0.06045098602771759
+      - -0.10507255047559738
+      - 0.02188444510102272
+      - -0.009289372712373734
+      - 0.05546799674630165
+      - 0.009815901517868042
+      - 0.02442278154194355
+      - -0.02879437804222107
+      - 0.00820979569107294
+      - 0.04613859951496124
+      - -0.09902498871088028
+      - 0.06786160171031952
+      - 0.035590946674346924
+      - 0.1300644427537918
+      - 0.05591968446969986
+      - 0.07666809111833572
+      - -0.03132670000195503
+      - 0.015942994505167007
+      - 0.05139385908842087
+      - -0.08689524233341217
+      - 0.050370242446660995
+      - -0.02839159034192562
+      - 0.00422583008185029
+      - 0.06173828989267349
+      - 0.008791427128016949
+      - -1.4955626070900507e-08
+      - -0.04756312444806099
+      - -0.015514953061938286
+      - -0.09350943565368652
+      - -0.046994999051094055
+      - -0.014323437586426735
+      - 0.10375309735536575
+      - -0.06900961697101593
+      - 0.05626008287072182
+      - -0.060858990997076035
+      - 0.09482727944850922
+      - 0.14899761974811554
+      - 0.014026363380253315
+      - -0.12629373371601105
+      - 0.10399163514375687
+      - 0.07923574000597
+      - -0.02175058424472809
+      - 0.06257602572441101
+      - 0.023260071873664856
+      - -0.03291093185544014
+      - 0.09101524949073792
+      - -0.025944894179701805
+      - 0.06879942119121552
+      - 0.027334075421094894
+      - -0.020601388067007065
+      - -0.03905182331800461
+      - -0.005960642825812101
+      - -0.0038956187199801207
+      - 0.08538837730884552
+      - -0.0020496530923992395
+      - 0.013945283368229866
+      - 0.07801979780197144
+      - 0.010713538154959679
+      - 0.04127277806401253
+      - -0.029978740960359573
+      - 0.01874849759042263
+      - 0.021533366292715073
+      - -0.037156444042921066
+      - 0.010730581358075142
+      - -0.0715872049331665
+      - -0.0019752595108002424
+      - 0.08577430248260498
+      - -0.022297877818346024
+      - -0.11211764067411423
+      - 0.03358714282512665
+      - 0.013388950377702713
+      - 0.0011530868941918015
+      - 0.12509655952453613
+      - -0.022291094064712524
+      - -0.028272883966565132
+      - 0.04371063783764839
+      - -0.07173556834459305
+      - -0.05479666590690613
+      - -0.028135821223258972
+      - 0.0011562074068933725
+      - -0.006177382543683052
+      - -0.06238088011741638
+      - -0.05439552292227745
+      - -0.03129100427031517
+      - 0.07167041301727295
+      - 0.025723710656166077
+      - 0.09789015352725983
+      - -0.026758713647723198
+      - -0.003230906557291746
+      - -0.026030508801341057
+    corpus_sha256: 0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b
+    library_versions:
+      python: 3.12.10
+      numpy: 2.5.5
+      sentence-transformers: 6.3.0
+      transformers: 5.23.0
+      torch: 2.6.0+cu124
+    encode_seconds: 2393.528017600007
+    files:
+      vectors.npy:
+        sha256: 102b5f7033a262cd769fcfb955809a841e2b0e367d1cb06e7a1d331f244dae22
+        size_bytes: 4051624064
+      item_ids.npy:
+        sha256: 59be28066ffb1ac3de3d93dc25f4ad85f2f3ff33294dd25f8201c92096355a4f
+        size_bytes: 274328832
+    path: experiments\embedding_builds\multi_domain_full
+    metadata_sha256: f81c043f2df17de2e3f6a68cbf293b60de520e439efb954f7003bd3b13b314c8
+  audit_profile:
+    path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\profiles\multi_domain.profile.yaml
+    sha256: 1886160eaea4065449283e2a5d6b5374e032ae88df50041469c926cc99ff586c
+    tag: multi_domain
+    historical_config_root: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\historical\multi_domain
+    overlay_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\configs\profiles\multi_domain.overlay.yaml
+    overlay_sha256: 032b5d4a7f4e9d5e0a7ab07e95ea5c104cc8c23b967e173c43f889e5472c5474
+    runtime_contract:
+      path/domains:
+        merged_name: multi_domain
+        domains:
+        - name: Video_Games
+        - name: Toys_and_Games
+        - name: Electronics
+      data/split:
+        split:
+          data_protocol: temporal_train_core
+          temporal_train_core:
+            train_end_inclusive_ms: 1617737606134
+            validation_end_inclusive_ms: 1651701127817
+      eval/baselines:
+        baselines:
+          seed: 42
+          item_knn:
+            k: 20
+      eval/candidate_recall:
+        candidate_recall:
+          metadata_policy: historical_static_catalog
+          allow_missing_corpus_sources: false
+      eval/ranking_eval:
+        ranking_eval:
+          metadata_policy: historical_static_catalog
+          allow_missing_corpus_sources: false
+    historical_and_runtime_configs_are_separate: true
+  union_sources:
+    baseline:
+    - popularity
+    - item_cf
+    - semantic
+    hybrid:
+    - popularity
+    - item_cf
+    - hybrid
+  manifest_status: match
+  manifest_sha256: bfc8f5f876b9d3c2ab2d6f62b6f2f8ece4bd630a1483ac5f67aa0e648eab2cba
+  protocol:
+    version: 2
+    evaluation_kind: candidate
+    item_knn:
+      scope: dataset_bound
+      user_mapping_hash: d38373ff5cac4820a6005d71a244d7c02cf6f13c09e87a344b8785cdefea509c
+      item_mapping_hash: 70c8a3c68264b57c54877a39f69a3250d72270dbfac180e1068d0e26bcdd812b
+      eval_on: validation
+      fit_splits:
+      - train_core
+      tag: multi_domain
+    fit_timestamp_max: 1617737606134
+    target_timestamp_min: 1617737606549
+    metadata_policy:
+      name: historical_static_catalog
+      version: 2
+      as_of_timestamp: 1617737606549
+      masked_fields:
+      - price
+      - average_rating
+      - rating_number
+      first_seen_filter: true
+      first_seen_proxy: minimum timestamp per item in all cleaned interactions; not
+        an actual launch/availability date
+      aggregate_observed_at: null
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified
+      catalog_assumption: visible items satisfy first_seen_ts <= as_of_timestamp;
+        first_seen_ts is a cleaned-interaction proxy, not launch date; title/taxonomy/store
+        values remain static metadata with historical validity unverified
+      historical_causal_claim: false
+      snapshot_mutable_fields_used: false
+    label_policy: all observed review user-item pairs are binary positives, independent
+      of stars
+    cohort_policy: all target-bearing users; segment by unique pre-cutoff train history;
+      fit-core does not filter cohort
+    history_size: unique fit items, consistent with binary CSR
+    segment_population_users:
+      sparse: 1919045
+      warm: 705938
+      cold: 2471043
+    segment_sample_users:
+      cold: 30
+      sparse: 30
+      warm: 30
+    sampling: seeded per-segment cap; pooled sample average is not population-weighted
+    item_warm_definition: any user interacted in fit; distinct from same-user repeat
+    candidate_target_denominator: all unique target items per user; seen filtering
+      may make repeat targets unretrievable
+    ranking_target_denominator: novel target items per user; empty-ground-truth users
+      excluded
+    query_provenance: fit-history title proxy, not observed user query; target-metadata
+      queries must be oracle
+    query_normalization: raw
+    cf_history: all pre-target history; similarity and popularity frozen on train_core
+  budgets:
+  - 50
+  - 100
+  - 200
+  per_segment: 30
+  seed_items: 10
+  query_items: 3
+  neighbors: 20
+  query_modes:
+  - category_oracle
+  evaluation_protocol:
+    category_oracle: oracle_upper_bound
+  sampled_user_ids:
+    cold:
+    - 3665981
+    - 4405757
+    - 11382046
+    - 16325083
+    - 9979907
+    - 20539473
+    - 12283037
+    - 8968858
+    - 20907986
+    - 21793674
+    - 3641103
+    - 16880967
+    - 19616061
+    - 5319938
+    - 2701994
+    - 11791844
+    - 12290754
+    - 16887330
+    - 16040147
+    - 5670767
+    - 15251777
+    - 5869213
+    - 22487542
+    - 9574035
+    - 9149606
+    - 10651898
+    - 14032041
+    - 108540
+    - 3215102
+    - 7406013
+    sparse:
+    - 7769036
+    - 2238901
+    - 1426342
+    - 21347934
+    - 2119306
+    - 1844707
+    - 18920985
+    - 22190420
+    - 9651872
+    - 22276210
+    - 10836534
+    - 8565125
+    - 174674
+    - 16098464
+    - 2501095
+    - 18089184
+    - 3353708
+    - 6195063
+    - 5419699
+    - 8815345
+    - 12698316
+    - 1840188
+    - 22934763
+    - 829278
+    - 3089203
+    - 8675059
+    - 7698526
+    - 621587
+    - 16444122
+    - 7013101
+    warm:
+    - 1936560
+    - 4857852
+    - 11095010
+    - 1916845
+    - 8248355
+    - 3264382
+    - 9987671
+    - 1771918
+    - 1967820
+    - 2583418
+    - 16170875
+    - 8884598
+    - 22911914
+    - 20000368
+    - 5918888
+    - 19940286
+    - 9309375
+    - 9749096
+    - 5530807
+    - 7196
+    - 5166656
+    - 18657504
+    - 5899337
+    - 23198586
+    - 9526522
+    - 8833154
+    - 1765286
+    - 2373446
+    - 17221294
+    - 2192877
+  sparse_max: 4
+  knn_artifact_status: validated_train_core_cache
+  knn_fit_seconds: 27.361037
+  knn_fit_data_hash: b4139263cc2aff4a26134d5b556249184af1537919c72cf969327148a98f2be3
+  knn_cache_data_hash: b4139263cc2aff4a26134d5b556249184af1537919c72cf969327148a98f2be3
+  knn_cache_used: true
+  corpus_load_seconds: 19.315753
+  corpus_source_validation:
+    mode: loaded_prebuilt
+    metadata_sources:
+      Video_Games:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Video_Games.jsonl.gz
+        exists: true
+        size_bytes: 103096082
+        sha256: ced9696b0874121327a438bfe9d3d01aba45da158e58f94f4920352d75fc1fc9
+      Toys_and_Games:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Toys_and_Games.jsonl.gz
+        exists: true
+        size_bytes: 658655829
+        sha256: c69383112c0c0b0f10439eada942f2cf430511b993d2af8c665a5349c8749f07
+      Electronics:
+        path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\raw\meta_Electronics.jsonl.gz
+        exists: true
+        size_bytes: 1312900427
+        sha256: a4a196a1c8e443e0942d8a5c79b5a5d2d68e29d483f2badec1126690b4b2790d
+    allow_missing_sources: false
+    missing_sources: []
+  corpus_artifacts:
+    sqlite_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.sqlite
+    sqlite_sha256: 0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b
+    manifest_path: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\resource\corpus\multi_domain\corpus_multi_domain.meta.json
+    manifest_sha256: 5193034c9ae96c2637e00dcbc1bf1a74c9819daaa1c3d02441e199b1745f9594
+    source_hash_semantics:
+      format_version: 2
+      source_hash_protocol: sha256_file_bytes_v1
+      mapping_hash_protocol: sorted_key_index_json_v1
+      coverage_by_domain:
+        Electronics:
+          mapping_items: 1609860
+          metadata_items: 1609860
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Toys_and_Games:
+          mapping_items: 890667
+          metadata_items: 890667
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+        Video_Games:
+          mapping_items: 137249
+          metadata_items: 137249
+          coverage: 1.0
+          min_coverage: 0.5
+          duplicate_metadata_rows_dropped: 0
+      metadata_duplicates_dropped_by_domain:
+        Video_Games: 0
+        Toys_and_Games: 0
+        Electronics: 0
+      missing_sources: []
+      metadata_temporal_validity: first_seen proxy only; static metadata validity
+        unverified

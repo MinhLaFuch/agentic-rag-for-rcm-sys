@@ -20,6 +20,8 @@ from tests.tools_helpers import VG_A, VG_B
 
 NEW_COLUMNS = ("answer_grounded", "answer_fallback", "inference_attempts", "inference_prompt_tokens",
                "inference_completion_tokens", "inference_latency_seconds", *(f"answer_status_{s}" for s in STATUSES))
+# Cost columns legitimately change when a trajectory carries inference usage (inference LLM cost is included).
+COST_COLUMNS = ("inference_cost_usd", "cost_per_request", "cost_per_successful_request")
 
 
 def _request(text="t"):
@@ -47,7 +49,8 @@ def test_new_columns_do_not_change_any_existing_column(corpus):
     bare = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     row_bare = score_trajectory(_request(), bare, item2id=ITEM2ID, corpus=corpus, k=2)
     row_full = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
-    assert {k: v for k, v in row_full.items() if k not in NEW_COLUMNS} == {k: v for k, v in row_bare.items() if k not in NEW_COLUMNS}
+    skip = set(NEW_COLUMNS) | set(COST_COLUMNS)
+    assert {k: v for k, v in row_full.items() if k not in skip} == {k: v for k, v in row_bare.items() if k not in skip}
     assert row_full["task_success"] is True and row_full["recall@2"] == row_bare["recall@2"]
 
 

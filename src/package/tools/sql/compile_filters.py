@@ -277,9 +277,13 @@ def compile_filters(
                 if normalized_map and any(k != v for k, v in normalized_map.items()):
                     normalized["_note"] = "categories normalized to exact catalog names"
                 cats = validated_cats
+            # Uncorrelated IN-subquery: SQLite materializes the (small) category
+            # match set once via idx_cat_cat instead of probing item_categories
+            # per items row. The old correlated EXISTS took ~20-40s on the
+            # multi-domain corpus and always blew the sql_time_budget.
             clauses.append(
-                "EXISTS (SELECT 1 FROM item_categories c WHERE c.item_id = items.item_id "
-                f"AND c.category IN ({','.join('?' * len(cats))}))"
+                "items.item_id IN (SELECT c.item_id FROM item_categories c "
+                f"WHERE c.category IN ({','.join('?' * len(cats))}))"
             )
             params += cats
             normalized["categories_any"] = cats
@@ -299,9 +303,13 @@ def compile_filters(
                 if normalized_map and any(k != v for k, v in normalized_map.items()):
                     normalized["_note"] = "categories normalized to exact catalog names"
                 cats = validated_cats
+            # Same uncorrelated rewrite as categories_any: group the materialized
+            # category matches once and keep items covering all requested cats.
             clauses.append(
-                "(SELECT COUNT(DISTINCT c.category) FROM item_categories c WHERE "
-                f"c.item_id = items.item_id AND c.category IN ({','.join('?' * len(cats))})) = ?"
+                "items.item_id IN (SELECT c.item_id FROM item_categories c "
+                f"WHERE c.category IN ({','.join('?' * len(cats))}) "
+                "GROUP BY c.item_id "
+                "HAVING COUNT(DISTINCT c.category) = ?)"
             )
             params += cats + [len(cats)]
             normalized["categories_all"] = cats

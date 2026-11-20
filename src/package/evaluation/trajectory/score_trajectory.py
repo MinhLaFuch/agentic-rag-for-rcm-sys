@@ -49,7 +49,7 @@ def score_trajectory(
     # Score each layer independently
     layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids,
                                   corpus=corpus, id2item=id2item, itemcf_reachable=itemcf_reachable)
-    layer2 = score_layer2_interaction(request, trajectory, corpus=corpus)
+    layer2 = score_layer2_interaction(request, trajectory, corpus=corpus, item2id=item2id)
     layer3 = score_layer3_grounding(trajectory)
     layer4 = score_layer4_process(request, trajectory)
     layer5 = score_layer5_deployment(trajectory)

@@ -1,0 +1,657 @@
+{
+  "k": 10,
+  "summary": {
+    "baseline": {
+      "cold_text": {
+        "all": {
+          "n": 20,
+          "constraint_satisfaction": 0.005,
+          "cost_per_request": 0.0,
+          "distinct_domains": 1.0,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 0.7,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.0001,
+          "wall_seconds_p50": 0.0,
+          "wall_seconds_p95": 0.001
+        },
+        "cold": {
+          "n": 20,
+          "constraint_satisfaction": 0.005,
+          "cost_per_request": 0.0,
+          "distinct_domains": 1.0,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 1.0,
+          "target_in_pool_itemcf": 0.7,
+          "target_in_pool_semantic": 1.0,
+          "target_in_pool_sql": 1.0,
+          "task_success": 0.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.0001,
+          "wall_seconds_p50": 0.0,
+          "wall_seconds_p95": 0.001
+        }
+      },
+      "exclusion": {
+        "all": {
+          "n": 40,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.0,
+          "exclusion_compliance": 0.9774999999999998,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.875,
+          "target_in_pool_itemcf": 0.8125,
+          "target_in_pool_semantic": 0.875,
+          "target_in_pool_sql": 0.875,
+          "task_success": 0.9,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.009925,
+          "wall_seconds_p50": 0.009,
+          "wall_seconds_p95": 0.015099999999999994
+        },
+        "sparse": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.05,
+          "exclusion_compliance": 0.985,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.75,
+          "target_in_pool_itemcf": 0.75,
+          "target_in_pool_semantic": 0.75,
+          "target_in_pool_sql": 0.75,
+          "task_success": 0.9,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.008300000000000002,
+          "wall_seconds_p50": 0.008,
+          "wall_seconds_p95": 0.012100000000000001
+        },
+        "warm": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 1.95,
+          "exclusion_compliance": 0.97,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.9166666666666666,
+          "target_in_pool_itemcf": 0.8333333333333334,
+          "target_in_pool_semantic": 0.9166666666666666,
+          "target_in_pool_sql": 0.9166666666666666,
+          "task_success": 0.9,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.011550000000000001,
+          "wall_seconds_p50": 0.011,
+          "wall_seconds_p95": 0.017
+        }
+      },
+      "personalized": {
+        "all": {
+          "n": 40,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.0,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.825,
+          "target_in_pool_itemcf": 0.7,
+          "target_in_pool_semantic": 0.825,
+          "target_in_pool_sql": 0.825,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.008674999999999999,
+          "wall_seconds_p50": 0.008,
+          "wall_seconds_p95": 0.014
+        },
+        "sparse": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 1.9,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.8,
+          "target_in_pool_itemcf": 0.7,
+          "target_in_pool_semantic": 0.8,
+          "target_in_pool_sql": 0.8,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.006850000000000002,
+          "wall_seconds_p50": 0.007,
+          "wall_seconds_p95": 0.008
+        },
+        "warm": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.1,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "target_in_any_path_pool": 0.85,
+          "target_in_pool_itemcf": 0.7,
+          "target_in_pool_semantic": 0.85,
+          "target_in_pool_sql": 0.85,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.010500000000000002,
+          "wall_seconds_p50": 0.01,
+          "wall_seconds_p95": 0.014
+        }
+      },
+      "similar": {
+        "all": {
+          "n": 40,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 1.875,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "seed_in_result": 0.0,
+          "target_in_any_path_pool": 0.925,
+          "target_in_pool_itemcf": 0.9,
+          "target_in_pool_semantic": 0.925,
+          "target_in_pool_sql": 0.925,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.010525000000000001,
+          "wall_seconds_p50": 0.01,
+          "wall_seconds_p95": 0.015
+        },
+        "sparse": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 2.1,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "seed_in_result": 0.0,
+          "target_in_any_path_pool": 0.9,
+          "target_in_pool_itemcf": 0.85,
+          "target_in_pool_semantic": 0.9,
+          "target_in_pool_sql": 0.9,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.0102,
+          "wall_seconds_p50": 0.01,
+          "wall_seconds_p95": 0.015050000000000001
+        },
+        "warm": {
+          "n": 20,
+          "cost_per_request": 0.0,
+          "cost_per_successful_request": 0.0,
+          "distinct_domains": 1.65,
+          "hit_rate@10": 0.0,
+          "inference_cost_usd": 0.0,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 10.0,
+          "ndcg@10": 0.0,
+          "plan_valid": 1.0,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "seed_in_result": 0.0,
+          "target_in_any_path_pool": 0.95,
+          "target_in_pool_itemcf": 0.95,
+          "target_in_pool_semantic": 0.95,
+          "target_in_pool_sql": 0.95,
+          "task_success": 1.0,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.010850000000000002,
+          "wall_seconds_p50": 0.010499999999999999,
+          "wall_seconds_p95": 0.015
+        }
+      }
+    },
+    "type1": {
+      "similar": {
+        "all": {
+          "n": 40,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 0.95,
+          "answer_status_tool_error": 0.05,
+          "cost_per_request": 0.026993625,
+          "cost_per_successful_request": 0.02841434210526315,
+          "distinct_domains": 1.894736842105263,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 1.025,
+          "inference_completion_tokens": 673.725,
+          "inference_completion_tokens_p50": 653.0,
+          "inference_completion_tokens_p95": 1253.8999999999999,
+          "inference_cost_usd": 0.026993625,
+          "inference_latency_seconds": 15.200774999999954,
+          "inference_latency_seconds_p50": 14.3125,
+          "inference_latency_seconds_p95": 29.598700000000047,
+          "inference_prompt_tokens": 1356.375,
+          "inference_prompt_tokens_p50": 1198.5,
+          "inference_prompt_tokens_p95": 3111.9999999999945,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 9.5,
+          "n_steps": 2.9,
+          "ndcg@10": 0.0,
+          "plan_valid": 0.95,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "retrieved_by_itemcf": 0.0,
+          "seed_in_result": 0.0,
+          "steps_ok_rate": 1.0,
+          "target_in_any_path_pool": 0.925,
+          "target_in_pool_itemcf": 0.9,
+          "target_in_pool_semantic": 0.925,
+          "target_in_pool_sql": 0.925,
+          "target_reachable": 0.0,
+          "task_success": 0.95,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.023700000000000002,
+          "wall_seconds_p50": 0.024,
+          "wall_seconds_p95": 0.033049999999999996
+        },
+        "sparse": {
+          "n": 20,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 0.95,
+          "answer_status_tool_error": 0.05,
+          "cost_per_request": 0.028301,
+          "cost_per_successful_request": 0.029790526315789472,
+          "distinct_domains": 1.894736842105263,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 1.05,
+          "inference_completion_tokens": 712.5,
+          "inference_completion_tokens_p50": 687.5,
+          "inference_completion_tokens_p95": 1271.7500000000002,
+          "inference_cost_usd": 0.028301,
+          "inference_latency_seconds": 16.206249999999955,
+          "inference_latency_seconds_p50": 15.046499999999924,
+          "inference_latency_seconds_p95": 32.17470000000008,
+          "inference_prompt_tokens": 1385.2,
+          "inference_prompt_tokens_p50": 1177.0,
+          "inference_prompt_tokens_p95": 3112.0000000000014,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 9.5,
+          "n_steps": 2.9,
+          "ndcg@10": 0.0,
+          "plan_valid": 0.95,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "retrieved_by_itemcf": 0.0,
+          "seed_in_result": 0.0,
+          "steps_ok_rate": 1.0,
+          "target_in_any_path_pool": 0.9,
+          "target_in_pool_itemcf": 0.85,
+          "target_in_pool_semantic": 0.9,
+          "target_in_pool_sql": 0.9,
+          "target_reachable": 0.0,
+          "task_success": 0.95,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.0256,
+          "wall_seconds_p50": 0.0275,
+          "wall_seconds_p95": 0.034050000000000004
+        },
+        "warm": {
+          "n": 20,
+          "answer_fallback": 0.0,
+          "answer_grounded": 1.0,
+          "answer_status_ask_user": 0.0,
+          "answer_status_no_result": 0.0,
+          "answer_status_ok": 0.95,
+          "answer_status_tool_error": 0.05,
+          "cost_per_request": 0.02568625,
+          "cost_per_successful_request": 0.027038157894736847,
+          "distinct_domains": 1.894736842105263,
+          "hit_rate@10": 0.0,
+          "inference_attempts": 1.0,
+          "inference_completion_tokens": 634.95,
+          "inference_completion_tokens_p50": 626.0,
+          "inference_completion_tokens_p95": 794.1000000000004,
+          "inference_cost_usd": 0.02568625,
+          "inference_latency_seconds": 14.195299999999952,
+          "inference_latency_seconds_p50": 13.851500000000215,
+          "inference_latency_seconds_p95": 17.757399999999652,
+          "inference_prompt_tokens": 1327.55,
+          "inference_prompt_tokens_p50": 1199.0,
+          "inference_prompt_tokens_p95": 1479.2000000000028,
+          "map@10": 0.0,
+          "mrr@10": 0.0,
+          "n_recommended": 9.5,
+          "n_steps": 2.9,
+          "ndcg@10": 0.0,
+          "plan_valid": 0.95,
+          "planner_cost_usd": 0.0,
+          "precision@10": 0.0,
+          "provider_error": 0.0,
+          "recall@10": 0.0,
+          "retrieved_by_itemcf": 0.0,
+          "seed_in_result": 0.0,
+          "steps_ok_rate": 1.0,
+          "target_in_any_path_pool": 0.95,
+          "target_in_pool_itemcf": 0.95,
+          "target_in_pool_semantic": 0.95,
+          "target_in_pool_sql": 0.95,
+          "target_reachable": 0.0,
+          "task_success": 0.95,
+          "task_success_relevant": 0.0,
+          "wall_seconds": 0.021800000000000003,
+          "wall_seconds_p50": 0.021,
+          "wall_seconds_p95": 0.029100000000000004
+        }
+      }
+    }
+  },
+  "diagnostics": {
+    "error_taxonomy": {
+      "baseline": {
+        "cold_text": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        },
+        "exclusion": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        },
+        "personalized": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        },
+        "similar": {
+          "step_errors": {},
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        }
+      },
+      "type1": {
+        "similar": {
+          "step_errors": {
+            "no_error": 116
+          },
+          "plan_errors": {
+            "plan_invalid": 0,
+            "provider_error": 0
+          }
+        }
+      }
+    },
+    "reflection": {
+      "baseline": {
+        "cold_text": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": 0.0
+        },
+        "exclusion": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": null
+        },
+        "personalized": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": null
+        },
+        "similar": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": null
+        }
+      },
+      "type1": {
+        "similar": {
+          "n_first_failed": 0,
+          "rescue_rate": null,
+          "mean_reflections": 0.0,
+          "constraint_blind_spot_rate": null
+        }
+      }
+    },
+    "pool_stage": {
+      "baseline": {
+        "cold_text": {
+          "n_rows": 20,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 1.0,
+              "n": 20
+            },
+            "target_in_pool_sql": {
+              "rate": 1.0,
+              "n": 20
+            },
+            "target_in_pool_semantic": {
+              "rate": 1.0,
+              "n": 20
+            },
+            "target_in_pool_itemcf": {
+              "rate": 0.7,
+              "n": 20
+            }
+          }
+        },
+        "exclusion": {
+          "n_rows": 40,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 0.875,
+              "n": 16
+            },
+            "target_in_pool_sql": {
+              "rate": 0.875,
+              "n": 16
+            },
+            "target_in_pool_semantic": {
+              "rate": 0.875,
+              "n": 16
+            },
+            "target_in_pool_itemcf": {
+              "rate": 0.8125,
+              "n": 16
+            }
+          }
+        },
+        "personalized": {
+          "n_rows": 40,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 0.825,
+              "n": 40
+            },
+            "target_in_pool_sql": {
+              "rate": 0.825,
+              "n": 40
+            },
+            "target_in_pool_semantic": {
+              "rate": 0.825,
+              "n": 40
+            },
+            "target_in_pool_itemcf": {
+              "rate": 0.7,
+              "n": 40
+            }
+          }
+        },
+        "similar": {
+          "n_rows": 40,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_sql": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_semantic": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_itemcf": {
+              "rate": 0.9,
+              "n": 40
+            }
+          }
+        }
+      },
+      "type1": {
+        "similar": {
+          "n_rows": 40,
+          "rates": {
+            "target_in_any_path_pool": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_sql": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_semantic": {
+              "rate": 0.925,
+              "n": 40
+            },
+            "target_in_pool_itemcf": {
+              "rate": 0.9,
+              "n": 40
+            },
+            "target_reachable": {
+              "rate": 0.0,
+              "n": 40
+            },
+            "retrieved_by_itemcf": {
+              "rate": 0.0,
+              "n": 40
+            }
+          },
+          "stage_lost_counts": {
+            "mixed": 9,
+            "pool": 4,
+            "retrieve": 27
+          }
+        }
+      }
+    }
+  }
+}

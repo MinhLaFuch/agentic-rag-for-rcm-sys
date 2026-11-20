@@ -1,4 +1,4 @@
-from ._prompt import SYSTEM_PROMPT
+from .compose_llm import SYSTEM_PROMPT
 from .compose_answer import compose_answer
 from .compose_llm import compose_llm
 from .compose_template import compose_template

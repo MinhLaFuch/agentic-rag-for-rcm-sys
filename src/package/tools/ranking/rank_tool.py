@@ -29,7 +29,7 @@ class RankTool(Tool):
     )
     input_schema = {
         "user_id": "str  -- required",
-        "candidates": "list[str | {item_id: str}]  -- required, e.g. \"$1.candidates\" from a retrieval step",
+        "candidates": "list[str | {item_id: str}]  -- required, e.g. \"$1.candidates\" from a retrieval step, or \"$union.candidates\" for all retrieval steps so far",
         "top_k": "int | None  -- default: all scorable candidates",
         "exclude_seen": "bool (default true)  -- drop items the user already interacted with",
     }

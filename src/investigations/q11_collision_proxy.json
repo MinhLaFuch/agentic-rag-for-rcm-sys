@@ -1,0 +1,105 @@
+{
+  "method": "train.parquet filtered to campaign_005 eval user_idx; request domain = seed_item_id prefix else majority target domain; pollution = history rows whose domain != request domain",
+  "n_eval_users": 140,
+  "n_requests": 152,
+  "eval_users_with_multi_domain_history": 54,
+  "pct_eval_users_multi_domain_history": 38.6,
+  "requests_with_history": 96,
+  "mean_outside_domain_pct": 26.94,
+  "median_outside_domain_pct": 6.15,
+  "pct_requests_majority_history_outside_request_domain": 20.8,
+  "requests_where_target_domain_is_minority_history_domain": 28,
+  "pollution_examples": [
+    {
+      "request_id": "personalized-sparse-0",
+      "kind": "personalized",
+      "user_idx": 3895090,
+      "request_domain": "Toys_and_Games",
+      "history_n": 1,
+      "outside_domain_n": 1,
+      "outside_domain_pct": 100.0
+    },
+    {
+      "request_id": "personalized-sparse-5",
+      "kind": "personalized",
+      "user_idx": 211638,
+      "request_domain": "Video_Games",
+      "history_n": 3,
+      "outside_domain_n": 3,
+      "outside_domain_pct": 100.0
+    },
+    {
+      "request_id": "personalized-sparse-10",
+      "kind": "personalized",
+      "user_idx": 1761458,
+      "request_domain": "Video_Games",
+      "history_n": 1,
+      "outside_domain_n": 1,
+      "outside_domain_pct": 100.0
+    },
+    {
+      "request_id": "personalized-sparse-11",
+      "kind": "personalized",
+      "user_idx": 5559283,
+      "request_domain": "Electronics",
+      "history_n": 1,
+      "outside_domain_n": 1,
+      "outside_domain_pct": 100.0
+    },
+    {
+      "request_id": "personalized-sparse-12",
+      "kind": "personalized",
+      "user_idx": 5491361,
+      "request_domain": "Toys_and_Games",
+      "history_n": 4,
+      "outside_domain_n": 4,
+      "outside_domain_pct": 100.0
+    }
+  ],
+  "clean_examples": [
+    {
+      "request_id": "similar-sparse-1",
+      "kind": "similar",
+      "user_idx": 18504034,
+      "request_domain": "Electronics",
+      "history_n": 1,
+      "outside_domain_n": 0,
+      "outside_domain_pct": 0.0
+    },
+    {
+      "request_id": "similar-sparse-3",
+      "kind": "similar",
+      "user_idx": 13860596,
+      "request_domain": "Electronics",
+      "history_n": 1,
+      "outside_domain_n": 0,
+      "outside_domain_pct": 0.0
+    },
+    {
+      "request_id": "similar-sparse-4",
+      "kind": "similar",
+      "user_idx": 1095950,
+      "request_domain": "Electronics",
+      "history_n": 4,
+      "outside_domain_n": 0,
+      "outside_domain_pct": 0.0
+    }
+  ],
+  "rating_stats_by_domain": {
+    "Electronics": {
+      "mean": 4.207,
+      "std": 1.247,
+      "n": 599
+    },
+    "Toys_and_Games": {
+      "mean": 4.2,
+      "std": 1.125,
+      "n": 135
+    },
+    "Video_Games": {
+      "mean": 4.395,
+      "std": 1.054,
+      "n": 38
+    }
+  }
+}

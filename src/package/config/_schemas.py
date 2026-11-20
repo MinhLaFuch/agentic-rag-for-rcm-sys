@@ -184,6 +184,15 @@ class AgentEvalConfig(BaseModel):
         return v
 
 
+class LLMPricing(BaseModel):
+    """Token pricing for cost metrics; null rates mean the model is unpriced."""
+
+    model_config = _BASE_CONFIG
+
+    prompt_usd_per_1m_tokens: float | None = Field(default=None, ge=0.0)
+    completion_usd_per_1m_tokens: float | None = Field(default=None, ge=0.0)
+
+
 class LLMConfig(BaseModel):
     """LLM config from configs/agent/llm.yaml."""
 
@@ -194,6 +203,7 @@ class LLMConfig(BaseModel):
     base_url: str = Field(default="", description="Base URL for OpenAI-compatible endpoint")
     api_key: str = Field(default="", description="API key (can be empty for local servers)")
     timeout_seconds: float = Field(gt=0.0, description="Request timeout in seconds")
+    pricing: LLMPricing | None = Field(default=None, description="USD per 1M tokens; None = cost unmeasurable")
 
 
 class MemoryConfig(BaseModel):
@@ -722,6 +732,46 @@ class ScoringConfig(BaseModel):
     hybrid_popularity_weight: float = Field(default=4.0, ge=0, description="Hybrid scorer popularity weight")
 
 
+class PlannerPromptsConfig(BaseModel):
+    """Planner LLM prompts from configs/agent/prompts.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    system_prompt: str = Field(description="Planner system prompt template")
+    retry_notice: str = Field(description="User message appended when the plan reply is not valid JSON")
+    reflect_notice: str = Field(description="User message sent with the step report when plan-reflect triggers")
+
+
+class InferencePromptsConfig(BaseModel):
+    """Inference composer LLM prompts from configs/agent/prompts.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    system_prompt: str = Field(description="Compose system prompt template")
+    retry_notice: str = Field(description="User message appended on compose retry")
+
+
+class AgentReplyTextsConfig(BaseModel):
+    """Fixed user-facing reply texts from configs/agent/reply_texts.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    no_result_text: str = Field(description="Fallback reply when no items were retrieved")
+    tool_error_text: str = Field(description="Fallback reply when tools errored")
+    ok_header: str = Field(description="Header for fully successful replies")
+    partial_header: str = Field(description="Header for partially failed replies")
+    id_only_note: str = Field(description="Note appended when candidate ids lack titles")
+
+
+class AgentPromptsConfig(BaseModel):
+    """LLM prompt strings from configs/agent/prompts.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    planner: PlannerPromptsConfig
+    inference: InferencePromptsConfig
+
+
 class JudgeConfig(BaseModel):
     """Jev judge config from configs/eval/judge.yaml (no wrapper key)."""
 
@@ -754,6 +804,8 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
 
     config_map = {
         "agent/agent": ("agent", AgentConfig),
+        "agent/prompts": (None, AgentPromptsConfig),
+        "agent/reply_texts": (None, AgentReplyTextsConfig),
         "agent/agent_eval": ("agent_eval", AgentEvalConfig),
         "agent/demo": ("demo", DemoConfig),
         "agent/llm": (None, LLMConfig),

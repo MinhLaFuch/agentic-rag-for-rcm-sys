@@ -1,0 +1,47 @@
+{
+  "exp_dir": "experiments\\candidate_recall\\exp_003",
+  "n_targets": 155,
+  "note": "ranks computed on UNMASKED main.items ordering keys; eval's effective order under masking is item_id_asc (control row)",
+  "orderings": {
+    "rating_number_desc": {
+      "recall@50": 0.2645,
+      "recall@200": 0.3871,
+      "recall@500": 0.4516,
+      "recall@1000": 0.4903,
+      "in_top1000_frac": 0.4903,
+      "median_rank": 42.0
+    },
+    "average_rating_desc": {
+      "recall@50": 0.0194,
+      "recall@200": 0.0903,
+      "recall@500": 0.1806,
+      "recall@1000": 0.3097,
+      "in_top1000_frac": 0.3097,
+      "median_rank": 399.0
+    },
+    "first_seen_ts_desc": {
+      "recall@50": 0.0129,
+      "recall@200": 0.0774,
+      "recall@500": 0.2065,
+      "recall@1000": 0.3419,
+      "in_top1000_frac": 0.3419,
+      "median_rank": 419.0
+    },
+    "price_asc": {
+      "recall@50": 0.0516,
+      "recall@200": 0.1677,
+      "recall@500": 0.271,
+      "recall@1000": 0.3742,
+      "in_top1000_frac": 0.3742,
+      "median_rank": 252.5
+    },
+    "item_id_asc": {
+      "recall@50": 0.0,
+      "recall@200": 0.0065,
+      "recall@500": 0.0516,
+      "recall@1000": 0.1226,
+      "in_top1000_frac": 0.1226,
+      "median_rank": 586.0
+    }
+  }
+}
