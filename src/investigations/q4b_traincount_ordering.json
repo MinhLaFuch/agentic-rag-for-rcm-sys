@@ -1,0 +1,32 @@
+{
+  "exp_dir": "experiments\\candidate_recall\\exp_003",
+  "n_targets": 155,
+  "note": "train_count = causal train.parquet interaction count; proposed Q18 replacement ordering under historical policy",
+  "spearman_train_count_vs_rating_number_sample": 0.7304310307127395,
+  "orderings": {
+    "train_count_desc": {
+      "recall@50": 0.2,
+      "recall@200": 0.3355,
+      "recall@500": 0.4065,
+      "recall@1000": 0.4581,
+      "in_top1000_frac": 0.4581,
+      "median_rank": 74.0
+    },
+    "rating_number_desc": {
+      "recall@50": 0.2645,
+      "recall@200": 0.3871,
+      "recall@500": 0.4516,
+      "recall@1000": 0.4903,
+      "in_top1000_frac": 0.4903,
+      "median_rank": 42.0
+    },
+    "item_id_asc": {
+      "recall@50": 0.0,
+      "recall@200": 0.0065,
+      "recall@500": 0.0516,
+      "recall@1000": 0.1226,
+      "in_top1000_frac": 0.1226,
+      "median_rank": 586.0
+    }
+  }
+}

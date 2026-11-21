@@ -1,0 +1,148 @@
+{
+  "method": "trajectory.recommended vs requests.targets; category tiers as defined; mega cats = top-15 item_categories by members",
+  "n_requests": 152,
+  "n_targets": 196,
+  "exact_item_hits": 0,
+  "exact_item_hit_rate": 0.0,
+  "overall": {
+    "domain_match": 0.5561,
+    "domain_match_request_any_hit_rate": 0.4539,
+    "main_cat_match": 0.4286,
+    "main_cat_match_request_any_hit_rate": 0.3816,
+    "any_cat_overlap": 0.5153,
+    "any_cat_overlap_request_any_hit_rate": 0.4474,
+    "specific_cat_overlap": 0.1378,
+    "specific_cat_overlap_request_any_hit_rate": 0.1645
+  },
+  "by_kind": {
+    "ambiguous": {
+      "n_requests": 6,
+      "n_targets": 0,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.0,
+      "main_cat_match": 0.0,
+      "any_cat_overlap": 0.0,
+      "specific_cat_overlap": 0.0
+    },
+    "cold_text": {
+      "n_requests": 20,
+      "n_targets": 20,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.6,
+      "main_cat_match": 0.55,
+      "any_cat_overlap": 0.6,
+      "specific_cat_overlap": 0.6
+    },
+    "exclusion": {
+      "n_requests": 40,
+      "n_targets": 26,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.3077,
+      "main_cat_match": 0.2308,
+      "any_cat_overlap": 0.3077,
+      "specific_cat_overlap": 0.0385
+    },
+    "personalized": {
+      "n_requests": 40,
+      "n_targets": 73,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.5342,
+      "main_cat_match": 0.4521,
+      "any_cat_overlap": 0.4658,
+      "specific_cat_overlap": 0.0548
+    },
+    "similar": {
+      "n_requests": 40,
+      "n_targets": 77,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.6494,
+      "main_cat_match": 0.4416,
+      "any_cat_overlap": 0.6104,
+      "specific_cat_overlap": 0.1299
+    },
+    "unanswerable": {
+      "n_requests": 6,
+      "n_targets": 0,
+      "exact_hit_rate": 0.0,
+      "domain_match": 0.0,
+      "main_cat_match": 0.0,
+      "any_cat_overlap": 0.0,
+      "specific_cat_overlap": 0.0
+    }
+  },
+  "near_miss_examples": [
+    {
+      "request_id": "similar-sparse-1",
+      "kind": "similar",
+      "n_targets": 1,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 1,
+      "domain_match_target_hits": 1
+    },
+    {
+      "request_id": "similar-sparse-8",
+      "kind": "similar",
+      "n_targets": 3,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 3,
+      "domain_match_target_hits": 2
+    },
+    {
+      "request_id": "similar-sparse-15",
+      "kind": "similar",
+      "n_targets": 2,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 2,
+      "domain_match_target_hits": 2
+    },
+    {
+      "request_id": "similar-warm-2",
+      "kind": "similar",
+      "n_targets": 6,
+      "n_recommended": 7,
+      "specific_cat_overlap_target_hits": 2,
+      "any_cat_overlap_target_hits": 6,
+      "domain_match_target_hits": 6
+    },
+    {
+      "request_id": "similar-warm-9",
+      "kind": "similar",
+      "n_targets": 2,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 2,
+      "domain_match_target_hits": 2
+    },
+    {
+      "request_id": "similar-warm-11",
+      "kind": "similar",
+      "n_targets": 9,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 1,
+      "domain_match_target_hits": 1
+    },
+    {
+      "request_id": "similar-warm-14",
+      "kind": "similar",
+      "n_targets": 1,
+      "n_recommended": 3,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 1,
+      "domain_match_target_hits": 1
+    },
+    {
+      "request_id": "similar-warm-15",
+      "kind": "similar",
+      "n_targets": 2,
+      "n_recommended": 10,
+      "specific_cat_overlap_target_hits": 1,
+      "any_cat_overlap_target_hits": 2,
+      "domain_match_target_hits": 2
+    }
+  ],
+  "n_near_miss_requests": 25
+}

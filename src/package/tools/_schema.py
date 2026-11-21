@@ -18,4 +18,4 @@ FILTER_KEYS = {
     "title_contains",
     "exclude_item_ids",
 }
-ORDER_COLUMNS = {"rating_number", "average_rating", "price"}
+ORDER_COLUMNS = {"rating_number", "average_rating", "price", "popularity"}

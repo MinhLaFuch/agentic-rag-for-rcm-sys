@@ -42,7 +42,8 @@ class FilterTool(Tool):
             "title_contains": "str",
             "exclude_item_ids": "list[str]",
         },
-        "order_by": "rating_number | average_rating | price (default rating_number)",
+        "order_by": "rating_number | average_rating | price | popularity (default rating_number; "
+                    "masked fields fall back to popularity when available)",
         "descending": "bool (default true)",
         "limit": f"int (<= {MAX_CANDIDATES}, default {SQL_DEFAULT_LIMIT})",
     }
@@ -79,17 +80,89 @@ class FilterTool(Tool):
         limit = check_top_k(limit, name="limit")
 
         where, params, normalized = compile_filters(filters, set(self.corpus.domains()), corpus=self.corpus)
+
+        # Metadata policy may mask mutable fields (price/average_rating/
+        # rating_number -> NULL). Constraints on masked fields silently match
+        # nothing; ordering by them degenerates to item_id order. Fail loudly
+        # for filters, and fall back to the causal `popularity` proxy for
+        # ordering when the policy exposed it.
+        policy = getattr(self.corpus, "_evaluation_metadata_policy", None) or {}
+        masked = set(policy.get("masked_fields") or ())
+        policy_name = policy.get("name")
+        if masked:
+            blocked = sorted(
+                f for f in normalized
+                if {"price_min": "price", "price_max": "price",
+                    "include_missing_price": "price",
+                    "min_rating": "average_rating",
+                    "min_rating_number": "rating_number"}.get(f) in masked
+            )
+            if blocked:
+                raise ToolInputError(
+                    f"filter(s) {blocked} target masked field(s) under metadata policy "
+                    f"'{policy_name}' (mutable fields are hidden to prevent future "
+                    "leakage, so these constraints cannot be evaluated). Drop them "
+                    "or use domain/categories/store/title_contains instead."
+                )
+        order_by_effective = order_by
+        order_by_note = None
+        degenerate_order = False
+        if order_by in masked:
+            if policy.get("popularity_available"):
+                order_by_effective = "popularity"
+                order_by_note = (
+                    f"order_by '{order_by}' is masked under '{policy_name}'; "
+                    "using causal popularity proxy (fit-split interaction count)"
+                )
+            else:
+                # No causal proxy available: keep the old deterministic
+                # item_id ordering rather than failing every FilterTool call,
+                # but surface it so the planner/eval logs show the degradation.
+                order_by_effective = "item_id"
+                degenerate_order = True
+                order_by_note = (
+                    f"order_by '{order_by}' is masked under '{policy_name}' and "
+                    "no popularity proxy is available; results are in item_id "
+                    "order (effectively unordered by popularity)"
+                )
+
         direction = "DESC" if descending else "ASC"
         cols = ", ".join(ITEM_COLUMNS)
-        # NULLs last, then item_id so results are deterministic
-        sql = (
-            f"SELECT {cols} FROM items WHERE {where} "
-            f"ORDER BY {order_by} IS NULL, {order_by} {direction}, item_id"
-        )
+        if order_by_effective == "popularity":
+            if not policy.get("popularity_available"):
+                raise ToolInputError(
+                    "order_by='popularity' requires the evaluation metadata "
+                    "policy to expose fit-split interaction counts; unavailable "
+                    f"under '{policy_name}'."
+                )
+            # Drive from the item_popularity index (cnt, item_id) and probe the
+            # items view per row — ORDER BY over the 2M-row view would need a
+            # full sort (~24s) and always blow the SQL time budget. CROSS JOIN
+            # pins the join order so the index scan + early LIMIT applies.
+            sql = (
+                f"SELECT {', '.join('items.' + c for c in ITEM_COLUMNS)} "
+                "FROM (SELECT item_id AS pid, cnt FROM item_popularity "
+                f"ORDER BY cnt {direction}, item_id) AS p "
+                "CROSS JOIN items ON p.pid = items.item_id "
+                f"WHERE {where} "
+                f"ORDER BY p.cnt {direction}, p.pid"
+            )
+        elif degenerate_order:
+            sql = f"SELECT {cols} FROM items WHERE {where} ORDER BY item_id"
+        else:
+            # NULLs last, then item_id so results are deterministic
+            sql = (
+                f"SELECT {cols} FROM items WHERE {where} "
+                f"ORDER BY {order_by_effective} IS NULL, {order_by_effective} {direction}, item_id"
+            )
         rows, truncated = self.corpus.select(sql, params, max_rows=limit)
-        return {
+        out = {
             "candidates": rows,
             "total_matches": self.corpus.count(where, params),
             "truncated": truncated,
             "applied_filters": normalized,
         }
+        if order_by_effective != order_by:
+            out["order_by_effective"] = order_by_effective
+            out["order_by_note"] = order_by_note
+        return out

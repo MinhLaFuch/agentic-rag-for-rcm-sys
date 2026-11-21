@@ -41,8 +41,11 @@ def test_historical_masks_aggregates_and_price_in_all_tools():
     assert all(r[f] is None for r in rows for f in ("price", "average_rating", "rating_number"))
     assert [r["item_id"] for r in FilterTool(corpus).execute()["candidates"]] == ["D::a", "D::b"]
     assert [r["item_id"] for r in SearchTool(corpus).execute("keyboard")["candidates"]] == ["D::a", "D::b"]
-    assert FilterTool(corpus).execute(filters={"min_rating_number": 2})["candidates"] == []
-    assert FilterTool(corpus).execute(filters={"price_max": 50})["candidates"] == []
+    # Masked-field constraints fail loudly instead of silently matching nothing.
+    with pytest.raises(Exception, match="masked field"):
+        FilterTool(corpus).execute(filters={"min_rating_number": 2})
+    with pytest.raises(Exception, match="masked field"):
+        FilterTool(corpus).execute(filters={"price_max": 50})
     assert apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10) == record
 
 
@@ -116,8 +119,11 @@ def test_first_seen_hides_item_across_sql_tools_and_fts():
         corpus.select("SELECT item_id FROM main.items")
     with pytest.raises(Exception):
         corpus.select("SELECT rowid FROM main.items_fts WHERE main.items_fts MATCH 'launchtoken'")
-    assert FilterTool(corpus).execute(filters={"min_rating_number": 2})["candidates"] == []
-    assert FilterTool(corpus).execute(filters={"price_max": 50})["candidates"] == []
+    # Masked-field constraints fail loudly instead of silently matching nothing.
+    with pytest.raises(Exception, match="masked field"):
+        FilterTool(corpus).execute(filters={"min_rating_number": 2})
+    with pytest.raises(Exception, match="masked field"):
+        FilterTool(corpus).execute(filters={"price_max": 50})
 
 
 def test_first_seen_filter_covers_similar_tool_and_memory():

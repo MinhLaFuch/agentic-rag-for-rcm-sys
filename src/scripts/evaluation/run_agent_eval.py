@@ -510,7 +510,14 @@ def main() -> None:
         file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
         print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
 
-    metadata_policy = apply_metadata_policy(corpus, metadata_policy_name, as_of_timestamp=as_of)
+    # Causal popularity proxy for masked mutable fields: interaction counts from
+    # the fit split only (pre-as_of by construction). Exposed as `popularity`
+    # so FilterTool can order candidates without leaking post-cutoff metadata.
+    idx2name = {v: k for k, v in item2id.items()}
+    fit_counts = fit_df["item_idx"].value_counts()
+    popularity = {idx2name[i]: int(c) for i, c in fit_counts.items() if i in idx2name}
+    metadata_policy = apply_metadata_policy(
+        corpus, metadata_policy_name, as_of_timestamp=as_of, popularity=popularity)
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,

@@ -10,7 +10,16 @@ MUTABLE_FIELDS = ("price", "average_rating", "rating_number")
 _PROTECTED_MAIN_TABLES = {"items", "item_categories"}
 
 
-def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
+def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
+                          popularity: dict | None = None) -> dict:
+    """Apply a metadata visibility policy to the corpus.
+
+    ``popularity`` (optional): ``{item_id: interaction_count}`` from the fit
+    split only — a causal, pre-as_of popularity proxy. When provided, a temp
+    ``item_popularity`` table (with cnt/item_id indexes covering every visible
+    item) lets FilterTool order by ``popularity`` even when mutable fields
+    (rating_number etc.) are masked to NULL.
+    """
     if policy not in POLICIES:
         raise ValueError(f"metadata policy must be one of {POLICIES}")
     if isinstance(as_of_timestamp, bool) or not isinstance(as_of_timestamp, int) or as_of_timestamp <= 0:
@@ -98,6 +107,13 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
         ),
         "historical_causal_claim": False,
         "snapshot_mutable_fields_used": policy == "snapshot",
+        "popularity_available": bool(popularity),
+        "popularity_proxy": (
+            "fit-split interaction count per item (causal: only pre-as_of "
+            "interactions); exposed as temp.item_popularity for FilterTool "
+            "order_by='popularity' when provided"
+            if popularity else None
+        ),
     }
 
     # Trusted setup only. The TEMP items view keeps base rowids for FTS joins,
@@ -118,6 +134,31 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int) -> dict:
             f'NULL AS "{column}"' if column in masked else f'"{column}"' for column in columns
         )
         conn.execute("PRAGMA query_only = OFF")
+        if popularity:
+            conn.execute(
+                "CREATE TEMP TABLE item_popularity (item_id TEXT PRIMARY KEY, cnt INTEGER)"
+            )
+            conn.executemany(
+                "INSERT INTO item_popularity VALUES (?, ?)",
+                ((iid, int(c)) for iid, c in popularity.items()),
+            )
+            # Every visible item needs a row so FilterTool can INNER JOIN the
+            # popularity index without silently dropping zero-fit items.
+            conn.execute(
+                "INSERT INTO item_popularity(item_id, cnt) "
+                "SELECT i.item_id, 0 FROM main.items AS i "
+                "WHERE i.first_seen_ts IS NOT NULL AND i.first_seen_ts <= ? "
+                "AND i.item_id NOT IN (SELECT item_id FROM item_popularity)",
+                (int(as_of_timestamp),),
+            )
+            conn.execute(
+                "CREATE INDEX idx_item_popularity_cnt_desc "
+                "ON item_popularity(cnt DESC, item_id)"
+            )
+            conn.execute(
+                "CREATE INDEX idx_item_popularity_cnt_asc "
+                "ON item_popularity(cnt ASC, item_id)"
+            )
         conn.execute(
             "CREATE TEMP VIEW items AS "
             f"SELECT rowid AS rowid, {projection} FROM main.items "

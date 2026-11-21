@@ -123,11 +123,18 @@ The proxy hides items with zero *cleaned interactions* pre-cutoff — real
 availability data does not exist upstream (meta has no launch date).
 `snapshot`/`no_filter` sensitivity run still open (Phase 4).
 
-### Q10. What are we actually optimizing? ⬜ (decision still yours)
-New bounding numbers: pure popularity r@1000=10.2% (E-Q10); 24.5% of targets
-share zero surface signal (E-Q11); ~18% temporally hidden. Realistic ceiling
-≈62% target recall. If the goal is "good recommendations" not "predict next
-click", the funnel may be over-fit — still your call.
+### Q10. What are we actually optimizing? 🔶 (decision recorded: flexible target)
+**Decision 2026-11-21:** report BOTH exact-item hit and category-level hit.
+First measurement (`investigations/q10_category_hit.json`): exact hits in
+final recommendations = **0/196**; category-level target-hit = domain 55.6%,
+main_cat 42.9%, any_cat 51.5%, specific_cat only 13.8%. Interpretation:
+even the relaxed metric shows recommendations are mostly off-target — the
+binding constraint is upstream retrieval, not metric strictness. Category-hit
+adopted as a secondary A/B metric going forward.
+
+Context bounds for exact-hit: pure popularity r@1000=10.2% (E-Q10); 24.5% of
+targets share zero surface signal (E-Q11); ~7pp lost to temporal proxy
+(Q13d). Realistic exact-recall ceiling ≈62% *candidate* recall.
 
 ---
 
@@ -266,16 +273,16 @@ single best ordering signal the system has.
   got 0 candidates; **and §6.6's category recall numbers were themselves
   corrupted** (Q4: true ceiling is 38.7% r@200, not 21.3%)
 
-Fix decision pending — **recommendation after Q13/Q16:** do NOT unmask
-`rating_number` itself: it's a scrape-time snapshot, so under ANY historical
-protocol it leaks post-cutoff ratings (Spearman 0.65 vs held-out interactions
-quantifies the leak). Instead expose a **causal popularity proxy computed from
-train interactions only** (e.g., `train_interaction_count`, log-scaled) as the
-FilterTool ordering key — pre-cutoff by construction, already in the pipeline
-(`scores`/`user_items`), and empirically near-equivalent to rating_number
-(Spearman 0.73 between the two). price/min_rating filters need either a
-documented "unsupported under historical policy" error or a causal proxy —
-silently returning 0 matches is the worst option.
+Fix decision: **IMPLEMENTED** (user approved causal-proxy approach).
+`apply_metadata_policy` accepts `popularity={item_id: fit_interaction_count}`
+→ temp `item_popularity` table w/ covering indexes; `run_agent_eval` passes
+fit_df counts; FilterTool remaps masked `order_by` → `popularity` (index-driven
+~1s query) or falls back to item_id order + explicit note when no proxy;
+masked-field filters now raise ToolInputError instead of silent 0 matches.
+`rating_number` stays masked (scrape-time snapshot = future leak under every
+protocol). Verified: 1.05s empty-filter, category filters fast, 207 tests pass.
+Other eval callers (candidate_recall/ranking_eval/policy_chain_eval/
+planner_query_replay) don't pass popularity yet → item_id fallback + note.
 
 ### Q19. Dense embedding inputs ✅ ANSWERED (not title-only; test blocked)
 `build_semantic_embeddings.py` doc text = `title\nstore\nmain_category\ncategories`
