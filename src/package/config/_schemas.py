@@ -546,6 +546,28 @@ class DemoConfig(BaseModel):
     use_prebuilt_corpus: bool = Field(description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(description="Accept prebuilt corpus when raw meta files are missing")
     intent_path_enabled: bool = Field(default=False, description="Type1 intent search path (keyword + filters); default off")
+    scorer_mode: str = Field(default="baseline", description="baseline | hybrid")
+    scorer_popularity_weight: float = Field(default=4.0, ge=0.0, description="Popularity weight for HybridScorer when scorer_mode=hybrid")
+    retrieval_mode: str = Field(default="bm25", description="bm25 | hybrid")
+    embeddings_path: str | None = Field(default=None, description="Validated embedding artifact directory or NPZ for hybrid retrieval")
+    ann_index_path: str | None = Field(default=None, description="Persisted FAISS ANN index directory for fast runtime dense search")
+    bm25_index_path: str | None = Field(default=None, description="Persisted SparseBM25Index directory for sub-100ms lexical search")
+    translate_vietnamese: bool = Field(default=True, description="Automatically translate Vietnamese queries to English catalog terms in SearchTool")
+    fallback_to_bm25: bool = Field(default=True, description="Allow explicit logged fallback to BM25 in demo runtime if hybrid artifact/encoder fails")
+
+    @field_validator("scorer_mode")
+    @classmethod
+    def validate_scorer_mode(cls, v: str) -> str:
+        if v not in ("baseline", "hybrid"):
+            raise ValueError("scorer_mode must be 'baseline' or 'hybrid'")
+        return v
+
+    @field_validator("retrieval_mode")
+    @classmethod
+    def validate_retrieval_mode(cls, v: str) -> str:
+        if v not in ("bm25", "hybrid"):
+            raise ValueError("retrieval_mode must be 'bm25' or 'hybrid'")
+        return v
 
     @field_validator("default_language")
     @classmethod

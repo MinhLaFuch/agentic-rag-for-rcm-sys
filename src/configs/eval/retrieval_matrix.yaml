@@ -1,0 +1,30 @@
+version: 1
+query_modes: [latest_title, multi_history, recency_weighted]
+max_history_items: 3
+recency_decay: 0.5
+normalization: raw
+budgets: [50, 100, 200]
+rank_ks: [5, 10, 20]
+seed: 42
+bootstrap_samples: 2000
+dense_block_rows: 32768
+fusion:
+  method: weighted_rrf
+  rrf_k: 60
+  # These are caps per source before fusion, not guaranteed output allocations.
+  quotas: {popularity: 200, item_cf: 200, bm25: 200, dense: 200}
+  weights: {popularity: 1.0, item_cf: 1.0, bm25: 1.0, dense: 1.0}
+cold_start:
+  fallback_source: popularity
+  include_in_fused: true
+scoring:
+  modes: [baseline, cf_ties, additive_ablation]
+  popularity_weight: 0.1
+  evidence_weight: 0.1
+gates:
+  comparison: recency_weighted/fused-vs-latest_title/fused
+  primary_budget: 100
+  min_recall_delta_ci_low: null
+  max_p95_seconds: null
+  max_segment_recall_regression: null
+  # Null means NOT_SET, never PASS. Only validation may choose thresholds.

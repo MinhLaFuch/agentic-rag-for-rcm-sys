@@ -26,6 +26,10 @@ def build_tools(
     vector_store: VectorStore | None = None,
     query_encoder: Any | None = None,
     rrf_k: int = 60,
+    dense_search: Any | None = None,
+    fallback_to_bm25: bool = False,
+    bm25_index: Any | None = None,
+    translate_vietnamese: bool = False,
 ) -> AgentTools:
     """knn: nguồn similarity cho SimilarTool; scorer: cho RankTool; as_of_timestamp: mốc chống leakage cho MemoryTool."""
     return AgentTools(
@@ -38,6 +42,10 @@ def build_tools(
             vector_store=vector_store,
             query_encoder=query_encoder,
             rrf_k=rrf_k,
+            dense_search=dense_search,
+            fallback_to_bm25=fallback_to_bm25,
+            bm25_index=bm25_index,
+            translate_vietnamese=translate_vietnamese,
         ),
         sql=FilterTool(corpus, logger=logger),
         memory=MemoryTool(interactions, user2id, item2id, corpus, logger=logger, as_of_timestamp=as_of_timestamp),

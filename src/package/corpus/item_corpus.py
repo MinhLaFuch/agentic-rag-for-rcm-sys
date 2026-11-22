@@ -18,6 +18,8 @@ import difflib
 import sqlite3
 import time
 import warnings
+from contextlib import contextmanager
+from contextvars import ContextVar
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
@@ -49,6 +51,21 @@ def _get_corpus_limits() -> tuple[int, float]:
     cfg = load_config("agent/tools")["tools"]
     return int(cfg["max_query_rows"]), float(cfg["sql_time_budget_seconds"])
 
+
+
+_offline_select_seconds = ContextVar('offline_select_seconds', default=None)
+
+
+@contextmanager
+def offline_select_budget(seconds):
+    """Scoped, finite SELECT deadline for trusted offline evaluation."""
+    if type(seconds) not in (float, int) or not 0 < seconds <= 300:
+        raise ValueError('Offline SQL budget must be in (0, 300] seconds')
+    token = _offline_select_seconds.set(seconds)
+    try:
+        yield
+    finally:
+        _offline_select_seconds.reset(token)
 
 
 class ItemCorpus:
@@ -181,7 +198,8 @@ class ItemCorpus:
         if not sql.lower().startswith(("select", "with")):
             raise ToolInputError("only SELECT statements are allowed")
 
-        deadline = time.monotonic() + _get_corpus_limits()[1]
+        seconds = _offline_select_seconds.get() or _get_corpus_limits()[1]
+        deadline = time.monotonic() + seconds
         self._conn.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
         try:
             # Add newline before closing paren to handle trailing -- comments

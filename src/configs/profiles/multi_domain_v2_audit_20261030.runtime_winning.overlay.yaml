@@ -1,0 +1,35 @@
+# Frozen runtime overlay for the validation-winning configuration on multi_domain_v2_audit_20261030:
+# - Retrieval: hybrid RRF with validated MiniLM full-catalog artifact (explicit logged BM25 fallback in demo runtime)
+# - Ranking: HybridScorer(popularity_weight=4.0) validated in ranking_eval/exp_010 (NDCG@10 +151% vs BaselineScorer on fused)
+# Activate via CONFIG_OVERLAY_PATH without mutating repo defaults.
+path/domains:
+  merged_name: multi_domain_v2_audit_20261030
+data/split:
+  split:
+    data_protocol: temporal_train_core
+    temporal_train_core:
+      train_end_inclusive_ms: 1617737606134
+      validation_end_inclusive_ms: 1651701127817
+eval/baselines:
+  baselines:
+    seed: 42
+    item_knn:
+      k: 20
+eval/candidate_recall:
+  candidate_recall:
+    metadata_policy: historical_static_catalog
+    allow_missing_corpus_sources: false
+eval/ranking_eval:
+  ranking_eval:
+    metadata_policy: historical_static_catalog
+    allow_missing_corpus_sources: false
+agent/demo:
+  demo:
+    scorer_mode: "hybrid"
+    scorer_popularity_weight: 4.0
+    retrieval_mode: "hybrid"
+    embeddings_path: "src/experiments/embedding_builds/minilm_v2_audit_cpu/artifact"
+    ann_index_path: "src/experiments/ann_builds/minilm_v2_audit_hnsw_sq8_m32"
+    bm25_index_path: "src/experiments/bm25_builds/multi_domain_v2_audit_20261030"
+    translate_vietnamese: true
+    fallback_to_bm25: true

@@ -30,7 +30,7 @@ if __name__ == '__main__' and not any(arg in ('--help', '-h') for arg in sys.arg
 import numpy as np
 import yaml
 
-from package.config import PROJECT_ROOT
+from package.config import PROJECT_ROOT, load_config
 from package.config.resolve_bundle_paths import resolve_bundle_paths
 from package.data.manifest.load_audit_profile import load_audit_profile
 from package.recommenders.shared import file_hash
@@ -262,8 +262,10 @@ def main():
     paths = resolve_bundle_paths(tag=args.tag)
     contract_path = PROJECT_ROOT / 'configs/eval/embedding_benchmark_contract.yaml'
     contract = yaml.safe_load(contract_path.read_text(encoding='utf-8'))
-    resource = (PROJECT_ROOT / 'resource').resolve()
-    if args.work_dir.resolve().is_relative_to(resource):
+    configured_paths = load_config('path/data_paths')['paths']
+    protected = [(PROJECT_ROOT / configured_paths[key]).resolve() for key in (
+        'raw_dir', 'cleaned_dir', 'filtered_dir', 'mapped_dir', 'splits_dir', 'corpus_dir', 'item_knn_dir')]
+    if any(args.work_dir.resolve().is_relative_to(directory) for directory in protected):
         parser.error('Pilot outputs must stay outside resource artifacts')
     result = run_pilot(paths, contract, args.readiness_report, args.work_dir, limit=args.limit,
                        batch_size=args.batch_size, device=args.device, revision=args.revision)

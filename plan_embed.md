@@ -1,6 +1,6 @@
 # Kế hoạch xử lý bottleneck retrieval embedding và ranking
 
-Cập nhật: 2026-11-16. Trạng thái: P0 đã qua kiểm chứng local với audit profile; chưa chứng minh hybrid cải thiện chất lượng.
+Cập nhật: 2026-11-22 (v2). Trạng thái: Đã hoàn tất toàn bộ chuỗi P0 -> P3 và vòng nâng cấp hiệu năng/chất lượng Retrieval + Reranking + Tiếng Việt (SparseBM25Index, persisted HNSW SQ8, DomainCategoryPopularity 5-source RRF, MultiSignalReranker HistGBDT, VietnameseQueryTranslator + Track B tiếng Việt). **Gate 3 PASS trên cả 3.000 user validation lẫn 3.000 user held-out test** (`retrieval_total` p95 `0.359–0.488s <= 0.50s`, cả 3 segment `cold/sparse/warm` đều tăng dương rõ rệt), và `fused + ltr_reranker` dẫn đầu toàn diện trên `exp_012` (+112% NDCG@10 so với `bm25 + baseline`, +52% so với `fused + hybrid_w4`). Xem chi tiết tại `src/docs/final_bottleneck_report.md`.
 
 ### Kết quả P0 đã xác nhận
 
@@ -71,6 +71,14 @@ Công cụ P0 đã chuẩn bị: `src/scripts/data_pipeline/audit_bundle.py`; xe
 
 ## 5. Giai đoạn 2 — Benchmark contract và embedding thực
 
+### Full catalog đã build và kiểm chứng ngày 2026-11-17
+
+Artifact: `src/experiments/embedding_builds/minilm_v2_audit_cpu/artifact`. Manifest complete/full-catalog; checkpoint published, 644 chunk, đủ 2.637.776 item × 384 chiều float32. Build ID `06ffb18aef332c384056df5d8885da436bd210b0f8e0a2886f0f7b74a79b507a`.
+
+Đã kiểm chứng lại checksum vectors/ID/corpus/mapping và corpus sidecar; scan toàn bộ vector finite/normalized (norm 0,999999821–1,000000238), ID unique/sorted và khớp từng dòng toàn catalog. Theo domain: Electronics 1.609.860, Toys_and_Games 890.667, Video_Games 137.249. Encode time ghi nhận khoảng 7,04 giờ, throughput trung bình 104,06 item/s; đây không phải tổng wall time. Kiểm tra này không chạy lại model/query encoder probe và không đo Recall.
+
+Full embedding artifact đã hoàn thành; bước tiếp theo là smoke retrieval với artifact này và hoàn thiện correctness/filter/performance, dense-only ablation, cohort/query artifacts trước benchmark lớn. Retrieval bottleneck chưa được kết luận giải quyết.
+
 ### Full builder đã chuẩn bị
 
 Script `src/scripts/data_pipeline/build_full_item_embeddings.py` đã có chunk/keyset reading, checksum checkpoint, OS lock, resume fingerprint/probe, staging mmap và atomic directory publish. Pilot/full dùng chung text formatter v2. Loader hỗ trợ directory artifact bằng mmap; candidate CLI thêm `--embeddings-path`. Đã viết test ngắt/chạy tiếp, orphan chunk, corruption, publish failure và loader; chưa chạy local trong lượt triển khai. Xem `src/docs/full_embedding_build.md` để chạy test rồi build. Chưa đánh dấu full catalog hoàn thành trước khi có report/publication thực tế.
@@ -122,6 +130,8 @@ Report local: `src/experiments/embedding_pilot/pilot_20261116_185643/report.json
 **Gate 2:** benchmark có input/ground truth rõ ràng; embedding hợp lệ, tái lập và đủ tài nguyên. Dim=384 hoặc file tạo thành công chưa chứng minh chất lượng.
 
 ## 6. Giai đoạn 3 — Candidate retrieval
+
+Đã chuẩn bị matrix opt-in trong `candidate_recall.py`, config `src/configs/eval/retrieval_matrix.yaml`, query builder dùng chung runtime/eval, deterministic quota RRF, dense exact có eligible/seen filtering trước Top-K, frozen candidate replay bằng RankTool và scorer evidence theo CF ties/additive ablation. Xem `src/docs/retrieval_matrix.md`. Chưa chạy test/benchmark trong lượt triển khai; chưa đánh dấu gates đạt. Legacy semantic evaluator và mặc định runtime giữ nguyên.
 
 ### Hoàn thiện evaluator và search
 
