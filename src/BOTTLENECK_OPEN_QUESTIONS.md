@@ -77,12 +77,23 @@ correct — the bug is that eval can't see it.**
 
 ## P1 — Ranking / scoring (measured second bottleneck)
 
-### Q5. Scorer strategy 🔶 → DECIDED 2026-11-21: keep both, more evidence
+### Q5. Scorer strategy 🔶 → EVIDENCE COMPLETE 2026-11-22 (wiring = your call)
 **User decision:** keep baseline AND learned scorer; gather more evidence
-before wiring. Next step queued: rerun `ranktool_injection_probe` +
-`q6_scorer_comparison_v2` on the two post-F2 filter_ab runs (fresh candidate
-pools, real FilterTool ordering) to see if v5_honest's 71.4% rescue@10
-replicates outside the exp_5 injection setup.
+before wiring.
+**Replication DONE** — probe rerun on both post-F2 filter_ab runs
+(`investigations/q6_injection_postf2.json`), parameterized features builder
+`q6_scorer_comparison_v3.py`, pooled honest-CV analysis
+`q6_scorer_comparison_v4.json`. Conditioned on real competition:
+
+| variant | exp1_always | exp2_baseline |
+|---|---|---|
+| v1a baseline scorer | 8.2% | 8.0% |
+| v1b pure popularity | 26.0% | 34.1% |
+| v5_honest `[pop,cf,cat_match]` | **35.6%** | **47.1%** |
+
+Honest learned scorer = 4-6× baseline rescue@10 on fresh pools, replicating
+the earlier 71.4% (different conditioning/pool). Uses only provenance-free
+features → deployable. Baseline-arm pools uniformly easier for every variant.
 Prior evidence (`q6_scorer_comparison_v2.json`, 126 targets w/ competition,
 reproduces §6.7's 31.75% exactly):
 - **pure popularity alone = 60.3% rescue@10** — the CF term actively HURTS
@@ -109,11 +120,14 @@ exact weighting.
 
 ## P2 — Collaborative filtering
 
-### Q8. Is a different CF model in scope? ⬜ (decision still yours — now better informed)
+### Q8. Is a different CF model in scope? ✅ ANSWERED 2026-11-22 → NO (F10)
 ItemKNN is structurally dead (§6.5, §6.8) and k-core K is exonerated (Q12:
-co-occurrence 98→94 targets across K=none→5; max_sim p90 ≈0.004). Only a
-fundamentally different model (MF/two-tower on full 48.8M train — note train_core
-keeps only 19.4M) could create signal. Still your scope decision.
+co-occurrence 98→94 targets across K=none→5; max_sim p90 ≈0.004). MF was the
+last candidate — **F10 baselines (`experiments/baselines/exp_001`, 50k
+target-bearing users, validation) settled it: popularity recall@10=0.0077 >
+item_knn 0.0055 > bpr_mf 0.0054 > random 0**. BPR-MF trained on CUDA (743s)
+and still lost to plain popularity on every metric. CF track closed: no
+learned CF variant beats popularity for held-out targets on this data.
 
 ---
 

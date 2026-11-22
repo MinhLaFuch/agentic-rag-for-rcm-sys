@@ -1,0 +1,268 @@
+{
+  "error_taxonomy": {
+    "planner": {
+      "ambiguous": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "cold_text": {
+        "step_errors": {
+          "no_error": 41,
+          "tool_error": 6,
+          "bad_reference": 10
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "exclusion": {
+        "step_errors": {
+          "tool_error": 13,
+          "bad_reference": 21,
+          "no_error": 45
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "personalized": {
+        "step_errors": {
+          "no_error": 75
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "similar": {
+        "step_errors": {
+          "no_error": 116,
+          "tool_error": 2,
+          "bad_reference": 2
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "unanswerable": {
+        "step_errors": {
+          "tool_error": 6,
+          "bad_reference": 8
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    }
+  },
+  "reflection": {
+    "planner": {
+      "ambiguous": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "cold_text": {
+        "n_first_failed": 6,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": 0.42857142857142855
+      },
+      "exclusion": {
+        "n_first_failed": 12,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "personalized": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "similar": {
+        "n_first_failed": 2,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "unanswerable": {
+        "n_first_failed": 6,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      }
+    }
+  },
+  "pool_stage": {
+    "planner": {
+      "ambiguous": {
+        "n_rows": 6
+      },
+      "cold_text": {
+        "n_rows": 20,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 20
+          },
+          "target_reachable": {
+            "rate": 0.07142857142857142,
+            "n": 14
+          },
+          "retrieved_by_sql": {
+            "rate": 0.3333333333333333,
+            "n": 3
+          },
+          "retrieved_by_semantic": {
+            "rate": 0.0,
+            "n": 11
+          },
+          "query_hit_any_title_token": {
+            "rate": 0.6363636363636364,
+            "n": 11
+          }
+        },
+        "stage_lost_counts": {
+          "pool": 3,
+          "retrieve": 13,
+          "survived": 1
+        },
+        "rank_in_pool": {
+          "median": 4.0,
+          "mean": 4.0,
+          "n": 1
+        }
+      },
+      "exclusion": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_sql": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.8125,
+            "n": 16
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 3
+          },
+          "retrieved_by_semantic": {
+            "rate": 0.0,
+            "n": 3
+          },
+          "query_hit_any_title_token": {
+            "rate": 0.0,
+            "n": 2
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 1,
+          "pool": 4,
+          "retrieve": 2
+        }
+      },
+      "personalized": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 40
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 25
+          },
+          "retrieved_by_sql": {
+            "rate": 0.0,
+            "n": 25
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 5,
+          "pool": 4,
+          "retrieve": 16
+        }
+      },
+      "similar": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.9,
+            "n": 40
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 40
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 40
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 9,
+          "pool": 4,
+          "retrieve": 27
+        }
+      },
+      "unanswerable": {
+        "n_rows": 6
+      }
+    }
+  }
+}

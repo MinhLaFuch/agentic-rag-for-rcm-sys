@@ -72,32 +72,30 @@ and A/B on the same campaign_005 exp_5 152-request set for comparability.
       → even the flexible metric shows recommendations are mostly off-target;
       the bottleneck is upstream (retrieval), not metric strictness. Useful
       as a secondary A/B metric going forward.
-- [~] **F10. Q8 A/B/C CF comparison** — ROOT-CAUSED + FIX IMPLEMENTED
-      2026-11-22, rerun in progress (shell 1e962b, log
-      `investigations/f10_baselines_cuda.log`).
-      - Root cause: NOT data prep (53s) and NOT BPR fit — it was
-        `evaluate_recommender`'s dense path: batch_elements=20M ÷ 2.6M items
-        = ~7 users/batch × millions of target-bearing users × per-row
-        `np.lexsort` over the full catalog = ~1M O(n log n) sorts. Random and
-        BPR-MF have no sparse path so they hit it directly.
-      - Fixes (device-flexible, CUDA→CPU fallback per user requirement):
-        * `recommenders/shared/device.py` — get_device() (cached CUDA detect).
-        * `recommender.py` — `_topk_indices()`: exact O(n) top-k
-          (argpartition + exact recompute only on boundary ties), replaces
-          per-row lexsort; new `_recommend_topk()` fused hook.
-        * `random_recommender.py` — `_recommend_sparse`: uniform sample of
-          non-excluded items (top-k of iid scores IS a uniform subset).
-        * `bpr_mf_recommender.py` — `_recommend_topk`: torch tiled top-k
-          (256 users × 131k-item tiles ≈134MB blocks; item factors ~0.7GB on
-          GPU, user factors gathered per chunk — full 5.9GB user matrix never
-          leaves CPU). Verified bit-identical to dense path on CUDA toy.
-        * `run_baselines.py` + `baselines.yaml` + `_schemas.py` —
-          `eval_user_sample: 50000` (seeded, identical population for all
-          models → fair comparison) + batch_elements=200M.
-      - BPR-MF `_fit` remains numpy (torch CUDA port deferred — eval was the
-        hog; revisit only if fit itself proves slow).
-      - 118/118 recommender+evaluator tests pass; top-k equivalence verified
-        vs lexsort on 300 randomized trials incl. ties/-inf.
+- [x] **F10. Q8 A/B/C CF comparison — DONE 2026-11-22** (~15min total vs
+      6h+ killed). Root cause of the 6h: `evaluate_recommender` dense path —
+      ~7 users/batch × millions of users × per-row lexsort over 2.6M items.
+      NOT BPR fit, NOT data prep (53s).
+      - Fixes (device-flexible, CUDA→CPU fallback):
+        * `recommenders/shared/device.py` — get_device().
+        * `recommender.py` — `_topk_indices()` exact O(n) top-k (argpartition
+          + exact recompute only on boundary ties); `_recommend_topk()` hook.
+        * `random_recommender.py` — `_recommend_sparse` uniform sampler.
+        * `bpr_mf_recommender.py` — `_recommend_topk` torch tiled top-k
+          (256×131k blocks; verified identical to dense on CUDA) AND
+          `_fit_torch` CUDA training: Q/bias on GPU, 5.9GB user-factor table
+          streamed from CPU (~0.5MB/batch); deterministic mode preserves
+          same-seed bitwise contract; numpy `_fit_numpy` kept as no-torch
+          fallback. Fit: 743.5s for 20 epochs on the 4GB GPU.
+        * `run_baselines.py`/`baselines.yaml`/`_schemas.py` —
+          `eval_user_sample: 50000` (same seeded population all models) +
+          batch_elements=200M.
+      - RESULTS (`experiments/baselines/exp_001`, validation, 50k users):
+        popularity recall@10=0.0077 > item_knn 0.0055 > bpr_mf 0.0054 >
+        random 0. Popularity wins every metric incl. warm segment.
+      - VERDICT: CF track (F6) closed — learned CF does not beat popularity
+        for held-out targets; consistent with ItemKNN co-occurrence finding.
+      - 114/114 recommender tests + 25/25 policy tests pass.
 
 ## DECISION-BLOCKED — your call required (see BOTTLENECK_OPEN_QUESTIONS.md)
 
@@ -133,17 +131,21 @@ and A/B on the same campaign_005 exp_5 152-request set for comparability.
       + q6_scorer_comparison_v2 on the two new post-F2 filter_ab runs
       (fresh candidate pools) → compare v1a/v1b/v5_honest again before
       any production wiring decision.
-- [~] F5. Phase 3 retrieval improvements — Q2 DECIDED 2026-11-21: build a
-      categorization layer for the uncategorized tail (~24% of targets),
-      likely embedding-relation based. Design needed. Q19 dense-format
+- [~] F5. Phase 3 retrieval improvements — Q2 BUILT 2026-11-22: categorization
+      layer for the uncategorized tail done (kNN top-1 vote over MiniLM
+      vectors, 229,975 items → `item_categories_inferred.parquet` merged into
+      resource/corpus/multi_domain/; auto-loaded by run_agent_eval, unions
+      only into uncategorized items, also feeds FTS). Remaining: agent eval
+      with inferred cats vs baseline to measure tail recall. Q19 dense-format
       ablation DONE: all query formats ~0% recall — format is not the
       issue; user is evaluating multilingual embedding/BM25 replacement
       themselves. Descriptions/features remain unused enrichment material.
-- [ ] F6. CF research track — still blocked on F10 (which model is fast
-      enough to even produce a result).
-- [ ] F7. Eval protocol work — Q9 REOPENED 2026-11-21 (user: masking fixed,
-      take another look — field-level temporal audit needed); Q10 flexible
-      metric stands; Q23 case-by-case.
+- [x] F6. CF research track — CLOSED by F10 (2026-11-22): bpr_mf
+      recall@10=0.0054 < popularity 0.0077 on identical 50k eval population.
+      Learned CF adds nothing over popularity for held-out targets.
+- [ ] F7. Eval protocol work — Q9 DONE 2026-11-22 (causal mean-rating proxy
+      wired for min_rating/average_rating; price+rating_number stay
+      fail-loud); Q10 flexible metric stands; Q23 case-by-case.
 - [x] F8. Cross-domain history ablation — DONE as offline exposure analysis
       (`investigations/f8_domain_ablation.json`, script f8_domain_ablation.py):
       domain-restricting MemoryTool history costs ~23% of interactions,

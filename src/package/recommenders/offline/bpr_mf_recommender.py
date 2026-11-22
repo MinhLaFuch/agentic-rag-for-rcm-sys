@@ -71,6 +71,122 @@ class BPRMFRecommender(Recommender):
         return neg
 
     def _fit(self, train_matrix: sp.csr_matrix) -> None:
+        try:
+            import torch  # noqa: F401
+        except ImportError:
+            self._fit_numpy(train_matrix)
+            return
+        self._fit_torch(train_matrix)
+
+    def _fit_torch(self, train_matrix: sp.csr_matrix) -> None:
+        """BPR-MF training on torch (CUDA when available, else CPU).
+
+        Memory layout: item factors + bias live on the compute device; user
+        factors stay on CPU because 23M x 64 fp32 (~5.9GB) exceeds the 4GB
+        GPU. Each batch gathers the needed user rows on CPU, moves the small
+        (batch, d) tensors to the device, and writes the user-factor deltas
+        back — ~0.5MB transferred per batch instead of materialising all
+        user factors on the GPU.
+        """
+        import torch
+
+        rng = np.random.default_rng(self.seed)
+        num_users, num_items, d = self.num_users, self.num_items, self.embedding_dim
+        device = get_device()
+
+        coo = train_matrix.tocoo()
+        users_all = coo.row.astype(np.int64)
+        items_all = coo.col.astype(np.int64)
+        n = len(users_all)
+        if n == 0:
+            raise ValueError("Cannot fit BPR-MF on an empty interaction matrix")
+
+        user_interaction_counts = np.bincount(users_all, minlength=num_users)
+
+        # Init from the numpy RNG so runs are reproducible from `seed` alone
+        # (torch's global RNG is not seeded by it).
+        P_t = torch.from_numpy(
+            rng.normal(0, 0.1, (num_users, d)).astype(np.float32))
+        Q = torch.from_numpy(
+            rng.normal(0, 0.1, (num_items, d)).astype(np.float32)).to(device)
+        b = torch.zeros(num_items, dtype=torch.float32, device=device)
+        self.loss_history = []
+        self.__dict__.pop("_topk_cache", None)
+
+        lr, reg = self.learning_rate, self.reg
+
+        # CUDA index_add_ is atomic/add-order nondeterministic; deterministic
+        # mode makes same-seed runs bitwise reproducible (contract test).
+        prev_deterministic = torch.are_deterministic_algorithms_enabled()
+        torch.use_deterministic_algorithms(True)
+        try:
+            self._fit_torch_epochs(train_matrix, rng, P_t, Q, b, device, lr, reg)
+        finally:
+            torch.use_deterministic_algorithms(prev_deterministic)
+
+        self.user_factors = P_t.numpy()
+        self.item_factors = Q.detach().cpu().numpy()
+        self.item_bias = b.detach().cpu().numpy()
+
+    def _fit_torch_epochs(self, train_matrix, rng, P_t, Q, b, device, lr, reg) -> None:
+        import torch
+
+        num_users, num_items = self.num_users, self.num_items
+        coo = train_matrix.tocoo()
+        users_all = coo.row.astype(np.int64)
+        items_all = coo.col.astype(np.int64)
+        n = len(users_all)
+        user_interaction_counts = np.bincount(users_all, minlength=num_users)
+
+        for _ in range(self.epochs):
+            order = rng.permutation(n)
+            epoch_loss = torch.zeros((), dtype=torch.float32, device=device)
+            valid_pairs = 0
+
+            for start in range(0, n, self.batch_size):
+                sel = order[start : start + self.batch_size]
+                u, i = users_all[sel], items_all[sel]
+
+                mask = user_interaction_counts[u] < num_items
+                if not mask.any():
+                    continue
+
+                u_valid, i_valid = u[mask], i[mask]
+                j = self._sample_negatives(rng, u_valid, i_valid, train_matrix)
+
+                valid_j_mask = j >= 0
+                if not valid_j_mask.any():
+                    continue
+
+                u_valid = u_valid[valid_j_mask]
+                i_valid = i_valid[valid_j_mask]
+                j = j[valid_j_mask]
+
+                u_t = torch.from_numpy(u_valid)
+                i_t = torch.from_numpy(i_valid).to(device)
+                j_t = torch.from_numpy(j).to(device)
+                with torch.no_grad():
+                    pu = P_t[u_t].to(device)
+                    qi, qj = Q[i_t], Q[j_t]
+                    x = b[i_t] - b[j_t] + (pu * (qi - qj)).sum(dim=1)
+                    coeff = torch.sigmoid(-x)
+                    epoch_loss = epoch_loss + torch.nn.functional.softplus(-x).sum()
+                    valid_pairs += len(u_valid)
+
+                    c = coeff[:, None]
+                    dpu = lr * (c * (qi - qj) - reg * pu)
+                    Q.index_add_(0, i_t, lr * (c * pu - reg * qi))
+                    Q.index_add_(0, j_t, lr * (-c * pu - reg * qj))
+                    b.index_add_(0, i_t, lr * (coeff - reg * b[i_t]))
+                    b.index_add_(0, j_t, lr * (-coeff - reg * b[j_t]))
+                    P_t.index_add_(0, u_t, dpu.cpu())
+
+            if valid_pairs > 0:
+                self.loss_history.append(float(epoch_loss.item()) / valid_pairs)
+            else:
+                self.loss_history.append(self.loss_history[-1] if self.loss_history else 0.0)
+
+    def _fit_numpy(self, train_matrix: sp.csr_matrix) -> None:
         rng = np.random.default_rng(self.seed)
         num_users, num_items, d = self.num_users, self.num_items, self.embedding_dim
 
