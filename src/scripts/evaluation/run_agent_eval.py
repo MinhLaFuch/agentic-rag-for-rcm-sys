@@ -75,7 +75,7 @@ from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
-from package.tools import BaselineScorer, HybridScorer, ToolCallLogger
+from package.tools import BaselineScorer, HybridScorer, LearnedScorer, ToolCallLogger
 from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
@@ -437,8 +437,10 @@ def main() -> None:
     scoring_cfg = load_config("agent/scoring")["scoring"]
     scorer_mode = scoring_cfg["mode"]
     scorer_weight = float(scoring_cfg["hybrid_popularity_weight"])
-    if scorer_mode not in ("baseline", "hybrid") or not np.isfinite(scorer_weight) or scorer_weight < 0:
-        raise SystemExit("agent/scoring.yaml: mode must be baseline/hybrid and hybrid_popularity_weight finite and nonnegative")
+    learned_weights = scoring_cfg.get("learned_weights")
+    if (scorer_mode not in ("baseline", "hybrid", "learned")
+            or not np.isfinite(scorer_weight) or scorer_weight < 0):
+        raise SystemExit("agent/scoring.yaml: mode must be baseline/hybrid/learned and hybrid_popularity_weight finite and nonnegative")
     k, seed = int(cfg["k"]), int(baselines["seed"])
     agents = [str(a) for a in cfg["agents"]]
     if set(agents) - set(AGENTS):
@@ -606,7 +608,10 @@ def main() -> None:
                 print(f"ItemKNN cache save failed ({exc}); siblings will refit")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
-    scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
+    if scorer_mode == "learned":
+        scorer = LearnedScorer(knn, tuple(learned_weights) if learned_weights else None)
+    else:
+        scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
     baseline_model = knn
     if scorer_mode == "hybrid":
         cf = ItemKNNMatrixRecommender(k=knn_k)
@@ -617,6 +622,7 @@ def main() -> None:
     scorer_provenance = {
         "mode": scorer_mode, "name": scorer.name,
         "popularity_weight": scorer_weight if scorer_mode == "hybrid" else scorer.popularity_weight,
+        "learned_weights": list(scorer.weights) if scorer_mode == "learned" else None,
         "popularity_source": "full pre-target unique user-item history" if scorer_mode == "hybrid" else "CF fit popularity",
         "cf_normalization": "per-user full-catalog max before exclusion" if scorer_mode == "hybrid" else "none",
         "cf_provenance": protocol_manifest["item_knn"],

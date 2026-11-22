@@ -19,11 +19,3 @@ def get_device() -> str:
         except ImportError:
             _DEVICE = "cpu"
     return _DEVICE
-
-
-def torch_available() -> bool:
-    try:
-        import torch  # noqa: F401
-        return True
-    except ImportError:
-        return False

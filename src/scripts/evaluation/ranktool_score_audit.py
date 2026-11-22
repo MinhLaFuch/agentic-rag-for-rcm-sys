@@ -31,7 +31,7 @@ from package.data.mapping import load_mappings
 from package.data.split import load_splits
 from package.evaluation.recommender.analysis.build_core_model import build_core_model
 from package.evaluation.recommender.config import select_fit_target
-from package.tools import BaselineScorer, HybridScorer
+from package.tools import BaselineScorer, HybridScorer, LearnedScorer
 
 
 def _load_jsonl(path: Path):
@@ -60,7 +60,11 @@ def build_scorer(eval_on: str = "validation"):
 
     mode = scoring["mode"]
     weight = float(scoring.get("hybrid_popularity_weight", 4.0))
-    scorer = HybridScorer(core_knn, weight) if mode == "hybrid" else BaselineScorer(core_knn)
+    lw = scoring.get("learned_weights")
+    if mode == "learned":
+        scorer = LearnedScorer(core_knn, tuple(lw) if lw else None)
+    else:
+        scorer = HybridScorer(core_knn, weight) if mode == "hybrid" else BaselineScorer(core_knn)
     return scorer, user2id, item2id, mode
 
 

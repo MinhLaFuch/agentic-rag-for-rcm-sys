@@ -731,8 +731,12 @@ class ScoringConfig(BaseModel):
 
     model_config = _BASE_CONFIG
 
-    mode: str = Field(default="baseline", description="baseline | hybrid")
+    mode: str = Field(default="baseline", description="baseline | hybrid | learned")
     hybrid_popularity_weight: float = Field(default=4.0, ge=0, description="Hybrid scorer popularity weight")
+    learned_weights: list[float] | None = Field(
+        default=None, min_length=3, max_length=3,
+        description="LearnedScorer affine weights [w_pop, w_cf, w_bias] on per-request "
+                    "min-max-normalised signals; null = LearnedScorer.DEFAULT_WEIGHTS")
 
 
 class PlannerPromptsConfig(BaseModel):

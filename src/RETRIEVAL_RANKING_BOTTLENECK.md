@@ -20,6 +20,43 @@ The RankTool/scorer findings below remain valid but are **SECONDARY** — they m
 
 ---
 
+## UPDATE 2026-11-22 — scorer A/B + Q2 categorization: both live-tested, both NEGATIVE
+
+**Learned scorer (`mode: learned`, affine [pop, cf] weights 1.82/-9.98/-0.16,
+`package/tools/scoring/learned_scorer.py`):** offline injection evidence was
+strong (4-6× baseline rescue@10, `q6_scorer_comparison_v4.json`) but the live
+A/B (`experiments/agent_eval/learned_scorer/exp_5` vs
+`filter_ab/exp_2_baseline`, identical 152 requests/seed) was net-negative on
+every target metric — cold_text task_success 0.65→0.45, target_reachable
+0.50→0.143; personalized recall@10 0.025→0. Injection rescue measures only
+"target in top-10" and cannot see whole-list quality costs: the negative CF
+weight demotes the personalization signal. **`scoring.yaml` reverted to
+`mode: baseline`**; `LearnedScorer` + `learned` mode remain wired/tested for
+future refits — do not enable without a new live A/B.
+
+**Q2 inferred categories:** embedding kNN assigned top-1 voted categories to
+229,975 uncategorized items (gated variant: 53,333 at vote_share≥0.30).
+Both live evals (`filter_ab/exp_3`, `exp_4`) were net-negative vs baseline —
+guessed categories pollute popularity-ordered category-filter pools even at
+high confidence (exp_4 target_reachable cold_text 0.118 vs 0.50 baseline).
+**Layer disabled**; artifact kept at
+`investigations/item_categories_inferred_gated.parquet`.
+
+**F10 baselines (`experiments/baselines/exp_001`, 50k users):** popularity
+recall@10 0.0077 > item_knn 0.0055 > bpr_mf 0.0054 — CF track closed; no
+learned CF variant beats popularity for held-out targets. Numeric path is
+now device-flexible (CUDA with CPU fallback): BPR-MF `_fit` + fused top-k on
+GPU, exact O(n) top-k replacing per-row lexsort, `eval_user_sample` config.
+Full run ~15min (was 6h+ stalled).
+
+**Net:** retrieval remains the dominant bottleneck; ranking-side learned
+interventions tested to date do not survive live A/B. Remaining levers:
+retrieval enrichment (query formulation, multilingual embeddings — user's
+eval pending), temporal `first_seen` proxy caveat, eval protocol (Q23
+sample-size decisions).
+
+---
+
 ## 1. Dataset & data pipeline
 
 ### 1.1 Source dataset

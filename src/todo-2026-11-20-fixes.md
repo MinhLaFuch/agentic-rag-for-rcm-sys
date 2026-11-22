@@ -77,7 +77,8 @@ and A/B on the same campaign_005 exp_5 152-request set for comparability.
       ~7 users/batch × millions of users × per-row lexsort over 2.6M items.
       NOT BPR fit, NOT data prep (53s).
       - Fixes (device-flexible, CUDA→CPU fallback):
-        * `recommenders/shared/device.py` — get_device().
+        * `recommenders/shared/get_device.py` — get_device() (renamed from
+          device.py to satisfy the atomic-file layout rule).
         * `recommender.py` — `_topk_indices()` exact O(n) top-k (argpartition
           + exact recompute only on boundary ties); `_recommend_topk()` hook.
         * `random_recommender.py` — `_recommend_sparse` uniform sampler.
@@ -126,17 +127,26 @@ and A/B on the same campaign_005 exp_5 152-request set for comparability.
         without target gains. Keep baseline prompt (Q1 resolved: optional leg).
       - Follow-up queued: rerun ranktool_injection_probe + q6 scorer
         comparison on BOTH new runs (post-F2 pools) for Q5/6/7 evidence.
-- [~] F4. Phase 2 scorer work — UNBLOCKED 2026-11-21 (user: keep both
-      scorers, gather more evidence). Plan: rerun ranktool_injection_probe
-      + q6_scorer_comparison_v2 on the two new post-F2 filter_ab runs
-      (fresh candidate pools) → compare v1a/v1b/v5_honest again before
-      any production wiring decision.
-- [~] F5. Phase 3 retrieval improvements — Q2 BUILT 2026-11-22: categorization
-      layer for the uncategorized tail done (kNN top-1 vote over MiniLM
-      vectors, 229,975 items → `item_categories_inferred.parquet` merged into
-      resource/corpus/multi_domain/; auto-loaded by run_agent_eval, unions
-      only into uncategorized items, also feeds FTS). Remaining: agent eval
-      with inferred cats vs baseline to measure tail recall. Q19 dense-format
+- [x] F4. Phase 2 scorer work — DONE 2026-11-22, live A/B NEGATIVE:
+      injection evidence replicated on post-F2 pools (v5_honest 35.6%/47.1%
+      vs baseline 8.2%/8.0% rescue@10; `q6_scorer_comparison_v4.json`),
+      `LearnedScorer` wired (`mode: learned`, `learned_weights` config,
+      ranktool_score_audit + run_agent_eval provenance, 5 unit tests).
+      Live A/B `learned_scorer/exp_5` vs `filter_ab/exp_2_baseline`
+      (identical 152 reqs): NET-NEGATIVE everywhere — cold_text
+      task_success 0.65→0.45, target_reachable 0.50→0.143; personalized
+      recall@10 0.025→0. Negative CF weight demotes personalization;
+      injection rescue can't see whole-list quality costs.
+      `scoring.yaml` reverted to `mode: baseline`; learned mode kept for
+      future refits (needs new live A/B).
+- [x] F5. Phase 3 retrieval improvements — Q2 DONE 2026-11-22, NEGATIVE:
+      categorization layer built + live-tested twice. Full artifact
+      (229,975 items, `exp_3`) collapsed target_reachable (0.50→0.071);
+      gated vote_share≥0.30 (53,333 items, `exp_4`) recovered task_success
+      but target_reachable stayed 0.118 vs 0.50 baseline — guessed
+      categories pollute popularity-ordered filter pools. DISABLED; parquet
+      kept at `investigations/item_categories_inferred_gated.parquet`.
+      Q19 dense-format
       ablation DONE: all query formats ~0% recall — format is not the
       issue; user is evaluating multilingual embedding/BM25 replacement
       themselves. Descriptions/features remain unused enrichment material.

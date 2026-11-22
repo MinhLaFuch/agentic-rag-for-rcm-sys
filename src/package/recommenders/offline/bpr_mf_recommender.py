@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
-from ..shared.device import get_device
+from ..shared.get_device import get_device
 from ..shared.recommender import Recommender, _topk_row_exact
 
 

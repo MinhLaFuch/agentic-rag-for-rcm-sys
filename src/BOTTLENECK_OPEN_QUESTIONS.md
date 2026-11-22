@@ -28,24 +28,22 @@ latency without target gains. **Baseline prompt stays.** Planner-level
 retrieval levers are exhausted — remaining gains are scorer (Q5–Q7) and
 retrieval enrichment (Q2).
 
-### Q2. Uncategorized tail 🔶 → DECIDED 2026-11-21: build categorization layer
-**STATUS 2026-11-22: BUILT, awaiting merge+eval** — prototype validated
-(kNN top-1 vote ≈99% any-hit on categorized holdout; uncategorized items get
-top-1 voted category). `investigations/q2_build_inferred_categories.py`
-finished all 23 parts → `investigations/q2_inferred_cats/part_*.parquet`
-(CUDA path, fp16 refs). Consumption wired: `apply_metadata_policy(
-inferred_categories=...)` unions inferred rows for uncategorized visible
-items only; `run_agent_eval` auto-loads
-`resource/corpus/multi_domain/item_categories_inferred.parquet` if present.
-Remaining: merge parts → artifact, sanity-check assignments, run agent eval
-with/without inferred cats, measure category-filter recall on the tail.
-**User decision:** create a layer that categorizes the uncategorized tail —
-likely via embedding relations (cluster/nearest-neighbor into the existing
-category taxonomy). Design needed: which items (~24% of targets affected),
-which embedding (ties into user's multilingual-model evaluation), assignment
-confidence threshold, and whether inferred categories feed FilterTool,
-MemoryTool profiles, or doc text. Source-data gap confirmed (Q15) — this is
-enrichment, not preprocessing repair.
+### Q2. Uncategorized tail ✅ CLOSED 2026-11-22 → NEGATIVE, layer disabled
+Prototype validated (kNN top-1 vote ≈99% any-hit on categorized holdout).
+Built full artifact (229,975 items) + gated variant (vote_share≥0.30,
+53,333 items), consumption wired via `apply_metadata_policy(
+inferred_categories=...)`. **Both live evals were net-negative vs the
+identical baseline (`filter_ab/exp_2_baseline`)**: full inferred cats
+collapsed `target_reachable` (cold_text 0.50→0.071) and `task_success`
+(0.65→0.40); gated recovered task_success (0.70) but `target_reachable`
+stayed far below baseline (0.118). Mechanism: guessed categories — even
+high-confidence ones — pollute popularity-ordered category-filter pools
+and bury genuine items. **Decision: inferred categories DISABLED** —
+artifact moved to `investigations/item_categories_inferred_gated.parquet`
+(auto-load only fires on the corpus-adjacent filename). Uncategorized
+tail remains a retrieval dead-end (~24% of targets); revisit only with a
+precision-first assignment (e.g., abstain unless top-1 dominates) or a
+non-category enrichment path.
 
 ### Q3. SearchTool timeouts ✅ ANSWERED (root cause = same bug as FilterTool)
 108 SearchTool steps across both runs: **100 exceeded 5s-or-error, median
@@ -77,7 +75,7 @@ correct — the bug is that eval can't see it.**
 
 ## P1 — Ranking / scoring (measured second bottleneck)
 
-### Q5. Scorer strategy 🔶 → EVIDENCE COMPLETE 2026-11-22 (wiring = your call)
+### Q5. Scorer strategy ✅ CLOSED 2026-11-22 → learned wired, live A/B NEGATIVE, reverted
 **User decision:** keep baseline AND learned scorer; gather more evidence
 before wiring.
 **Replication DONE** — probe rerun on both post-F2 filter_ab runs
@@ -100,6 +98,19 @@ reproduces §6.7's 31.75% exactly):
 - honest learned reranker [pop, cf, cat_match] CV-by-request = **71.4%**
 - retrieval-blend variants couldn't be fairly tested via injection (injected
   targets have retr=0 by construction → biased down; needs live A/B)
+
+**LIVE A/B 2026-11-22 (`learned_scorer/exp_5` vs `filter_ab/exp_2_baseline`,
+same 152 requests, seed 42, `mode: learned` affine [pop,cf] weights
+1.82/-9.98/-0.16): NET-NEGATIVE on every target metric** — cold_text
+task_success 0.65→0.45, target_reachable 0.50→0.143, recall@10 0.10→0.05;
+personalized target_reachable 0.15→0.038, recall@10 0.025→0; exclusion
+task_success 0.475→0.425. Mechanism: injection rescue measured only
+"target in top-10"; the negative CF weight demotes the personalization
+signal and degrades whole-list quality — a cost injection cannot see.
+**Decision: `scoring.yaml` reverted to `mode: baseline`.** `LearnedScorer`,
+`mode: learned`, and `learned_weights` config remain (wired + tested) for
+future weight refits — do not enable without a new live A/B. Lesson:
+offline rescue metrics do not capture ranking-side quality costs.
 
 ### Q6. Retrieval-score blending 🔶 (probe run — result is nuanced)
 Ran the offline comparison (`investigations/q6_scorer_comparison{,_v2}`).
