@@ -328,6 +328,9 @@ class BaselinesConfig(BaseModel):
         description="Opt-in HybridItemKNNRecommender weight (CF + full pre-target-history popularity)")
     item_knn: ItemKnnBaselineConfig = Field(description="ItemKNN baseline params")
     bpr_mf: BprMfBaselineConfig = Field(description="BPR-MF baseline params")
+    eval_user_sample: int = Field(
+        default=0, ge=0,
+        description="Cap evaluated target-bearing users (seeded sample, same for all models); 0 = all")
 
 
 class ItemKnnBaselineConfig(BaseModel):

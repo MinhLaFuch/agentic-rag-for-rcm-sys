@@ -70,6 +70,73 @@ def test_snapshot_explicit_and_policy_cannot_be_changed():
         apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10)
 
 
+def test_causal_rating_proxy_filters_and_orders():
+    """ratings={item_id: mean} exposes causal average_rating under masking."""
+    corpus = make_corpus()
+    record = apply_metadata_policy(
+        corpus, "historical_static_catalog", as_of_timestamp=10,
+        popularity={"D::a": 3, "D::b": 1},
+        ratings={"D::a": 4.5, "D::b": 2.0},
+    )
+    assert record["rating_proxy_available"] is True
+    tool = FilterTool(corpus)
+    # min_rating evaluated on causal mean rating: only D::a (4.5) passes >=4.0
+    out = tool.execute(filters={"min_rating": 4.0})
+    assert [c["item_id"] for c in out["candidates"]] == ["D::a"]
+    assert out["filter_proxy_note"]
+    assert out["total_matches"] == 1
+    # order_by average_rating -> causal_rating, best mean first
+    out = tool.execute(order_by="average_rating")
+    assert out["order_by_effective"] == "causal_rating"
+    assert [c["item_id"] for c in out["candidates"]] == ["D::a", "D::b"]
+    # ascending puts the lower causal rating first
+    out = tool.execute(order_by="average_rating", descending=False)
+    assert [c["item_id"] for c in out["candidates"]] == ["D::b", "D::a"]
+    # rating_number ordering still uses popularity; min_rating_number still fails
+    out = tool.execute(order_by="rating_number")
+    assert out["order_by_effective"] == "popularity"
+    assert [c["item_id"] for c in out["candidates"]] == ["D::a", "D::b"]
+    with pytest.raises(Exception, match="masked field"):
+        tool.execute(filters={"min_rating_number": 2})
+    with pytest.raises(Exception, match="masked field"):
+        tool.execute(filters={"price_max": 50})
+
+
+def test_min_rating_still_fails_without_rating_proxy():
+    corpus = make_corpus()
+    apply_metadata_policy(
+        corpus, "historical_static_catalog", as_of_timestamp=10,
+        popularity={"D::a": 3, "D::b": 1},
+    )
+    tool = FilterTool(corpus)
+    with pytest.raises(Exception, match="masked field"):
+        tool.execute(filters={"min_rating": 4.0})
+    # average_rating ordering falls back to popularity when no rating proxy
+    out = tool.execute(order_by="average_rating")
+    assert out["order_by_effective"] == "popularity"
+
+
+def test_inferred_categories_extend_uncategorized_items_only():
+    corpus = ItemCorpus.from_dataframe(pd.DataFrame({
+        "parent_asin": ["a", "b", "c"], "domain": ["D", "D", "D"],
+        "title": ["k1", "k2", "k3"], "first_seen_ts": [1, 1, 1],
+        "categories": [["RealCat"], [], ["RealCat"]],
+    }))
+    record = apply_metadata_policy(
+        corpus, "historical_static_catalog", as_of_timestamp=10,
+        inferred_categories={"D::b": "InferredCat", "D::a": "ShouldNotApply"},
+    )
+    assert record["inferred_categories"] is True
+    assert record["inferred_categories_count"] == 1  # only D::b gets one
+    tool = FilterTool(corpus)
+    out = tool.execute(filters={"categories_any": ["InferredCat"]})
+    assert [c["item_id"] for c in out["candidates"]] == ["D::b"]
+    # real categories unchanged; inferred category never lands on categorized items
+    out = tool.execute(filters={"categories_any": ["RealCat"]})
+    assert sorted(c["item_id"] for c in out["candidates"]) == ["D::a", "D::c"]
+    assert "ShouldNotApply" not in corpus.categories()
+
+
 def test_temp_policy_preserves_main_data():
     corpus = make_corpus()
     apply_metadata_policy(corpus, "historical_static_catalog", as_of_timestamp=10)

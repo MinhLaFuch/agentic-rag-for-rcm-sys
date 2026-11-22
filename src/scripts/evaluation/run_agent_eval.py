@@ -467,7 +467,7 @@ def main() -> None:
     t_start = time.time()
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py / candidate_recall.py)
-    train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp", "rating"))
     fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     if "timestamp" not in fit_df.columns:
         raise SystemExit("Splits have no `timestamp` column: re-run python scripts/data_pipeline/run_pipeline.py --stages 3")
@@ -516,8 +516,31 @@ def main() -> None:
     idx2name = {v: k for k, v in item2id.items()}
     fit_counts = fit_df["item_idx"].value_counts()
     popularity = {idx2name[i]: int(c) for i, c in fit_counts.items() if i in idx2name}
+    # Causal mean-rating proxy for masked average_rating: mean of fit-split
+    # ratings per item (pre-as_of by construction). Splits without a rating
+    # column simply leave the proxy unavailable.
+    ratings = None
+    if "rating" in fit_df.columns:
+        fit_means = fit_df.groupby("item_idx")["rating"].mean()
+        ratings = {idx2name[i]: float(m) for i, m in fit_means.items() if i in idx2name}
+    # Inferred categories for the uncategorized tail (Q2): optional artifact
+    # produced by investigations/q2_build_inferred_categories.py. Absent file
+    # simply leaves the tail unreachable by category filters, as before.
+    inferred_categories = None
+    _corpus_file = data_paths.corpus_path
+    inferred_path = _corpus_file.parent / "item_categories_inferred.parquet" \
+        if _corpus_file is not None else None
+    if inferred_path is not None and inferred_path.exists():
+        inferred_df = pd.read_parquet(inferred_path, columns=["item_id", "category"])
+        inferred_categories = {
+            r.item_id: r.category for r in inferred_df.itertuples(index=False)
+        }
+        print(f"Inferred categories: {len(inferred_categories)} items "
+              f"from {inferred_path.name}", flush=True)
     metadata_policy = apply_metadata_policy(
-        corpus, metadata_policy_name, as_of_timestamp=as_of, popularity=popularity)
+        corpus, metadata_policy_name, as_of_timestamp=as_of,
+        popularity=popularity, ratings=ratings,
+        inferred_categories=inferred_categories)
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,

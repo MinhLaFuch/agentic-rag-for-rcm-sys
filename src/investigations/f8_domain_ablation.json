@@ -1,0 +1,3681 @@
+{
+  "summary": {
+    "n_requests": 120,
+    "mean_hist_loss_frac": 0.2277,
+    "mean_topcats_jaccard": 0.7052,
+    "requests_target_cat_in_topcats_A": 0.5333,
+    "requests_target_cat_in_topcats_B": 0.5417,
+    "B_improves_target_cat": 0.0417,
+    "B_worsens_target_cat": 0.0333,
+    "mean_recent_cross_domain_share": 0.2259,
+    "requests_with_any_cross_domain_recent": 0.4083,
+    "requests_hist_loss_gt_50pct": 0.1833
+  },
+  "per_request": [
+    {
+      "request_id": "similar-sparse-0",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.25,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Toys & Games",
+        "Bath Toys",
+        "Toy Figure Playsets"
+      ],
+      "topcats_B": [
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Toys & Games",
+        "Bath Toys",
+        "Toy Figure Playsets"
+      ],
+      "target_cats": [
+        "Games & Accessories",
+        "Tile Games",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 4
+    },
+    {
+      "request_id": "similar-sparse-1",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "DSLR Cameras",
+        "Digital Cameras"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "DSLR Cameras",
+        "Digital Cameras"
+      ],
+      "target_cats": [
+        "Amplifier Installation",
+        "Amplifier Wiring Kits",
+        "Car & Vehicle Electronics",
+        "Vehicle Audio & Video Installation",
+        "Vehicle Electronics Accessories"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-2",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 3,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.3333,
+      "topcats_jaccard": 0.125,
+      "topcats_A": [
+        "Xbox One",
+        "Video Games",
+        "Cooling Systems",
+        "Accessories",
+        "Speakers"
+      ],
+      "topcats_B": [
+        "Speakers",
+        "Electronics",
+        "Satellite Speakers",
+        "Home Audio"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Gaming Keyboards",
+        "PC",
+        "Video Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 3
+    },
+    {
+      "request_id": "similar-sparse-3",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Photo Studio",
+        "Digital Picture Frames",
+        "Camera & Photo",
+        "Storage & Presentation Materials"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Photo Studio",
+        "Digital Picture Frames",
+        "Camera & Photo",
+        "Storage & Presentation Materials"
+      ],
+      "target_cats": [
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Keyboards, Mice & Accessories",
+        "Mice"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-4",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 4,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "Earbud Headphones",
+        "Headphones, Earbuds & Accessories",
+        "Security & Surveillance"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "Earbud Headphones",
+        "Headphones, Earbuds & Accessories",
+        "Security & Surveillance"
+      ],
+      "target_cats": [
+        "Brain Teasers",
+        "Puzzle Boxes",
+        "Puzzles",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 4
+    },
+    {
+      "request_id": "similar-sparse-5",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Television & Video",
+        "LED & LCD TVs",
+        "Televisions",
+        "Headphones & Earbuds"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Television & Video",
+        "LED & LCD TVs",
+        "Televisions",
+        "Headphones & Earbuds"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-6",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Reading & Writing",
+        "Learning & Education",
+        "Diaries, Journals & Notebooks",
+        "Toys & Games",
+        "Messenger & Shoulder Bags"
+      ],
+      "topcats_B": [
+        "Messenger & Shoulder Bags",
+        "Electronics",
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories",
+        "Laptop Accessories"
+      ],
+      "target_cats": [
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "USB Fans",
+        "USB Gadgets"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-7",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Accessories & Supplies",
+        "Speaker Mounts",
+        "Mounts",
+        "Stands"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Accessories & Supplies",
+        "Speaker Mounts",
+        "Mounts",
+        "Stands"
+      ],
+      "target_cats": [
+        "Earpads",
+        "Electronics",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-8",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Toys & Games",
+        "Action Figures",
+        "Toy Figures & Playsets",
+        "Television & Video",
+        "Electronics"
+      ],
+      "topcats_B": [
+        "Television & Video",
+        "Electronics",
+        "Projector Accessories",
+        "Accessories",
+        "Projector"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Batteries & Chargers",
+        "Chargers",
+        "Legacy Systems",
+        "Nintendo DS",
+        "Nintendo Systems",
+        "Video Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-9",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 4,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.75,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Sports & Outdoor Play",
+        "Sandboxes"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Learning & Education",
+        "Science Kits & Toys",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 3,
+      "recent_n": 4
+    },
+    {
+      "request_id": "similar-sparse-10",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Dress Up & Pretend Play",
+        "Dress-Up Accessories",
+        "Toys & Games",
+        "Jewelry",
+        "Bracelets"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "On-Ear Headphones",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cats": [
+        "Multi-Item Party Favor Packs",
+        "Party Favors",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-11",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Surveillance Cameras",
+        "Electronics",
+        "Dome Cameras",
+        "Camera & Photo",
+        "Video Surveillance"
+      ],
+      "topcats_B": [
+        "Surveillance Cameras",
+        "Electronics",
+        "Dome Cameras",
+        "Camera & Photo",
+        "Video Surveillance"
+      ],
+      "target_cats": [
+        "Bags, Cases & Sleeves",
+        "Cases",
+        "Computers & Accessories",
+        "Electronics",
+        "Tablet Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "similar-sparse-12",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Role Play & Dress Up",
+        "Pretend Play"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Role Play & Dress Up",
+        "Pretend Play"
+      ],
+      "target_cats": [
+        "Pre-Kindergarten Toys",
+        "Preschool",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 4
+    },
+    {
+      "request_id": "similar-sparse-13",
+      "kind": "similar",
+      "request_domain": "Video_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Video Games",
+        "Cases & Storage",
+        "Nintendo Switch",
+        "Accessories",
+        "Game Genre of the Month"
+      ],
+      "topcats_B": [
+        "Video Games",
+        "Cases & Storage",
+        "Nintendo Switch",
+        "Accessories",
+        "Game Genre of the Month"
+      ],
+      "target_cats": [
+        "Boats",
+        "Remote & App Controlled Vehicles",
+        "Remote & App Controlled Vehicles & Parts",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 2,
+      "recent_n": 4
+    },
+    {
+      "request_id": "similar-sparse-14",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Wearable Technology",
+        "Arm & Wristband Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Wearable Technology",
+        "Arm & Wristband Accessories"
+      ],
+      "target_cats": [
+        "Binoculars",
+        "Binoculars & Scopes",
+        "Camera & Photo",
+        "Electronics"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-15",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 3,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Portable Audio & Video",
+        "Portable Speakers & Docks",
+        "Portable Bluetooth Speakers",
+        "Lightning Cables"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Portable Audio & Video",
+        "Portable Speakers & Docks",
+        "Portable Bluetooth Speakers",
+        "Lightning Cables"
+      ],
+      "target_cats": [
+        "Audio & Video Accessories",
+        "Computer Accessories & Peripherals",
+        "Computer Microphones",
+        "Computers & Accessories",
+        "Electronics"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 3
+    },
+    {
+      "request_id": "similar-sparse-16",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Keyboards, Mice & Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "Mice",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [
+        "Keyboards, Mice & Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "Mice",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [
+        "Kiddie Pools",
+        "Pools & Water Toys",
+        "Sports & Outdoor Play",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-17",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo"
+      ],
+      "target_cats": [
+        "Binoculars & Scopes",
+        "Camera & Photo",
+        "Electronics",
+        "Microscopes",
+        "USB Microscopes"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-18",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [],
+      "topcats_B": [],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "similar-sparse-19",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 3,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Wearable Technology",
+        "Clips, Arm & Wristbands",
+        "Household Batteries, Chargers & Accessories",
+        "Battery Storage Containers"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Wearable Technology",
+        "Clips, Arm & Wristbands",
+        "Household Batteries, Chargers & Accessories",
+        "Battery Storage Containers"
+      ],
+      "target_cats": [
+        "Remote & App Controlled Vehicles",
+        "Remote & App Controlled Vehicles & Parts",
+        "Toys & Games",
+        "Trucks"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 3
+    },
+    {
+      "request_id": "similar-warm-0",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.6,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Toys & Games",
+        "Action Figures",
+        "Toy Figures & Playsets",
+        "Electronics",
+        "Archaeology & Paleontology"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "USB Cables",
+        "Cables & Accessories",
+        "Cables & Interconnects",
+        "Computers & Accessories"
+      ],
+      "target_cats": [
+        "Audio & Video Accessories",
+        "Computer Accessories & Peripherals",
+        "Computer Speakers",
+        "Computers & Accessories",
+        "Electronics"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 3,
+      "recent_n": 5
+    },
+    {
+      "request_id": "similar-warm-1",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 8,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.375,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Video Games",
+        "Games",
+        "PC"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Audio & Video Accessories",
+        "Computer Accessories & Peripherals",
+        "Computer Speakers"
+      ],
+      "target_cats": [
+        "Battery Chargers",
+        "Electronics",
+        "Household Batteries, Chargers & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 3,
+      "recent_n": 8
+    },
+    {
+      "request_id": "similar-warm-2",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 30,
+      "n_hist_B": 30,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Headphones, Earbuds & Accessories",
+        "Headphones & Earbuds",
+        "Earbud Headphones",
+        "Television & Video"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Headphones, Earbuds & Accessories",
+        "Headphones & Earbuds",
+        "Earbud Headphones",
+        "Television & Video"
+      ],
+      "target_cats": [
+        "Battery Testers",
+        "Electronics",
+        "Household Batteries, Chargers & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-3",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 5,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.4,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Play Food",
+        "Kitchen Toys",
+        "Dress Up & Pretend Play",
+        "Vehicle Playsets"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Play Food",
+        "Kitchen Toys",
+        "Dress Up & Pretend Play",
+        "Vehicle Playsets"
+      ],
+      "target_cats": [
+        "Camera & Photo",
+        "Electronics",
+        "Lighting & Studio",
+        "Photo Studio",
+        "Shooting Tents"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 2,
+      "recent_n": 5
+    },
+    {
+      "request_id": "similar-warm-4",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 6,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Camera & Photo",
+        "GPS System Accessories",
+        "Vehicle Mounts"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Camera & Photo",
+        "GPS System Accessories",
+        "Vehicle Mounts"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Antennas",
+        "Electronics",
+        "TV Antennas",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 6
+    },
+    {
+      "request_id": "similar-warm-5",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 15,
+      "n_hist_B": 14,
+      "hist_loss_frac": 0.0667,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Accessories",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "Accessories",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Data Storage",
+        "Electronics",
+        "USB Flash Drives"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-6",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 6,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.6667,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Toy Figures & Playsets",
+        "Electronics"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Bags, Cases & Sleeves",
+        "Laptop Accessories",
+        "Computers & Accessories",
+        "Backpacks"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Electronics",
+        "Remote Controls",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 4,
+      "recent_n": 6
+    },
+    {
+      "request_id": "similar-warm-7",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 12,
+      "n_hist_B": 9,
+      "hist_loss_frac": 0.25,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Video Games",
+        "PlayStation 4",
+        "Games"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Networking Products",
+        "Tablets",
+        "Computers & Tablets"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Electronics",
+        "Projection Screens",
+        "Projector Accessories",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 2,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-8",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 8,
+      "n_hist_B": 8,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Tablet Accessories",
+        "Cases",
+        "Bags, Cases & Sleeves"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Tablet Accessories",
+        "Cases",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [
+        "Arts & Crafts",
+        "Coloring Pens & Markers",
+        "Drawing & Painting Supplies",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 8
+    },
+    {
+      "request_id": "similar-warm-9",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 18,
+      "n_hist_B": 17,
+      "hist_loss_frac": 0.0556,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Car & Vehicle Electronics",
+        "Speakers",
+        "Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "Car & Vehicle Electronics",
+        "Speakers",
+        "Accessories"
+      ],
+      "target_cats": [
+        "Amplifiers",
+        "Electronics",
+        "Home Audio",
+        "Home Theater",
+        "Receivers & Amplifiers"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-10",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Radios",
+        "Portable Audio & Video",
+        "Shortwave Radios",
+        "Speakers"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Radios",
+        "Portable Audio & Video",
+        "Shortwave Radios",
+        "Speakers"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Electronics",
+        "Networking Products",
+        "Routers"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "similar-warm-11",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 9,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.4444,
+      "topcats_jaccard": 0.667,
+      "topcats_A": [
+        "Toys & Games",
+        "Electronics",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Kids' Electronics"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Kids' Electronics",
+        "Dance Mats"
+      ],
+      "target_cats": [
+        "Bubble Solution",
+        "Bubbles",
+        "Sports & Outdoor Play",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 4,
+      "recent_n": 9
+    },
+    {
+      "request_id": "similar-warm-12",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 6,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.3333,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Building Toys",
+        "Playsets",
+        "Toy Figures & Playsets",
+        "Building Sets"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Building Toys",
+        "Playsets",
+        "Toy Figures & Playsets",
+        "Building Sets"
+      ],
+      "target_cats": [
+        "Games",
+        "Nintendo Switch",
+        "Video Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 2,
+      "recent_n": 6
+    },
+    {
+      "request_id": "similar-warm-13",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 7,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.8571,
+      "topcats_jaccard": 0.333,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Quadcopters & Multirotors",
+        "Remote & App Controlled Vehicles & Parts"
+      ],
+      "topcats_B": [
+        "Quadcopters & Multirotors",
+        "Remote & App Controlled Vehicles & Parts",
+        "Toys & Games"
+      ],
+      "target_cats": [
+        "Bags, Cases & Sleeves",
+        "Cases",
+        "Computers & Accessories",
+        "Electronics",
+        "Tablet Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 6,
+      "recent_n": 7
+    },
+    {
+      "request_id": "similar-warm-14",
+      "kind": "similar",
+      "request_domain": "Video_Games",
+      "n_hist_A": 7,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.7143,
+      "topcats_jaccard": 0.429,
+      "topcats_A": [
+        "Accessories",
+        "Electronics",
+        "Television & Video",
+        "PlayStation 4",
+        "Video Games"
+      ],
+      "topcats_B": [
+        "PlayStation 4",
+        "Video Games",
+        "Accessories",
+        "Chargers",
+        "Batteries & Chargers"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Hand Grips",
+        "Nintendo Switch",
+        "Video Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 5,
+      "recent_n": 7
+    },
+    {
+      "request_id": "similar-warm-15",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 28,
+      "n_hist_B": 28,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Television & Video",
+        "Data Storage"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Television & Video",
+        "Data Storage"
+      ],
+      "target_cats": [
+        "Cables & Accessories",
+        "Cables & Interconnects",
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Thunderbolt Cables"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-16",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 10,
+      "n_hist_B": 10,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Data Storage",
+        "Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Data Storage",
+        "Accessories"
+      ],
+      "target_cats": [
+        "Accessories & Supplies",
+        "Cable Organizer Bags & Cases",
+        "Electronics"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-17",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 12,
+      "n_hist_B": 12,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Accessories",
+        "Portable Audio & Video",
+        "Portable Speakers & Docks"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "Accessories",
+        "Portable Audio & Video",
+        "Portable Speakers & Docks"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Cooling Pads",
+        "Cooling Pads & External Fans",
+        "Electronics",
+        "Laptop Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-18",
+      "kind": "similar",
+      "request_domain": "Electronics",
+      "n_hist_A": 19,
+      "n_hist_B": 18,
+      "hist_loss_frac": 0.0526,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Data Storage",
+        "Laptop Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Data Storage",
+        "Laptop Accessories"
+      ],
+      "target_cats": [
+        "Computer Components",
+        "Computers & Accessories",
+        "Electronics",
+        "Graphics Cards",
+        "Internal Components"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 10
+    },
+    {
+      "request_id": "similar-warm-19",
+      "kind": "similar",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Sports & Outdoor Play",
+        "Ball Pits & Accessories",
+        "Preschool",
+        "Stuffed Animals & Toys"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Sports & Outdoor Play",
+        "Ball Pits & Accessories",
+        "Preschool",
+        "Stuffed Animals & Toys"
+      ],
+      "target_cats": [
+        "Kitchen Sets & Play Food",
+        "Pre-Kindergarten Toys",
+        "Preschool",
+        "Pretend Play",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "personalized-sparse-0",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 1,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Cases",
+        "Tablet Accessories",
+        "Electronics",
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Bobbleheads",
+        "Collectible Toys",
+        "Statues, Bobbleheads & Busts",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-1",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Umbrellas",
+        "Lighting Controls & Modifiers",
+        "Electronics",
+        "Lighting",
+        "Camera & Photo"
+      ],
+      "topcats_B": [
+        "Umbrellas",
+        "Lighting Controls & Modifiers",
+        "Electronics",
+        "Lighting",
+        "Camera & Photo"
+      ],
+      "target_cats": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Item Finders"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-2",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Drawing & Writing Boards",
+        "Doodle & Scribbler Boards",
+        "Toys & Games",
+        "Arts & Crafts"
+      ],
+      "topcats_B": [
+        "Drawing & Writing Boards",
+        "Doodle & Scribbler Boards",
+        "Toys & Games",
+        "Arts & Crafts"
+      ],
+      "target_cats": [
+        "Multi-Item Party Favor Packs",
+        "Party Favors",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-3",
+      "kind": "personalized",
+      "request_domain": "Video_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.75,
+      "topcats_jaccard": 0.667,
+      "topcats_A": [
+        "Electronics",
+        "PlayStation Vita",
+        "Video Games",
+        "Games",
+        "PlayStation Systems"
+      ],
+      "topcats_B": [
+        "PlayStation Vita",
+        "Video Games",
+        "Games",
+        "PlayStation Systems",
+        "Legacy Systems"
+      ],
+      "target_cats": [
+        "Games",
+        "PlayStation 4",
+        "Video Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 3,
+      "recent_n": 4
+    },
+    {
+      "request_id": "personalized-sparse-4",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Wall Plates & Connectors",
+        "Home Audio",
+        "Electronics",
+        "Home Audio Accessories",
+        "Distribution"
+      ],
+      "topcats_B": [
+        "Wall Plates & Connectors",
+        "Home Audio",
+        "Electronics",
+        "Home Audio Accessories",
+        "Distribution"
+      ],
+      "target_cats": [
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories",
+        "Electronics",
+        "Keyboard Cases",
+        "Tablet Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "personalized-sparse-5",
+      "kind": "personalized",
+      "request_domain": "Video_Games",
+      "n_hist_A": 3,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Electronics",
+        "Stacking Games",
+        "Toys & Games",
+        "Games & Accessories",
+        "Television & Video"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Games",
+        "Nintendo Switch",
+        "Video Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 3,
+      "recent_n": 3
+    },
+    {
+      "request_id": "personalized-sparse-6",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Firewire Adapters",
+        "Electronics",
+        "Computer Cable Adapters",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [
+        "Firewire Adapters",
+        "Electronics",
+        "Computer Cable Adapters",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [
+        "Electronics",
+        "Home Audio",
+        "Sound Bars",
+        "Speakers"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-7",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics Gift Guide - Top Tech for Gifting",
+        "Electronics",
+        "Otter Products Holiday Electronics Store",
+        "OtterBox Brand Store"
+      ],
+      "topcats_B": [
+        "Electronics Gift Guide - Top Tech for Gifting",
+        "Electronics",
+        "Otter Products Holiday Electronics Store",
+        "OtterBox Brand Store"
+      ],
+      "target_cats": [
+        "Earbud Headphones",
+        "Electronics",
+        "Headphones & Earbuds",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-8",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Accessory Bundles",
+        "Camera & Photo",
+        "Electronics",
+        "Accessories"
+      ],
+      "topcats_B": [
+        "Accessory Bundles",
+        "Camera & Photo",
+        "Electronics",
+        "Accessories"
+      ],
+      "target_cats": [
+        "Accessories & Supplies",
+        "Cable Straps",
+        "Cord Management",
+        "Electronics"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-9",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 4,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Micro SD Cards",
+        "Electronics",
+        "Memory Cards",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [
+        "Micro SD Cards",
+        "Electronics",
+        "Memory Cards",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 4
+    },
+    {
+      "request_id": "personalized-sparse-10",
+      "kind": "personalized",
+      "request_domain": "Video_Games",
+      "n_hist_A": 1,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Keyboards, Mice & Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "Mice",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Accessories",
+        "Gaming Keyboards",
+        "PC",
+        "Video Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-11",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Activity",
+        "Preschool",
+        "Cars, Trucks, Boats & Planes",
+        "Pre-Kindergarten Toys",
+        "Toys & Games"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Car & Vehicle Electronics",
+        "Car Audio",
+        "Car Electronics",
+        "Digital Media Receivers",
+        "Electronics"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-12",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Tablet Accessories",
+        "Blu-ray Players & Recorders",
+        "Blu-ray Players"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Pre-Kindergarten Toys",
+        "Preschool",
+        "Stuffed Animals & Toys",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 4,
+      "recent_n": 4
+    },
+    {
+      "request_id": "personalized-sparse-13",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Decorations",
+        "Balloons",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "topcats_B": [
+        "Decorations",
+        "Balloons",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "target_cats": [
+        "Plush Figures",
+        "Stuffed Animals & Plush Toys",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-14",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 4,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Security & Surveillance",
+        "Motion Detectors",
+        "Cables",
+        "Home Audio"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Security & Surveillance",
+        "Motion Detectors",
+        "Cables",
+        "Home Audio"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 4
+    },
+    {
+      "request_id": "personalized-sparse-15",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Video Games",
+        "Nintendo Switch",
+        "Consoles"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Cables & Accessories",
+        "Cables & Interconnects",
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "DVI",
+        "Electronics"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-16",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "Over-Ear Headphones",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "Over-Ear Headphones",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cats": [
+        "Amplifiers",
+        "Electronics",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-17",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 4,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Video Games",
+        "Gaming Mice",
+        "PC"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Plush Pillows",
+        "Stuffed Animals & Plush Toys",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 4,
+      "recent_n": 4
+    },
+    {
+      "request_id": "personalized-sparse-18",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 1,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [],
+      "topcats_B": [],
+      "target_cats": [
+        "Pre-Kindergarten Toys",
+        "Preschool",
+        "Stuffed Animals & Toys",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 1
+    },
+    {
+      "request_id": "personalized-sparse-19",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 3,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.6667,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Games & Accessories",
+        "Dice Games",
+        "Dice & Accessories",
+        "Standard Game Dice"
+      ],
+      "topcats_B": [
+        "Keyboard & Mouse Combos",
+        "Keyboards, Mice & Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Accessory Kits",
+        "Camera & Photo",
+        "Digital Camera Accessories",
+        "Electronics"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 2,
+      "recent_n": 3
+    },
+    {
+      "request_id": "personalized-warm-0",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 10,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.4,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Video Games",
+        "Electronics",
+        "Legacy Systems",
+        "Games",
+        "Nintendo Systems"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Cables & Accessories",
+        "Cables & Interconnects",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [
+        "Adapters",
+        "Electronics",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 4,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-1",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Internal Solid State Drives",
+        "Data Storage"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Internal Solid State Drives",
+        "Data Storage"
+      ],
+      "target_cats": [
+        "Electronics",
+        "Video Projectors"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "personalized-warm-2",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 7,
+      "n_hist_B": 7,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Home Audio",
+        "Speakers",
+        "Headphones",
+        "Gifts for Grads"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Home Audio",
+        "Speakers",
+        "Headphones",
+        "Gifts for Grads"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 7
+    },
+    {
+      "request_id": "personalized-warm-3",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 7,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Video Games",
+        "Accessories",
+        "Nintendo Switch",
+        "Legacy Systems",
+        "Cases & Storage"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Keyboards, Mice & Accessories",
+        "Mice"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 7,
+      "recent_n": 7
+    },
+    {
+      "request_id": "personalized-warm-4",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 12,
+      "n_hist_B": 11,
+      "hist_loss_frac": 0.0833,
+      "topcats_jaccard": 0.429,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Networking Products",
+        "Learning",
+        "Preschool"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Networking Products",
+        "Screen Protectors",
+        "Tablet Accessories"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Electronics",
+        "TV Mount Stands",
+        "TV Mounts, Stands & Turntables",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-5",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 13,
+      "n_hist_B": 13,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Cables & Accessories",
+        "Firewire Cables"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Cables & Accessories",
+        "Firewire Cables"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Electronics",
+        "Network Adapters",
+        "Networking Products",
+        "USB Network Adapters"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-6",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 14,
+      "n_hist_B": 14,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Tablet Accessories",
+        "Cases",
+        "Bags, Cases & Sleeves"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Tablet Accessories",
+        "Cases",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [
+        "Electronics",
+        "QLED TVs",
+        "Television & Video",
+        "Televisions"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-7",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 22,
+      "n_hist_B": 11,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Electronics",
+        "Toys & Games",
+        "Remote & App Controlled Vehicle Parts",
+        "Remote & App Controlled Vehicles & Parts",
+        "Remote & App Controlled Vehicle Batteries"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Accessories",
+        "Computer Accessories & Peripherals",
+        "Camera & Photo"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Electronics",
+        "TV Mounts, Stands & Turntables",
+        "TV Wall & Ceiling Mounts",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 5,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-8",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 6,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Portable Audio & Video",
+        "Boomboxes",
+        "Home Audio",
+        "CD & Tape Players"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Portable Audio & Video",
+        "Boomboxes",
+        "Home Audio",
+        "CD & Tape Players"
+      ],
+      "target_cats": [
+        "Cassette Players & Recorders",
+        "Electronics",
+        "Portable Audio & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 6
+    },
+    {
+      "request_id": "personalized-warm-9",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 6,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.1667,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Electronics",
+        "Accessories",
+        "PlayStation Vita",
+        "Video Games",
+        "PlayStation Systems"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Accessories",
+        "Camera Mounts & Clamps",
+        "Tripod & Monopod Accessories",
+        "Camera & Photo"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 1,
+      "recent_n": 6
+    },
+    {
+      "request_id": "personalized-warm-10",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.2,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Cables",
+        "Home Audio",
+        "Stereo Jack Cables",
+        "Home Audio Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Cables",
+        "Home Audio",
+        "Stereo Jack Cables",
+        "Home Audio Accessories"
+      ],
+      "target_cats": [
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Keyboards, Mice & Accessories",
+        "Mice"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 5
+    },
+    {
+      "request_id": "personalized-warm-11",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 5,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.2,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Pretend Play",
+        "Role Play & Dress Up"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Pretend Play",
+        "Role Play & Dress Up"
+      ],
+      "target_cats": [
+        "Balloons",
+        "Decorations",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 5
+    },
+    {
+      "request_id": "personalized-warm-12",
+      "kind": "personalized",
+      "request_domain": "Video_Games",
+      "n_hist_A": 7,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Toy Figures & Playsets",
+        "Action Figures",
+        "Preschool",
+        "Pre-Kindergarten Toys"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Interactive Gaming Figures",
+        "Legacy Systems",
+        "PlayStation 3",
+        "PlayStation Systems",
+        "Video Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 7,
+      "recent_n": 7
+    },
+    {
+      "request_id": "personalized-warm-13",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 16,
+      "n_hist_B": 16,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Computers & Accessories",
+        "Sports & Handheld GPS",
+        "Handheld GPS Units"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Computers & Accessories",
+        "Sports & Handheld GPS",
+        "Handheld GPS Units"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-14",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [
+        "Electronics",
+        "Headphones & Earbuds",
+        "Headphones, Earbuds & Accessories",
+        "Over-Ear Headphones"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "personalized-warm-15",
+      "kind": "personalized",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 10,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.4,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Activity",
+        "Tile Games"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Activity",
+        "Tile Games"
+      ],
+      "target_cats": [
+        "Balloons",
+        "Decorations",
+        "Party Supplies",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 4,
+      "recent_n": 10
+    },
+    {
+      "request_id": "personalized-warm-16",
+      "kind": "personalized",
+      "request_domain": "Video_Games",
+      "n_hist_A": 8,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.75,
+      "topcats_jaccard": 0.667,
+      "topcats_A": [
+        "Electronics",
+        "Xbox One",
+        "Video Games",
+        "Accessories",
+        "Batteries"
+      ],
+      "topcats_B": [
+        "Xbox One",
+        "Video Games",
+        "Accessories",
+        "Batteries",
+        "Batteries & Chargers"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Batteries & Chargers",
+        "Battery & Charger Sets",
+        "Video Games",
+        "Xbox One"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 6,
+      "recent_n": 8
+    },
+    {
+      "request_id": "personalized-warm-17",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 9,
+      "n_hist_B": 7,
+      "hist_loss_frac": 0.2222,
+      "topcats_jaccard": 0.429,
+      "topcats_A": [
+        "Electronics",
+        "Toys & Games",
+        "Sports & Outdoor Play",
+        "Car Audio",
+        "Car & Vehicle Electronics"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Car Audio",
+        "Car & Vehicle Electronics",
+        "Car Electronics",
+        "Car Stereo Receivers"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Electronics",
+        "Modems",
+        "Networking Products"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 2,
+      "recent_n": 9
+    },
+    {
+      "request_id": "personalized-warm-18",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 7,
+      "n_hist_B": 7,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Computer Components",
+        "Computer Speakers"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Computer Components",
+        "Computer Speakers"
+      ],
+      "target_cats": [
+        "Connectors & Adapters",
+        "Electronics",
+        "Home Audio",
+        "Home Audio Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 7
+    },
+    {
+      "request_id": "personalized-warm-19",
+      "kind": "personalized",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Data Storage",
+        "Cases",
+        "Tablet Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Data Storage",
+        "Cases",
+        "Tablet Accessories"
+      ],
+      "target_cats": [
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories",
+        "Electronics",
+        "Hard Shell Cases",
+        "Laptop Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "exclusion-sparse-0",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [],
+      "topcats_B": [],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-1",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Speakers",
+        "Electronics",
+        "Sound Bars",
+        "Home Audio"
+      ],
+      "topcats_B": [
+        "Speakers",
+        "Electronics",
+        "Sound Bars",
+        "Home Audio"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-2",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [],
+      "topcats_B": [],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-3",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 4,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Car & Vehicle Electronics",
+        "Car Electronics",
+        "Car Safety & Security",
+        "Vehicle Backup Cameras"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Car & Vehicle Electronics",
+        "Car Electronics",
+        "Car Safety & Security",
+        "Vehicle Backup Cameras"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 4
+    },
+    {
+      "request_id": "exclusion-sparse-4",
+      "kind": "exclusion",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 3,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Plush Puppets",
+        "Stuffed Animals & Plush Toys",
+        "Baby & Toddler Toys",
+        "Early Development & Activity Toys"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Plush Puppets",
+        "Stuffed Animals & Plush Toys",
+        "Baby & Toddler Toys",
+        "Early Development & Activity Toys"
+      ],
+      "target_cats": [
+        "Activity",
+        "Pre-Kindergarten Toys",
+        "Preschool",
+        "Toys & Games",
+        "Trains & Train Sets"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 3
+    },
+    {
+      "request_id": "exclusion-sparse-5",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Xbox One",
+        "Video Games",
+        "Controllers",
+        "Accessories",
+        "Gamepads & Standard Controllers"
+      ],
+      "topcats_B": [
+        "Xbox One",
+        "Video Games",
+        "Controllers",
+        "Accessories",
+        "Gamepads & Standard Controllers"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-6",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 3,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Wii",
+        "Accessory Kits",
+        "Video Games",
+        "Nintendo Systems"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Wii",
+        "Accessory Kits",
+        "Video Games",
+        "Nintendo Systems"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 3
+    },
+    {
+      "request_id": "exclusion-sparse-7",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Games & Accessories",
+        "Toys & Games",
+        "Board Games"
+      ],
+      "topcats_B": [
+        "Games & Accessories",
+        "Toys & Games",
+        "Board Games"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-8",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Plush Figures",
+        "Stuffed Animals & Plush Toys",
+        "Toys & Games",
+        "Electronics",
+        "Car & Vehicle Electronics"
+      ],
+      "topcats_B": [
+        "Plush Figures",
+        "Stuffed Animals & Plush Toys",
+        "Toys & Games",
+        "Electronics",
+        "Car & Vehicle Electronics"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-9",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Building Sets",
+        "Toys & Games",
+        "Building Toys"
+      ],
+      "topcats_B": [
+        "Building Sets",
+        "Toys & Games",
+        "Building Toys"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-10",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Television & Video",
+        "Electronics",
+        "Remote Controls",
+        "Accessories"
+      ],
+      "topcats_B": [
+        "Television & Video",
+        "Electronics",
+        "Remote Controls",
+        "Accessories"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-11",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories",
+        "Briefcases",
+        "Laptop Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Bags, Cases & Sleeves",
+        "Computers & Accessories",
+        "Briefcases",
+        "Laptop Accessories"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-12",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Modem Router Combos",
+        "Networking Products",
+        "Computers & Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Modem Router Combos",
+        "Networking Products",
+        "Computers & Accessories"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-13",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Car Safety & Security",
+        "Electronics",
+        "Car & Vehicle Electronics",
+        "Vehicle Backup Cameras",
+        "Car Electronics"
+      ],
+      "topcats_B": [
+        "Car Safety & Security",
+        "Electronics",
+        "Car & Vehicle Electronics",
+        "Vehicle Backup Cameras",
+        "Car Electronics"
+      ],
+      "target_cats": [
+        "Electronics",
+        "Motion Detectors",
+        "Security & Surveillance"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-sparse-14",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Cases",
+        "Computer Components",
+        "External Components"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Cases",
+        "Computer Components",
+        "External Components"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-15",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 3,
+      "n_hist_B": 3,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Toys & Games",
+        "Music & Sound"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Toys & Games",
+        "Music & Sound"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 3
+    },
+    {
+      "request_id": "exclusion-sparse-16",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 4,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.5,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Preschool",
+        "Stuffed Animals & Toys",
+        "Pre-Kindergarten Toys",
+        "Toys & Games",
+        "Lightning Cables"
+      ],
+      "topcats_B": [
+        "Lightning Cables",
+        "Cables & Accessories",
+        "Electronics",
+        "Cables & Interconnects",
+        "Computers & Accessories"
+      ],
+      "target_cats": [
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Keyboard & Mouse Combos",
+        "Keyboards, Mice & Accessories"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 2,
+      "recent_n": 4
+    },
+    {
+      "request_id": "exclusion-sparse-17",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Preschool",
+        "Toddler Toys",
+        "Role Play & Dress Up",
+        "Pretend Play",
+        "Toys & Games"
+      ],
+      "topcats_B": [
+        "Preschool",
+        "Toddler Toys",
+        "Role Play & Dress Up",
+        "Pretend Play",
+        "Toys & Games"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-18",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 2,
+      "n_hist_B": 2,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Film Photography",
+        "Instant Cameras",
+        "Film Cameras",
+        "Camera & Photo"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Film Photography",
+        "Instant Cameras",
+        "Film Cameras",
+        "Camera & Photo"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 2
+    },
+    {
+      "request_id": "exclusion-sparse-19",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 1,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Skins & Decals",
+        "Laptop Accessories",
+        "Computers & Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Skins & Decals",
+        "Laptop Accessories",
+        "Computers & Accessories"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 1
+    },
+    {
+      "request_id": "exclusion-warm-0",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 18,
+      "n_hist_B": 7,
+      "hist_loss_frac": 0.6111,
+      "topcats_jaccard": 0.111,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Electronics",
+        "Activity"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Wearable Technology",
+        "Arm & Wristband Accessories",
+        "Digital Voice Recorders",
+        "Portable Audio & Video"
+      ],
+      "target_cats": [
+        "Earbud Headphones",
+        "Electronics",
+        "Headphones & Earbuds",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 4,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-1",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 16,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.6875,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Electronics",
+        "Computers & Accessories"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "DVI-HDMI Adapters",
+        "Computer Cable Adapters"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Cleaning",
+        "Electronics",
+        "Lens Cleaners",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 7,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-2",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 10,
+      "n_hist_B": 9,
+      "hist_loss_frac": 0.1,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Kids' Tricycles",
+        "Tricycles, Scooters & Wagons",
+        "Toys & Games"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Headphones & Earbuds",
+        "Earbud Headphones",
+        "Headphones, Earbuds & Accessories"
+      ],
+      "target_cats": [
+        "Cables",
+        "Electronics",
+        "Home Audio",
+        "Home Audio Accessories",
+        "Stereo Jack Cables"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-3",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 13,
+      "n_hist_B": 13,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-4",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 8,
+      "n_hist_B": 8,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Tablet Accessories",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [
+        "Computers & Accessories",
+        "Electronics",
+        "Laptop Accessories",
+        "Stands"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 8
+    },
+    {
+      "request_id": "exclusion-warm-5",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 6,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Activity",
+        "Cars, Trucks, Boats & Planes"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys",
+        "Activity",
+        "Cars, Trucks, Boats & Planes"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 6
+    },
+    {
+      "request_id": "exclusion-warm-6",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 12,
+      "n_hist_B": 12,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Computer Accessories & Peripherals",
+        "Networking Products"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Camera & Photo",
+        "Computer Accessories & Peripherals",
+        "Networking Products"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-7",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 11,
+      "n_hist_B": 11,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "20-25.9 Inches",
+        "Monitors",
+        "ASUS PC"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "20-25.9 Inches",
+        "Monitors",
+        "ASUS PC"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-8",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 12,
+      "n_hist_B": 12,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Accessories & Supplies",
+        "Headphones & Earbuds",
+        "Headphones, Earbuds & Accessories",
+        "Power Strips & Surge Protectors"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Accessories & Supplies",
+        "Headphones & Earbuds",
+        "Headphones, Earbuds & Accessories",
+        "Power Strips & Surge Protectors"
+      ],
+      "target_cats": [
+        "Audio & Video Accessories",
+        "Computer Accessories & Peripherals",
+        "Computers & Accessories",
+        "Electronics",
+        "Webcams",
+        "Webcams & VoIP Equipment"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-9",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 9,
+      "n_hist_B": 6,
+      "hist_loss_frac": 0.3333,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Toys & Games",
+        "Preschool",
+        "Pre-Kindergarten Toys"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "Accessories",
+        "Computers & Accessories",
+        "Neutral Density Filters"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Camera & Photo",
+        "Electronics",
+        "Filters & Accessories",
+        "Skylight & UV Filters"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 3,
+      "recent_n": 9
+    },
+    {
+      "request_id": "exclusion-warm-10",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Statues, Bobbleheads & Busts",
+        "Bobbleheads",
+        "Toys & Games",
+        "Collectible Toys"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Statues, Bobbleheads & Busts",
+        "Bobbleheads",
+        "Toys & Games",
+        "Collectible Toys"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "exclusion-warm-11",
+      "kind": "exclusion",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 11,
+      "n_hist_B": 0,
+      "hist_loss_frac": 1.0,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Components",
+        "Internal Components",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [],
+      "target_cats": [
+        "Climber Attachments",
+        "Play Set Attachments",
+        "Play Sets & Playground Equipment",
+        "Sports & Outdoor Play",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 10,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-12",
+      "kind": "exclusion",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 26,
+      "n_hist_B": 1,
+      "hist_loss_frac": 0.9615,
+      "topcats_jaccard": 0.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Computers & Accessories",
+        "Lighting",
+        "Lighting & Studio"
+      ],
+      "topcats_B": [
+        "Remote & App Controlled Vehicle Parts",
+        "Remote & App Controlled Vehicles & Parts",
+        "Toys & Games",
+        "Remote & App Controlled Vehicle Batteries"
+      ],
+      "target_cats": [
+        "Remote & App Controlled Vehicle Parts",
+        "Remote & App Controlled Vehicles & Parts",
+        "Servos",
+        "Servos & Parts",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": false,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 9,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-13",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 20,
+      "n_hist_B": 20,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Accessories",
+        "Camera & Photo",
+        "Computer Accessories & Peripherals"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Accessories",
+        "Camera & Photo",
+        "Computer Accessories & Peripherals"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-14",
+      "kind": "exclusion",
+      "request_domain": "Toys_and_Games",
+      "n_hist_A": 11,
+      "n_hist_B": 8,
+      "hist_loss_frac": 0.2727,
+      "topcats_jaccard": 0.25,
+      "topcats_A": [
+        "Toys & Games",
+        "Toy Figures & Playsets",
+        "Video Games",
+        "Games",
+        "PlayStation 3"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Toy Figures & Playsets",
+        "Games & Accessories",
+        "Playsets",
+        "Action Figures"
+      ],
+      "target_cats": [
+        "Dice Games",
+        "Games & Accessories",
+        "Toys & Games"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 3,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-15",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 18,
+      "n_hist_B": 15,
+      "hist_loss_frac": 0.1667,
+      "topcats_jaccard": 0.667,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Television & Video",
+        "Accessories",
+        "Toys & Games"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Television & Video",
+        "Accessories",
+        "Accessories & Supplies"
+      ],
+      "target_cats": [
+        "Accessories",
+        "Cables",
+        "Electronics",
+        "Optical",
+        "Television & Video"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 2,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-16",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 5,
+      "n_hist_B": 5,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Toys & Games",
+        "Games & Accessories",
+        "Video Games",
+        "Games",
+        "PC"
+      ],
+      "topcats_B": [
+        "Toys & Games",
+        "Games & Accessories",
+        "Video Games",
+        "Games",
+        "PC"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 5
+    },
+    {
+      "request_id": "exclusion-warm-17",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 5,
+      "n_hist_B": 4,
+      "hist_loss_frac": 0.2,
+      "topcats_jaccard": 0.429,
+      "topcats_A": [
+        "Tablet Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "STEM Toys",
+        "Toys & Games"
+      ],
+      "topcats_B": [
+        "Tablet Accessories",
+        "Electronics",
+        "Computers & Accessories",
+        "Cases",
+        "Bags, Cases & Sleeves"
+      ],
+      "target_cats": [
+        "Bags, Cases & Sleeves",
+        "Cases",
+        "Computers & Accessories",
+        "Electronics",
+        "Tablet Accessories"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 1,
+      "recent_n": 5
+    },
+    {
+      "request_id": "exclusion-warm-18",
+      "kind": "exclusion",
+      "request_domain": "Electronics",
+      "n_hist_A": 23,
+      "n_hist_B": 23,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Headphones, Earbuds & Accessories",
+        "USB Cables"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Computers & Accessories",
+        "Computer Accessories & Peripherals",
+        "Headphones, Earbuds & Accessories",
+        "USB Cables"
+      ],
+      "target_cats": [
+        "Electronics",
+        "GPS, Finders & Accessories",
+        "Running GPS Units",
+        "Sports & Handheld GPS"
+      ],
+      "target_cat_in_A": true,
+      "target_cat_in_B": true,
+      "recent_cross_domain": 0,
+      "recent_n": 10
+    },
+    {
+      "request_id": "exclusion-warm-19",
+      "kind": "exclusion",
+      "request_domain": null,
+      "n_hist_A": 8,
+      "n_hist_B": 8,
+      "hist_loss_frac": 0.0,
+      "topcats_jaccard": 1.0,
+      "topcats_A": [
+        "Electronics",
+        "Camera & Photo",
+        "Playsets",
+        "Toys & Games",
+        "Toy Figures & Playsets"
+      ],
+      "topcats_B": [
+        "Electronics",
+        "Camera & Photo",
+        "Playsets",
+        "Toys & Games",
+        "Toy Figures & Playsets"
+      ],
+      "target_cats": [],
+      "target_cat_in_A": false,
+      "target_cat_in_B": false,
+      "recent_cross_domain": 0,
+      "recent_n": 8
+    }
+  ]
+}

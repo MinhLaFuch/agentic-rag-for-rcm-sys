@@ -11,7 +11,9 @@ _PROTECTED_MAIN_TABLES = {"items", "item_categories"}
 
 
 def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
-                          popularity: dict | None = None) -> dict:
+                          popularity: dict | None = None,
+                          ratings: dict | None = None,
+                          inferred_categories: dict | None = None) -> dict:
     """Apply a metadata visibility policy to the corpus.
 
     ``popularity`` (optional): ``{item_id: interaction_count}`` from the fit
@@ -19,6 +21,19 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
     ``item_popularity`` table (with cnt/item_id indexes covering every visible
     item) lets FilterTool order by ``popularity`` even when mutable fields
     (rating_number etc.) are masked to NULL.
+
+    ``ratings`` (optional): ``{item_id: mean_rating}`` from the fit split only
+    — a causal proxy for masked ``average_rating``. Creates ``item_rating``
+    covering every visible item (missing -> NULL) so ``min_rating`` filters and
+    ``average_rating`` ordering can be evaluated without leaking the
+    scrape-time snapshot.
+
+    ``inferred_categories`` (optional): ``{item_id: category | [categories]}``
+    for items that have NO rows in ``item_categories`` (the uncategorized
+    tail). Inferred rows are unioned into the temp ``item_categories`` table
+    for visible items only, so FilterTool category filters and FTS category
+    text reach them. Items that already have real categories are never
+    overridden.
     """
     if policy not in POLICIES:
         raise ValueError(f"metadata policy must be one of {POLICIES}")
@@ -114,6 +129,14 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
             "order_by='popularity' when provided"
             if popularity else None
         ),
+        "rating_proxy_available": bool(ratings),
+        "rating_proxy": (
+            "fit-split mean rating per item (causal: only pre-as_of "
+            "interactions); exposed as temp.item_rating for FilterTool "
+            "min_rating filter and order_by='average_rating' when provided"
+            if ratings else None
+        ),
+        "inferred_categories": bool(inferred_categories),
     }
 
     # Trusted setup only. The TEMP items view keeps base rowids for FTS joins,
@@ -159,6 +182,32 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
                 "CREATE INDEX idx_item_popularity_cnt_asc "
                 "ON item_popularity(cnt ASC, item_id)"
             )
+        if ratings:
+            conn.execute(
+                "CREATE TEMP TABLE item_rating (item_id TEXT PRIMARY KEY, avg_rating REAL)"
+            )
+            conn.executemany(
+                "INSERT INTO item_rating VALUES (?, ?)",
+                ((iid, float(r)) for iid, r in ratings.items()),
+            )
+            # Every visible item needs a row; items without fit ratings get
+            # NULL so they sort last and fail min_rating thresholds honestly.
+            conn.execute(
+                "INSERT INTO item_rating(item_id, avg_rating) "
+                "SELECT i.item_id, NULL FROM main.items AS i "
+                "WHERE i.first_seen_ts IS NOT NULL AND i.first_seen_ts <= ? "
+                "AND i.item_id NOT IN (SELECT item_id FROM item_rating)",
+                (int(as_of_timestamp),),
+            )
+            # Expression index keeps NULL ratings last in BOTH directions.
+            conn.execute(
+                "CREATE INDEX idx_item_rating_desc "
+                "ON item_rating(avg_rating IS NULL, avg_rating DESC, item_id)"
+            )
+            conn.execute(
+                "CREATE INDEX idx_item_rating_asc "
+                "ON item_rating(avg_rating IS NULL, avg_rating ASC, item_id)"
+            )
         conn.execute(
             "CREATE TEMP VIEW items AS "
             f"SELECT rowid AS rowid, {projection} FROM main.items "
@@ -171,6 +220,30 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         )
         conn.execute("CREATE INDEX idx_temp_item_categories_item_id ON item_categories(item_id)")
         conn.execute("CREATE INDEX idx_temp_item_categories_category ON item_categories(category)")
+        if inferred_categories:
+            flat = []
+            for iid, cats in inferred_categories.items():
+                for cat in ([cats] if isinstance(cats, str) else list(cats)):
+                    flat.append((iid, cat))
+            conn.execute(
+                "CREATE TEMP TABLE inferred_categories_raw (item_id TEXT, category TEXT)"
+            )
+            conn.executemany(
+                "INSERT INTO inferred_categories_raw VALUES (?, ?)", flat
+            )
+            # Only items with NO real category rows get inferred ones, and only
+            # when visible under the as-of filter.
+            conn.execute(
+                "INSERT INTO item_categories(item_id, category) "
+                "SELECT r.item_id, r.category FROM inferred_categories_raw r "
+                "JOIN temp.items i ON i.item_id = r.item_id "
+                "WHERE NOT EXISTS (SELECT 1 FROM main.item_categories c "
+                "WHERE c.item_id = r.item_id)"
+            )
+            record["inferred_categories_count"] = conn.execute(
+                "SELECT changes()"
+            ).fetchone()[0]
+            conn.execute("DROP TABLE temp.inferred_categories_raw")
         temp_fts_schema = FTS_TABLE_SCHEMA.replace(
             "CREATE VIRTUAL TABLE items_fts", "CREATE VIRTUAL TABLE temp.items_fts", 1
         )
@@ -179,7 +252,9 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         conn.commit()
     except Exception:
         conn.execute("PRAGMA query_only = OFF")
-        for kind, name in (("table", "items_fts"), ("table", "item_categories"), ("view", "items")):
+        for kind, name in (("table", "items_fts"), ("table", "item_categories"),
+                           ("table", "item_popularity"), ("table", "item_rating"),
+                           ("view", "items")):
             try:
                 conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
             except sqlite3.Error:

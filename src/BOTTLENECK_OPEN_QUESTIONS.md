@@ -15,29 +15,37 @@ Legend: ✅ measured/answered · 🔶 partially answered · ⬜ still open (deci
 
 ## P0 — Candidate retrieval recall (~72% of targets die here)
 
-### Q1. FilterTool category usage policy ⬜ (decision still yours)
-The SQL fix is in (category filters now run <1s). Should the planner:
-- (a) always try one precise leaf-category `FilterTool` when a category is known/inferable, or
-- (b) treat it as one leg among several (BM25/Similar stay primary)?
+### Q1. FilterTool category usage policy ✅ ANSWERED 2026-11-21 — keep optional leg
+A/B on the same 152 requests, post-F2 (`experiments/agent_eval/filter_ab/`):
+- A (always-on leaf-category prompt): FilterTool used in 126/152 reqs (58 w/
+  cat filter) vs B 74/152 (16 w/ cat) — prompt compliance confirmed.
+- task_success: A 0.589 vs B **0.679** — always-on is WORSE.
+- target metrics identical: task_success_relevant 0.026, hit_rate@10 0.026,
+  target_in_any_path_pool 0.897 both arms.
 
-*New evidence sharpening the stakes:* the TRUE category-filter ceiling is
-**r@200=38.7%, r@1000=49.0%** (median rank 42) under correct popularity ordering
-(`investigations/q4_filter_orderings.json`) — ~2× the earlier corrupted 21.3%.
-But under eval's actual masked ordering it collapses to **0.65%/12.3%** — so Q1 is
-now downstream of the Q18 fix: category filtering is only worth pushing once the
-ordering bug is resolved. Risk of (a) unchanged: over-filtering on wrong guesses.
+Pool coverage was already saturated; extra FilterTool calls added noise/
+latency without target gains. **Baseline prompt stays.** Planner-level
+retrieval levers are exhausted — remaining gains are scorer (Q5–Q7) and
+retrieval enrichment (Q2).
 
-### Q2. Uncategorized tail 🔶 (partially answered)
-Category filtering cannot reach these. **Measured:** missing categories are a
-*source-data gap*, not preprocessing loss — raw meta has_categories 90.0–92.0%
-= corpus identical; preprocessing dropped **0** items
-(`investigations/q15_raw_vs_processed.json`). Missing-cat rate correlates
-inversely with popularity (<5 ratings → 10.9% missing; ≥500 → 3.1%).
-Also measured: 75.5% of ALL targets share ≥1 surface signal, but text_overlap
-with request is only 11.7% — content path is weak for personalized requests.
-
-Still open: which combo of (a)–(d) is worth it. Note (c) dense leg already
-includes categories in doc text (Q19) — the gap is description/features/price.
+### Q2. Uncategorized tail 🔶 → DECIDED 2026-11-21: build categorization layer
+**STATUS 2026-11-22: BUILT, awaiting merge+eval** — prototype validated
+(kNN top-1 vote ≈99% any-hit on categorized holdout; uncategorized items get
+top-1 voted category). `investigations/q2_build_inferred_categories.py`
+finished all 23 parts → `investigations/q2_inferred_cats/part_*.parquet`
+(CUDA path, fp16 refs). Consumption wired: `apply_metadata_policy(
+inferred_categories=...)` unions inferred rows for uncategorized visible
+items only; `run_agent_eval` auto-loads
+`resource/corpus/multi_domain/item_categories_inferred.parquet` if present.
+Remaining: merge parts → artifact, sanity-check assignments, run agent eval
+with/without inferred cats, measure category-filter recall on the tail.
+**User decision:** create a layer that categorizes the uncategorized tail —
+likely via embedding relations (cluster/nearest-neighbor into the existing
+category taxonomy). Design needed: which items (~24% of targets affected),
+which embedding (ties into user's multilingual-model evaluation), assignment
+confidence threshold, and whether inferred categories feed FilterTool,
+MemoryTool profiles, or doc text. Source-data gap confirmed (Q15) — this is
+enrichment, not preprocessing repair.
 
 ### Q3. SearchTool timeouts ✅ ANSWERED (root cause = same bug as FilterTool)
 108 SearchTool steps across both runs: **100 exceeded 5s-or-error, median
@@ -69,18 +77,18 @@ correct — the bug is that eval can't see it.**
 
 ## P1 — Ranking / scoring (measured second bottleneck)
 
-### Q5. Scorer strategy 🔶 (evidence in, decision yours)
-ItemKNN CF contributes literally zero signal for held-out targets (§6.8) — and
-now confirmed at every k-core K (Q12: co-occurrence ~unchanged K=none→10).
-New Q6 evidence (`investigations/q6_scorer_comparison_v2.json`, 126
-targets conditioned on real competition, reproduces §6.7's 31.75% exactly):
+### Q5. Scorer strategy 🔶 → DECIDED 2026-11-21: keep both, more evidence
+**User decision:** keep baseline AND learned scorer; gather more evidence
+before wiring. Next step queued: rerun `ranktool_injection_probe` +
+`q6_scorer_comparison_v2` on the two post-F2 filter_ab runs (fresh candidate
+pools, real FilterTool ordering) to see if v5_honest's 71.4% rescue@10
+replicates outside the exp_5 injection setup.
+Prior evidence (`q6_scorer_comparison_v2.json`, 126 targets w/ competition,
+reproduces §6.7's 31.75% exactly):
 - **pure popularity alone = 60.3% rescue@10** — the CF term actively HURTS
 - honest learned reranker [pop, cf, cat_match] CV-by-request = **71.4%**
 - retrieval-blend variants couldn't be fairly tested via injection (injected
   targets have retr=0 by construction → biased down; needs live A/B)
-
-So "improve vs replace" now has data: popularity-heavy scoring is the direction;
-CF replacement is a research decision (Q8).
 
 ### Q6. Retrieval-score blending 🔶 (probe run — result is nuanced)
 Ran the offline comparison (`investigations/q6_scorer_comparison{,_v2}`).
@@ -111,8 +119,33 @@ keeps only 19.4M) could create signal. Still your scope decision.
 
 ## P3 — Eval validity / temporal policy
 
-### Q9. Is the ~18% `first_seen` hiding real or artifact? 🔶 (provenance answered, judgment yours)
-**Provenance measured** (`investigations/q11_q13_q16_probes.json`):
+### Q9. Is the ~18% `first_seen` hiding real or artifact? 🔶 → REOPENED 2026-11-21
+**User:** masking is fixed (Q18 commit dc100d1) — take another look at the
+temporal policy itself. Next step: field-level audit of which metadata fields
+(price, average_rating, rating_number, categories, first_seen) are masked vs
+exposable under `historical_static_catalog`, and whether any masked field has
+a causal pre-cutoff proxy (like the new train-count popularity) worth wiring.
+
+**Field-level audit 2026-11-21** (`items` schema = item_id, domain,
+original_item_id, first_seen_ts, title, store, price, average_rating,
+rating_number, main_category):
+
+| field | status under historical_static_catalog | causal proxy available? |
+|---|---|---|
+| item_id, domain, original_item_id, title, store, main_category | exposed | n/a (static-ish; title/store mutability unverified but low-risk) |
+| first_seen_ts | visibility filter (≤ as_of) | proxy IS the filter; ~24% catalog / ~18% targets hidden — real launch dates don't exist upstream |
+| rating_number | masked NULL | ✅ DONE — fit-split interaction count (dc100d1, ~87% of leaky ordering quality) |
+| average_rating | masked NULL | ✅ **available, not yet wired** — train.parquet has per-interaction `rating` (48.8M rows, 0 nulls, mean 4.17); mean train rating per item covers all 2,003,873 visible items. Same mechanism as popularity could expose it |
+| price | masked NULL | ❌ none — reviews don't record price; only option is category-level bands (weak) or accepting the mask |
+
+So the masking re-look yields one concrete upgrade: causal `average_rating`
+proxy. `min_rating` FilterTool filter could then work causally instead of
+erroring. Price stays masked — that's a real information gap, not a fixable one.
+**STATUS 2026-11-22: IMPLEMENTED** — `apply_metadata_policy(ratings=...)`
+builds temp `item_rating` (mean fit-split rating per item); FilterTool
+`min_rating` → causal `avg_rating >= ?` subquery and `order_by=average_rating`
+→ causal-rating index path; `min_rating_number`/`price` remain fail-loud.
+`run_agent_eval` now loads the `rating` split column. 25/25 policy tests pass.
 `first_seen_ts` = min timestamp per namespaced item over *cleaned* parquet.
 Cleaning = drop missing-required + dedup(user,asin,**timestamp**) keep-last +
 optional rating∈[1,5] & ts∈[1995,2024) validation; **NO verified-purchase
