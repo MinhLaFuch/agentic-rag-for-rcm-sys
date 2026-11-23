@@ -612,7 +612,10 @@ def _run_stages(args, paths, meta_files, store, ks, variants, scorer_specs, merg
             progress.update(store.count("candidates")-offsets[active_segment], force=True)
     if store.count("candidates") != total:
         raise ValueError("candidate checkpoint does not contain the complete sample")
-    shared_baseline = BaselineScorer(knn)
+    # shared_baseline backs evidence/ltr variants only; baseline/hybrid variants
+    # build their own scorers below, so skip the extra construction otherwise.
+    needs_shared_baseline = any(s["kind"] in ("ltr", "evidence") for s in scorer_specs.values())
+    shared_baseline = BaselineScorer(knn) if needs_shared_baseline else None
     shared_ltr = None
     if any(s["kind"] == "ltr" for s in scorer_specs.values()):
         from package.tools.retrieval.domain_category_popularity import DomainCategoryPopularity

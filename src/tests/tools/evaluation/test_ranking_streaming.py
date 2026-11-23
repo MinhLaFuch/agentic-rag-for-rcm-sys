@@ -44,6 +44,9 @@ def environment(tmp_path, monkeypatch):
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
     monkeypatch.setattr(script,"load_mappings",lambda *a:(user2id,item2id))
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
+    # ranking_eval resolves bundles via package.config.resolve_bundle_paths (local import in main),
+    # which bypasses the get_data_paths monkeypatch and validates --domain against real domains.yaml.
+    monkeypatch.setattr("package.config.resolve_bundle_paths.resolve_bundle_paths",lambda *a,**k:paths)
     return tmp_path,paths,item2id
 
 
