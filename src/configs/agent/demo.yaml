@@ -31,3 +31,14 @@ demo:
   # khi false, request kèm intent_query/intent_filters nhận ask_user và user
   # không có lịch sử vẫn nhận no_result như cũ.
   intent_path_enabled: false
+
+  # Runtime scorer & retrieval (mặc định giữ baseline + bm25 để không thay đổi hành vi hiện tại;
+  # bật cấu hình thắng trên validation qua CONFIG_OVERLAY_PATH).
+  scorer_mode: "baseline"            # baseline | hybrid
+  scorer_popularity_weight: 4.0      # trọng số popularity khi scorer_mode="hybrid"
+  retrieval_mode: "bm25"             # bm25 | hybrid
+  embeddings_path: null              # đường dẫn artifact embedding đã kiểm chứng (bắt buộc khi retrieval_mode="hybrid")
+  ann_index_path: null               # đường dẫn index FAISS HNSW SQ8 đã build sẵn (nạp trong vài giây)
+  bm25_index_path: null              # đường dẫn SparseBM25Index đã build sẵn (<100ms thay cho FTS5 2-3s)
+  translate_vietnamese: true         # tự động dịch/mở rộng truy vấn tiếng Việt sang từ khóa catalog tiếng Anh
+  fallback_to_bm25: true             # runtime fallback có log rõ khi artifact/encoder không khả dụng

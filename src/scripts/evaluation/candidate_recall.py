@@ -171,7 +171,15 @@ def main() -> None:
     ap.add_argument("--allow-missing-corpus-sources", action="store_true")
     ap.add_argument("--tag", help="Explicit existing bundle; does not bypass manifest validation")
     ap.add_argument("--embeddings-path", type=Path, help="Explicit full artifact directory or legacy NPZ")
+    ap.add_argument("--matrix-config", type=Path, help="Opt-in paired query/fusion/ranking matrix")
+    ap.add_argument("--trace-ann", action="store_true", help="Diagnostic only: trace ANN/exact inside live matrix")
+    ap.add_argument("--matrix-output", type=Path, help="New directory for frozen matrix artifacts")
+    ap.add_argument("--matrix-from", type=Path, help="Replay ranking only from a completed frozen matrix; new output required")
+    ap.add_argument("--allow-final-test", action="store_true",
+                    help="Unlock one-shot final held-out test matrix with a frozen config (final_test_frozen: true)")
     args = ap.parse_args()
+    if args.trace_ann and (not args.matrix_config or args.matrix_from):
+        ap.error('--trace-ann requires a new ANN validation matrix')
 
     # Mọi tham số đọc từ configs/eval/candidate_recall.yaml, eval/baselines.yaml, eval/segment_thresholds.yaml
     cfg = load_config("eval/candidate_recall")["candidate_recall"]
@@ -294,7 +302,9 @@ def main() -> None:
         knn = ItemKNNRecommender(neighbors=neighbors).fit(fit_pairs)
     knn_seconds = time.perf_counter() - knn_started
     item_cf = SimilarTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
-    search_bm25 = SearchTool(corpus, logger=ToolCallLogger())
+    matrix_enabled = bool(args.matrix_config or args.matrix_from)
+    search_bm25 = SearchTool(corpus, logger=ToolCallLogger(),
+                             exact_count=not matrix_enabled, indexed_topk=matrix_enabled)
 
     search_hybrid = None
     if vector_store is not None and query_encoder is not None:
@@ -310,6 +320,40 @@ def main() -> None:
     popularity = knn.scores if hasattr(knn, "_evaluation_fit_provenance") else np.asarray(fit_matrix.sum(axis=0)).ravel()
     pop_order = np.argsort(-popularity, kind="stable").tolist()
     fit_item_seen = np.asarray(fit_matrix.sum(axis=0)).ravel() > 0
+
+    if args.matrix_config or args.matrix_from:
+        if args.eval_on == 'test':
+            if not args.allow_final_test or args.trace_ann:
+                raise ValueError('Final test matrix requires --allow-final-test (and forbids --trace-ann)')
+        elif args.eval_on != 'validation':
+            raise ValueError('Unsupported --eval-on for matrix')
+        if args.retrieval != 'hybrid' or args.matrix_output is None or query_modes != ['history']:
+            raise ValueError('Matrix requires validation, hybrid, history (no oracle), and --matrix-output')
+        from scripts.evaluation.retrieval_matrix import run_matrix, replay_frozen_matrix
+        from package.tools.retrieval.catalog_title_lookup import catalog_title_lookup
+        fit_events = {}
+        for user, item, timestamp in sampled_fit[['user_idx', 'item_idx', 'timestamp']].itertuples(index=False, name=None):
+            fit_events.setdefault(int(user), []).append({'item_id': id2item[int(item)], 'timestamp': int(timestamp)})
+        cutoff_by_user = {int(u): int(target_df.loc[target_df.user_idx == u, 'timestamp'].min())
+                          for u in sampled_users}
+        split_names = ('train', 'validation', 'test') if args.eval_on == 'test' else ('train', 'validation')
+        provenance = {'tag': data_paths.tag, 'manifest': tag_manifest, 'embeddings': embedding_provenance,
+                      'protocol': protocol_manifest, 'fit_hash': knn_fit_data_hash,
+                      'split_hashes': {name: sha256_file(data_paths.split_path(name)) for name in split_names},
+                      'mapping_hash': mapping_hash(item2id), 'user_mapping_hash': mapping_hash(user2id)}
+        if args.matrix_from:
+            replay_frozen_matrix(args.matrix_from, args.matrix_output, provenance=provenance,
+                                 knn=knn, user2id=user2id, item2id=item2id, corpus=corpus)
+            return
+        matrix_text = catalog_title_lookup(corpus)
+        run_matrix(output=args.matrix_output, config_path=args.matrix_config, sampled=sampled, trace_ann=args.trace_ann,
+                   recent=recent, fit_events=fit_events, item_text=matrix_text, id2item=id2item,
+                   user2id=user2id, item2id=item2id, targets=target_by_user,
+                   cutoff=cutoff_by_user, knn=knn, item_cf=item_cf, search=search_bm25,
+                   vector_store=vector_store, encoder=query_encoder, corpus=corpus, provenance=provenance,
+                   popularity_order=pop_order)
+        print(f'Matrix saved: {args.matrix_output}', flush=True)
+        return
 
     def cand_key(c: dict) -> str:  # semantic candidates carry both id forms
         return c["item_id"] if namespaced else c["original_item_id"]

@@ -17,9 +17,13 @@ Thumbs.db
 
 # Python environments, caches and generated package metadata.
 .venv*/
+/src/.venv*/
 venv/
+env/
+ENV/
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 build/
 dist/
@@ -46,7 +50,16 @@ htmlcov/
 /src/experiments/checkpoints/
 /src/experiments/**/checkpoints/
 /src/experiments/**/_checkpoints/
+/src/experiments/*_builds/
 /src/experiments/embedding_builds/
+/src/experiments/ann_builds/
+/src/experiments/bm25_builds/
+/src/experiments/rerankers/
+/src/experiments/ann_benchmarks/
+/src/experiments/ann_diagnostics/
+/src/experiments/cold_query_track_b/
+/src/experiments/retrieval_matrix/
+/src/experiments/ranking_eval/
 /src/experiments/**/scratch/
 /src/experiments/test_logs/
 /src/experiments/logs/
@@ -68,27 +81,41 @@ htmlcov/
 /src/experiments/**/*.log
 /src/experiments/**/*.tmp
 /src/experiments/**/*.lock
+/src/experiments/**/.*.lock
 
-# Bulk binary artifacts under retrieval investigations (corpus DBs, embeddings, big parquet).
-# Small scripts, configs, logs and metrics remain versioned.
-/src/investigations/**/*.jsonl
-/src/investigations/**/*.npy
-/src/investigations/**/*.npz
-/src/investigations/**/*.parquet
-/src/investigations/**/*.sqlite
-/src/investigations/**/*.sqlite-*
-/src/investigations/**/*.db
-/src/investigations/**/*.db-*
-/src/investigations/**/*.pt
-/src/investigations/**/*.pth
-/src/investigations/**/*.safetensors
-/src/investigations/**/*.bin
-/src/investigations/**/*.log
-/src/investigations/**/*.tmp
-/src/investigations/**/*.lock
+# Global heavy binary/data formats (defense in depth against accidental placement).
+*.npy
+*.npz
+*.parquet
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.db
+*.db-*
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.faiss
+*.index
+*.pkl
+*.pickle
+*.lock
+.*.lock
+*.log
 
-# Crash dumps and Windows shell artifacts.
+# Ad-hoc / scratch test scripts at repository root (unit tests live in src/tests/).
+/test_*.py
+/check_*.py
+/scratch/
+/src/scratch/
+
+# Crash dumps, editor backups and Windows shell artifacts.
 *.dmp
 *.stackdump
 nul
+desktop.ini
+*.swp
+*.swo
+*~
 /powershell.cmd

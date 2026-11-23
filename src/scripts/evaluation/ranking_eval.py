@@ -38,7 +38,8 @@ from package.evaluation.recommender.metrics.ranking import ranking_metrics_at_k
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared.build_interaction_matrix import build_interaction_matrix
 from package.recommenders.shared import item_knn_data_hash, mapping_hash, file_hash
-from package.tools.scoring import BaselineScorer
+from package.tools.scoring import BaselineScorer, HybridScorer, MultiSignalReranker
+from package.tools.scoring.evidence_scorer import EvidenceScorer
 from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
@@ -51,6 +52,74 @@ from scripts.evaluation.candidate_recall import drop_seen, item_text_tables, rou
 
 SEGMENTS = ("cold", "sparse", "warm")
 MERGES = ("union_rr", "union_all")
+MATRIX_REQUIRED_FILES = ("config.json", "candidate_sets.jsonl", "frozen.json", "artifact_hashes.json")
+RANKING_REQUIRED_FILES = ("config.yaml", "metrics.json", "candidate_lists.jsonl", "scored.jsonl")
+
+
+def _frozen_source_kind(source: Path) -> str:
+    if (source / "frozen.json").exists() and (source / "candidate_sets.jsonl").exists():
+        return "retrieval_matrix"
+    if (source / "config.yaml").exists() and (source / "candidate_lists.jsonl").exists():
+        return "ranking_experiment"
+    raise ValueError(f"Unrecognized --candidates-from directory: {source}")
+
+
+def _parse_scorer_specs(weights: list[float], extra_variants: list[str] | None) -> dict[str, dict[str, Any]]:
+    specs: dict[str, dict[str, Any]] = {}
+    for w in weights:
+        name = "baseline" if np.isclose(w, 1e-6, rtol=0, atol=1e-15) else f"popularity_weight_{w:g}"
+        if name in specs:
+            raise ValueError("scorer variant names collide")
+        specs[name] = {"kind": "baseline", "popularity_weight": float(w)}
+    for raw in extra_variants or []:
+        token = raw.strip()
+        if not token:
+            continue
+        if token.startswith("hybrid_w"):
+            w = float(token[len("hybrid_w"):])
+            if not np.isfinite(w) or w < 0:
+                raise ValueError(f"invalid hybrid scorer weight: {token}")
+            spec = {"kind": "hybrid", "popularity_weight": w}
+        elif token == "evidence_cf_ties":
+            spec = {"kind": "evidence", "mode": "cf_ties", "popularity_weight": 0.1, "evidence_weight": 0.1}
+        elif token == "evidence_additive":
+            spec = {"kind": "evidence", "mode": "additive_ablation", "popularity_weight": 0.1, "evidence_weight": 0.1}
+        elif token == "evidence_normalized":
+            spec = {"kind": "evidence", "mode": "normalized_blend", "cf_weight": 0.2, "popularity_weight": 0.5, "evidence_weight": 1.0}
+        elif token == "ltr_reranker":
+            spec = {"kind": "ltr", "popularity_weight": None}
+        else:
+            raise ValueError(f"unsupported scorer variant: {token}")
+        if token in specs:
+            raise ValueError(f"duplicate scorer variant: {token}")
+        specs[token] = spec
+    return specs
+
+
+def _embedding_identity(embeddings_path: Path | None, corpus_path: Path) -> dict[str, Any]:
+    if embeddings_path is None:
+        raise ValueError("hybrid retrieval requires --embeddings-path (or existing tag embedding artifact)")
+    resolved = embeddings_path.resolve()
+    if resolved.is_dir():
+        manifest_path = resolved / "manifest.json"
+        if not manifest_path.exists():
+            raise ValueError(f"embedding artifact directory missing manifest.json: {resolved}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return {
+            "path": str(resolved),
+            "manifest_sha256": file_hash(manifest_path),
+            "build_id": manifest.get("build_id"),
+            "corpus_sha256": file_hash(corpus_path) if corpus_path.exists() else None,
+        }
+    if not resolved.exists():
+        raise ValueError(f"embedding artifact not found: {resolved}")
+    sidecar = resolved.with_suffix(".meta.json")
+    return {
+        "path": str(resolved),
+        "artifact_sha256": file_hash(resolved),
+        "sidecar_sha256": file_hash(sidecar) if sidecar.exists() else None,
+        "corpus_sha256": file_hash(corpus_path) if corpus_path.exists() else None,
+    }
 
 
 def _ids_to_namespaced(ids: list[int], id2item: dict[int, str]) -> list[str]:
@@ -140,8 +209,23 @@ def main() -> None:
     ap.add_argument("--eval-on", choices=("validation", "test"), default="validation")
     ap.add_argument("--work-dir", type=Path, help="Durable checkpoint directory; reuse with --resume")
     ap.add_argument("--resume", action="store_true")
-    ap.add_argument("--candidates-from", type=Path, help="Freeze candidates from a compatible completed ranking experiment")
+    ap.add_argument("--candidates-from", type=Path,
+                    help="Freeze candidates from a compatible completed ranking experiment or retrieval matrix")
     ap.add_argument("--tag", help="Explicit existing bundle; does not bypass manifest validation")
+    ap.add_argument("--retrieval", choices=("bm25", "hybrid"), default=None,
+                    help="Retrieval mode for SearchTool when not replaying frozen candidates")
+    ap.add_argument("--embeddings-path", type=Path, default=None,
+                    help="Validated embedding artifact directory/NPZ for hybrid retrieval")
+    ap.add_argument("--matrix-mode", default="recency_weighted",
+                    help="Query mode to import when --candidates-from points to a retrieval matrix")
+    ap.add_argument("--matrix-budget", type=int, default=None,
+                    help="Candidate budget to import from retrieval matrix (default: candidate_budget)")
+    ap.add_argument("--matrix-pools", default="bm25,hybrid,fused",
+                    help="Comma-separated matrix pool names to replay (e.g. bm25,hybrid,fused)")
+    ap.add_argument("--scorer-variants", default=None,
+                    help="Extra scorer variants (comma-separated: hybrid_w4,evidence_cf_ties,evidence_additive,evidence_normalized,ltr_reranker)")
+    ap.add_argument("--reranker-path", type=Path, default=None,
+                    help="Persisted MultiSignalReranker artifact directory (required when ltr_reranker is selected)")
     args = ap.parse_args()
 
     # Mọi tham số đánh giá đọc từ configs/eval/ranking_eval.yaml (+ baselines/segment_thresholds/tools).
@@ -163,6 +247,17 @@ def main() -> None:
     args.allow_missing_corpus_sources = bool(cfg["allow_missing_corpus_sources"])
     args.batch_size = int(cfg["batch_size"])
     args.progress_every = int(cfg["progress_every"])
+    args.retrieval = args.retrieval or str(cfg.get("retrieval", "bm25"))
+    if args.embeddings_path is None and cfg.get("embeddings_path"):
+        args.embeddings_path = Path(str(cfg["embeddings_path"]))
+    if args.matrix_budget is None:
+        args.matrix_budget = args.candidate_budget
+    extra_variants_raw = args.scorer_variants if args.scorer_variants is not None else cfg.get("scorer_variants", [])
+    if isinstance(extra_variants_raw, str):
+        extra_variants = [x.strip() for x in extra_variants_raw.split(",") if x.strip()]
+    else:
+        extra_variants = [str(x).strip() for x in (extra_variants_raw or []) if str(x).strip()]
+    args.extra_scorer_variants = extra_variants
 
     if args.per_segment < 1 or args.candidate_budget < 1:
         raise SystemExit("ranking_eval.per_segment and ranking_eval.candidate_budget must be positive")
@@ -212,14 +307,44 @@ def main() -> None:
                                        for p in map(Path, args.exclude_users_from)]
     identity["parameters"]["exclude_users_from"] = [str(Path(p).resolve()) for p in args.exclude_users_from]
     if args.candidates_from:
-        identity["frozen_artifacts"] = {name:file_hash(args.candidates_from/name) for name in ("config.yaml","metrics.json","candidate_lists.jsonl","scored.jsonl")}
-    variants = {("baseline" if np.isclose(w,1e-6,rtol=0,atol=1e-15) else f"popularity_weight_{w:g}"):w for w in weights}
-    if len(variants) != len(weights):
-        raise ValueError("scorer variant names collide")
-    if args.candidates_from:
+        source_kind = _frozen_source_kind(args.candidates_from)
+        required = MATRIX_REQUIRED_FILES if source_kind == "retrieval_matrix" else RANKING_REQUIRED_FILES
+        identity["frozen_source_kind"] = source_kind
+        identity["frozen_artifacts"] = {name: file_hash(args.candidates_from / name) for name in required}
+    else:
+        source_kind = None
+    if args.retrieval == "hybrid" and not args.candidates_from:
+        emb_path = args.embeddings_path or (paths.corpus_dir / f"item_embeddings_{paths.tag}.npz")
+        identity["embedding_artifact"] = _embedding_identity(emb_path, paths.corpus_path)
+    elif args.embeddings_path is not None:
+        identity["embedding_artifact"] = _embedding_identity(args.embeddings_path, paths.corpus_path)
+
+    scorer_specs = _parse_scorer_specs(weights, args.extra_scorer_variants)
+    if any(s["kind"] == "ltr" for s in scorer_specs.values()):
+        if args.reranker_path is None:
+            raise ValueError("ltr_reranker scorer variant requires --reranker-path")
+        rr_dir = args.reranker_path.resolve()
+        rr_manifest_path = rr_dir / "manifest.json"
+        if not rr_manifest_path.exists():
+            raise ValueError(f"reranker artifact missing manifest.json: {rr_dir}")
+        rr_manifest = json.loads(rr_manifest_path.read_text(encoding="utf-8"))
+        identity["reranker_artifact"] = {
+            "path": str(rr_dir),
+            "manifest_sha256": file_hash(rr_manifest_path),
+            "model_sha256": rr_manifest.get("checksums", {}).get("reranker.pkl"),
+        }
+    variants = {name: spec.get("popularity_weight") for name, spec in scorer_specs.items()}
+    if source_kind == "ranking_experiment":
         if "baseline" not in variants:
             raise ValueError("frozen-candidate confirmation requires including baseline weight 1e-6")
         variants = {"baseline":variants["baseline"], **{k:v for k,v in variants.items() if k != "baseline"}}
+        scorer_specs = {"baseline": scorer_specs["baseline"], **{k: v for k, v in scorer_specs.items() if k != "baseline"}}
+    merges = (tuple(p.strip() for p in args.matrix_pools.split(",") if p.strip())
+              if source_kind == "retrieval_matrix" else MERGES)
+    if not merges or len(set(merges)) != len(merges):
+        raise ValueError("matrix pools / merges must be unique non-empty names")
+    identity["merges"] = list(merges)
+    identity["scorer_specs"] = scorer_specs
     provenance_seconds = time.perf_counter() - provenance_started
     with RankingRunStore(work, identity, resume=args.resume) as store:
         store.put("startup_verification_seconds",store.get("startup_verification_seconds",0.) + provenance_seconds)
@@ -239,11 +364,11 @@ def main() -> None:
             return
         store.put("execution_sessions", store.get("execution_sessions",[]) + [{"batch_size":args.batch_size, "progress_every":args.progress_every, "resume":args.resume}])
         if not store.get("scoring_complete"):
-            _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest)
-        _finalize(args, paths, store, ks, variants, exp_root)
+            _run_stages(args, paths, meta_files, store, ks, variants, scorer_specs, merges, source_kind, tag_manifest)
+        _finalize(args, paths, store, ks, variants, merges, exp_root)
 
 
-def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
+def _run_stages(args, paths, meta_files, store, ks, variants, scorer_specs, merges, source_kind, tag_manifest):
     print("[splits] loading and sampling; ETA unknown", flush=True)
     train, validation, test = _load_eval_splits(paths, args.eval_on)
     fit_df, target_df = select_fit_target(train, validation, test, args.eval_on)
@@ -262,10 +387,19 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
                                    split=args.eval_on, user_hash=mapping_hash(user2id),
                                    item_hash=mapping_hash(item2id))
     segments_by_user = {u: s for u, s in segments_by_user.items() if u not in excluded}
-    sampled = ({segment: sorted(u for u, s in segments_by_user.items() if s == segment) for segment in SEGMENTS}
-               if args.all_users else sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed)))
-    if excluded and not args.all_users and any(len(group) != args.per_segment for group in sampled.values()):
-        raise ValueError("insufficient untouched users for requested per-segment sample")
+    if source_kind == "retrieval_matrix":
+        matrix_doc = json.loads((args.candidates_from / "config.json").read_text(encoding="utf-8"))
+        raw_cohort = matrix_doc.get("cohort", {})
+        sampled = {seg: [int(u) for u in raw_cohort.get(seg, [])] for seg in SEGMENTS}
+        for seg, group in sampled.items():
+            for u in group:
+                if segments_by_user.get(u) != seg:
+                    raise ValueError(f"frozen matrix user {u} segment mismatch: expected {seg}, got {segments_by_user.get(u)}")
+    else:
+        sampled = ({segment: sorted(u for u, s in segments_by_user.items() if s == segment) for segment in SEGMENTS}
+                   if args.all_users else sample_users(segments_by_user, args.per_segment, np.random.default_rng(args.seed)))
+        if excluded and not args.all_users and any(len(group) != args.per_segment for group in sampled.values()):
+            raise ValueError("insufficient untouched users for requested per-segment sample")
     users = {u for group in sampled.values() for u in group}
     sampled_fit = fit_df[fit_df["user_idx"].isin(users)]
     sampled_fit = sampled_fit.sort_values("timestamp")
@@ -319,7 +453,17 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     knn_seconds = time.perf_counter() - knn_started
     print(f"[ItemKNN] ready in {knn_seconds:.1f}s", flush=True)
     item_cf = SimilarTool(knn, item2id, corpus=corpus, logger=ToolCallLogger())
-    semantic = SearchTool(corpus, logger=ToolCallLogger())
+    embedding_provenance = None
+    if args.retrieval == "hybrid" and not args.candidates_from:
+        from scripts.data_pipeline.build_item_embeddings import load_validated_embeddings
+        from package.embeddings import TextEncoder
+        emb_path = args.embeddings_path or (paths.corpus_dir / f"item_embeddings_{paths.tag}.npz")
+        vector_store, encoder_impl, embedding_provenance = load_validated_embeddings(emb_path, paths.corpus_path)
+        query_encoder = TextEncoder(encoder_impl.encode, dimension=vector_store.dimension)
+        semantic = SearchTool(corpus, logger=ToolCallLogger(), vector_store=vector_store, query_encoder=query_encoder, rrf_k=60)
+        print(f"[hybrid] SearchTool ready: {len(vector_store):,} vectors, provider={embedding_provenance['provider']}", flush=True)
+    else:
+        semantic = SearchTool(corpus, logger=ToolCallLogger())
     query_tool = LookupTool(corpus, logger=ToolCallLogger())
     get_text = item_text_tables(corpus, namespaced)
     popularity = (knn.scores if hasattr(knn, "_evaluation_fit_provenance")
@@ -347,13 +491,18 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
         "seed": args.seed, "per_segment": args.per_segment, "sampled_user_ids": sampled,
         "cohort_exclusions": {"users": len(excluded), "manifests": store.get("identity").get("exclusion_manifests", []),
                               "scope": "disjoint from declared manifests only; not proof of never-inspected users"},
-        "candidate_budget_per_source": args.candidate_budget, "candidate_merges": list(MERGES),
-        "retrieval": {"sources": ["popularity", "item_cf", "semantic"], "seed_items": args.seed_items,
+        "candidate_budget_per_source": args.matrix_budget if source_kind == "retrieval_matrix" else args.candidate_budget,
+        "candidate_merges": list(merges),
+        "retrieval": {"mode": args.retrieval,
+                      "sources": ["popularity", "item_cf", "hybrid" if args.retrieval == "hybrid" else "semantic"],
+                      "embeddings": embedding_provenance,
+                      "seed_items": args.seed_items,
                       "query_items": args.query_items, "semantic_query_mode": "titles_from_fit_history",
                       "item_knn_neighbors": neighbors, "item_knn_fit_data_hash": knn_hash,
                       "item_knn_fit_seconds": getattr(knn,"_fit_time",None),
                       "item_knn_setup_seconds_this_session": knn_seconds},
-        "scorers": {"type": "BaselineScorer", "popularity_weights": list(variants.values()),
+        "scorers": {"type": "MultiScorer" if any(s["kind"] != "baseline" for s in scorer_specs.values()) else "BaselineScorer",
+                    "specs": scorer_specs, "popularity_weights": list(variants.values()),
                     "baseline_weight": 1e-6, "same_saved_candidate_lists": True},
         "ks": ks,
         "target_protocol": f"{args.eval_on} interactions; ranking uses novel targets; candidate recall retains all targets",
@@ -371,7 +520,11 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
     total = sum(len(group) for group in sampled.values())
     store.put("total_users", total)
     if args.candidates_from:
-        _import_candidates(args, store, config, metadata, targets=target_by_user, seen_of=seen_of, item2id=item2id)
+        if source_kind == "retrieval_matrix":
+            _import_matrix_candidates(args, store, config, metadata, merges=merges,
+                                      targets=target_by_user, seen_of=seen_of, item2id=item2id, id2user=id2user)
+        else:
+            _import_candidates(args, store, config, metadata, targets=target_by_user, seen_of=seen_of, item2id=item2id)
     else:
         done = store.count("candidates")
         print(f"[retrieval] committed total={done}/{total}",flush=True)
@@ -459,22 +612,54 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
             progress.update(store.count("candidates")-offsets[active_segment], force=True)
     if store.count("candidates") != total:
         raise ValueError("candidate checkpoint does not contain the complete sample")
-    for merge in MERGES:
-        for variant,weight in variants.items():
+    shared_baseline = BaselineScorer(knn)
+    shared_ltr = None
+    if any(s["kind"] == "ltr" for s in scorer_specs.values()):
+        from package.tools.retrieval.domain_category_popularity import DomainCategoryPopularity
+        estimator, _ = MultiSignalReranker.load_estimator(args.reranker_path)
+        eligible_ids = set(id2item.values())
+        dcp = DomainCategoryPopularity.from_corpus(corpus, _ids_to_namespaced(popular_order.tolist(), id2item), eligible_ids)
+        shared_ltr = MultiSignalReranker(shared_baseline, estimator, id2item=id2item, domain_pop=dcp)
+    for merge in merges:
+        for variant, spec in scorer_specs.items():
+            weight = spec.get("popularity_weight")
             stream = f"scored:{merge}:{variant}"
             done = store.count(stream)
             progress = StageProgress(stream, total, completed=done, every=args.progress_every)
-            scorer = BaselineScorer(knn, popularity_weight=weight)
-            reco = RankTool(scorer, user2id, item2id, corpus=corpus)
+            static_scorer = None
+            if spec["kind"] == "baseline":
+                static_scorer = BaselineScorer(knn, popularity_weight=spec["popularity_weight"])
+            elif spec["kind"] == "hybrid":
+                static_scorer = HybridScorer(knn, popularity_weight=spec["popularity_weight"])
+            reco = RankTool(static_scorer, user2id, item2id, corpus=corpus) if static_scorer is not None else None
             batch = []
             for position,record in store.rows("candidates", start=done, batch_size=args.batch_size):
                 user,segment = record["user_idx"],record["segment"]
                 candidates = [item2id[i] for i in record["candidate_sets"][merge]]
                 user_id = record["user_id"]
+                active_reco = reco
+                if active_reco is None:
+                    if spec["kind"] == "ltr":
+                        attr_map = {x["item_id"]: x for x in (record.get("source_evidence") or [])}
+                        seen_names = _ids_to_namespaced(sorted(seen_of.get(user, set())), id2item)
+                        req_ltr = shared_ltr.for_request(source_attribution=attr_map, seen_items=seen_names)
+                        active_reco = RankTool(req_ltr, user2id, item2id, corpus=corpus)
+                    else:
+                        ev_rows = record.get("source_evidence") or []
+                        peak = max((float(x["score"]) for x in ev_rows), default=1.0)
+                        evidence = {item2id[x["item_id"]]: float(x["score"]) / peak
+                                    for x in ev_rows if x["item_id"] in item2id and peak > 0}
+                        ev_scorer = EvidenceScorer(
+                            shared_baseline, evidence, mode=spec["mode"],
+                            popularity_weight=spec["popularity_weight"],
+                            evidence_weight=spec["evidence_weight"],
+                            cf_weight=spec.get("cf_weight", 1.0),
+                        )
+                        active_reco = RankTool(ev_scorer, user2id, item2id, corpus=corpus)
                 start = time.perf_counter()
                 # Rank the complete fixed candidate list so tie rate and the max-K boundary tie
                 # include the candidates immediately below the recommendation cutoff.
-                output = reco.execute(
+                output = active_reco.execute(
                     user_id=user_id, candidates=_ids_to_namespaced(candidates, id2item),
                     top_k=len(candidates), exclude_seen=True,
                 ) if candidates else {"ranked":[], "excluded_seen":[], "unscored_item_ids":[]}
@@ -514,9 +699,143 @@ def _run_stages(args, paths, meta_files, store, ks, variants, tag_manifest):
             progress.update(store.count(stream), force=True)
             if store.count(stream) != total:
                 raise ValueError("incomplete scoring checkpoint")
-            if args.candidates_from and variant == "baseline":
+            if source_kind == "ranking_experiment" and variant == "baseline":
                 _confirm_frozen_baseline(store,item2id,ks,merge,variants)
     store.put("scoring_complete", True)
+
+
+def _import_matrix_candidates(args, store, config, metadata, *, merges, targets, seen_of, item2id, id2user):
+    source = args.candidates_from
+    completion = json.loads((source / "artifact_hashes.json").read_text(encoding="utf-8"))
+    if completion.get("status") != "complete":
+        raise ValueError("only completed retrieval matrix runs may be imported")
+    for name in ("config.json", "candidate_sets.jsonl", "frozen.json"):
+        if file_hash(source / name) != completion["hashes"][name]:
+            raise ValueError(f"frozen matrix checksum mismatch: {name}")
+    frozen = json.loads((source / "frozen.json").read_text(encoding="utf-8"))
+    if file_hash(source / "candidate_sets.jsonl") != frozen["candidate_sets_sha256"]:
+        raise ValueError("frozen matrix candidate_sets_sha256 mismatch")
+    if file_hash(source / "config.json") != frozen["config_sha256"]:
+        raise ValueError("frozen matrix config_sha256 mismatch")
+
+    matrix_doc = json.loads((source / "config.json").read_text(encoding="utf-8"))
+    prov = matrix_doc["provenance"]
+    if prov["tag"] != metadata["tag"]:
+        raise ValueError("frozen matrix dataset tag mismatch")
+    if prov["mapping_hash"] != metadata["mapping_hash"] or prov["user_mapping_hash"] != metadata["user_mapping_hash"]:
+        raise ValueError("frozen matrix mapping hash mismatch")
+    for split_name, expected_hash in prov.get("split_hashes", {}).items():
+        if metadata["split_files"][split_name]["sha256"] != expected_hash:
+            raise ValueError(f"frozen matrix split hash mismatch: {split_name}")
+    matrix_proto = prov["protocol"]
+    if matrix_proto["item_knn"]["eval_on"] != metadata["eval_on"]:
+        raise ValueError("frozen matrix eval_on mismatch")
+    if matrix_proto["metadata_policy"] != config["protocol"]["metadata_policy"]:
+        raise ValueError("frozen matrix metadata_policy mismatch")
+    if prov.get("fit_hash") and prov["fit_hash"] != config["retrieval"]["item_knn_fit_data_hash"]:
+        raise ValueError("frozen matrix ItemKNN fit_hash mismatch")
+
+    matrix_cfg = matrix_doc["config"]
+    if args.matrix_mode not in matrix_cfg["query_modes"]:
+        raise ValueError(f"matrix mode {args.matrix_mode!r} not in {matrix_cfg['query_modes']}")
+    if args.matrix_budget not in matrix_cfg["budgets"]:
+        raise ValueError(f"matrix budget {args.matrix_budget} not in {matrix_cfg['budgets']}")
+
+    config["frozen_candidates"] = {
+        "kind": "retrieval_matrix",
+        "experiment": str(source.resolve()),
+        "sha256": frozen["candidate_sets_sha256"],
+        "config_sha256": frozen["config_sha256"],
+        "matrix_mode": args.matrix_mode,
+        "matrix_budget": args.matrix_budget,
+        "matrix_pools": list(merges),
+        "embeddings": prov.get("embeddings"),
+        "ann_build": matrix_doc.get("ann_build"),
+        "latency": "retrieval latency copied from frozen retrieval matrix; this session does not rerun retrieval",
+    }
+    store.put("config", config)
+    total = store.get("total_users")
+    done = store.count("candidates")
+    progress = StageProgress("import frozen matrix candidates", total, completed=done, every=args.progress_every)
+
+    selected_rows: dict[tuple[int, str], dict[str, Any]] = {}
+    with (source / "candidate_sets.jsonl").open(encoding="utf-8") as stream:
+        for line in stream:
+            row = json.loads(line)
+            if row["mode"] != args.matrix_mode or row["budget"] != args.matrix_budget:
+                continue
+            key = (int(row["user_idx"]), str(row["segment"]))
+            if key in selected_rows:
+                raise ValueError(f"duplicate frozen matrix row for {key}")
+            selected_rows[key] = row
+
+    expected_order = [(u, seg) for seg in SEGMENTS for u in config["sampled_user_ids"][seg]]
+    if len(selected_rows) != len(expected_order):
+        raise ValueError(f"frozen matrix row count mismatch: expected {len(expected_order)}, got {len(selected_rows)}")
+
+    batch = []
+    for position, (u, seg) in enumerate(expected_order):
+        row = selected_rows.get((u, seg))
+        if row is None:
+            raise ValueError(f"frozen matrix missing user {u} ({seg})")
+        expected_novel = targets[u] - seen_of[u]
+        row_targets_idx = {item2id[i] for i in row["targets"] if i in item2id}
+        if len(row_targets_idx) != len(row["targets"]) or row_targets_idx != expected_novel:
+            raise ValueError(f"frozen matrix targets mismatch for user {u}")
+        seen_names = set(row["seen"])
+        if {item2id[i] for i in seen_names if i in item2id} != seen_of[u]:
+            raise ValueError(f"frozen matrix seen history mismatch for user {u}")
+        pools = row["pools"]
+        missing_pools = [m for m in merges if m not in pools]
+        if missing_pools:
+            raise ValueError(f"frozen matrix missing requested pools: {missing_pools}")
+        candidate_sets = {}
+        for m in merges:
+            names = pools[m]
+            if any(i not in item2id for i in names):
+                raise ValueError(f"unknown frozen matrix candidate item in pool {m}")
+            if len(names) != len(set(names)):
+                raise ValueError(f"duplicate frozen matrix candidates in pool {m}")
+            if seen_names & set(names):
+                raise ValueError(f"frozen matrix pool {m} contains seen item for user {u}")
+            candidate_sets[m] = names
+        union_ids = list(dict.fromkeys(i for names in candidate_sets.values() for i in names))
+        query_text = (row.get("query") or {}).get("text", "")
+        lat = row.get("latency") or {}
+        converted = {
+            "user_idx": int(u),
+            "user_id": id2user[u],
+            "segment": seg,
+            "targets": sorted(targets[u]),
+            "targets_seen_in_fit": sorted(targets[u] & seen_of[u]),
+            "targets_unseen_in_fit": sorted(expected_novel),
+            "seen_count": len(seen_of[u]),
+            "source_latency_seconds": {
+                "item_cf": float(lat.get("item_cf", 0.0)),
+                "semantic": float(lat.get("bm25", 0.0)) + float(lat.get("dense", 0.0)),
+            },
+            "semantic_query": {
+                "raw": query_text, "sent": query_text, "normalization": matrix_cfg.get("normalization", "raw"),
+                "changed": False, "empty_after_normalization": False,
+            },
+            "sources_raw": candidate_sets,
+            "sources_after_seen_filter": candidate_sets,
+            "raw_union": union_ids,
+            "raw_union_after_seen": union_ids,
+            "seen_filtered_union": union_ids,
+            "candidate_sets": candidate_sets,
+            "source_evidence": row.get("source_evidence", []),
+            "source_failures": {"item_cf": None, "semantic": None},
+        }
+        if position < done:
+            continue
+        batch.append((position, converted))
+        if len(batch) >= args.batch_size:
+            store.append("candidates", batch)
+            batch.clear()
+            progress.update(store.count("candidates"))
+    store.append("candidates", batch)
+    progress.update(store.count("candidates"), force=True)
 
 
 def _import_candidates(args, store, config, metadata, *, targets, seen_of, item2id):
@@ -627,7 +946,7 @@ def _confirm_frozen_baseline(store,item2id,ks,merge,variants):
     print(f"[baseline confirmed] {merge}, max metric error={maximum:.3g}",flush=True)
 
 
-def _finalize(args, paths, store, ks, variants, exp_root):
+def _finalize(args, paths, store, ks, variants, merges, exp_root):
     identity = store.get("identity")
     if _source_fingerprint() != identity["source_fingerprint"] or _environment_versions() != identity["environment"]:
         raise ValueError("implementation/environment changed during evaluation; results not published")
@@ -653,7 +972,7 @@ def _finalize(args, paths, store, ks, variants, exp_root):
         accumulator.add_candidate(row)
         progress.update(position+1)
     streams = []
-    for merge in MERGES:
+    for merge in merges:
         for variant in variants:
             stream = f"scored:{merge}:{variant}"
             streams.append(stream)
@@ -663,18 +982,19 @@ def _finalize(args, paths, store, ks, variants, exp_root):
             for position,row in store.rows(stream,batch_size=args.batch_size):
                 accumulator.add_scored(row)
                 progress.update(position+1)
-    metrics = accumulator.result(MERGES,variants)
+    metrics = accumulator.result(merges, variants)
     frozen = store.get("frozen_retrieval_metrics")
     if frozen:
-        for merge in MERGES:
+        for merge in merges:
             for segment in SEGMENTS:
                 metrics["retrieval"][merge][segment]["candidate_generation_latency_seconds"] = frozen[merge][segment]["candidate_generation_latency_seconds"]
-    metrics["measurement_scope"] = "fixed_candidate_scoring" if frozen else "deterministic_retrieve_rank_fetch"
-    metrics["tool_health_scope"] = "source retrieval records; no retrieval executed this session" if frozen else "retrieval records from observed sessions"
+    is_frozen = bool(args.candidates_from)
+    metrics["measurement_scope"] = "fixed_candidate_scoring" if is_frozen else "deterministic_retrieve_rank_fetch"
+    metrics["tool_health_scope"] = "source retrieval records; no retrieval executed this session" if is_frozen else "retrieval records from observed sessions"
     config = store.get("config")
     config["checkpoint_identity"] = store.get("identity")
     config["persistence"]["execution_sessions"] = store.get("execution_sessions",[])
-    config["baseline_confirmation"] = {m:store.get("confirmation:"+m) for m in MERGES}
+    config["baseline_confirmation"] = {m: store.get("confirmation:" + m) for m in merges}
     pending = store.path / "publication"
     pending.mkdir(exist_ok=True)
     print("[export] candidate/scored JSONL; ETA unknown", flush=True)
@@ -686,7 +1006,7 @@ def _finalize(args, paths, store, ks, variants, exp_root):
     timing["startup_verification_seconds"] = store.get("startup_verification_seconds",0.)
     metrics["checkpoint_timing"] = timing
     metrics["runtime_seconds"] = timing["committed_active_seconds"] + timing["startup_verification_seconds"]
-    config["retrieval_latency_provenance"] = "copied from frozen experiment" if frozen else "per-user timings persisted during retrieval"
+    config["retrieval_latency_provenance"] = "copied from frozen experiment" if is_frozen else "per-user timings persisted during retrieval"
     # A separate, fresh manifest directory tolerates interruption while writing.
     manifests = store.path / ("manifests_" + uuid.uuid4().hex)
     save_experiment(manifests,config=config,metrics=metrics,seed=args.seed,
@@ -705,7 +1025,7 @@ def _finalize(args, paths, store, ks, variants, exp_root):
             continue
     store.put("final_experiment",str(destination.resolve()))
     print(f"Saved ranking evaluation: {destination}",flush=True)
-    for merge in MERGES:
+    for merge in merges:
         for variant in variants:
             print(merge,variant,{s:metrics["ranking"][merge][variant]["per_segment"][s].get("metrics",{}).get("10",{}) for s in SEGMENTS},flush=True)
 

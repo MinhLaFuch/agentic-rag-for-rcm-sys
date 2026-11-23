@@ -1,0 +1,43 @@
+# Frozen one-shot held-out TEST evaluation config.
+# Parameters locked strictly from validation runs:
+#   - ANN index: hnsw_sq8 (validated in ann_validation_sq8_20261121_225014, p95=0.057s, 0.0 delta)
+#   - Retrieval matrix: recency_weighted, budget=100, weighted_rrf k=60 (val_sq8_p300_20261121_234849)
+#   - Winning scorer for ranking replay: HybridScorer(w=4.0) (ranking_eval/exp_010)
+# Do NOT tune on test outputs.
+version: 1
+final_test_frozen: true
+query_modes: [recency_weighted]
+max_history_items: 3
+recency_decay: 0.5
+normalization: raw
+budgets: [100]
+rank_ks: [5, 10, 20]
+seed: 42
+bootstrap_samples: 2000
+dense_block_rows: 32768
+bm25_sql_seconds: 120
+dense_ann:
+  index: hnsw_sq8
+  train_size: 262144
+  warmup_queries: 500
+  warmup_limit: 200
+  m: 32
+  ef_search: 1024
+fusion:
+  method: weighted_rrf
+  rrf_k: 60
+  quotas: {popularity: 200, item_cf: 200, bm25: 200, dense: 200}
+  weights: {popularity: 1.0, item_cf: 1.0, bm25: 1.0, dense: 1.0}
+cold_start:
+  fallback_source: popularity
+  include_in_fused: true
+scoring:
+  modes: [baseline]
+  popularity_weight: 0.1
+  evidence_weight: 0.1
+gates:
+  comparison: recency_weighted/fused-vs-recency_weighted/bm25
+  primary_budget: 100
+  min_recall_delta_ci_low: 0.002
+  max_p95_seconds: 3.5
+  max_segment_recall_regression: 0.005

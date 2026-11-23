@@ -1,0 +1,38 @@
+# Fast validation matrix using BOTH persisted SparseBM25Index and persisted FAISS HNSW SQ8 index.
+# Eliminates the 2-3s SQLite FTS5 bottleneck and the 7-9min HNSW rebuild on every run.
+version: 1
+query_modes: [latest_title, recency_weighted]
+max_history_items: 3
+recency_decay: 0.5
+normalization: raw
+budgets: [50, 100, 200]
+rank_ks: [5, 10, 20]
+seed: 42
+bootstrap_samples: 2000
+dense_block_rows: 32768
+bm25_index_path: src/experiments/bm25_builds/multi_domain_v2_audit_20261030
+dense_ann:
+  index: hnsw_sq8
+  index_path: src/experiments/ann_builds/minilm_v2_audit_hnsw_sq8_m32
+  warmup_queries: 500
+  warmup_limit: 200
+  m: 32
+  ef_search: 1024
+fusion:
+  method: weighted_rrf
+  rrf_k: 60
+  quotas: {popularity: 200, item_cf: 200, bm25: 200, dense: 200}
+  weights: {popularity: 1.0, item_cf: 1.0, bm25: 1.0, dense: 1.0}
+cold_start:
+  fallback_source: popularity
+  include_in_fused: true
+scoring:
+  modes: [baseline, cf_ties, additive_ablation]
+  popularity_weight: 0.1
+  evidence_weight: 0.1
+gates:
+  comparison: recency_weighted/fused-vs-recency_weighted/bm25
+  primary_budget: 100
+  min_recall_delta_ci_low: 0.002
+  max_p95_seconds: 0.50
+  max_segment_recall_regression: 0.005

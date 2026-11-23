@@ -1,0 +1,33 @@
+# Second ANN challenge arm after ann_validation_2pass_20261121_220210 failed p95 (0.369s).
+# Same protocol and unchanged gate thresholds; only the index memory footprint and an
+# explicit excluded warm-up (seeded catalog vectors, not validation queries) differ.
+version: 1
+query_modes: [recency_weighted]
+max_history_items: 3
+recency_decay: 0.5
+normalization: raw
+budgets: [200]
+rank_ks: [10]
+seed: 42
+bootstrap_samples: 2000
+dense_block_rows: 32768
+fusion:
+  method: weighted_rrf
+  rrf_k: 60
+  quotas: {popularity: 200, item_cf: 200, bm25: 200, dense: 200}
+  weights: {popularity: 1.0, item_cf: 1.0, bm25: 1.0, dense: 1.0}
+cold_start: {fallback_source: popularity, include_in_fused: true}
+scoring: {modes: [baseline], popularity_weight: 0.1, evidence_weight: 0.1}
+gates: {comparison: recency_weighted/fused-vs-latest_title/fused, primary_budget: 200, min_recall_delta_ci_low: null, max_p95_seconds: null, max_segment_recall_regression: null}
+ann_validation:
+  index: hnsw_sq8
+  train_size: 262144
+  warmup_queries: 500
+  warmup_limit: 200
+  bm25_sql_seconds: 120
+  m: 32
+  ef_search: 1024
+  max_recall_loss: 0.005
+  max_ndcg_loss: 0.002
+  max_search_p95_seconds: 0.100
+  min_timed_queries: 100
