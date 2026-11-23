@@ -1,0 +1,43 @@
+{
+ "n_targets": 196,
+ "old_text_overlap_frac": 0.11734693877551021,
+ "vi_token_overlap_frac": 0.07142857142857142,
+ "en_token_overlap_frac": 0.1326530612244898,
+ "bm25_peer_rank": {
+  "n": 6,
+  "recall@10": 0.0,
+  "recall@50": 0.0,
+  "recall@200": 0.01020408163265306,
+  "median_rank": 347.5
+ },
+ "by_kind": {
+  "cold_text": {
+   "n": 20,
+   "old_overlap": 0.55,
+   "vi_overlap": 0.45,
+   "en_overlap": 0.5,
+   "bm25@200": 0.1
+  },
+  "exclusion": {
+   "n": 26,
+   "old_overlap": 0.15384615384615385,
+   "vi_overlap": 0.038461538461538464,
+   "en_overlap": 0.15384615384615385,
+   "bm25@200": 0.0
+  },
+  "personalized": {
+   "n": 73,
+   "old_overlap": 0.0,
+   "vi_overlap": 0.0,
+   "en_overlap": 0.0,
+   "bm25@200": 0.0
+  },
+  "similar": {
+   "n": 77,
+   "old_overlap": 0.1038961038961039,
+   "vi_overlap": 0.05194805194805195,
+   "en_overlap": 0.15584415584415584,
+   "bm25@200": 0.0
+  }
+ }
+}

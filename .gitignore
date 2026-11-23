@@ -69,6 +69,24 @@ htmlcov/
 /src/experiments/**/*.tmp
 /src/experiments/**/*.lock
 
+# Bulk binary artifacts under retrieval investigations (corpus DBs, embeddings, big parquet).
+# Small scripts, configs, logs and metrics remain versioned.
+/src/investigations/**/*.jsonl
+/src/investigations/**/*.npy
+/src/investigations/**/*.npz
+/src/investigations/**/*.parquet
+/src/investigations/**/*.sqlite
+/src/investigations/**/*.sqlite-*
+/src/investigations/**/*.db
+/src/investigations/**/*.db-*
+/src/investigations/**/*.pt
+/src/investigations/**/*.pth
+/src/investigations/**/*.safetensors
+/src/investigations/**/*.bin
+/src/investigations/**/*.log
+/src/investigations/**/*.tmp
+/src/investigations/**/*.lock
+
 # Crash dumps and Windows shell artifacts.
 *.dmp
 *.stackdump

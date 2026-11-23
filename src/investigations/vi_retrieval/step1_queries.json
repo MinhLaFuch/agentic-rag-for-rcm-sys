@@ -1,0 +1,2024 @@
+{
+  "exp_5_template": {
+    "n_requests": 152,
+    "request_text_lang": {
+      "vi": 152
+    },
+    "n_searchtool_calls": 24,
+    "search_query_lang": {
+      "en": {
+        "n": 23,
+        "pct": 95.8
+      },
+      "category_only": {
+        "n": 1,
+        "pct": 4.2
+      }
+    },
+    "search_query_lang_by_kind": {
+      "cold_text-cold": {
+        "en": 16
+      },
+      "exclusion-sparse": {
+        "en": 2
+      },
+      "exclusion-warm": {
+        "en": 5
+      },
+      "personalized-warm": {
+        "category_only": 1
+      }
+    },
+    "n_filtertool_calls": 41,
+    "filtertool_by_kind": {
+      "personalized-sparse": 17,
+      "personalized-warm": 13,
+      "cold_text-cold": 3,
+      "exclusion-sparse": 2,
+      "exclusion-warm": 2,
+      "unanswerable-none": 4
+    },
+    "search_calls": [
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized-warm",
+        "query": "popular highly rated products",
+        "lang": "category_only",
+        "total_matches": 66788,
+        "n_query_tokens": 4,
+        "query_tokens": [
+          "popular",
+          "highly",
+          "rated"
+        ],
+        "dense_candidates": 155,
+        "latency_seconds": 5.756344
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text-cold",
+        "query": "baby floats",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.419813
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text-cold",
+        "query": "building toys",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.361197
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text-cold",
+        "query": "TV antennas",
+        "lang": "en",
+        "total_matches": 68488,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "tv",
+          "antennas"
+        ],
+        "dense_candidates": 149,
+        "latency_seconds": 4.940143
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text-cold",
+        "query": "external hard drives",
+        "lang": "en",
+        "total_matches": 4248,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "external",
+          "hard",
+          "drives"
+        ],
+        "dense_candidates": 11,
+        "latency_seconds": 9.945296
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text-cold",
+        "query": "plush interactive toy figures",
+        "lang": "en",
+        "total_matches": 739,
+        "n_query_tokens": 4,
+        "query_tokens": [
+          "plush",
+          "interactive",
+          "toy"
+        ],
+        "dense_candidates": 6,
+        "latency_seconds": 13.120219
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text-cold",
+        "query": "Felt Kits",
+        "lang": "en",
+        "total_matches": 105556,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "felt",
+          "kits"
+        ],
+        "dense_candidates": 75,
+        "latency_seconds": 4.827503
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text-cold",
+        "query": "shortwave radios",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.419387
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text-cold",
+        "query": "controllers",
+        "lang": "en",
+        "total_matches": 7497,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "controllers"
+        ],
+        "dense_candidates": 9,
+        "latency_seconds": 7.172677
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text-cold",
+        "query": "trucks",
+        "lang": "en",
+        "total_matches": 20562,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "trucks"
+        ],
+        "dense_candidates": 74,
+        "latency_seconds": 4.607945
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text-cold",
+        "query": "portable Bluetooth speakers",
+        "lang": "en",
+        "total_matches": 162406,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "portable",
+          "bluetooth",
+          "speakers"
+        ],
+        "dense_candidates": 59,
+        "latency_seconds": 5.023695
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text-cold",
+        "query": "horns sirens",
+        "lang": "en",
+        "total_matches": 3420,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "horns",
+          "sirens"
+        ],
+        "dense_candidates": 76,
+        "latency_seconds": 4.665465
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text-cold",
+        "query": "binoculars",
+        "lang": "en",
+        "total_matches": 4827,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "binoculars"
+        ],
+        "dense_candidates": 66,
+        "latency_seconds": 5.254274
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text-cold",
+        "query": "Hubs",
+        "lang": "en",
+        "total_matches": 3456,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "hubs"
+        ],
+        "dense_candidates": 45,
+        "latency_seconds": 5.226638
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text-cold",
+        "query": "external hard drives",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.498849
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text-cold",
+        "query": "screen protectors",
+        "lang": "en",
+        "total_matches": 13024,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "screen",
+          "protectors"
+        ],
+        "dense_candidates": 20,
+        "latency_seconds": 6.870423
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text-cold",
+        "query": "squirt guns water guns",
+        "lang": "en",
+        "total_matches": 630,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "squirt",
+          "guns",
+          "water"
+        ],
+        "dense_candidates": 27,
+        "latency_seconds": 5.304984
+      },
+      {
+        "request_id": "exclusion-sparse-7",
+        "kind": "exclusion-sparse",
+        "query": "popular products not earbud headphones",
+        "lang": "en",
+        "total_matches": 167559,
+        "n_query_tokens": 5,
+        "query_tokens": [
+          "popular",
+          "products",
+          "not"
+        ],
+        "dense_candidates": 98,
+        "latency_seconds": 5.13168
+      },
+      {
+        "request_id": "exclusion-sparse-9",
+        "kind": "exclusion-sparse",
+        "query": "toys games NOT tile games",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 6.21181
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion-warm",
+        "query": "consumer products excluding vehicle backup cameras",
+        "lang": "en",
+        "total_matches": 426222,
+        "n_query_tokens": 6,
+        "query_tokens": [
+          "consumer",
+          "products",
+          "excluding"
+        ],
+        "dense_candidates": 130,
+        "latency_seconds": 5.442269
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion-warm",
+        "query": "products excluding cases",
+        "lang": "en",
+        "total_matches": 325253,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "products",
+          "excluding",
+          "cases"
+        ],
+        "dense_candidates": 165,
+        "latency_seconds": 5.345208
+      },
+      {
+        "request_id": "exclusion-warm-7",
+        "kind": "exclusion-warm",
+        "query": "popular toys games video games",
+        "lang": "en",
+        "total_matches": 730168,
+        "n_query_tokens": 4,
+        "query_tokens": [
+          "popular",
+          "toys",
+          "games"
+        ],
+        "dense_candidates": 160,
+        "latency_seconds": 6.17659
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion-warm",
+        "query": "electronics toys games",
+        "lang": "en",
+        "total_matches": 1951130,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "electronics",
+          "toys",
+          "games"
+        ],
+        "dense_candidates": 119,
+        "latency_seconds": 7.244841
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion-warm",
+        "query": "electronics computer accessories",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 6.955108
+      }
+    ],
+    "filter_calls": [
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "exclusion-sparse-10",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 622927,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "unanswerable-none-2",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-3",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-4",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-5",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      }
+    ],
+    "search_query_examples": {
+      "category_only": [
+        "popular highly rated products"
+      ],
+      "en": [
+        "baby floats",
+        "building toys",
+        "TV antennas",
+        "external hard drives",
+        "plush interactive toy figures",
+        "Felt Kits",
+        "shortwave radios",
+        "controllers",
+        "trucks",
+        "portable Bluetooth speakers"
+      ]
+    },
+    "total_matches": {
+      "n": 18,
+      "mean": 225665.2
+    },
+    "token_stats": {
+      "queries_with_tokens": 18,
+      "mean_tokens": 2.78,
+      "max_tokens": 6,
+      "over_15_tokens": 0
+    }
+  },
+  "exp_11_llm_r0": {
+    "n_requests": 152,
+    "request_text_lang": {
+      "vi": 152
+    },
+    "n_searchtool_calls": 15,
+    "search_query_lang": {
+      "en": {
+        "n": 15,
+        "pct": 100.0
+      }
+    },
+    "search_query_lang_by_kind": {
+      "cold_text-cold": {
+        "en": 4
+      },
+      "exclusion-sparse": {
+        "en": 7
+      },
+      "exclusion-warm": {
+        "en": 4
+      }
+    },
+    "n_filtertool_calls": 32,
+    "filtertool_by_kind": {
+      "personalized-warm": 2,
+      "cold_text-cold": 16,
+      "exclusion-sparse": 3,
+      "exclusion-warm": 5,
+      "unanswerable-none": 6
+    },
+    "search_calls": [
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text-cold",
+        "query": "external hard drives",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.901962
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text-cold",
+        "query": "shortwave radios",
+        "lang": "en",
+        "total_matches": 679,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "shortwave",
+          "radios"
+        ],
+        "dense_candidates": 52,
+        "latency_seconds": 7.284939
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text-cold",
+        "query": "controllers",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.376957
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text-cold",
+        "query": "trucks",
+        "lang": "en",
+        "total_matches": 20562,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "trucks"
+        ],
+        "dense_candidates": 74,
+        "latency_seconds": 5.070535
+      },
+      {
+        "request_id": "exclusion-sparse-2",
+        "kind": "exclusion-sparse",
+        "query": "electronics video games toys accessories",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.3e-05
+      },
+      {
+        "request_id": "exclusion-sparse-9",
+        "kind": "exclusion-sparse",
+        "query": "games electronics accessories",
+        "lang": "en",
+        "total_matches": 1331868,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "games",
+          "electronics",
+          "accessories"
+        ],
+        "dense_candidates": 102,
+        "latency_seconds": 7.615854
+      },
+      {
+        "request_id": "exclusion-sparse-10",
+        "kind": "exclusion-sparse",
+        "query": "headphones earbuds speakers keyboards mice cameras printers routers monitors",
+        "lang": "en",
+        "total_matches": 490939,
+        "n_query_tokens": 9,
+        "query_tokens": [
+          "headphones",
+          "earbuds",
+          "speakers"
+        ],
+        "dense_candidates": 263,
+        "latency_seconds": 5.717192
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion-sparse",
+        "query": "headphones speakers keyboards mice controllers consoles games toys",
+        "lang": "en",
+        "total_matches": 985233,
+        "n_query_tokens": 8,
+        "query_tokens": [
+          "headphones",
+          "speakers",
+          "keyboards"
+        ],
+        "dense_candidates": 256,
+        "latency_seconds": 6.233671
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion-sparse",
+        "query": "game toy controller headphone speaker keyboard mouse camera accessory",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.766603
+      },
+      {
+        "request_id": "exclusion-sparse-14",
+        "kind": "exclusion-sparse",
+        "query": "games accessories toys",
+        "lang": "en",
+        "total_matches": 730410,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "games",
+          "accessories",
+          "toys"
+        ],
+        "dense_candidates": 116,
+        "latency_seconds": 6.612681
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion-sparse",
+        "query": "headphones speakers keyboard mouse camera game console controller toys",
+        "lang": "en",
+        "total_matches": 1224913,
+        "n_query_tokens": 9,
+        "query_tokens": [
+          "headphones",
+          "speakers",
+          "keyboard"
+        ],
+        "dense_candidates": 265,
+        "latency_seconds": 6.840311
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion-warm",
+        "query": "headphones speakers keyboard mouse controller console games toys camera monitor smartwatch charger c...",
+        "lang": "en",
+        "total_matches": 1394213,
+        "n_query_tokens": 13,
+        "query_tokens": [
+          "headphones",
+          "speakers",
+          "keyboard"
+        ],
+        "dense_candidates": 270,
+        "latency_seconds": 7.674124
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion-warm",
+        "query": "electronics video games toys accessories",
+        "lang": "en",
+        "total_matches": 1954648,
+        "n_query_tokens": 5,
+        "query_tokens": [
+          "electronics",
+          "video",
+          "games"
+        ],
+        "dense_candidates": 258,
+        "latency_seconds": 8.046857
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion-warm",
+        "query": "board game strategy puzzle card indoor",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 6.391291
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion-warm",
+        "query": "keyboard headset controller gamepad joystick console accessories",
+        "lang": "en",
+        "total_matches": 1198571,
+        "n_query_tokens": 7,
+        "query_tokens": [
+          "keyboard",
+          "headset",
+          "controller"
+        ],
+        "dense_candidates": 147,
+        "latency_seconds": 7.742412
+      }
+    ],
+    "filter_calls": [
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 2003873,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 739,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 630,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-0",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 1380945,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-12",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "exclusion-warm-5",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-6",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 1380945,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-16",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-19",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 1272167,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "unanswerable-none-0",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-1",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-2",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-3",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-4",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "unanswerable-none-5",
+        "kind": "unanswerable-none",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      }
+    ],
+    "search_query_examples": {
+      "en": [
+        "external hard drives",
+        "shortwave radios",
+        "controllers",
+        "trucks",
+        "electronics video games toys accessories",
+        "games electronics accessories",
+        "headphones earbuds speakers keyboards mice cameras printers routers monitors",
+        "headphones speakers keyboards mice controllers consoles games toys",
+        "game toy controller headphone speaker keyboard mouse camera accessory",
+        "games accessories toys"
+      ]
+    },
+    "total_matches": {
+      "n": 10,
+      "mean": 933203.6
+    },
+    "token_stats": {
+      "queries_with_tokens": 10,
+      "mean_tokens": 6.0,
+      "max_tokens": 13,
+      "over_15_tokens": 0
+    }
+  },
+  "exp_12_llm_r1": {
+    "n_requests": 152,
+    "request_text_lang": {
+      "vi": 152
+    },
+    "n_searchtool_calls": 15,
+    "search_query_lang": {
+      "en": {
+        "n": 12,
+        "pct": 80.0
+      },
+      "category_only": {
+        "n": 3,
+        "pct": 20.0
+      }
+    },
+    "search_query_lang_by_kind": {
+      "cold_text-cold": {
+        "en": 2
+      },
+      "exclusion-sparse": {
+        "en": 4
+      },
+      "exclusion-warm": {
+        "en": 4,
+        "category_only": 1
+      },
+      "unanswerable-none": {
+        "en": 2,
+        "category_only": 2
+      }
+    },
+    "n_filtertool_calls": 26,
+    "filtertool_by_kind": {
+      "personalized-warm": 2,
+      "cold_text-cold": 18,
+      "exclusion-sparse": 4,
+      "exclusion-warm": 2
+    },
+    "search_calls": [
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text-cold",
+        "query": "Baby Floats",
+        "lang": "en",
+        "total_matches": 40683,
+        "n_query_tokens": 2,
+        "query_tokens": [
+          "baby",
+          "floats"
+        ],
+        "dense_candidates": 51,
+        "latency_seconds": 8.687067
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text-cold",
+        "query": "trucks",
+        "lang": "en",
+        "total_matches": 1508,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "trucks"
+        ],
+        "dense_candidates": 33,
+        "latency_seconds": 9.543118
+      },
+      {
+        "request_id": "exclusion-sparse-0",
+        "kind": "exclusion-sparse",
+        "query": "toys games video games",
+        "lang": "en",
+        "total_matches": 730168,
+        "n_query_tokens": 3,
+        "query_tokens": [
+          "toys",
+          "games",
+          "video"
+        ],
+        "dense_candidates": 166,
+        "latency_seconds": 6.205168
+      },
+      {
+        "request_id": "exclusion-sparse-2",
+        "kind": "exclusion-sparse",
+        "query": "games gaming toys accessories",
+        "lang": "en",
+        "total_matches": 730410,
+        "n_query_tokens": 4,
+        "query_tokens": [
+          "games",
+          "gaming",
+          "toys"
+        ],
+        "dense_candidates": 115,
+        "latency_seconds": 6.526195
+      },
+      {
+        "request_id": "exclusion-sparse-8",
+        "kind": "exclusion-sparse",
+        "query": "games toys accessories controllers headsets",
+        "lang": "en",
+        "total_matches": 731700,
+        "n_query_tokens": 5,
+        "query_tokens": [
+          "games",
+          "toys",
+          "accessories"
+        ],
+        "dense_candidates": 110,
+        "latency_seconds": 6.806362
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion-sparse",
+        "query": "headphones speakers keyboards mice controllers chargers cables cameras toys video games",
+        "lang": "en",
+        "total_matches": 1472118,
+        "n_query_tokens": 11,
+        "query_tokens": [
+          "headphones",
+          "speakers",
+          "keyboards"
+        ],
+        "dense_candidates": 267,
+        "latency_seconds": 7.627248
+      },
+      {
+        "request_id": "exclusion-warm-5",
+        "kind": "exclusion-warm",
+        "query": "electronics products excluding Point & Shoot Digital Cameras",
+        "lang": "en",
+        "total_matches": 1277248,
+        "n_query_tokens": 7,
+        "query_tokens": [
+          "electronics",
+          "products",
+          "excluding"
+        ],
+        "dense_candidates": 123,
+        "latency_seconds": 6.490048
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion-warm",
+        "query": "board games puzzles educational toys dolls building toys",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 6.246893
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion-warm",
+        "query": "products",
+        "lang": "category_only",
+        "total_matches": 13762,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "products"
+        ],
+        "dense_candidates": 111,
+        "latency_seconds": 5.090962
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion-warm",
+        "query": "electronics NOT \"Memory Card Readers\"",
+        "lang": "en",
+        "total_matches": 1314331,
+        "n_query_tokens": 5,
+        "query_tokens": [
+          "electronics",
+          "not",
+          "memory"
+        ],
+        "dense_candidates": 292,
+        "latency_seconds": 6.443784
+      },
+      {
+        "request_id": "exclusion-warm-19",
+        "kind": "exclusion-warm",
+        "query": "electronics toys video games accessories",
+        "lang": "en",
+        "total_matches": null,
+        "n_query_tokens": null,
+        "query_tokens": null,
+        "dense_candidates": null,
+        "latency_seconds": 5.5e-05
+      },
+      {
+        "request_id": "unanswerable-none-0",
+        "kind": "unanswerable-none",
+        "query": "NonExistentCategory999",
+        "lang": "en",
+        "total_matches": 0,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "nonexistentcategory999"
+        ],
+        "dense_candidates": 0,
+        "latency_seconds": 4.672952
+      },
+      {
+        "request_id": "unanswerable-none-2",
+        "kind": "unanswerable-none",
+        "query": "products",
+        "lang": "category_only",
+        "total_matches": 0,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "products"
+        ],
+        "dense_candidates": 0,
+        "latency_seconds": 4.748106
+      },
+      {
+        "request_id": "unanswerable-none-4",
+        "kind": "unanswerable-none",
+        "query": "products",
+        "lang": "category_only",
+        "total_matches": 0,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "products"
+        ],
+        "dense_candidates": 0,
+        "latency_seconds": 4.655116
+      },
+      {
+        "request_id": "unanswerable-none-5",
+        "kind": "unanswerable-none",
+        "query": "NonExistentCategory999",
+        "lang": "en",
+        "total_matches": 0,
+        "n_query_tokens": 1,
+        "query_tokens": [
+          "nonexistentcategory999"
+        ],
+        "dense_candidates": 0,
+        "latency_seconds": 4.762389
+      }
+    ],
+    "filter_calls": [
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 739,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text-cold",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 630,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-1",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 1380945,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-6",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-sparse-14",
+        "kind": "exclusion-sparse",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": null,
+        "applied_filters": null
+      },
+      {
+        "request_id": "exclusion-warm-7",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "descending",
+          "filters",
+          "limit",
+          "order_by"
+        ],
+        "total_matches": 731705,
+        "applied_filters": {}
+      },
+      {
+        "request_id": "exclusion-warm-13",
+        "kind": "exclusion-warm",
+        "filter_keys": [
+          "filters",
+          "limit"
+        ],
+        "total_matches": 2003872,
+        "applied_filters": {}
+      }
+    ],
+    "search_query_examples": {
+      "en": [
+        "Baby Floats",
+        "trucks",
+        "toys games video games",
+        "games gaming toys accessories",
+        "games toys accessories controllers headsets",
+        "headphones speakers keyboards mice controllers chargers cables cameras toys video games",
+        "electronics products excluding Point & Shoot Digital Cameras",
+        "board games puzzles educational toys dolls building toys",
+        "electronics NOT \"Memory Card Readers\"",
+        "electronics toys video games accessories"
+      ],
+      "category_only": [
+        "products"
+      ]
+    },
+    "total_matches": {
+      "n": 13,
+      "mean": 485532.9
+    },
+    "token_stats": {
+      "queries_with_tokens": 13,
+      "mean_tokens": 3.31,
+      "max_tokens": 11,
+      "over_15_tokens": 0
+    }
+  }
+}
