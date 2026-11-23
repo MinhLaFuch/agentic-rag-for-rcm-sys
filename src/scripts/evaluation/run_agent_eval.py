@@ -83,7 +83,7 @@ from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
 from package.evaluation.recommender.utils import sha256_file
-from package.embeddings.build_dense_retrieval import build_dense_retrieval
+from package.embeddings.build_runtime_retrieval import build_runtime_retrieval
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.recommenders.shared.load_item_knn import load_item_knn
@@ -631,32 +631,18 @@ def main() -> None:
     }
     protocol_manifest["scorer"] = scorer_provenance
 
-    # Optional dense retrieval leg for SearchTool (configs/eval/dense_retrieval.yaml).
-    # enabled=true with missing/invalid artifacts raises — never silently BM25-only.
-    dense_cfg = load_config("eval/dense_retrieval")["dense_retrieval"]
-    vector_store = query_encoder = None
-    dense_provenance: dict[str, Any] | None = None
-    if dense_cfg.get("enabled"):
-        src_root = Path(__file__).resolve().parents[2]
-        if not dense_cfg.get("artifacts_dir") or not dense_cfg.get("encoder_lock"):
-            raise SystemExit(
-                "dense_retrieval.enabled=true requires artifacts_dir and encoder_lock "
-                "in configs/eval/dense_retrieval.yaml"
-            )
-        vector_store, query_encoder, dense_provenance = build_dense_retrieval(
-            src_root / dense_cfg["artifacts_dir"],
-            src_root / dense_cfg["encoder_lock"],
-            rrf_k=int(dense_cfg.get("rrf_k", 60)),
-        )
-        print(
-            f"Dense retrieval: {dense_provenance['valid_rows']}/{dense_provenance['rows']} items, "
-            f"encoder={dense_provenance['encoder_model_id']}@{str(dense_provenance['encoder_revision'])[:12]}"
-        )
-    protocol_manifest["dense_retrieval"] = dense_provenance or {"enabled": False}
-
+    # Use the same retrieval assembly as the demo; evaluation never silently falls back.
+    retrieval_cfg = dict(load_config("agent/demo")["demo"])
+    retrieval_cfg["fallback_to_bm25"] = False
+    retrieval_options, dense_provenance = build_runtime_retrieval(
+        retrieval_cfg, load_config("eval/dense_retrieval")["dense_retrieval"],
+        corpus_path=data_paths.corpus_path,
+        default_embeddings=data_paths.corpus_dir / f"item_embeddings_{data_paths.tag}.npz",
+    )
+    protocol_manifest["dense_retrieval"] = dense_provenance
     tools = build_tools(
         knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of,
-        vector_store=vector_store, query_encoder=query_encoder, rrf_k=int(dense_cfg.get("rrf_k", 60)),
+        **retrieval_options,
     )
 
     runners: dict[str, Any] = {}

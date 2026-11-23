@@ -145,6 +145,24 @@ def test_runtime_winning_overlay_validates_against_schema(monkeypatch):
     assert cfg["fallback_to_bm25"] is True
 
 
+def test_dense_refills_after_domain_filter_discards_initial_neighbors():
+    corpus, _, encoder, *_ = _fixture_world()
+    calls = []
+
+    def ann(vec, k):
+        calls.append(k)
+        return [(iid, 1.0) for iid in [
+            "Video_Games::a", "Video_Games::b", "Electronics::d",
+        ][:k]]
+
+    tool = SearchTool(corpus, dense_search=ann, query_encoder=encoder)
+    result = tool(query="unmatchedword", filters={"domain": "Electronics"}, limit=1)
+    assert result.ok
+    assert calls == [2, 4]
+    assert [r["item_id"] for r in result.data["candidates"]] == ["Electronics::d"]
+    assert result.data["dense_fetch_limited"] is False
+
+
 def test_live_backend_bad_artifact_fallback_and_strict(tmp_path, monkeypatch):
     from package.demo.backend import live_backend as lb_mod
     corpus, _, _, _, user2id, item2id, _, _ = _fixture_world()

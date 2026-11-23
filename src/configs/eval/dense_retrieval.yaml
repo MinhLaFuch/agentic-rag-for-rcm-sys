@@ -8,7 +8,7 @@
 # Đường dẫn tương đối tính từ thư mục src/ (vd experiments/semantic_embeddings/exp_001).
 
 dense_retrieval:
-  enabled: true
+  enabled: false
   artifacts_dir: experiments/embedding_builds/multi_domain_semantic  # format-A artifacts (converted từ full build)
   encoder_lock: experiments/embedding_builds/encoder.lock.json      # encoder lock từ lệnh `pin`
   rrf_k: 60               # hằng số RRF fusion giữa BM25 và dense legs
