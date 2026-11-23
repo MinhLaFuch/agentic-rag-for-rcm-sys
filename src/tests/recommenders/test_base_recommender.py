@@ -5,7 +5,7 @@ import pytest
 import scipy.sparse as sp
 
 from package.recommenders.shared.recommender import Recommender
-from package.recommenders.evaluation.popularity_matrix_recommender import PopularityMatrixRecommender
+from package.recommenders.offline.popularity_matrix_recommender import PopularityMatrixRecommender
 
 
 class MockRecommender(Recommender):

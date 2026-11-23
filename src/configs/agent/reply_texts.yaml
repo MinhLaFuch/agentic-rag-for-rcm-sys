@@ -1,0 +1,10 @@
+# Fixed user-facing reply texts (Vietnamese: the default evaluation language).
+# Used by the inference composer fallbacks and template composer headers.
+# None of them carries a tool name or an error string.
+# Loaded directly via load_config("agent/reply_texts") — no prompt text in Python.
+
+no_result_text: "Chưa tìm thấy sản phẩm phù hợp với yêu cầu của bạn. Bạn thử nới điều kiện (giá, nhóm sản phẩm) hoặc mô tả khác đi nhé."
+tool_error_text: "Xin lỗi, hệ thống chưa xử lý được yêu cầu này. Bạn thử lại sau, hoặc mô tả lại yêu cầu (và kiểm tra mã sản phẩm nếu có) nhé."
+ok_header: "Dưới đây là các sản phẩm gợi ý cho bạn:"
+partial_header: "Các sản phẩm tìm được (kết quả có thể chưa đầy đủ):"
+id_only_note: "Chưa có thông tin chi tiết, chỉ có mã sản phẩm."

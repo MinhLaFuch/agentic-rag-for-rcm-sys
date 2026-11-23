@@ -1,0 +1,25 @@
+{
+  "n_queries": 116,
+  "ks": [
+    50,
+    200,
+    1000
+  ],
+  "arms": {
+    "raw": {
+      "recall@50": 0.0,
+      "recall@200": 0.0,
+      "recall@1000": 0.0172
+    },
+    "cataug": {
+      "recall@50": 0.0,
+      "recall@200": 0.0,
+      "recall@1000": 0.0345
+    },
+    "docstyle": {
+      "recall@50": 0.0,
+      "recall@200": 0.0,
+      "recall@1000": 0.0086
+    }
+  }
+}

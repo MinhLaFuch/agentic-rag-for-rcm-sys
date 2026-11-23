@@ -17,6 +17,7 @@ from package.evaluation import (
     filter_requests_by_scope,
 )
 from package.evaluation.requests._helper import _deepest_category
+from package.evaluation.layer1_outcome import _extract_retrieval_funnel
 from package.data.leakage import LeakageError
 from package.memory.memory_tool import MemoryTool
 from package.tools import get_tool_limits
@@ -74,10 +75,11 @@ def test_build_requests_makes_every_kind_with_the_right_ground_truth(corpus):
     assert cold.category == "Electronics" and cold.targets == [3, 4] and cold.oracle
     assert reqs["ambiguous-none-0"].user_id is None and reqs["ambiguous-none-0"].targets == []
     
-    # Check exclusion request
+    # Check exclusion request: built from held-out items -> oracle scope
     exclusion = reqs["exclusion-warm-0"]
     assert exclusion.user_id is not None
     assert exclusion.targets  # should have targets (held-out items except the excluded one)
+    assert exclusion.oracle
     
     # Check unanswerable request
     unanswerable = reqs["unanswerable-none-0"]
@@ -92,9 +94,72 @@ def test_request_scope_keeps_target_informed_cases_separate(corpus):
     assert realistic and all(not request.oracle for request in realistic)
     assert oracle and all(request.oracle for request in oracle)
     assert {request.request_id for request in realistic}.isdisjoint({request.request_id for request in oracle})
+    # exclusion derives its excluded item+category from held-out items: oracle, never realistic
+    assert "exclusion-warm-0" in {request.request_id for request in oracle}
+    assert "exclusion-warm-0" not in {request.request_id for request in realistic}
     assert len(filter_requests_by_scope(requests, "all")) == len(requests)
     with pytest.raises(ValueError, match="scope"):
         filter_requests_by_scope(requests, "unknown")
+
+
+def test_scored_rows_carry_the_oracle_flag(corpus):
+    request = AgentRequest(request_id="exclusion-warm-0", kind="exclusion", segment="warm",
+                           text="t", targets=[1], oracle=True)
+    row = score_trajectory(request, _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+                           item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["oracle"] is True
+    assert "oracle" not in summarize([row])["planner"]["exclusion"]["all"]  # flag, not a score
+
+
+def test_build_requests_populates_structured_exclusions(corpus):
+    exclusion = _requests(corpus)["exclusion-warm-0"]
+    # user 0 held-out = {VG_B(idx1), VG_C(idx2)}; the first held-out item is excluded
+    assert exclusion.excluded_item_ids == [VG_B]
+    assert exclusion.excluded_categories == ["Games"]  # deepest category of VG_B
+    assert VG_C not in exclusion.excluded_item_ids
+
+
+def _exclusion_row(corpus, recommended):
+    request = _requests(corpus)["exclusion-warm-0"]
+    traj = _trajectory(steps=[_step("SimilarTool")], recommended=recommended)
+    return score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+
+
+def test_exclusion_compliance_detects_item_and_category_violations(corpus):
+    # VG_C shares no excluded category and is not the excluded item -> compliant
+    row = _exclusion_row(corpus, [VG_C])
+    assert row["exclusion_compliance"] == 1.0
+    assert row["exclusion_compliance_detail"] == []
+    assert row["task_success"] is True
+
+    # Recommending the excluded item itself -> violation
+    row = _exclusion_row(corpus, [VG_B])
+    assert row["exclusion_compliance"] == 0.0
+    assert row["exclusion_compliance_detail"] == [VG_B]
+    assert row["task_success"] is False
+
+    # VG_A is a DIFFERENT item but shares the excluded "Games" category path -> violation
+    row = _exclusion_row(corpus, [VG_A])
+    assert row["exclusion_compliance"] == 0.0
+    assert row["exclusion_compliance_detail"] == [VG_A]
+    assert row["task_success"] is False
+
+    # Mixed: one clean + one violating -> partial compliance, still not success
+    row = _exclusion_row(corpus, [VG_C, VG_A])
+    assert row["exclusion_compliance"] == 0.5
+    assert row["exclusion_compliance_detail"] == [VG_A]
+    assert row["task_success"] is False
+
+
+def test_exclusion_compliance_unmeasurable_without_structured_fields(corpus):
+    # Requests built before the schema change (or hand-built) carry no exclusions:
+    # compliance stays None and task_success falls back to the rec-based check.
+    request = AgentRequest(request_id="exclusion-manual", kind="exclusion", segment="warm",
+                           text="t", targets=[2], oracle=True)
+    traj = _trajectory(steps=[_step("SimilarTool")], recommended=[VG_C])
+    row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["exclusion_compliance"] is None
+    assert row["task_success"] is True
 
 
 def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
@@ -128,6 +193,10 @@ def _trajectory(agent="planner", steps=(), recommended=(), error=None, ask_user=
 
 def _step(tool, ok=True):
     return {"tool": tool, "ok": ok, "error": None, "invented_ids": [], "latency_seconds": 0.01}
+
+
+def _data_step(tool, data, ok=True):
+    return {**_step(tool, ok), "data": data}
 
 
 def test_score_trajectory_ranking_and_tool_selection(corpus):
@@ -179,6 +248,300 @@ def test_baseline_rows_have_no_agent_only_metrics(corpus):
     assert row["tool_selection_ok"] is None and row["n_steps"] is None and row["recall@2"] == 1.0
 
 
+def test_retrieval_funnel_is_unavailable_without_step_data():
+    # Steps recorded before tool `data` was persisted must not read as zero retrieval.
+    assert _extract_retrieval_funnel({"steps": [_step("SearchTool"), _step("RankTool")]}, ITEM2ID, k=10) == {}
+    # A data-carrying step mixed with a data-less one is still unmeasurable.
+    mixed = {"steps": [_data_step("SearchTool", {"candidates": [{"item_id": "a"}]}), _step("RankTool")]}
+    assert _extract_retrieval_funnel(mixed, ITEM2ID, k=10) == {}
+
+
+def test_retrieval_funnel_counts_real_and_genuinely_empty_results():
+    cands = {"candidates": [{"item_id": "a"}, {"item_id": "b"}]}
+    ranked = {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}
+    full = _extract_retrieval_funnel({"steps": [_data_step("SearchTool", cands), _data_step("RankTool", ranked)]}, ITEM2ID, k=10)
+    assert full["candidate_generation_count"] == 2 and full["retrieved_count"] == 2
+    assert full["filtered_count"] == 3 and full["ranked_count"] == 3
+    empty = _extract_retrieval_funnel(
+        {"steps": [_data_step("SearchTool", {"candidates": []}), _data_step("RankTool", {"ranked": []})]}, ITEM2ID, k=10)
+    assert empty["candidate_generation_count"] == 0 and empty["retrieved_count"] == 0
+    assert empty["filtered_count"] == 0 and empty["ranked_count"] == 0
+    # Steps with no retrieval/ranking tool at all: genuinely zero funnel.
+    lookup_only = _extract_retrieval_funnel({"steps": [_data_step("LookupTool", {"items": []})]}, ITEM2ID, k=10)
+    assert lookup_only["candidate_generation_count"] == 0
+
+
+def test_score_trajectory_keeps_funnel_none_without_step_data(corpus):
+    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+    traj = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A])
+    row = score_trajectory(request, traj, item2id=ITEM2ID, corpus=corpus, k=2)
+    for key in ("candidate_generation_count", "retrieved_count", "filtered_count", "ranked_count", "rank_in_pool"):
+        assert row[key] is None, key
+
+
+def test_score_trajectory_counts_candidates_when_steps_carry_data(corpus):
+    request = AgentRequest(request_id="similar-warm-0", kind="similar", segment="warm", text="t", targets=[1])
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}, {"item_id": VG_B}]}),
+             _data_step("RankTool", {"ranked": [{"item_id": VG_A}]})]
+    row = score_trajectory(request, _trajectory(steps=steps, recommended=[VG_A]), item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row["candidate_generation_count"] == 2 and row["retrieved_count"] == 2
+    assert row["filtered_count"] == 1 and row["ranked_count"] == 1
+
+
+def _pool_request(targets):
+    return AgentRequest(request_id="t", kind="similar", segment="warm", text="t", targets=targets)
+
+
+def _pool_row(corpus, targets, *, id2item=None, itemcf_reachable=None):
+    return score_trajectory(
+        _pool_request(targets), _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+        item2id=ITEM2ID, corpus=corpus, k=2,
+        id2item=id2item if id2item is not None else ID2ITEM,
+        itemcf_reachable=itemcf_reachable)
+
+
+def test_target_in_pool_per_path(corpus):
+    # target idx 1 = VG_B: in corpus, not in the ItemCF reachable set
+    row = _pool_row(corpus, [1], itemcf_reachable={0, 5})
+    assert row["target_in_pool_sql"] is True and row["target_in_pool_semantic"] is True
+    assert row["target_in_pool_itemcf"] is False
+    assert row["target_pool_detail"]["1"] == {"sql": True, "semantic": True, "itemcf": False}
+    # no shared pool exists: the bare columns stay unavailable
+    assert row["target_in_pool"] is None and row["target_reachable"] is None
+
+
+def test_target_in_pool_divergence_across_paths(corpus):
+    # idx 5 maps to an item absent from the corpus but reachable by ItemCF
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    row = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row["target_in_pool_sql"] is False and row["target_in_pool_semantic"] is False
+    assert row["target_in_pool_itemcf"] is True
+    assert row["target_pool_detail"]["5"] == {"sql": False, "semantic": False, "itemcf": True}
+
+
+def test_target_in_pool_temporal_policy_restricts_itemcf(corpus):
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    corpus._evaluation_metadata_policy = {"first_seen_filter": True}  # mirrors apply_metadata_policy
+    row = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row["target_in_pool_itemcf"] is False  # SimilarTool would filter it via item_domains
+    row2 = _pool_row(corpus, [0], id2item=id2item, itemcf_reachable={0})
+    assert row2["target_in_pool_itemcf"] is True  # VG_A visible in corpus
+
+
+def test_target_in_pool_unknown_never_reads_as_false(corpus):
+    # idx 99 has no id2item entry: availability unknown -> verdicts None, not False
+    row = _pool_row(corpus, [99], itemcf_reachable={99})
+    assert row["target_in_pool_sql"] is None and row["target_in_pool_itemcf"] is None
+    assert row["target_pool_detail"]["99"] == {"sql": None, "semantic": None, "itemcf": None}
+    # mixed: one measurable absence + one unknown -> still None (cannot rule out)
+    row2 = _pool_row(corpus, [5, 99], id2item={**ID2ITEM, 5: "Ghost::x"}, itemcf_reachable=set())
+    assert row2["target_in_pool_sql"] is None
+
+
+def test_target_in_pool_empty_targets_and_missing_inputs(corpus):
+    row = _pool_row(corpus, [])
+    assert row["target_in_pool_sql"] is None and row["target_pool_detail"] is None
+    # no id2item -> cannot map indices to catalog ids -> unavailable
+    row2 = score_trajectory(_pool_request([1]), _trajectory(steps=[_step("SimilarTool")], recommended=[VG_A]),
+                            item2id=ITEM2ID, corpus=corpus, k=2)
+    assert row2["target_in_pool_sql"] is None and row2["target_pool_detail"] is None
+    # itemcf_reachable=None -> only that path is unavailable
+    row3 = _pool_row(corpus, [1], itemcf_reachable=None)
+    assert row3["target_in_pool_sql"] is True and row3["target_in_pool_itemcf"] is None
+
+
+def test_target_in_any_path_pool(corpus):
+    # existential across all (target, path): True when any path can reach a target
+    row = _pool_row(corpus, [1], itemcf_reachable={0, 5})
+    assert row["target_in_any_path_pool"] is True
+    # divergence: absent from corpus but reachable via ItemCF -> still True
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    row2 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable={5})
+    assert row2["target_in_any_path_pool"] is True
+    # measurable absence on every path -> False
+    row3 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable=set())
+    assert row3["target_in_any_path_pool"] is False
+    # any unknown -> None, never a silent False
+    row4 = _pool_row(corpus, [99], itemcf_reachable={99})
+    assert row4["target_in_any_path_pool"] is None
+    # empty targets -> unmeasurable
+    row5 = _pool_row(corpus, [])
+    assert row5["target_in_any_path_pool"] is None
+
+
+def test_target_in_pool_multiple_targets_existential(corpus):
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    # targets 0 (in corpus+cf) and 5 (not in corpus, in cf): every path has >=1 eligible
+    row = _pool_row(corpus, [0, 5], id2item=id2item, itemcf_reachable={0, 5})
+    assert row["target_in_pool_sql"] is True and row["target_in_pool_itemcf"] is True
+    # targets 1 (corpus, not cf) and 5 (cf, not corpus): each path still finds one
+    row2 = _pool_row(corpus, [1, 5], id2item=id2item, itemcf_reachable={5})
+    assert row2["target_in_pool_sql"] is True and row2["target_in_pool_itemcf"] is True
+    # no target anywhere: measurable absences only -> False
+    row3 = _pool_row(corpus, [5], id2item=id2item, itemcf_reachable=set(), )
+    assert row3["target_in_pool_sql"] is False and row3["target_in_pool_itemcf"] is False
+
+
+def test_target_pool_detail_is_skipped_by_summarize(corpus):
+    row = _pool_row(corpus, [1], itemcf_reachable={0})
+    summary = summarize([row])
+    assert "target_pool_detail" not in summary["planner"]["similar"]["all"]
+    # verdicts DO aggregate as rates under the include-all-verdicts policy
+    assert summary["planner"]["similar"]["all"]["target_in_pool_sql"] == row["target_in_pool_sql"]
+
+
+def _stage_row(corpus, targets, steps, recommended=(), *, itemcf_reachable=None, itemcf_reachable_request=None,
+               id2item=None):
+    return score_trajectory(
+        _pool_request(targets), _trajectory(steps=steps, recommended=list(recommended)),
+        item2id=ITEM2ID, corpus=corpus, k=2,
+        id2item=id2item if id2item is not None else ID2ITEM,
+        itemcf_reachable=itemcf_reachable,
+        itemcf_reachable_request=itemcf_reachable_request)
+
+
+def _ranker_data(ranked=(), candidate_item_ids=None, unscored=(), excluded_seen=()):
+    data = {"ranked": [{"rank": i + 1, "item_id": iid} for i, iid in enumerate(ranked)],
+            "unscored_item_ids": list(unscored), "excluded_seen": list(excluded_seen)}
+    if candidate_item_ids is not None:
+        data["candidate_item_ids"] = list(candidate_item_ids)
+    return data
+
+
+def test_stage_diagnostics_survived_target(corpus):
+    # target idx 1 = VG_B: in pool, retrieved by ItemCF, ranked #1, recommended
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}, {"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B, VG_A], candidate_item_ids=[VG_A, VG_B]))]
+    row = _stage_row(corpus, [1], steps, recommended=[VG_B],
+                     itemcf_reachable={1}, itemcf_reachable_request={1})
+    assert row["retrieved_by_itemcf"] is True and row["retrieved_by_sql"] is None
+    assert row["target_reachable"] is True and row["rank_in_pool"] == 1
+    detail = row["target_stage_detail"]["1"]
+    assert detail["best_stage"] == "survived"
+    assert detail["paths"]["itemcf"]["stage_lost"] == "survived"
+    assert detail["paths"]["itemcf"]["seed_reachable"] is True
+    assert detail["paths"]["sql"]["stage_lost"] is None  # path not exercised
+    assert row["stage_lost"] == "survived" and row["target_rank_detail"]["1"] == 1
+
+
+def test_stage_diagnostics_pool_and_retrieve_losses(corpus):
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_A}]})]
+    # idx 1 in corpus but NOT in itemcf_reachable -> pool loss on itemcf path
+    row = _stage_row(corpus, [1], steps, itemcf_reachable=set(), itemcf_reachable_request={1})
+    d = row["target_stage_detail"]["1"]["paths"]["itemcf"]
+    assert d["stage_lost"] == "pool" and d["pool"] is False
+    # idx 2 = VG_C reachable by ItemCF but absent from candidates -> retrieve loss
+    row2 = _stage_row(corpus, [2], steps, itemcf_reachable={2}, itemcf_reachable_request={2})
+    d2 = row2["target_stage_detail"]["2"]["paths"]["itemcf"]
+    assert d2["stage_lost"] == "retrieve" and d2["retrieved"] is False
+    assert row2["retrieved_by_itemcf"] is False and row2["target_reachable"] is False
+    assert row2["stage_lost"] == "retrieve"
+
+
+def test_stage_diagnostics_ranking_losses(corpus):
+    cands = {"candidates": [{"item_id": VG_B}]}
+    base = [_data_step("SimilarTool", cands)]
+    # never passed to the ranker
+    row = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A]))],
+                     itemcf_reachable={1})
+    assert row["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_input"
+    assert row["rank_in_pool"] is None
+    # passed but outside the scorer matrix
+    row2 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B], unscored=[VG_B]))],
+                      itemcf_reachable={1})
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_unscored"
+    # passed but excluded as already seen
+    row3 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B], excluded_seen=[VG_B]))],
+                      itemcf_reachable={1})
+    assert row3["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_excluded_seen"
+    # scored but cut by RankTool top_k
+    row4 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_A], candidate_item_ids=[VG_A, VG_B]))],
+                      itemcf_reachable={1})
+    assert row4["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "rank_topk"
+    # ranked but absent from final recommendations
+    row5 = _stage_row(corpus, [1], base + [_data_step("RankTool", _ranker_data(ranked=[VG_B, VG_A], candidate_item_ids=[VG_A, VG_B]))],
+                      recommended=[VG_A], itemcf_reachable={1})
+    assert row5["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] == "final"
+    assert row5["rank_in_pool"] == 1 and row5["stage_lost"] == "final"
+
+
+def test_stage_diagnostics_unknown_without_ranker_input(corpus):
+    # pre-candidate_item_ids trajectory: handoff vs top_k cut is unknowable -> None
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", {"ranked": [{"rank": 1, "item_id": VG_A}], "unscored_item_ids": [], "excluded_seen": []})]
+    row = _stage_row(corpus, [1], steps, itemcf_reachable={1})
+    assert row["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] is None
+    assert row["stage_lost"] is None
+
+
+def test_stage_diagnostics_unexercised_paths_and_missing_data(corpus):
+    # no retrieval steps at all -> every path unexercised -> all None
+    row = _stage_row(corpus, [1], [_data_step("LookupTool", {"items": []})], itemcf_reachable={1})
+    assert row["retrieved_by_sql"] is None and row["retrieved_by_itemcf"] is None
+    assert row["target_reachable"] is None and row["stage_lost"] is None
+    # exercised but data-less step -> unmeasurable, not False
+    row2 = _stage_row(corpus, [1], [_step("SimilarTool")], itemcf_reachable={1})
+    assert row2["retrieved_by_itemcf"] is None
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["stage_lost"] is None
+
+
+def test_stage_diagnostics_mixed_stages_and_seed_reachability(corpus):
+    # target 1 retrieved+survives via itemcf; target 7 globally ItemCF-eligible but
+    # not reachable from this trajectory's seeds -> per-path stages differ -> "mixed"
+    id2item = {**ID2ITEM, 7: "Ghost::x"}
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B], candidate_item_ids=[VG_B]))]
+    row = _stage_row(corpus, [1, 7], steps, recommended=[VG_B],
+                     id2item=id2item, itemcf_reachable={1, 7}, itemcf_reachable_request={1})
+    d1 = row["target_stage_detail"]["1"]["paths"]["itemcf"]
+    d7 = row["target_stage_detail"]["7"]["paths"]["itemcf"]
+    assert d1["stage_lost"] == "survived" and d1["seed_reachable"] is True
+    # globally in the ItemCF pool (pool=True) but absent from these seeds' candidate
+    # space and from the returned candidates -> lost at retrieve on this path
+    assert d7["stage_lost"] == "retrieve" and d7["seed_reachable"] is False
+    assert row["target_stage_detail"]["7"]["best_stage"] == "retrieve"  # beats sql/semantic "pool"
+    assert row["stage_lost"] == "mixed"
+    # seed_reachable None when request reachability was not supplied
+    row2 = _stage_row(corpus, [1], steps[:1], itemcf_reachable={1})
+    assert row2["target_stage_detail"]["1"]["paths"]["itemcf"]["seed_reachable"] is None
+
+
+def test_stage_diagnostics_new_keys_skipped_by_summarize(corpus):
+    steps = [_data_step("SimilarTool", {"candidates": [{"item_id": VG_B}]}),
+             _data_step("RankTool", _ranker_data(ranked=[VG_B], candidate_item_ids=[VG_B]))]
+    row = _stage_row(corpus, [1], steps, recommended=[VG_B], itemcf_reachable={1})
+    summary = summarize([row])
+    entry = summary["planner"]["similar"]["all"]
+    for key in ("stage_lost", "target_stage_detail", "target_rank_detail"):
+        assert key not in entry
+
+
+def test_query_hit_any_title_token(corpus):
+    # target idx 1 = VG_B "Mario 100%": query token "mario" hits the title
+    steps = [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})]
+    assert _stage_row(corpus, [1], steps)["query_hit_any_title_token"] is True
+    # measurable miss -> False
+    steps = [_data_step("SearchTool", {"query_tokens": ["zzz"], "candidates": []})]
+    assert _stage_row(corpus, [1], steps)["query_hit_any_title_token"] is False
+    # union across multiple SearchTool steps: second query carries the hit
+    steps = [_data_step("SearchTool", {"query_tokens": ["zzz"], "candidates": []}),
+             _data_step("SearchTool", {"query_tokens": ["game"], "candidates": []})]
+    assert _stage_row(corpus, [0], steps)["query_hit_any_title_token"] is True  # VG_A "Super Video Game"
+    # no SearchTool exercised -> unmeasurable
+    assert _stage_row(corpus, [1], [_step("SimilarTool")])["query_hit_any_title_token"] is None
+    # SearchTool without persisted data -> unmeasurable (pre-R1 trajectory)
+    assert _stage_row(corpus, [1], [_step("SearchTool")])["query_hit_any_title_token"] is None
+    # unmapped target index -> None
+    steps = [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})]
+    assert _stage_row(corpus, [99], steps)["query_hit_any_title_token"] is None
+    # target absent from corpus -> title unmeasurable -> None
+    id2item = {**ID2ITEM, 5: "Ghost::x"}
+    assert _stage_row(corpus, [5], steps, id2item=id2item)["query_hit_any_title_token"] is None
+    # aggregates as a rate, unlike the per-target diagnostics
+    summary = summarize([_stage_row(corpus, [1], [_data_step("SearchTool", {"query_tokens": ["mario"], "candidates": []})])])
+    assert summary["planner"]["similar"]["all"]["query_hit_any_title_token"] == 1.0
+
+
 def test_summarize_means_per_agent_kind_and_segment():
     rows = [
         {"request_id": "r0", "agent": "a", "kind": "similar", "segment": "warm", "task_success": True, "recall@10": 0.5, "x": None},
@@ -188,6 +551,83 @@ def test_summarize_means_per_agent_kind_and_segment():
     out = summarize(rows)["a"]["similar"]
     assert out["warm"]["n"] == 2 and out["warm"]["task_success"] == 0.5 and out["warm"]["recall@10"] == 0.25
     assert out["all"]["n"] == 3 and out["all"]["recall@10"] == pytest.approx(0.5) and "x" not in out["all"]
+
+
+def test_summarize_aggregates_pool_verdicts_as_rates_and_skips_details():
+    rows = [
+        {"request_id": "r0", "agent": "a", "kind": "similar", "segment": "warm",
+         "target_in_pool": True, "target_in_pool_sql": True, "target_in_pool_semantic": None,
+         "target_reachable": True, "retrieved_by_itemcf": True,
+         "stage_lost": "rank", "target_pool_detail": {"x": 1},
+         "exclusion_compliance": 1.0},
+        {"request_id": "r1", "agent": "a", "kind": "similar", "segment": "warm",
+         "target_in_pool": False, "target_in_pool_sql": False, "target_in_pool_semantic": None,
+         "target_reachable": False, "retrieved_by_itemcf": False,
+         "stage_lost": "filter", "target_pool_detail": {"x": 2},
+         "exclusion_compliance": 0.5},
+    ]
+    seg = summarize(rows)["a"]["similar"]["all"]
+    # verdicts aggregate as rates over measurable rows
+    assert seg["target_in_pool"] == 0.5
+    assert seg["target_in_pool_sql"] == 0.5
+    assert seg["target_reachable"] == 0.5
+    assert seg["exclusion_compliance"] == 0.75
+    # all-None verdict -> key absent (unmeasurable, not zero)
+    assert "target_in_pool_semantic" not in seg
+    # dicts/strings stay out of summary
+    assert "target_pool_detail" not in seg and "stage_lost" not in seg
+
+
+def _memory_step(data):
+    return {"tool": "MemoryTool", "ok": True, "error": None, "invented_ids": [],
+            "latency_seconds": 0.01, "data": data}
+
+
+def _args_step(tool, args):
+    return {"tool": tool, "ok": True, "error": None, "invented_ids": [],
+            "latency_seconds": 0.01, "args": args}
+
+
+MEMORY_DATA = {
+    "user_id": "u0", "known": True, "n_interactions": 5,
+    "top_categories": ["Games"], "love_categories": ["Games"],
+    "hate_categories": [], "price_range": {"min": 5.0, "max": 20.0},
+    "recent_items": [VG_B], "loved_items": [VG_A], "hated_items": [],
+}
+
+
+def _memory_row(steps):
+    request = AgentRequest(request_id="personalized-warm-0", kind="personalized",
+                           segment="warm", text="t", targets=[1])
+    traj = _trajectory(steps=steps, recommended=[VG_C])
+    return score_trajectory(request, traj, item2id=ITEM2ID, corpus=None, k=2)
+
+
+def test_memory_profile_usage_detects_value_matched_reuse():
+    mem = _memory_step(MEMORY_DATA)
+    # $N.path reference still counts
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"categories_any": ["$1.top_categories"]}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # category value copied from memory (no $ref) now counts too
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"categories_any": ["Games"]}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # price_max equal to memory price_range.max counts
+    row = _memory_row([mem, _args_step("FilterTool", {"filters": {"price_max": 20.0}})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+    # loved/recent item used as SimilarTool seed counts
+    row = _memory_row([mem, _args_step("SimilarTool", {"items": [VG_A]})])
+    assert row["memory_profile_usage"] == "retrieved_and_used"
+
+
+def test_memory_profile_usage_not_used_and_not_retrieved():
+    mem = _memory_step(MEMORY_DATA)
+    unrelated = _args_step("FilterTool", {"filters": {"categories_any": ["Electronics"], "price_max": 3.0}})
+    row = _memory_row([mem, unrelated])
+    assert row["memory_profile_retrieved"] is True
+    assert row["memory_profile_usage"] == "retrieved_not_used"
+    row = _memory_row([_args_step("FilterTool", {"filters": {"price_max": 20.0}})])
+    assert row["memory_profile_retrieved"] is False
+    assert row["memory_profile_usage"] is None  # usage only defined when memory was retrieved
 
 
 def test_memory_tool_refuses_interactions_from_the_future(corpus, cf_setup):

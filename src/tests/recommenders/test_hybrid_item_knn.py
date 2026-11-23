@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from scipy import sparse
 
-from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.evaluation.recommender.core.evaluate_recommender import evaluate_recommender
 
 

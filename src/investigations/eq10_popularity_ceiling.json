@@ -1,0 +1,101 @@
+{
+  "method": "ORDER BY rating_number DESC, item_id (NULLs last); global catalog rank; targets = 196 campaign_005 exp_5 held-out",
+  "ordering_note": "rating_number = raw Amazon rating count (unmasked main.items); under eval masking this ordering degenerates to item_id (Q18/Q4)",
+  "global": {
+    "recall@10": 0.0153,
+    "recall@100": 0.0204,
+    "recall@1000": 0.102,
+    "recall@10000": 0.2551,
+    "recall@100000": 0.6327,
+    "n": 196,
+    "median_rank": 48062.5
+  },
+  "per_domain": {
+    "Video_Games": {
+      "recall@100": 0.0,
+      "recall@1000": 0.1538,
+      "recall@10000": 0.3077,
+      "n": 13,
+      "median_rank": 42334.0
+    },
+    "Toys_and_Games": {
+      "recall@100": 0.0,
+      "recall@1000": 0.0,
+      "recall@10000": 0.119,
+      "n": 42,
+      "median_rank": 128822.5
+    },
+    "Electronics": {
+      "recall@100": 0.0284,
+      "recall@1000": 0.1277,
+      "recall@10000": 0.2908,
+      "n": 141,
+      "median_rank": 28170.0
+    }
+  },
+  "rank_pctiles": {
+    "10": 1071.0,
+    "25": 9858.75,
+    "50": 48062.5,
+    "75": 172057.0,
+    "90": 414102.0
+  },
+  "examples": [
+    {
+      "request_id": "personalized-warm-9",
+      "kind": "personalized",
+      "item_id": "Electronics::B07GZFM1ZM",
+      "domain": "Electronics",
+      "pop_rank": 1
+    },
+    {
+      "request_id": "similar-sparse-5",
+      "kind": "similar",
+      "item_id": "Electronics::B08F1P3BCC",
+      "domain": "Electronics",
+      "pop_rank": 3
+    },
+    {
+      "request_id": "similar-sparse-18",
+      "kind": "similar",
+      "item_id": "Electronics::B08WJSHSLC",
+      "domain": "Electronics",
+      "pop_rank": 8
+    },
+    {
+      "request_id": "personalized-sparse-0",
+      "kind": "personalized",
+      "item_id": "Electronics::B09V1FT19S",
+      "domain": "Electronics",
+      "pop_rank": 11
+    },
+    {
+      "request_id": "cold_text-cold-18",
+      "kind": "cold_text",
+      "item_id": "Electronics::B0C3HNDTW1",
+      "domain": "Electronics",
+      "pop_rank": 105
+    },
+    {
+      "request_id": "personalized-sparse-13",
+      "kind": "personalized",
+      "item_id": "Toys_and_Games::B00E72RMEE",
+      "domain": "Toys_and_Games",
+      "pop_rank": 2152003
+    },
+    {
+      "request_id": "personalized-warm-15",
+      "kind": "personalized",
+      "item_id": "Toys_and_Games::B00VS1MGB6",
+      "domain": "Toys_and_Games",
+      "pop_rank": 1720342
+    },
+    {
+      "request_id": "similar-warm-8",
+      "kind": "similar",
+      "item_id": "Electronics::B08G3NV1VZ",
+      "domain": "Electronics",
+      "pop_rank": 1702658
+    }
+  ]
+}

@@ -2,7 +2,14 @@
 # reference architecture: InteRecAgent / RecAI
 
 provider: "openai_compatible"       # openai_compatible — cấu hình base_url + api_key khi có endpoint thật
-model: "gpt-5.4"
+model: "gpt-5.5"   # gateway-specific: phải là model id endpoint của bạn serve (api.xah.io: /v1/models)
 base_url: ${LLM_BASE_URL:-}      # https://api.xah.io/v1
 api_key: ${LLM_API_KEY:-}      # KHÔNG ghi key vào file này: export LLM_API_KEY=...; để trống nếu server local không cần auth
 timeout_seconds: 180.0
+
+# Token pricing for eval cost metrics (USD per 1M tokens). null = unpriced
+# -> cost_per_request reports None (unmeasurable) instead of a fake 0.
+# Điền giá của gateway/model bạn dùng (vd api.xah.io) để cost metrics có nghĩa.
+pricing:
+  prompt_usd_per_1m_tokens: 5.0      # gpt-5.5 official OpenAI price; gateway api.xah.io có thể khác — check billing
+  completion_usd_per_1m_tokens: 30.0 # NOTE: prompt >272K tokens → giá official là 2x input / 1.5x output (chưa model hóa)

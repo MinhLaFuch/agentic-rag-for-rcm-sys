@@ -45,7 +45,8 @@ def _write_status(path: Path, payload: dict[str, Any]) -> None:
 
 
 def run_multi_turn_eval(
-    *, dataset: str, output_path: str | Path, timeout_seconds: int = 1800
+    *, dataset: str, output_path: str | Path, timeout_seconds: int = 1800,
+    limits: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run the multi-turn evaluation once and return its status info.
 
@@ -88,6 +89,10 @@ def run_multi_turn_eval(
         "--dataset", dataset,
         "--output", str(out),
     ]
+    if limits:
+        # agent_eval.multi_turn.limits -> runner; recorded in multi_turn.json,
+        # enforcement is Phase-C (see RealAgentRunner.resolved_config).
+        cmd += ["--limits-json", json.dumps(limits)]
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=False,
@@ -136,11 +141,29 @@ def run_multi_turn_for_eval(cfg_block: dict[str, Any] | None, default_output_pat
         dataset=str(block.get("dataset") or DEFAULT_DATASET),
         output_path=out,
         timeout_seconds=int(block.get("timeout_seconds") or 1800),
+        limits=block.get("limits") or None,
     )
+
+
+# Aggregated conversation metrics live under summary["metrics"] with a
+# _mean/_std/_min/_max suffix (MultiTurnEvaluator._aggregate_metrics); the
+# discriminating ones the campaign used to drop:
+_NESTED_METRIC_KEYS = (
+    "avg_item_match_rate_mean",
+    "exclusion_compliance_mean",
+    "clarification_compliance_mean",
+    "no_result_compliance_mean",
+    "reference_accuracy_mean",
+    "tool_call_match_rate_mean",
+)
 
 
 def extract_multi_turn_metrics(summary: dict[str, Any] | None) -> dict[str, Any]:
     """Metrics worth reporting at campaign level (not used in comparisons)."""
     if not isinstance(summary, dict):
         return {}
-    return {k: summary.get(k) for k in _SUCCESS_METRICS if k in summary}
+    out = {k: summary.get(k) for k in _SUCCESS_METRICS if k in summary}
+    nested = summary.get("metrics")
+    if isinstance(nested, dict):
+        out.update({k: nested[k] for k in _NESTED_METRIC_KEYS if k in nested})
+    return out

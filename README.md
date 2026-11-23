@@ -13,23 +13,25 @@ Nghiên cứu và Ứng dụng Mô hình Agentic RAG trong Hệ thống Cá nhâ
 Research-grade project: Traditional RecSys + Sequential Recommendation + Retrieval + LLM-powered Agentic Recommendation trên một domain của Amazon Reviews 2023.
 
 # Tóm tắt trong folder `src`
-Xem `docs/` để hiểu đầy đủ ngữ cảnh trước khi đọc code:
 
-- `docs/research_review.md` — các paper nền tảng đã research
-- `docs/architecture.md` — kiến trúc hệ thống + agent (4 module Profile/Memory/Planning/Action)
-- `docs/data_specification.md` — schema Amazon Reviews 2023, temporal split, leakage rule
-- `docs/experiment_plan.md` — experiment matrix E0–E9 + ablation
-- `docs/decisions.md` — nhật ký quyết định kiến trúc (WHAT/WHY/EVIDENCE/RISK)
-- `docs/limitations.md` — hạn chế và rủi ro đã biết
-- `docs/research_matrix.md` — bảng phân biệt "paper báo cáo" vs "đã tự chạy"
+Tài liệu trung tâm: **`src/Project repository reading 29.10.md`** — repository reading đầy đủ (kiến trúc, evaluation framework, known issues, future work).
+
+Tài liệu hỗ trợ trong `src/docs/` (các investigation/eval-surface docs tuần 47):
+
+- `investigation_week47.md` — điều tra eval surface
+- `eval_surface_inventory.md` — inventory các eval path
+- `eval_demo_check_week47.md` — kiểm tra demo/eval outputs
+- `ablation_scope.md`, `opik_assessment.md`, `case_proposal_week47.md` — phân tích ablation, Opik, case study
+- `repo_reading_update_log.md`, `report_update_log.md` — nhật ký cập nhật tài liệu
 
 ## Trạng thái hiện tại
 
-- **Phase 0 — Research & Specification:** hoàn thành.
-- **Phase 1 — Repository & Environment:** hoàn thành (13/13 test).
-- **Phase 2 — Dataset Acquisition & EDA:** hoàn thành. Domain chính thức: `Video_Games`. Phát hiện quan trọng: 72.21% user chỉ có 1 interaction (cold-start-dominant), sparsity 99.9988%.
-- **Phase 3 — Data Pipeline:** code hoàn thành + đã test end-to-end với dữ liệu synthetic (45/45 test pass), **CHƯA chạy trên dữ liệu thật đầy đủ** (cần chạy trên máy người dùng — xem `scripts/run_pipeline_local.py`).
-- **Phase 4+:** chưa thực hiện.
+- **Phase 0–3 — Research, môi trường, dataset, data pipeline:** hoàn thành. Domain chính: `Video_Games` (+ Toys_and_Games, Electronics). Temporal split + leakage check bắt buộc.
+- **Recommendation foundation:** ItemCorpus (SQLite FTS5/BM25), CandidateScorer (popularity + ItemKNN), RankTool/FilterTool/SearchTool/SimilarTool/LookupTool/MemoryTool — hoàn thành.
+- **Agent layer:** PlanExecutor (LLM planner + reflection), Type1Agent (fixed plan), Inference layer — hoàn thành.
+- **Evaluation:** 5-layer trajectory scoring + component benchmarks + campaign runner + multi-turn — hoàn thành; đã chạy campaign thật (`campaign_001`).
+- **Evaluation integrity audit (2026-11-15):** R1–R3 diagnostics + oracle-leakage fix (`exclusion` → oracle) + placeholder-output labeling — đã commit (`2caa25d`…`91719da`).
+- **Đang làm:** chuẩn bị experiments cho thesis; demo readiness verification; một số metric phụ (`evolving_interest`, `_score_language`) đang deferred.
 
 ## Cài đặt
 
@@ -51,41 +53,36 @@ Scripts trong `scripts/` cần `PYTHONPATH=.` (pytest tự set qua `pyproject.to
 PYTHONPATH=. python scripts/check_llm_provider.py
 ```
 
-## Chạy Phase 3 pipeline trên dữ liệu thật
+## Rebuild `src/resource/` (gitignored, ~17GB)
+
+`resource/` không nằm trong git — rebuild từ raw Amazon Reviews 2023:
 
 ```bash
-DOMAIN=Video_Games PYTHONPATH=. python scripts/run_phase3_pipeline_local.py \
-    --review-path /duong/dan/toi/review_Video_Games.jsonl.gz
+cd src
+DOMAIN=Video_Games PYTHONPATH=. python scripts/data_pipeline/run_pipeline.py --stages all --domain Video_Games
+# lặp cho Toys_and_Games, Electronics; merged bundle = không truyền --domain
 ```
 
-Pipeline: clean → k-core filter (min_user=5, min_item=5 theo `configs/data.yaml`) → ID mapping → temporal split (80/10/10) → leakage check (3 loại check, dừng pipeline nếu fail) → lưu `data/mapped/`, `data/splits/`. Paste toàn bộ output console lại cho Claude để cập nhật docs với số liệu thật.
+4 stages: clean → k-core filter → ID mapping → temporal split + leakage check → corpus/ItemKNN artifacts. Thiếu `--force` sẽ không ghi đè output đã có.
+
+Benchmark `.jsonl` datasets (component benchmarks, multi-turn `conversations.jsonl`) **đã commit** trong `package/evaluation/` — không cần regenerate khi clone. `memory_correctness_dataset.jsonl` có drift-check: `python -m scripts.evaluation.build_memory_correctness_dataset --check` (regenerate bằng cách bỏ `--check`); các dataset planner/executor/grounding/integration là curated fixtures, sửa tay.
+
+Dense retrieval artifacts (optional): env riêng có torch + sentence-transformers → `python scripts/evaluation/build_semantic_embeddings.py pin/build` → điền `configs/eval/dense_retrieval.yaml`.
 
 ## Cấu trúc thư mục
 
 ```
 src/
-  data/          # ETL, temporal split, leakage check (Phase 3)
-  features/      # feature engineering
-  retrieval/      # candidate retrieval (Phase 6+)
-  recommenders/  # baseline models (Phase 4)
-  sequential/    # sequential recommender (Phase 5)
-  embeddings/    # embedding models
-  memory/        # Short/Long-term, Preference, Interaction memory (Phase 7)
-  agents/        # Agent workflow (Phase 8+)
-  tools/         # UserProfileTool, RerankingTool, MemoryTool... (Phase 8)
-  ranking/       # deterministic filtering + scoring
-  evaluation/    # metrics, ablation runner (Phase 11)
-  inference/     # serving logic
-  api/           # FastAPI app (Phase 13)
-  llm/           # LLMProvider abstraction — ĐÃ implement ở Phase 1
-  config/        # config loader — ĐÃ implement ở Phase 1
-
-configs/         # data.yaml, model.yaml, retrieval.yaml, agent.yaml, evaluation.yaml
-scripts/         # CLI scripts
-tests/           # unit + integration + smoke test
+  package/       # corpus, recommenders, tools, agents, evaluation, inference, config...
+  scripts/       # data_pipeline/, evaluation/, demo/, ...
+  tests/         # unit + integration tests
+  configs/       # data.yaml, agent/, eval/, path/... (single source of truth)
+  docs/          # investigation & eval-surface documents (xem trên)
+  experiments/   # kết quả từng experiment (trajectories, scored.jsonl, metrics)
+  resource/      # data đã xử lý: raw/, mapped/, splits/, corpus artifacts
+  benchmarks/    # benchmark configs/fixtures
+  Project repository reading 29.10.md  # TÀI LIỆU TRUNG TÂM — repository reading đầy đủ
 notebooks/       # EDA/visualization only — KHÔNG chứa business logic
-experiments/     # kết quả từng experiment (config, metrics, logs)
-docs/            # xem trên
 ```
 
 ## Nguyên tắc bắt buộc
@@ -130,4 +127,4 @@ docs/            # xem trên
 
 ### Maintenance Rule
 > When you modify a `_prompt.py`, **update this section** in the same PR.  
-> The README is your "reading.md" — keep it in sync.
+> The central reading doc is `src/Project repository reading 29.10.md` — keep it in sync.

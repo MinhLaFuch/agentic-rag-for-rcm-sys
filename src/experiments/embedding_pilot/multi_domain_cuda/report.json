@@ -1,0 +1,197 @@
+{
+  "status": "completed",
+  "tag": "multi_domain",
+  "purpose": "resource_pilot_only",
+  "partial_catalog": true,
+  "usable_for_quality_benchmark": false,
+  "contract": {
+    "version": 1,
+    "tag": "multi_domain",
+    "data_protocol": "temporal_train_core",
+    "metadata_policy": "historical_static_catalog",
+    "seed": 42,
+    "pilot": {
+      "provider": "sentence_transformers",
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "expected_dimension": 384,
+      "max_seq_length": 256,
+      "text_protocol": "title_store_main_category_categories_sorted_v2",
+      "sampling": "seeded_reservoir_balanced_by_domain_v1",
+      "default_limit": 1000,
+      "repeats": 2,
+      "warmup_items": 8
+    },
+    "retrieval": {
+      "evaluation_split": "validation",
+      "budgets": [
+        50,
+        100,
+        200
+      ],
+      "primary_metric": "macro_recall_at_100",
+      "sources": [
+        "popularity",
+        "item_cf",
+        "bm25",
+        "dense",
+        "hybrid"
+      ],
+      "fusion": "rrf",
+      "rrf_k": 60,
+      "cohort_identity": "freeze_user_ids_and_query_artifact_before_comparison",
+      "confidence_interval": "paired_bootstrap_95_percent",
+      "history_track": {
+        "query_source": "fit_history_titles_only",
+        "query_items": 3,
+        "cold_without_history": "no_input_and_report_fallback_separately",
+        "segments": [
+          "cold",
+          "sparse",
+          "warm"
+        ]
+      },
+      "cold_query_track": {
+        "status": "dataset_pending",
+        "rule": "query_and_judgments_independent_of_held_out_targets"
+      },
+      "category_oracle": "diagnostic_upper_bound_only",
+      "error_handling": "record_error_separately_from_retrieval_miss",
+      "gates": {
+        "status": "set_after_resource_pilot_before_large_validation",
+        "quality_delta_minimum": null,
+        "cohort_regression_limit": null,
+        "p95_query_latency_ms": null,
+        "peak_ram_gib": null
+      }
+    },
+    "test_policy": "freeze_configuration_before_test_no_test_tuning"
+  },
+  "contract_sha256": "7632499bc75623a0ac77d5d65cde12591d3036d574b7528479f05254bd2543c3",
+  "readiness_path": "experiments\\readiness\\p0_multi_domain_20261117_160642.json",
+  "readiness_sha256": "b9f2578df2313eb0199dced010c60df6827cdb01abd46ed5c7a15f3a4bcc3492",
+  "audit_profile": {
+    "path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain.profile.yaml",
+    "sha256": "1886160eaea4065449283e2a5d6b5374e032ae88df50041469c926cc99ff586c",
+    "tag": "multi_domain",
+    "historical_config_root": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\historical\\multi_domain",
+    "overlay_path": "C:\\Users\\ph181\\Documents\\Repositories\\agentic-rag-for-rcm-sys\\src\\configs\\profiles\\multi_domain.overlay.yaml",
+    "overlay_sha256": "032b5d4a7f4e9d5e0a7ab07e95ea5c104cc8c23b967e173c43f889e5472c5474",
+    "runtime_contract": {
+      "path/domains": {
+        "merged_name": "multi_domain",
+        "domains": [
+          {
+            "name": "Video_Games"
+          },
+          {
+            "name": "Toys_and_Games"
+          },
+          {
+            "name": "Electronics"
+          }
+        ]
+      },
+      "data/split": {
+        "split": {
+          "data_protocol": "temporal_train_core",
+          "temporal_train_core": {
+            "train_end_inclusive_ms": 1617737606134,
+            "validation_end_inclusive_ms": 1651701127817
+          }
+        }
+      },
+      "eval/baselines": {
+        "baselines": {
+          "seed": 42,
+          "item_knn": {
+            "k": 20
+          }
+        }
+      },
+      "eval/candidate_recall": {
+        "candidate_recall": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      },
+      "eval/ranking_eval": {
+        "ranking_eval": {
+          "metadata_policy": "historical_static_catalog",
+          "allow_missing_corpus_sources": false
+        }
+      }
+    },
+    "historical_and_runtime_configs_are_separate": true
+  },
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu_count": 16
+  },
+  "batch_size": 64,
+  "requested_device": "cuda",
+  "torch_preflight": {
+    "status": "passed",
+    "seconds": 6.388383499999691,
+    "version": "2.6.0+cu124"
+  },
+  "corpus_sha256": "0f683aec668d6a575933520d7b8ec21ef4721675add7261c74314d9ecc9ddf4b",
+  "catalog_counts_by_domain": {
+    "Electronics": 1609860,
+    "Toys_and_Games": 890667,
+    "Video_Games": 137249
+  },
+  "sample_counts_by_domain": {
+    "Electronics": 3334,
+    "Toys_and_Games": 3333,
+    "Video_Games": 3333
+  },
+  "sample_count": 10000,
+  "sample_sha256": "4101487f4f8ad82e348c9c2f5585e168206e997b0e1040ee07a89e07e92ed89b",
+  "missing_metadata_signal": 0,
+  "sample_seconds": 17.384790100000828,
+  "model_load_seconds": 33.78032130000065,
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "dimension": 384,
+  "actual_device": "cuda:0",
+  "max_seq_length": 256,
+  "library_versions": {
+    "sentence-transformers": "6.3.0",
+    "transformers": "5.23.0",
+    "torch": "2.6.0+cu124",
+    "numpy": "2.5.5",
+    "psutil": "7.2.2"
+  },
+  "text_tokens": {
+    "p50": 53.0,
+    "p95": 86.0,
+    "max": 448,
+    "over_max_seq_length": 3
+  },
+  "warmup_seconds": 0.4422436999993806,
+  "vector_sha256": "c1abc04d7f1e5bdb9dc0a4fa83d059730169c07e0eace352ad11cc7c56f877dc",
+  "encode_runs": [
+    {
+      "seconds": 6.093279300001086,
+      "items_per_second": 1641.1524086870952
+    },
+    {
+      "seconds": 6.246854499999245,
+      "items_per_second": 1600.8056534694715
+    }
+  ],
+  "gpu_memory": {
+    "name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+    "peak_allocated_gib": 0.35464048385620117,
+    "peak_reserved_gib": 0.525390625
+  },
+  "median_items_per_second": 1620.9790310782832,
+  "full_catalog_encode_seconds_estimate": 1627.273363459451,
+  "estimate_scope": "encode-only extrapolation from balanced sample; excludes full extraction, IO, save and index; not a full-build ETA",
+  "full_catalog_float32_vector_gib": 3.7733688354492188,
+  "full_build_memory_gate": "pending: pilot RAM is not an upper bound for current in-memory full builder",
+  "wall_seconds": 69.27748109999993,
+  "baseline_rss_gib": 0.4294319152832031,
+  "peak_rss_gib": 1.2561683654785156,
+  "memory_scope": "RSS monitoring begins after CLI torch preflight; sampled at 50ms; Windows includes process lifetime peak working set"
+}

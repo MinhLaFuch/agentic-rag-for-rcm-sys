@@ -18,9 +18,20 @@ def load_audit_profile(paths, *, project_root=PROJECT_ROOT):
     never replaces expected hashes or changes input/output/upstream verification.
     """
     value = os.environ.get("EVAL_BUNDLE_PROFILE")
-    if not value:
-        return None
     root = Path(project_root).resolve()
+    if not value:
+        # Auto-derive by convention: configs/profiles/<tag>.profile.yaml (+ .overlay.yaml).
+        # Env vars still take precedence; bundles without a profile file -> None (strict).
+        tag = getattr(paths, "tag", None)
+        candidate = root / "configs" / "profiles" / f"{tag}.profile.yaml" if tag else None
+        if candidate is None or not candidate.is_file():
+            return None
+        os.environ["EVAL_BUNDLE_PROFILE"] = str(candidate)
+        if not os.environ.get("CONFIG_OVERLAY_PATH"):
+            overlay = candidate.parent / f"{tag}.overlay.yaml"
+            if overlay.is_file():
+                os.environ["CONFIG_OVERLAY_PATH"] = str(overlay.resolve())
+        value = os.environ["EVAL_BUNDLE_PROFILE"]
     path = Path(value)
     path = (root / path).resolve() if not path.is_absolute() else path.resolve()
     doc = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -36,8 +47,11 @@ def load_audit_profile(paths, *, project_root=PROJECT_ROOT):
     snapshot_root = inside(doc["snapshot_root"])
     overlay_path = inside(doc["overlay_path"])
     active = os.environ.get("CONFIG_OVERLAY_PATH")
-    if not active or Path(active).resolve() != overlay_path:
-        raise ValueError("Audit profile requires CONFIG_OVERLAY_PATH set to its absolute overlay path")
+    # CONFIG_OVERLAY_PATH may chain several overlays (os.pathsep-separated);
+    # the profile overlay must be one of them.
+    active_paths = {Path(p).resolve() for p in active.split(os.pathsep) if p.strip()} if active else set()
+    if overlay_path not in active_paths:
+        raise ValueError("Audit profile requires CONFIG_OVERLAY_PATH (or its overlay chain) to include its absolute overlay path")
     overlay_hash = file_hash(overlay_path)
     if overlay_hash != doc["overlay_sha256"]:
         raise ValueError("Audit profile overlay checksum mismatch")

@@ -1,0 +1,14 @@
+# Dry-run overlay: offline verification of the wired eval chain.
+# agents baseline+type1 with inference.mode=template -> needs_llm=False,
+# no LLM/Jev credentials required. Small per_segment for speed.
+agent/agent_eval:
+  agent_eval:
+    agents: [baseline, type1]
+    per_segment: 3
+    n_ambiguous: 2
+    request_scope: oracle
+    trajectory_file: "dryrun_trajectories_oracle.jsonl"
+    experiment_dir: "C:/Users/ph181/Documents/Repositories/agentic-rag-for-rcm-sys/src/experiments/agent_eval/dryrun_offline_oracle"
+agent/inference:
+  inference:
+    mode: template

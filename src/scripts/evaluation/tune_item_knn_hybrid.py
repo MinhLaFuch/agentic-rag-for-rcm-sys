@@ -15,7 +15,7 @@ from package.evaluation.recommender.analysis.core_inputs import core_inputs
 from package.evaluation.recommender.analysis.global_core_pairs import global_core_pairs
 from package.evaluation.recommender.core.evaluate_recommender import evaluate_recommender
 from package.recommenders import build_interaction_matrix, ItemKNNMatrixRecommender, PopularityMatrixRecommender
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.shared import file_hash
 
 
@@ -24,10 +24,20 @@ def main():
     ap.add_argument("--domain", action="append")
     ap.add_argument("--per-segment", type=int, default=3000, help="Users per segment per tuning/confirmation arm")
     ap.add_argument("--seed", type=int, default=20261103)
-    ap.add_argument("--weights", default="0,0.25,0.5,1,2,4,8")
+    ap.add_argument("--weights", default=None,
+                    help="Comma-separated hybrid weights (default: tuning.item_knn_hybrid.weights from configs/eval/tuning.yaml)")
     ap.add_argument("--all-users", action="store_true", help="Evaluate all validation users with a previously chosen --weights value; no tuning")
     args = ap.parse_args()
-    weights = [float(w) for w in args.weights.split(",")]
+
+    tuning_cfg = load_config("eval/tuning")["tuning"]
+    selection_metric = str(tuning_cfg.get("selection_metric") or "ndcg@10")
+    if args.weights is None:
+        grid = (tuning_cfg.get("item_knn_hybrid") or {}).get("weights") or []
+        if not grid:
+            ap.error("no weight grid: pass --weights or set tuning.item_knn_hybrid.weights")
+        weights = [float(w) for w in grid]
+    else:
+        weights = [float(w) for w in args.weights.split(",")]
     if args.per_segment < 1 or not weights or any(not np.isfinite(w) or w < 0 for w in weights):
         ap.error("positive per-segment and finite nonnegative weights required")
     if args.all_users and len(weights) != 1:
@@ -90,17 +100,20 @@ def main():
                                           sparse_max=sparse_max, progress_every=1000,
                                           evaluation_users=np.array(cohort, dtype=np.int64))
             results[arm][name] = result.to_metrics(0)
-            print(f"[{arm}] {name}: recall@10={result.overall['recall@10']:.6f} ndcg@10={result.overall['ndcg@10']:.6f}", flush=True)
+            print(f"[{arm}] {name}: recall@10={result.overall['recall@10']:.6f} {selection_metric}={result.overall.get(selection_metric, float('nan')):.6f}", flush=True)
         if arm == "tuning":
             # Population-weighted segment means avoid optimizing an artificial
             # equal-segment pooled average dominated by the smaller warm cohort.
             def objective(name):
                 rows = results[arm][name]["by_segment"]
-                return sum(rows[s]["ndcg@10"] * len(pools[s]) for s in pools) / len(population)
+                if selection_metric not in rows[next(iter(rows))]:
+                    raise ValueError(f"selection_metric {selection_metric!r} not in segment metrics")
+                return sum(rows[s][selection_metric] * len(pools[s]) for s in pools) / len(population)
             selected = max((n for n in models if n.startswith("hybrid_")), key=objective)
             print(f"[selected on tuning only] {selected}", flush=True)
     output = save_experiment(next_experiment_dir(paths.experiments_dir / "item_knn_hybrid"),
-        config={"selected_on_tuning": selected, "objective": "population-weighted segment ndcg@10",
+        config={"selected_on_tuning": selected, "objective": f"population-weighted segment {selection_metric}",
+                "selection_metric": selection_metric,
                 "weights": weights, "cohorts": arms, "fit_splits": ["train_core"],
                 "popularity_source": "full pre-validation train; binary unique user-item pairs",
                 "cf_normalization": "per-user max before exclusion", "parameters": vars(args),

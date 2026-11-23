@@ -19,6 +19,9 @@ demo:
   # Số lượng hàng tối đa trong turn history
   max_turn_history_rows: 50
 
+  # Số Session multi-turn tối đa giữ trong LiveBackend._sessions (LRU eviction)
+  max_sessions: 100
+
   # LiveBackend data loading (run_demo.py không --mock)
   eval_on: "validation"              # split nạp dữ liệu: validation | test
   use_prebuilt_corpus: true          # false = build corpus/ItemKNN trong RAM

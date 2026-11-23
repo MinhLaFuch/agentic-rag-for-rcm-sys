@@ -1,5 +1,5 @@
 version: 1
-tag: multi_domain_v2_audit_20261030
+tag: multi_domain
 data_protocol: temporal_train_core
 metadata_policy: historical_static_catalog
 seed: 42

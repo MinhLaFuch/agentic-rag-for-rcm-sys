@@ -1,0 +1,105 @@
+campaign_id: "campaign_002_metric_fixes"
+description: "Parameter grid search: agents x inference_mode x reflect_rounds (post metric-integrity fixes; request_scope=all for oracle coverage)"
+
+dataset:
+  split: "validation"  # validation or test
+  filters:
+    # Chọn data bundle (stage 2-4 artifacts): đúng 1 domain -> bundle tên domain;
+    # tất cả -> bundle merged_name ("multi_domain"); tập con khác bị từ chối.
+    domains: ["Video_Games", "Toys_and_Games", "Electronics"]  # All 3 domains -> multi_domain (thứ tự PHẢI khớp configs/path/domains.yaml — corpus validate source_domains theo thứ tự)
+
+# Parameter grid: auto-generate all combinations
+# This will create 3 agents x 2 inference_modes x 2 reflect_rounds = 12 experiments
+parameter_grid:
+  agents:
+    - ["baseline", "type1"]  # Baseline agents
+    - ["planner"]            # Planner only
+    - ["planner_memory"]     # Planner with memory
+  inference_mode:
+    - "template"  # No LLM for answer (deterministic)
+    - "llm"       # LLM for answer (slower)
+  reflect_rounds:
+    - 0  # No reflection
+    - 1  # 1 reflection round
+    # - 2  # 2 reflection rounds
+  multi_turn:
+    - true   # mọi experiment opt-in multi-turn eval; policy "all" bên dưới chạy hết
+    # Để A/B (có/không multi-turn eval) thì dùng [false, true] — nhân đôi số experiment.
+    # Lưu ý: multi_turn là eval add-on, metrics của nó KHÔNG vào comparisons;
+    # sweep [false, true] chỉ khác nhau ở coverage eval, không phải agent behavior.
+
+# Optional: Add per_segment (applies to all experiments)
+evaluation_config:
+  per_segment: 20  # Requests per (kind, segment)
+  request_scope: "all"  # all = realistic + oracle kinds (constrained/cold_text/exclusion) — exercises exclusion_compliance fixes; ~2x requests vs realistic
+
+# Runtime defaults applied to every experiment's config overlay
+# (per-experiment overrides still go in each experiment's agent_config/evaluation_config)
+default_agents: [baseline, type1, planner, planner_memory]  # used when agent_config.agents is absent
+# Campaign-wide agent_config defaults — merged under every experiment's own
+# agent_config (experiment keys win). jev=true -> Jev judge pass on EVERY run.
+# NOTE: judge calls cost LLM tokens per eligible answer (answer_status=="ok");
+# requires JEV_API_KEY (or TYPESAFE_API_KEY/OPENROUTER_API_KEY) — missing creds
+# -> status "skipped_no_credentials" per run, campaign unaffected. Add
+# max_requests here (e.g. {enabled: true, max_requests: 200}) to cap cost.
+agent_config_defaults:
+  jev: true
+allow_missing_corpus_sources: true   # campaign runs accept prebuilt corpus without raw meta files
+experiment_timeout_seconds: 7200     # per-run subprocess timeout; 7200 because llm planner runs need main eval remainder + multi_turn (<=1800s) + scoring/saving within one subprocess
+
+# Auto-generate comparison pairs: all vs first experiment (baseline)
+comparison_pairs: []
+
+statistical_settings:
+  confidence_level: 0.95
+  bootstrap_samples: 1000
+  paired_comparison: true
+
+# Tương đối experiments_dir (experiments/) — KHÔNG phải CWD. Xem configs/path/data_paths.yaml.
+output_dir: "agent_eval/campaigns/campaign_002"
+
+# Multi-turn conversation eval — per-experiment opt-in via agent_config.multi_turn
+# (true, or a dict like {enabled: true, limits: {...}}; usable in parameter_grid).
+# Campaign policy caps how many runs may execute it:
+#   "never" = nothing runs; "once" = at most one run (first opt-in, else first
+#   experiment's first repetition — legacy default); "all" = every opt-in run.
+#   Ở đây mọi experiment opt-in qua parameter_grid nên "all" = multi-turn eval
+#   cho cả 12 experiment (tốn LLM calls tương ứng — mỗi conversation nhiều turn).
+# Artifacts land at <output_dir>/multi_turn/<exp>_run<N>/multi_turn.json;
+# statuses are reported in campaign_result.json.multi_turn.runs but metrics
+# never enter paired comparisons.
+multi_turn: "all"
+
+# Post-run ablation contrasts — chạy tự động sau khi mọi experiment xong
+# (full runs only; --only subset skips và giữ block cũ). a/b là
+# [agent, experiment_name]: experiment name resolve tới experiment_dir của
+# mọi run thành công (repetition_count > 1 -> nhiều run trong một group,
+# được average trong compare_two_groups). Metrics/bootstrap params vẫn lấy
+# từ configs/agent/ablation.yaml — section này chỉ định nghĩa "so ai với ai".
+# LƯU Ý: experiment names dưới đây là tên do parameter_grid sinh ra — nếu
+# đổi grid (thêm/bớt param hoặc đổi thứ tự) phải cập nhật lại contrasts.
+# Artifacts: <output_dir>/ablation/<contrast_name>/{report.md,comparison.json,
+# comparison.csv,disagreements.jsonl}; statuses trong campaign_result.json.ablation.
+# Phân tích personalized None-aware chuyên sâu vẫn chạy tay bằng
+# scripts/experiments/pairwise_ablation.py.
+ablation:
+  contrasts:
+    # Tác dụng của reflect trên planner_memory (template, reflect 0 vs 1)
+    - name: reflect_effect_planner_memory
+      a: [planner_memory, exp_9_agents_planner_memory_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+    # Tác dụng của reflect trên planner (không memory)
+    - name: reflect_effect_planner
+      a: [planner, exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner, exp_6_agents_planner_inference_mode_template_reflect_rounds_1_multi_turn_True]
+    # Tác dụng của MemoryTool ở reflect=1. kinds loại personalized vì planner
+    # không memory trả task_success=None — phân tích đúng nằm ở pairwise_ablation.py.
+    - name: memory_effect_reflect1
+      a: [planner, exp_6_agents_planner_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      kinds: [similar, exclusion, unanswerable, ambiguous]
+    # Baseline ItemKNN vs full agent (planner_memory reflect=1, template)
+    - name: baseline_vs_full_agent
+      a: [baseline, exp_1_agents_baseline_type1_inference_mode_template_reflect_rounds_0_multi_turn_True]
+      b: [planner_memory, exp_10_agents_planner_memory_inference_mode_template_reflect_rounds_1_multi_turn_True]
+      kinds: [similar, personalized, exclusion]

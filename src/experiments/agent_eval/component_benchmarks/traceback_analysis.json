@@ -1,0 +1,952 @@
+{
+  "method": "scored_row_component_diagnosis",
+  "status": "computed_from_trajectory_diagnostics",
+  "total_requests": 132,
+  "failed_requests": 28,
+  "attributions": [
+    {
+      "request_id": "personalized-sparse-0",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-2",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-4",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-5",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-9",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-11",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-12",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-13",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-14",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-16",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-sparse-18",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-3",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-4",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-11",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-13",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-14",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-15",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-17",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "personalized-warm-18",
+      "agent": "planner",
+      "kind": "personalized",
+      "answer_status": null,
+      "task_success": null,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "exclusion-sparse-5",
+      "agent": "planner",
+      "kind": "exclusion",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [],
+      "implicated_components": [],
+      "tool_failures": {},
+      "first_failing_step": null,
+      "n_steps": 0,
+      "confidence": 0.0
+    },
+    {
+      "request_id": "exclusion-warm-16",
+      "agent": "planner",
+      "kind": "exclusion",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "SearchTool",
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "SearchTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "SearchTool",
+        "error": "query exceeded the time budget. Try narrowing with fewer domains/categories, or add keywords (for SearchTool), or reduce the result limit."
+      },
+      "n_steps": 3,
+      "confidence": 1.0
+    },
+    {
+      "request_id": "exclusion-warm-17",
+      "agent": "planner",
+      "kind": "exclusion",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [],
+      "implicated_components": [],
+      "tool_failures": {},
+      "first_failing_step": null,
+      "n_steps": 0,
+      "confidence": 0.0
+    },
+    {
+      "request_id": "exclusion-warm-18",
+      "agent": "planner",
+      "kind": "exclusion",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [],
+      "implicated_components": [],
+      "tool_failures": {},
+      "first_failing_step": null,
+      "n_steps": 0,
+      "confidence": 0.0
+    },
+    {
+      "request_id": "unanswerable-none-0",
+      "agent": "planner",
+      "kind": "unanswerable",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "FilterTool",
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "FilterTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "FilterTool",
+        "error": "category 'NonExistentCategory999' not found in the catalog. Category must be an exact category name from the catalog (case-sensitive). Use `domain` to filter by domain."
+      },
+      "n_steps": 3,
+      "confidence": 1.0
+    },
+    {
+      "request_id": "unanswerable-none-1",
+      "agent": "planner",
+      "kind": "unanswerable",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "FilterTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "FilterTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "FilterTool",
+        "error": "category 'NonExistentCategory999' not found in the catalog. Category must be an exact category name from the catalog (case-sensitive). Use `domain` to filter by domain."
+      },
+      "n_steps": 1,
+      "confidence": 1.0
+    },
+    {
+      "request_id": "unanswerable-none-2",
+      "agent": "planner",
+      "kind": "unanswerable",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "FilterTool",
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "FilterTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "FilterTool",
+        "error": "category 'NonExistentCategory999' not found in the catalog. Category must be an exact category name from the catalog (case-sensitive). Use `domain` to filter by domain."
+      },
+      "n_steps": 3,
+      "confidence": 1.0
+    },
+    {
+      "request_id": "unanswerable-none-3",
+      "agent": "planner",
+      "kind": "unanswerable",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "RankTool",
+        "error": "`candidates` is empty"
+      },
+      "n_steps": 3,
+      "confidence": 0.667
+    },
+    {
+      "request_id": "unanswerable-none-5",
+      "agent": "planner",
+      "kind": "unanswerable",
+      "answer_status": null,
+      "task_success": false,
+      "implicated_tools": [
+        "SearchTool",
+        "RankTool",
+        "LookupTool"
+      ],
+      "implicated_components": [
+        "executor"
+      ],
+      "tool_failures": {
+        "SearchTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "tool_error": 1
+          }
+        },
+        "RankTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        },
+        "LookupTool": {
+          "total_failures": 1,
+          "error_kinds": {
+            "bad_reference": 1
+          }
+        }
+      },
+      "first_failing_step": {
+        "tool": "SearchTool",
+        "error": "category 'NonExistentCategory999' not found in the catalog. Category must be an exact category name from the catalog (case-sensitive). Use `domain` to filter by domain."
+      },
+      "n_steps": 3,
+      "confidence": 1.0
+    }
+  ],
+  "summary": {
+    "tool_failures": {
+      "RankTool": 24,
+      "LookupTool": 24,
+      "FilterTool": 3,
+      "SearchTool": 2
+    },
+    "component_failures": {
+      "executor": 53
+    },
+    "error_kinds_by_tool": {
+      "RankTool": {
+        "tool_error": 20,
+        "bad_reference": 4
+      },
+      "LookupTool": {
+        "bad_reference": 24
+      },
+      "SearchTool": {
+        "tool_error": 2
+      },
+      "FilterTool": {
+        "tool_error": 3
+      }
+    }
+  },
+  "tool_to_component_map": {
+    "MemoryTool": "memory",
+    "SearchTool": "executor",
+    "FilterTool": "executor",
+    "SimilarTool": "executor",
+    "RankTool": "executor",
+    "LookupTool": "executor"
+  }
+}

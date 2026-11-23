@@ -12,6 +12,17 @@ component_benchmarks:
     executor: "package/evaluation/component/benchmarks/executor_dataset.jsonl"
     grounding: "package/evaluation/component/benchmarks/grounding_dataset.jsonl"
     integration: "package/evaluation/component/benchmarks/integration_dataset.jsonl"
+  # Backlog datasets: case ghi nhận tính năng CHƯA support
+  # (metadata.backlog=true + metadata.limitation). Không nằm trong scored
+  # metrics — thất bại ở đây là expected, không phải regression.
+  # Mặc định KHÔNG chạy (run_backlog: false -> report status skipped_backlog).
+  # Chạy khi cần đo tiến độ: set run_backlog: true, hoặc trực tiếp:
+  #   python -m package.evaluation.component.run --component planner --dataset <path>
+  run_backlog: false
+  backlog_datasets:
+    planner_backlog:
+      component: "planner"   # component CLI dùng để chạy (planner_backlog chỉ là nhãn report)
+      dataset: "package/evaluation/component/benchmarks/planner_dataset_backlog.jsonl"
   configs:
     grounding:
       use_jev: true

@@ -1,0 +1,209 @@
+{
+  "cutoffs": {
+    "cutoff_1": 1617737606134,
+    "cutoff_2": 1651701127817
+  },
+  "timestamps": {
+    "train": {
+      "min": 848336280000,
+      "max": 1617737606134,
+      "n": 48766894
+    },
+    "validation": {
+      "min": 1617737606549,
+      "max": 1651701127817,
+      "n": 7787433
+    },
+    "test": {
+      "min": 1651701131688,
+      "max": 1694625981867,
+      "n": 7511892
+    },
+    "train_le_cutoff1": true,
+    "train_gt_cutoff1_rows": 0,
+    "val_within_cutoffs": true,
+    "val_outside_rows": 0,
+    "test_gt_cutoff2": true,
+    "test_le_cutoff2_rows": 0
+  },
+  "train_dup_pairs": {
+    "rows": 48766894,
+    "unique_pairs": 48694801,
+    "dup_rows": 72093
+  },
+  "train_dup_examples": [
+    {
+      "user_idx": 3916915,
+      "item_idx": 331752,
+      "count": 28
+    },
+    {
+      "user_idx": 707734,
+      "item_idx": 152806,
+      "count": 28
+    },
+    {
+      "user_idx": 2424224,
+      "item_idx": 7452,
+      "count": 19
+    },
+    {
+      "user_idx": 17512533,
+      "item_idx": 1050050,
+      "count": 19
+    },
+    {
+      "user_idx": 2424224,
+      "item_idx": 220,
+      "count": 18
+    }
+  ],
+  "pair_overlap": {
+    "train_unique_pairs": 48694801,
+    "val_unique_pairs": 7779830,
+    "test_unique_pairs": 7503557,
+    "train_val_shared_pairs": 2669,
+    "train_test_shared_pairs": 855,
+    "shared_examples_val": [
+      {
+        "user_idx": 1980,
+        "item_idx": 1050957
+      },
+      {
+        "user_idx": 2344,
+        "item_idx": 2903
+      },
+      {
+        "user_idx": 6824,
+        "item_idx": 1028152
+      },
+      {
+        "user_idx": 10922,
+        "item_idx": 1031321
+      },
+      {
+        "user_idx": 16926,
+        "item_idx": 148201
+      }
+    ]
+  },
+  "per_domain_ts": {
+    "validation": {
+      "Electronics": {
+        "min": 1617737610363,
+        "max": 1651701127817,
+        "n": 5140074
+      },
+      "Toys_and_Games": {
+        "min": 1617737607377,
+        "max": 1651701111870,
+        "n": 2198993
+      },
+      "Video_Games": {
+        "min": 1617737606549,
+        "max": 1651701097048,
+        "n": 448366
+      }
+    },
+    "test": {
+      "Electronics": {
+        "min": 1651701131688,
+        "max": 1694625981867,
+        "n": 4853438
+      },
+      "Toys_and_Games": {
+        "min": 1651701168914,
+        "max": 1694571515517,
+        "n": 2229978
+      },
+      "Video_Games": {
+        "min": 1651701290837,
+        "max": 1694509355529,
+        "n": 428476
+      }
+    }
+  },
+  "cohort": {
+    "rows": 9615658,
+    "segments": {
+      "cold": 4955765,
+      "sparse": 3406470,
+      "warm": 1253423
+    },
+    "eval_on": {
+      "validation": 5096026,
+      "test": 4519632
+    },
+    "history_size_stats": {
+      "min": 0,
+      "max": 2370,
+      "p50": 0.0
+    }
+  },
+  "cohort_history_vs_train": {
+    "n_checked": 1353,
+    "exact_match": 1343,
+    "train_ge_recorded": 1353,
+    "recorded_gt_train": 0,
+    "mean_train": 4.090169992609017,
+    "mean_recorded": 4.08130081300813,
+    "examples": [
+      {
+        "user_id": "AEO4EVW3XMZNO5ACVIRYEEDWBY3Q",
+        "train_pairs": 2,
+        "cohort_history_size": 2
+      },
+      {
+        "user_id": "AEMY2IL654CP6FGEDH6ITKXVNRLQ",
+        "train_pairs": 2,
+        "cohort_history_size": 2
+      },
+      {
+        "user_id": "AHFUTMVYYHNPDACR2LX427J2VQQA",
+        "train_pairs": 1,
+        "cohort_history_size": 1
+      },
+      {
+        "user_id": "AGPUULZPYNI3RKZEO4KNUKCYFSEQ",
+        "train_pairs": 1,
+        "cohort_history_size": 1
+      },
+      {
+        "user_id": "AEPGL4QRHQ5M3FFK2OLXOUZRBEDQ",
+        "train_pairs": 6,
+        "cohort_history_size": 6
+      },
+      {
+        "user_id": "AGP4C3XIMSI2XKNDJPFMOY2ZXRZA",
+        "train_pairs": 2,
+        "cohort_history_size": 2
+      },
+      {
+        "user_id": "AG5WYGYXYHDPAP4P7FDJOARRH4MQ",
+        "train_pairs": 21,
+        "cohort_history_size": 21
+      },
+      {
+        "user_id": "AE2GUZCQHHHBO5WTTDFQB4U6Y3ZA",
+        "train_pairs": 1,
+        "cohort_history_size": 1
+      },
+      {
+        "user_id": "AGL4PNMRXSZNNLSY7E4EVSFFXLQA",
+        "train_pairs": 18,
+        "cohort_history_size": 18
+      },
+      {
+        "user_id": "AH2QYQEAQTYW4XMNKJWE6DVEXVOQ",
+        "train_pairs": 4,
+        "cohort_history_size": 4
+      }
+    ]
+  },
+  "segment_boundaries": {
+    "cold_hist_max": 0,
+    "sparse_hist_min": 1,
+    "sparse_hist_max": 4,
+    "warm_hist_min": 5
+  }
+}

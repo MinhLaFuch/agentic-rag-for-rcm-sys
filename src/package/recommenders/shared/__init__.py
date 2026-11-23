@@ -1,4 +1,4 @@
-"""Shared recommender components used by both runtime and evaluation.
+"""Shared recommender components used by both runtime and offline eval.
 
 This module contains:
 - Recommender base protocol

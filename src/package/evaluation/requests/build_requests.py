@@ -121,6 +121,8 @@ def build_requests(
             relevant = [item for item in held_out if item != exclude_item]
             add("exclusion", segment, user_id=id2user[u], user_idx=u,
                 targets=sorted(item2id[i] for i in relevant),
+                excluded_item_ids=[exclude_item],
+                excluded_categories=[exclude_category] if exclude_category else [],
                 text=templates["exclusion"].format(
                     user_id=id2user[u], k=k,
                     exclude_categories=exclude_category,

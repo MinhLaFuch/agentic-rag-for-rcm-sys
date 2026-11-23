@@ -16,10 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions,
-    create_test_mappings,
-)
+from package.evaluation.component.benchmarks import create_test_interactions, create_test_mappings
 from package.evaluation.multi_turn._schema import Conversation, TurnInput, TurnResult
 from package.evaluation.multi_turn.multi_turn_evaluator import MultiTurnEvaluator
 
@@ -53,7 +50,7 @@ def evaluator():
 # ---------------- dataset lint ----------------
 
 def test_dataset_loads_and_has_11_conversations(conversations):
-    assert len(conversations) == 11
+    assert len(conversations) == 13
     assert all(c.turns for c in conversations)
 
 

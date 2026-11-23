@@ -15,18 +15,30 @@ from ..utils.hardware_info import hardware_info
 
 
 def _source_fingerprint() -> str:
-    """Hash implementation/config sources so runs remain identifiable without Git."""
-    project_root = Path(__file__).resolve().parents[5]
-    files = [project_root / "pyproject.toml"]
+    """Hash implementation/config sources so runs remain identifiable without Git.
+
+    Root is src/ (parents[4]): parents[5] is the repo root where package/,
+    scripts/ and configs/ do NOT exist — the old code silently hashed only
+    pyproject.toml, so code drift was invisible to resume/provenance.
+    """
+    src_root = Path(__file__).resolve().parents[4]
+    repo_root = src_root.parent
+    files = [repo_root / "pyproject.toml"]
     for folder in ("package", "scripts", "configs"):
-        base = project_root / folder
+        base = src_root / folder
         if base.exists():
-            files.extend(path for path in base.rglob("*") if path.suffix in {".py", ".yaml", ".yml"})
+            files.extend(
+                path
+                for path in base.rglob("*")
+                if path.suffix in {".py", ".yaml", ".yml"}
+                and "__pycache__" not in path.parts
+                and path.suffix != ".pyc"
+            )
     digest = hashlib.sha256()
     for path in sorted(set(files)):
         if not path.is_file():
             continue
-        digest.update(path.relative_to(project_root).as_posix().encode("utf-8"))
+        digest.update(path.relative_to(repo_root).as_posix().encode("utf-8"))
         digest.update(b"\0")
         with path.open("rb") as source:
             for chunk in iter(lambda: source.read(1024 * 1024), b""):

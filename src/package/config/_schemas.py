@@ -85,6 +85,28 @@ class AgentEvalMultiTurnConfig(BaseModel):
     )
 
 
+class AgentEvalJevConfig(BaseModel):
+    """Jev LLM-as-judge post-hoc pass inside agent_eval.yaml.
+
+    Runs once per run_agent_eval invocation, after trajectory scoring: every
+    trajectory with ``answer_status == "ok"`` gets its answer judged by Jev
+    (claim-level faithfulness + communication) against the recommended items'
+    corpus metadata. Artifact: ``jev_eval.jsonl`` in the experiment dir.
+    Requires a judge credential (judge.yaml api_key or TYPESAFE_API_KEY /
+    OPENROUTER_API_KEY); missing credentials -> status
+    ``skipped_no_credentials``, never a crash. Each judged answer costs
+    several judge calls — cap with ``max_requests``.
+    """
+
+    model_config = _BASE_CONFIG
+
+    enabled: bool = Field(default=False, description="Run Jev judge over answered trajectories")
+    max_requests: int | None = Field(
+        default=None, gt=0,
+        description="Cap judged answers per run (cost control); null = all eligible",
+    )
+
+
 class AgentEvalConfig(BaseModel):
     """Agent evaluation config from configs/agent/agent_eval.yaml."""
 
@@ -111,6 +133,10 @@ class AgentEvalConfig(BaseModel):
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(default=False, description="Allow missing raw metadata sources")
     campaign_id: str | None = Field(default=None, description="Campaign identifier when run under a campaign (traceability exp -> campaign)")
+    exclude_tools: list[str] = Field(
+        default_factory=list,
+        description="Tool class names excluded from planner/planner_memory toolsets (ablation); empty = full toolset",
+    )
     experiment_dir: str | None = Field(
         default=None,
         description="Explicit experiment output dir; null allocates the next exp_NNN under outputs.agent_eval",
@@ -122,6 +148,10 @@ class AgentEvalConfig(BaseModel):
     multi_turn: AgentEvalMultiTurnConfig = Field(
         default_factory=AgentEvalMultiTurnConfig,
         description="Optional multi-turn conversation evaluation step",
+    )
+    jev: AgentEvalJevConfig = Field(
+        default_factory=AgentEvalJevConfig,
+        description="Optional Jev LLM-as-judge post-hoc pass over answered trajectories",
     )
 
     @field_validator("agents")
@@ -154,6 +184,15 @@ class AgentEvalConfig(BaseModel):
         return v
 
 
+class LLMPricing(BaseModel):
+    """Token pricing for cost metrics; null rates mean the model is unpriced."""
+
+    model_config = _BASE_CONFIG
+
+    prompt_usd_per_1m_tokens: float | None = Field(default=None, ge=0.0)
+    completion_usd_per_1m_tokens: float | None = Field(default=None, ge=0.0)
+
+
 class LLMConfig(BaseModel):
     """LLM config from configs/agent/llm.yaml."""
 
@@ -164,6 +203,7 @@ class LLMConfig(BaseModel):
     base_url: str = Field(default="", description="Base URL for OpenAI-compatible endpoint")
     api_key: str = Field(default="", description="API key (can be empty for local servers)")
     timeout_seconds: float = Field(gt=0.0, description="Request timeout in seconds")
+    pricing: LLMPricing | None = Field(default=None, description="USD per 1M tokens; None = cost unmeasurable")
 
 
 class MemoryConfig(BaseModel):
@@ -288,6 +328,9 @@ class BaselinesConfig(BaseModel):
         description="Opt-in HybridItemKNNRecommender weight (CF + full pre-target-history popularity)")
     item_knn: ItemKnnBaselineConfig = Field(description="ItemKNN baseline params")
     bpr_mf: BprMfBaselineConfig = Field(description="BPR-MF baseline params")
+    eval_user_sample: int = Field(
+        default=0, ge=0,
+        description="Cap evaluated target-bearing users (seeded sample, same for all models); 0 = all")
 
 
 class ItemKnnBaselineConfig(BaseModel):
@@ -449,6 +492,11 @@ class TuningBprMfGrid(BaseModel):
     epochs: list[int] = Field(description="epochs grid values")
 
 
+class TuningItemKnnHybridGrid(BaseModel):
+    model_config = _BASE_CONFIG
+    weights: list[float] = Field(description="hybrid_weight grid for HybridItemKNNRecommender")
+
+
 class TuningConfig(BaseModel):
     """Tuning config from configs/eval/tuning.yaml."""
 
@@ -458,6 +506,9 @@ class TuningConfig(BaseModel):
     run_final_test: bool = Field(description="Refit winner on train+validation and evaluate test once")
     models: list[str] = Field(description="Default model list")
     item_knn: TuningItemKnnGrid = Field(description="ItemKNN tuning grid")
+    item_knn_hybrid: TuningItemKnnHybridGrid | None = Field(
+        default=None, description="ItemKNN hybrid weight grid (tune_item_knn_hybrid.py)"
+    )
     bpr_mf: TuningBprMfGrid = Field(description="BPR-MF tuning grid")
 
 
@@ -474,6 +525,29 @@ class ComponentBenchmarksConfig(BaseModel):
         default_factory=dict,
         description="Component name -> benchmark dataset path (src-relative), used by _run_all.py",
     )
+    run_backlog: bool = Field(
+        default=False,
+        description="Whether to run backlog (known-unsupported) datasets; false -> skipped_backlog",
+    )
+    backlog_datasets: dict[str, dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Label -> {component, dataset} entries for backlog benchmark datasets",
+    )
+
+
+class DenseRetrievalConfig(BaseModel):
+    """Dense retrieval config from configs/eval/dense_retrieval.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    enabled: bool = Field(description="Wire vector_store/query_encoder into SearchTool via build_tools")
+    artifacts_dir: str | None = Field(
+        default=None, description="src-relative dir with manifest.json/vectors.npy/valid.npy/item_ids.json"
+    )
+    encoder_lock: str | None = Field(
+        default=None, description="src-relative encoder lock json from build_semantic_embeddings.py pin"
+    )
+    rrf_k: int = Field(gt=0, description="RRF fusion constant for BM25+dense hybrid search")
 
 
 class RankingDiagnosticsConfig(BaseModel):
@@ -542,6 +616,7 @@ class DemoConfig(BaseModel):
     default_language: str = Field(description="vi | en")
     max_recent_items_display: int = Field(gt=0)
     max_turn_history_rows: int = Field(gt=0)
+    max_sessions: int = Field(gt=0, description="Max multi-turn Sessions kept by LiveBackend (LRU)")
     eval_on: str = Field(description="validation | test — split loaded by LiveBackend")
     use_prebuilt_corpus: bool = Field(description="Load prebuilt corpus instead of building in RAM")
     allow_missing_corpus_sources: bool = Field(description="Accept prebuilt corpus when raw meta files are missing")
@@ -585,7 +660,7 @@ class DemoConfig(BaseModel):
 
 
 class CampaignExperimentFileConfig(BaseModel):
-    """One experiment entry inside configs/evaluation/campaign.yaml."""
+    """One experiment entry inside configs/eval/campaign.yaml."""
 
     model_config = _BASE_CONFIG
 
@@ -600,7 +675,7 @@ class CampaignExperimentFileConfig(BaseModel):
 
 
 class CampaignFileConfig(BaseModel):
-    """configs/evaluation/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
+    """configs/eval/campaign.yaml — shape validated by load_config; consumed by CampaignConfig.from_dict."""
 
     model_config = _BASE_CONFIG
 
@@ -616,9 +691,17 @@ class CampaignFileConfig(BaseModel):
     default_agents: list[str] = Field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
     )
+    agent_config_defaults: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Campaign-wide agent_config defaults merged under each experiment's own agent_config",
+    )
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = Field(default="once", description="Multi-turn eval mode: once | never | all")
+    ablation: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Optional post-run ablation contrasts; a/b reference experiment names",
+    )
 
     @field_validator("multi_turn")
     @classmethod
@@ -670,8 +753,52 @@ class ScoringConfig(BaseModel):
 
     model_config = _BASE_CONFIG
 
-    mode: str = Field(default="baseline", description="baseline | hybrid")
+    mode: str = Field(default="baseline", description="baseline | hybrid | learned")
     hybrid_popularity_weight: float = Field(default=4.0, ge=0, description="Hybrid scorer popularity weight")
+    learned_weights: list[float] | None = Field(
+        default=None, min_length=3, max_length=3,
+        description="LearnedScorer affine weights [w_pop, w_cf, w_bias] on per-request "
+                    "min-max-normalised signals; null = LearnedScorer.DEFAULT_WEIGHTS")
+
+
+class PlannerPromptsConfig(BaseModel):
+    """Planner LLM prompts from configs/agent/prompts.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    system_prompt: str = Field(description="Planner system prompt template")
+    retry_notice: str = Field(description="User message appended when the plan reply is not valid JSON")
+    reflect_notice: str = Field(description="User message sent with the step report when plan-reflect triggers")
+
+
+class InferencePromptsConfig(BaseModel):
+    """Inference composer LLM prompts from configs/agent/prompts.yaml."""
+
+    model_config = _BASE_CONFIG
+
+    system_prompt: str = Field(description="Compose system prompt template")
+    retry_notice: str = Field(description="User message appended on compose retry")
+
+
+class AgentReplyTextsConfig(BaseModel):
+    """Fixed user-facing reply texts from configs/agent/reply_texts.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    no_result_text: str = Field(description="Fallback reply when no items were retrieved")
+    tool_error_text: str = Field(description="Fallback reply when tools errored")
+    ok_header: str = Field(description="Header for fully successful replies")
+    partial_header: str = Field(description="Header for partially failed replies")
+    id_only_note: str = Field(description="Note appended when candidate ids lack titles")
+
+
+class AgentPromptsConfig(BaseModel):
+    """LLM prompt strings from configs/agent/prompts.yaml (no wrapper key)."""
+
+    model_config = _BASE_CONFIG
+
+    planner: PlannerPromptsConfig
+    inference: InferencePromptsConfig
 
 
 class JudgeConfig(BaseModel):
@@ -706,6 +833,8 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
 
     config_map = {
         "agent/agent": ("agent", AgentConfig),
+        "agent/prompts": (None, AgentPromptsConfig),
+        "agent/reply_texts": (None, AgentReplyTextsConfig),
         "agent/agent_eval": ("agent_eval", AgentEvalConfig),
         "agent/demo": ("demo", DemoConfig),
         "agent/llm": (None, LLMConfig),
@@ -722,10 +851,11 @@ def validate_config(name: str, config_dict: dict[str, Any]) -> dict[str, Any]:
         "eval/memory_utility": ("memory_utility", MemoryUtilityConfig),
         "eval/tuning": ("tuning", TuningConfig),
         "eval/component_benchmarks": ("component_benchmarks", ComponentBenchmarksConfig),
+        "eval/dense_retrieval": ("dense_retrieval", DenseRetrievalConfig),
         "eval/judge": (None, JudgeConfig),
         "eval/ranking_diagnostics": ("ranking_diagnostics", RankingDiagnosticsConfig),
         "data/split": ("split", SplitConfig),
-        "evaluation/campaign": (None, CampaignFileConfig),  # No key wrapper
+        "eval/campaign": (None, CampaignFileConfig),  # No key wrapper
     }
 
     if name not in config_map:

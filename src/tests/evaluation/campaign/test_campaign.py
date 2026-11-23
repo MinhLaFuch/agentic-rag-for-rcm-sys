@@ -544,12 +544,12 @@ def test_unpaired_or_disabled_statistics_skip_delta_ci():
 
 
 def test_repo_campaign_yaml_still_loads_via_config_system():
-    """Regression: configs/evaluation/campaign.yaml parses identically through load_config."""
+    """Regression: configs/eval/campaign.yaml parses identically through load_config."""
     from package.config import CONFIG_DIR
 
-    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "eval" / "campaign.yaml")
 
-    assert campaign.campaign_id == "campaign_001_parameter_grid"
+    assert campaign.campaign_id == "campaign_002_metric_fixes"
     assert campaign.statistical_settings["confidence_level"] == 0.95
     assert len(campaign.expand_parameter_grid()) == 12  # 3 agents x 2 modes x 2 reflect_rounds
 
@@ -558,12 +558,12 @@ def test_campaign_config_rejects_unknown_keys(tmp_path):
     """configs/-style campaign files are schema-validated with extra=forbid."""
     from package.config.load_config import ConfigError, load_config
 
-    cfg_dir = tmp_path / "evaluation"
+    cfg_dir = tmp_path / "eval"
     cfg_dir.mkdir()
     (cfg_dir / "campaign.yaml").write_text('campaign_id: "x"\nbogus_key: 1\n', encoding="utf-8")
 
     with pytest.raises(ConfigError):
-        load_config("evaluation/campaign", config_dir=tmp_path)
+        load_config("eval/campaign", config_dir=tmp_path)
 
 
 def test_campaign_config_overlay_is_honored(tmp_path, monkeypatch):
@@ -572,12 +572,12 @@ def test_campaign_config_overlay_is_honored(tmp_path, monkeypatch):
 
     overlay = tmp_path / "overlay.yaml"
     overlay.write_text(
-        'evaluation/campaign:\n  output_dir: "agent_eval/campaigns/overlaid_test"\n',
+        'eval/campaign:\n  output_dir: "agent_eval/campaigns/overlaid_test"\n',
         encoding="utf-8",
     )
     monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay))
 
-    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "evaluation" / "campaign.yaml")
+    campaign = CampaignConfig.from_yaml(CONFIG_DIR / "eval" / "campaign.yaml")
 
     assert campaign.output_dir == "agent_eval/campaigns/overlaid_test"
 
@@ -714,3 +714,108 @@ def test_experiment_run_roundtrip_includes_experiment_dir():
     old = run.to_dict()
     del old["experiment_dir"]
     assert ExperimentRun.from_dict(old).experiment_dir == ""
+
+
+# --- LLM preflight ---------------------------------------------------------
+
+def _preflight_runner(**kwargs):
+    return CampaignRunner(CampaignConfig(campaign_id="pf", **kwargs))
+
+
+def test_preflight_skipped_for_offline_experiments(monkeypatch):
+    """baseline-only + template inference never touches the LLM provider."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    called = []
+    import package.evaluation.campaign.campaign_runner as cr
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: called.append(cfg) or None)
+    exp = ExperimentConfig(
+        name="off", agent_config={"agents": ["baseline"], "inference_mode": "template"}
+    )
+    _preflight_runner()._preflight_llm([exp])
+    assert called == []
+
+
+def test_preflight_needs_llm_for_type1_under_llm_mode(monkeypatch):
+    """type1 with effective inference.mode=llm (base yaml default) needs LLM."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    exp = ExperimentConfig(name="t1", agent_config={"agents": ["type1"]})
+    runner = _preflight_runner()
+    # No LLM configured in test env -> build/health fails -> SystemExit.
+    with pytest.raises(SystemExit, match="LLM preflight failed"):
+        runner._preflight_llm([exp])
+
+
+def test_preflight_ok_when_health_check_passes(monkeypatch, capsys):
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    import package.evaluation.campaign.campaign_runner as cr
+
+    class _FakeLLM:
+        def complete(self, messages, **kwargs):
+            return None
+
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: _FakeLLM())
+    exp = ExperimentConfig(name="pl", agent_config={"agents": ["planner"]})
+    _preflight_runner()._preflight_llm([exp])
+    assert "LLM preflight OK" in capsys.readouterr().out
+
+
+def test_preflight_respects_experiment_inference_override(monkeypatch):
+    """inference_mode=template on the experiment cancels the llm base default."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    called = []
+    import package.evaluation.campaign.campaign_runner as cr
+    monkeypatch.setattr(cr, "build_llm_provider", lambda cfg: called.append(cfg) or None)
+    exp = ExperimentConfig(
+        name="tpl", agent_config={"agents": ["type1", "baseline"], "inference_mode": "template"}
+    )
+    _preflight_runner()._preflight_llm([exp])
+    assert called == []
+
+
+def test_preflight_jev_fails_without_credentials(monkeypatch):
+    """Jev enabled + no credential -> SystemExit before any experiment runs."""
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    for var in ("JEV_API_KEY", "TYPESAFE_API_KEY", "OPENROUTER_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    # _preflight_jev imports the symbol lazily from the package -> patch there.
+    import package.evaluation.judge as judge_pkg
+    monkeypatch.setattr(judge_pkg, "jev_credentials_configured", lambda: False)
+    runner = _preflight_runner(agent_config_defaults={"jev": True})
+    exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
+    with pytest.raises(SystemExit, match="Jev preflight failed"):
+        runner._preflight_jev([exp])
+
+
+def test_preflight_jev_ok_with_credentials(monkeypatch, capsys):
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    import package.evaluation.judge as judge_pkg
+    monkeypatch.setattr(judge_pkg, "jev_credentials_configured", lambda: True)
+    runner = _preflight_runner(agent_config_defaults={"jev": True})
+    exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
+    runner._preflight_jev([exp])
+    assert "Jev preflight OK" in capsys.readouterr().out
+
+
+def test_preflight_jev_silent_when_disabled(monkeypatch, capsys):
+    monkeypatch.delenv("CAMPAIGN_SKIP_LLM_PREFLIGHT", raising=False)
+    runner = _preflight_runner()
+    exp = ExperimentConfig(name="e1", agent_config={"agents": ["baseline"], "inference_mode": "template"})
+    runner._preflight_jev([exp])
+    assert capsys.readouterr().out == ""
+
+
+def test_campaign_config_next_version():
+    """next_version bumps the first digit group of campaign_id + output_dir."""
+    cfg = CampaignConfig(
+        campaign_id="campaign_002_metric_fixes",
+        output_dir="agent_eval/campaigns/campaign_002",
+    )
+    v1 = cfg.next_version()
+    assert v1.campaign_id == "campaign_003_metric_fixes"
+    assert v1.output_dir == "agent_eval/campaigns/campaign_003"
+    # Original untouched (returns a copy); multi-bump works for rerun lookup.
+    assert cfg.campaign_id == "campaign_002_metric_fixes"
+    assert cfg.next_version(times=2).campaign_id == "campaign_004_metric_fixes"
+    # No digit group -> ValueError.
+    with pytest.raises(ValueError):
+        CampaignConfig(campaign_id="abc", output_dir="out").next_version()

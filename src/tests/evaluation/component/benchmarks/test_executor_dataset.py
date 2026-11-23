@@ -9,10 +9,7 @@ import pytest
 
 from package.evaluation.component._loader import load_cases
 from package.evaluation.component.benchmarks.executor_benchmark import ExecutorBenchmark
-from package.evaluation.component.benchmarks.memory_correctness_setup import (
-    create_test_interactions,
-    create_test_mappings,
-)
+from package.evaluation.component.benchmarks import create_test_interactions, create_test_mappings
 
 DATASET = (
     Path(__file__).parents[4]
@@ -44,7 +41,7 @@ def _ids_in_spec(spec: dict) -> list[str]:
 
 
 def test_dataset_loads(cases):
-    assert len(cases) == 18
+    assert len(cases) == 22
 
 
 def test_every_case_has_num_steps_and_provenance(cases):

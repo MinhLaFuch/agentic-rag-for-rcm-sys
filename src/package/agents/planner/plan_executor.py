@@ -7,23 +7,16 @@ from typing import Any
 from ...api import LLMMessage, LLMProvider
 from ...api import LLMProviderError
 from ...tools.base import Tool
+from ...config.load_config import load_config
 from ._helper import _blocks_reflect, _compute_execution_quality, _extract_plan, _invented_ids, _is_quality_improvement, _reflect_problem, _resolve_refs, _resolve_session_refs_only, _simplify_args_for_log, _step_report, _summarize_output, _unknown_args
 from .._limits import get_agent_limits, get_memory_limits
-from ._prompt import SYSTEM_PROMPT
 from ..toolkit import build_tool_prompt
 from ..session import Session
 
-RETRY_NOTICE = (
-    "Your previous reply was rejected: {error}\n"
-    "Reply again with ONLY the JSON object described in the system message."
-)
-
-REFLECT_NOTICE = (
-    "Your plan was executed, but {problem}\n"
-    "Steps that ran (a failed step also skips every step that references it):\n{report}\n"
-    "Reply again with the COMPLETE corrected plan as ONLY the JSON object described in the system message. "
-    "Change only what is wrong and keep every rule: never invent ids, and references may only use fields listed under `returns`."
-)
+_planner_prompts = load_config("agent/prompts")["planner"]
+SYSTEM_PROMPT = _planner_prompts["system_prompt"]
+RETRY_NOTICE = _planner_prompts["retry_notice"]
+REFLECT_NOTICE = _planner_prompts["reflect_notice"]
 
 
 class PlanExecutor:
@@ -213,8 +206,8 @@ class PlanExecutor:
                 items = data.get("items", [])
                 shown_items.extend([i.get("item_id") for i in items if isinstance(i, dict) and "item_id" in i])
 
-            # FilterTool/SearchTool provide candidates
-            if tool_name in ("FilterTool", "SearchTool"):
+            # FilterTool/SearchTool/SimilarTool provide candidates
+            if tool_name in ("FilterTool", "SearchTool", "SimilarTool"):
                 step_candidates = data.get("candidates", [])
                 candidates.extend(step_candidates)
 

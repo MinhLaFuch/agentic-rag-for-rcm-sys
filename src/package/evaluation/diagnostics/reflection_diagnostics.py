@@ -58,11 +58,14 @@ def reflection_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
         # constraint_blind_spot_rate: for constrained/cold_text with recommendations,
         # rate of constraint_satisfaction < 1 with reflections == 0
         if kind in ORACLE_KINDS:
-            has_rec = [r for r in group if r.get("n_recommended", 0) > 0]
+            # only kinds with measurable constraint_satisfaction (constrained/cold_text);
+            # exclusion is oracle too but scores exclusion_compliance instead -> stays None
+            has_rec = [r for r in group
+                       if r.get("n_recommended", 0) > 0 and r.get("constraint_satisfaction") is not None]
             if has_rec:
                 blind_spots = [
                     r for r in has_rec
-                    if r.get("constraint_satisfaction", 1.0) < 1.0 and r.get("reflections", 0) == 0
+                    if r["constraint_satisfaction"] < 1.0 and r.get("reflections", 0) == 0
                 ]
                 kind_data["constraint_blind_spot_rate"] = len(blind_spots) / len(has_rec)
             else:

@@ -1,0 +1,1093 @@
+{
+  "contrast": "reflect_effect_planner_memory",
+  "agent_a": "planner_memory",
+  "agent_b": "planner_memory",
+  "group_a": "pmem_tmpl_r0",
+  "group_b": "pmem_tmpl_r1",
+  "k": 10,
+  "bootstrap_resamples": 10000,
+  "confidence": 0.95,
+  "results": {
+    "similar/sparse": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0125,
+        "mean_b": 0.0125,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0123151194370365,
+        "mean_b": 0.0123151194370365,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 8.094649999999456,
+        "mean_b": 7.5046000000002095,
+        "diff": -0.5900499999992466,
+        "ci_lower": -1.5906999999991966,
+        "ci_upper": 0.3459499999997206,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 122.0,
+        "mean_b": 121.4,
+        "diff": -0.5999999999999943,
+        "ci_lower": -6.5,
+        "ci_upper": 4.55,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "similar/warm": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 8.237599999999293,
+        "mean_b": 7.60779999999977,
+        "diff": -0.6297999999995234,
+        "ci_lower": -1.9767999999985477,
+        "ci_upper": 0.318050000000585,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 120.2,
+        "mean_b": 119.35,
+        "diff": -0.8500000000000085,
+        "ci_lower": -5.95,
+        "ci_upper": 3.5,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "personalized/sparse": {
+      "task_success": {
+        "mean_a": 0.65,
+        "mean_b": 1.0,
+        "diff": 0.35,
+        "ci_lower": 0.15,
+        "ci_upper": 0.55,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.65,
+        "mean_b": 0.75,
+        "diff": 0.09999999999999998,
+        "ci_lower": -0.2,
+        "ci_upper": 0.4,
+        "n": 20,
+        "mcnemar": {
+          "b": 4.0,
+          "c": 6.0,
+          "p": 1.0
+        }
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.25,
+        "diff": 0.25,
+        "ci_lower": 0.1,
+        "ci_upper": 0.45,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 9.210450000000492,
+        "mean_b": 11.296199999999953,
+        "diff": 2.085749999999461,
+        "ci_lower": 0.1099499999992986,
+        "ci_upper": 4.161599999999817,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 174.2,
+        "mean_b": 204.3,
+        "diff": 30.100000000000023,
+        "ci_lower": -11.45,
+        "ci_upper": 75.1,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 13
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "personalized/warm": {
+      "task_success": {
+        "mean_a": 0.45,
+        "mean_b": 1.0,
+        "diff": 0.55,
+        "ci_lower": 0.35,
+        "ci_upper": 0.75,
+        "n": 20,
+        "mcnemar": {
+          "b": 0.0,
+          "c": 11.0,
+          "p": 0.01
+        }
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.45,
+        "mean_b": 0.4,
+        "diff": -0.04999999999999999,
+        "ci_lower": -0.35,
+        "ci_upper": 0.25,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.6,
+        "diff": 0.6,
+        "ci_lower": 0.4,
+        "ci_upper": 0.8,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 10.090599999999176,
+        "mean_b": 14.33515000000043,
+        "diff": 4.244550000001254,
+        "ci_lower": 2.3164000000011584,
+        "ci_upper": 6.157900000001973,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 208.6,
+        "mean_b": 280.35,
+        "diff": 71.75000000000003,
+        "ci_lower": 29.75,
+        "ci_upper": 116.15,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 9
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "ambiguous/none": {
+      "task_success": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "recall@10": {
+        "n": 0
+      },
+      "ndcg@10": {
+        "n": 0
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 1.0,
+        "mean_b": 1.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "llm_latency_seconds": {
+        "mean_a": 6.606833333333877,
+        "mean_b": 5.453166666667433,
+        "diff": -1.1536666666664441,
+        "ci_lower": -2.1146666666657743,
+        "ci_upper": -0.24233333333177143,
+        "n": 6
+      },
+      "completion_tokens": {
+        "mean_a": 34.0,
+        "mean_b": 29.5,
+        "diff": -4.5,
+        "ci_lower": -13.666666666666666,
+        "ci_upper": 4.333333333333333,
+        "n": 6
+      },
+      "answer_fallback": {
+        "n": 0
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      }
+    },
+    "exclusion/sparse": {
+      "task_success": {
+        "mean_a": 0.8,
+        "mean_b": 0.9,
+        "diff": 0.09999999999999998,
+        "ci_lower": -0.15,
+        "ci_upper": 0.35,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 13
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 13
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.8,
+        "mean_b": 0.6,
+        "diff": -0.20000000000000007,
+        "ci_lower": -0.5,
+        "ci_upper": 0.15,
+        "n": 20,
+        "mcnemar": {
+          "b": 8.0,
+          "c": 4.0,
+          "p": 1.0
+        }
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.35,
+        "diff": 0.35,
+        "ci_lower": 0.15,
+        "ci_upper": 0.55,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 27.71415000000052,
+        "mean_b": 23.995300000000135,
+        "diff": -3.7188500000003835,
+        "ci_lower": -9.515750000000844,
+        "ci_upper": 1.414000000001033,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 745.85,
+        "mean_b": 713.55,
+        "diff": -32.30000000000007,
+        "ci_lower": -121.75,
+        "ci_upper": 55.05,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 14
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "exclusion/warm": {
+      "task_success": {
+        "mean_a": 0.9,
+        "mean_b": 1.0,
+        "diff": 0.09999999999999998,
+        "ci_lower": 0.0,
+        "ci_upper": 0.25,
+        "n": 20
+      },
+      "recall@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 8
+      },
+      "ndcg@10": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 8
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.95,
+        "mean_b": 0.8,
+        "diff": -0.1499999999999999,
+        "ci_lower": -0.35,
+        "ci_upper": 0.05,
+        "n": 20
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 0.2,
+        "diff": 0.2,
+        "ci_lower": 0.05,
+        "ci_upper": 0.4,
+        "n": 20
+      },
+      "llm_latency_seconds": {
+        "mean_a": 32.95470000000059,
+        "mean_b": 28.430300000000717,
+        "diff": -4.524399999999876,
+        "ci_lower": -12.272899999998845,
+        "ci_upper": 3.3373499999997875,
+        "n": 20
+      },
+      "completion_tokens": {
+        "mean_a": 708.95,
+        "mean_b": 694.5,
+        "diff": -14.450000000000045,
+        "ci_lower": -154.4,
+        "ci_upper": 143.5,
+        "n": 20
+      },
+      "answer_fallback": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 18
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 20
+      }
+    },
+    "unanswerable/none": {
+      "task_success": {
+        "mean_a": 0.0,
+        "mean_b": 1.0,
+        "diff": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0,
+        "n": 6
+      },
+      "recall@10": {
+        "n": 0
+      },
+      "ndcg@10": {
+        "n": 0
+      },
+      "constraint_satisfaction": {
+        "n": 0
+      },
+      "first_attempt_ok": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "reflections": {
+        "mean_a": 0.0,
+        "mean_b": 1.0,
+        "diff": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0,
+        "n": 6
+      },
+      "llm_latency_seconds": {
+        "mean_a": 6.703000000000126,
+        "mean_b": 13.348666666666153,
+        "diff": 6.645666666666027,
+        "ci_lower": 5.6478333333337405,
+        "ci_upper": 7.69016666666721,
+        "n": 6
+      },
+      "completion_tokens": {
+        "mean_a": 90.0,
+        "mean_b": 160.0,
+        "diff": 70.0,
+        "ci_lower": 41.166666666666664,
+        "ci_upper": 115.16666666666667,
+        "n": 6
+      },
+      "answer_fallback": {
+        "n": 0
+      },
+      "inference_latency_seconds": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      },
+      "inference_completion_tokens": {
+        "mean_a": 0.0,
+        "mean_b": 0.0,
+        "diff": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n": 6
+      }
+    },
+    "all_kinds": {
+      "similar": {
+        "task_success": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "recall@10": {
+          "mean_a": 0.00625,
+          "mean_b": 0.00625,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "ndcg@10": {
+          "mean_a": 0.00615755971851825,
+          "mean_b": 0.00615755971851825,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 8.166124999999374,
+          "mean_b": 7.55619999999999,
+          "diff": -0.6099249999993841,
+          "ci_lower": -1.4365499999985332,
+          "ci_upper": 0.08659999999945285,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 121.1,
+          "mean_b": 120.375,
+          "diff": -0.7249999999999943,
+          "ci_lower": -4.45,
+          "ci_upper": 2.675,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "personalized": {
+        "task_success": {
+          "mean_a": 0.55,
+          "mean_b": 1.0,
+          "diff": 0.44999999999999996,
+          "ci_lower": 0.3,
+          "ci_upper": 0.6,
+          "n": 40,
+          "mcnemar": {
+            "b": 0.0,
+            "c": 18.0,
+            "p": 0.001
+          }
+        },
+        "recall@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "ndcg@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.55,
+          "mean_b": 0.575,
+          "diff": 0.02499999999999991,
+          "ci_lower": -0.2,
+          "ci_upper": 0.225,
+          "n": 40,
+          "mcnemar": {
+            "b": 9.0,
+            "c": 10.0,
+            "p": 1.0
+          }
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.425,
+          "diff": 0.425,
+          "ci_lower": 0.275,
+          "ci_upper": 0.575,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 9.650524999999835,
+          "mean_b": 12.815675000000192,
+          "diff": 3.1651500000003576,
+          "ci_lower": 1.7377750000010566,
+          "ci_upper": 4.618500000000677,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 191.4,
+          "mean_b": 242.325,
+          "diff": 50.92499999999998,
+          "ci_lower": 20.025,
+          "ci_upper": 83.225,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 22
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "ambiguous": {
+        "task_success": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "recall@10": {
+          "n": 0
+        },
+        "ndcg@10": {
+          "n": 0
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "llm_latency_seconds": {
+          "mean_a": 6.606833333333877,
+          "mean_b": 5.453166666667433,
+          "diff": -1.1536666666664441,
+          "ci_lower": -2.1146666666657743,
+          "ci_upper": -0.24233333333177143,
+          "n": 6
+        },
+        "completion_tokens": {
+          "mean_a": 34.0,
+          "mean_b": 29.5,
+          "diff": -4.5,
+          "ci_lower": -13.666666666666666,
+          "ci_upper": 4.333333333333333,
+          "n": 6
+        },
+        "answer_fallback": {
+          "n": 0
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        }
+      },
+      "exclusion": {
+        "task_success": {
+          "mean_a": 0.85,
+          "mean_b": 0.95,
+          "diff": 0.09999999999999998,
+          "ci_lower": -0.025,
+          "ci_upper": 0.225,
+          "n": 40
+        },
+        "recall@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 21
+        },
+        "ndcg@10": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 21
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.875,
+          "mean_b": 0.7,
+          "diff": -0.17500000000000004,
+          "ci_lower": -0.375,
+          "ci_upper": 0.025,
+          "n": 40,
+          "mcnemar": {
+            "b": 12.0,
+            "c": 5.0,
+            "p": 1.0
+          }
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 0.275,
+          "diff": 0.275,
+          "ci_lower": 0.15,
+          "ci_upper": 0.425,
+          "n": 40
+        },
+        "llm_latency_seconds": {
+          "mean_a": 30.334425000000557,
+          "mean_b": 26.212800000000424,
+          "diff": -4.121625000000133,
+          "ci_lower": -8.949799999999778,
+          "ci_upper": 0.6135749999990366,
+          "n": 40
+        },
+        "completion_tokens": {
+          "mean_a": 727.4,
+          "mean_b": 704.025,
+          "diff": -23.375,
+          "ci_lower": -108.15,
+          "ci_upper": 67.375,
+          "n": 40
+        },
+        "answer_fallback": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 32
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 40
+        }
+      },
+      "unanswerable": {
+        "task_success": {
+          "mean_a": 0.0,
+          "mean_b": 1.0,
+          "diff": 1.0,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "n": 6
+        },
+        "recall@10": {
+          "n": 0
+        },
+        "ndcg@10": {
+          "n": 0
+        },
+        "constraint_satisfaction": {
+          "n": 0
+        },
+        "first_attempt_ok": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "reflections": {
+          "mean_a": 0.0,
+          "mean_b": 1.0,
+          "diff": 1.0,
+          "ci_lower": 1.0,
+          "ci_upper": 1.0,
+          "n": 6
+        },
+        "llm_latency_seconds": {
+          "mean_a": 6.703000000000126,
+          "mean_b": 13.348666666666153,
+          "diff": 6.645666666666027,
+          "ci_lower": 5.6478333333337405,
+          "ci_upper": 7.69016666666721,
+          "n": 6
+        },
+        "completion_tokens": {
+          "mean_a": 90.0,
+          "mean_b": 160.0,
+          "diff": 70.0,
+          "ci_lower": 41.166666666666664,
+          "ci_upper": 115.16666666666667,
+          "n": 6
+        },
+        "answer_fallback": {
+          "n": 0
+        },
+        "inference_latency_seconds": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        },
+        "inference_completion_tokens": {
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "diff": 0.0,
+          "ci_lower": 0.0,
+          "ci_upper": 0.0,
+          "n": 6
+        }
+      }
+    },
+    "variance": {
+      "note": "Only 1 run per group, cannot compute variance"
+    },
+    "n_pairs": 132
+  }
+}

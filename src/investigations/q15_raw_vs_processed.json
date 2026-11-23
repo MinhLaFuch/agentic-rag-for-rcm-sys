@@ -1,0 +1,27 @@
+{
+  "method": "meta_flags.parquet (raw meta scan) JOIN corpus items/item_categories on Domain::ASIN",
+  "by_domain": {
+    "Electronics": {
+      "meta_rows": 1610012,
+      "meta_has_categories_pct": 92.022,
+      "corpus_has_categories_pct": 92.022,
+      "meta_has_cat_but_corpus_missing": 0,
+      "meta_missing_cat_but_corpus_has": 0
+    },
+    "Toys_and_Games": {
+      "meta_rows": 890874,
+      "meta_has_categories_pct": 90.015,
+      "corpus_has_categories_pct": 90.017,
+      "meta_has_cat_but_corpus_missing": 0,
+      "meta_missing_cat_but_corpus_has": 0
+    },
+    "Video_Games": {
+      "meta_rows": 137269,
+      "meta_has_categories_pct": 90.794,
+      "corpus_has_categories_pct": 90.799,
+      "meta_has_cat_but_corpus_missing": 0,
+      "meta_missing_cat_but_corpus_has": 0
+    }
+  },
+  "note": "corpus has_cat = item has >=1 item_categories row"
+}

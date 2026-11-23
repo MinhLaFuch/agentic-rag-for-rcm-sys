@@ -1,11 +1,16 @@
 # Baselines config (mục VIII, XX).
-# Schema được dùng bởi scripts/evaluation/run_baselines.py.
+# Schema được dùng bởi benchmarks/run_baselines.py.
 
 baselines:
   seed: 42
   models: [random, popularity, item_knn, bpr_mf]   # danh sách model baseline mặc định
   popularity_fallback: true
   popularity_source: train_core      # train_core | full_history (full pre-target history)
+  # Cap the evaluated user population (target-bearing users sampled with the
+  # run seed). 0 = evaluate every target-bearing user. Dense scoring over the
+  # full ~M-user population is infeasible; the same sample is used for every
+  # model so comparisons stay apples-to-apples.
+  eval_user_sample: 50000
   item_knn_hybrid_weight: null       # float >= 0 opts into HybridItemKNNRecommender
   item_knn:
     k: 20

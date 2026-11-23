@@ -9,6 +9,11 @@ from ...tools import get_tool_limits
 # Session reference pattern: $S.field or $S.field.path
 _SESSION_REF = re.compile(r"^\$S\.(.+)")
 
+# Union reference: "$union.candidates" = merged candidates of every ok retrieval
+# step that ran before the current one (SearchTool + FilterTool + SimilarTool).
+_UNION_REF = re.compile(r"^\$union\.candidates$")
+_UNION_TOOLS = frozenset({"SearchTool", "FilterTool", "SimilarTool"})
+
 def _resolve_path(value: Any, parts: list[str]) -> Any:
     if not parts:
         return value
@@ -29,10 +34,53 @@ def _resolve_path(value: Any, parts: list[str]) -> Any:
     raise KeyError(f"'{head}' not found")
 
 
+def _union_candidate_key(candidate: Any) -> Any:
+    return candidate.get("item_id") if isinstance(candidate, dict) else candidate
+
+
+def _union_candidates(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Merge `data.candidates` of all ok retrieval steps so far into one deduped pool.
+
+    First-seen order wins; a duplicate that carries a retrieval `score` replaces an
+    earlier entry without one (SearchTool's RRF score is the only calibrated signal
+    today — kept for future scorer blending). Output entries are dicts with
+    `item_id` plus a `retrieved_by` list naming the contributing tools, capped at
+    tools.max_candidates.
+    """
+    merged: dict[Any, dict[str, Any]] = {}
+    sources: dict[Any, list[str]] = {}
+    for step in results:
+        if not step.get("ok") or step.get("tool") not in _UNION_TOOLS:
+            continue
+        candidates = (step.get("data") or {}).get("candidates") or []
+        for c in candidates:
+            key = _union_candidate_key(c)
+            if key is None or not isinstance(key, str):
+                continue
+            tool = step["tool"]
+            if key in merged:
+                entry = merged[key]
+                if tool not in sources[key]:
+                    sources[key].append(tool)
+                    entry["retrieved_by"] = list(sources[key])
+                if "score" not in entry and isinstance(c, dict) and "score" in c:
+                    merged[key] = {**c, "retrieved_by": list(sources[key])}
+                continue
+            entry = dict(c) if isinstance(c, dict) else {"item_id": c}
+            sources[key] = [tool]
+            entry["retrieved_by"] = [tool]
+            merged[key] = entry
+    cap = get_tool_limits().max_candidates
+    return list(merged.values())[:cap]
+
+
 def _resolve_refs(obj: Any, results: list[dict[str, Any]], session: Any = None) -> Any:
     """Thay chuỗi '$N.path' bằng output của step N; ném ValueError nếu step N lỗi/chưa chạy/path sai.
+    '$union.candidates' trả về pool gộp candidates của mọi retrieval step đã chạy.
     Thay chuỗi '$S.field' bằng session state field nếu session được cung cấp."""
     if isinstance(obj, str):
+        if _UNION_REF.match(obj):
+            return _union_candidates(results)
         # Check for session reference first
         session_m = _SESSION_REF.match(obj)
         if session_m and session is not None:
@@ -283,11 +331,15 @@ def _summarize_output(data: dict[str, Any], tool_name: str) -> dict[str, Any]:
 
 
 def _simplify_args_for_log(args: dict[str, Any]) -> dict[str, Any]:
-    """Simplify resolved args for trajectory logging: truncate long lists, keep structure."""
+    """Simplify resolved args for trajectory logging: truncate long lists, keep structure.
+    Id-list args (items/item_ids/user_id) stay whole: they are short strings and
+    replay/eval needs them intact (a truncated seed list cannot be re-executed)."""
     simplified = {}
     for key, value in args.items():
         if isinstance(value, (list, tuple)):
-            if len(value) > 5:
+            if key in ID_ARG_KEYS and all(isinstance(v, str) for v in value):
+                simplified[key] = list(value)
+            elif len(value) > 5:
                 simplified[key] = f"<{type(value).__name__} length={len(value)} first_3={value[:3]}>"
             else:
                 simplified[key] = value
@@ -320,38 +372,26 @@ def _compute_recommendation_quality(results: list[dict[str, Any]]) -> float:
         float: quality score from 0.0 to 1.0
     """
     from ..results import extract_recommendations
-    
-    # Check if any items were returned
+
     items = extract_recommendations(results, 1)
     if not items:
         return 0.0
-    
-    # Identify which tools were used successfully
+
     used_tools = {r["tool"] for r in results if r["ok"]}
 
-    # Check for collaborative signal
     has_collaborative = "SimilarTool" in used_tools or "MemoryTool" in used_tools
-
-    # Check for ranking step
     has_ranking = "RankTool" in used_tools
-
-    # Check for retrieval
     has_retrieval = any(t in used_tools for t in ["SearchTool", "FilterTool", "SimilarTool"])
 
-    # Compute quality score
     if not has_retrieval and not has_ranking:
-        # Only LookupTool or similar - no actual recommendation logic
         return 0.2
     elif has_retrieval and not has_ranking:
-        # Retrieval only, no ranking
         return 0.5
     elif has_ranking and not has_collaborative:
-        # Ranking from semantic search only (no personalization)
         return 0.7
     elif has_ranking and has_collaborative:
-        # Full pipeline with collaborative signal
         return 1.0
-    
+
     # Fallback
     return 0.5
 
@@ -403,25 +443,21 @@ def _is_quality_improvement(old_quality: dict[str, Any], new_quality: dict[str, 
     Returns:
         True if new_quality is not worse than old_quality
     """
-    # Priority 1: Fewer failed steps is always better
     if new_quality["failed_steps"] < old_quality["failed_steps"]:
         return True
     if new_quality["failed_steps"] > old_quality["failed_steps"]:
         return False
 
-    # Priority 2: Higher recommendation quality is better
     if new_quality["rec_quality"] > old_quality["rec_quality"]:
         return True
     if new_quality["rec_quality"] < old_quality["rec_quality"]:
         return False
 
-    # Priority 3: More items is better (if same failed steps and rec_quality)
     if new_quality["n_items"] > old_quality["n_items"]:
         return True
     if new_quality["n_items"] < old_quality["n_items"]:
         return False
 
-    # Priority 4: Fewer error kinds is better
     if len(new_quality["error_kinds"]) < len(old_quality["error_kinds"]):
         return True
     if len(new_quality["error_kinds"]) > len(old_quality["error_kinds"]):

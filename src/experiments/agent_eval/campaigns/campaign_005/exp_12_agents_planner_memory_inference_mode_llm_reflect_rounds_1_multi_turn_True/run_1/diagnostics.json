@@ -1,0 +1,271 @@
+{
+  "error_taxonomy": {
+    "planner_memory": {
+      "ambiguous": {
+        "step_errors": {},
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "cold_text": {
+        "step_errors": {
+          "no_error": 12,
+          "tool_error": 16,
+          "bad_reference": 32
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "exclusion": {
+        "step_errors": {
+          "no_error": 71,
+          "tool_error": 22,
+          "bad_reference": 51
+        },
+        "plan_errors": {
+          "plan_invalid": 3,
+          "provider_error": 0
+        }
+      },
+      "personalized": {
+        "step_errors": {
+          "no_error": 154,
+          "bad_reference": 6
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "similar": {
+        "step_errors": {
+          "no_error": 116,
+          "tool_error": 2,
+          "bad_reference": 2
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      },
+      "unanswerable": {
+        "step_errors": {
+          "no_error": 5,
+          "tool_error": 2,
+          "bad_reference": 2
+        },
+        "plan_errors": {
+          "plan_invalid": 0,
+          "provider_error": 0
+        }
+      }
+    }
+  },
+  "reflection": {
+    "planner_memory": {
+      "ambiguous": {
+        "n_first_failed": 0,
+        "rescue_rate": null,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": null
+      },
+      "cold_text": {
+        "n_first_failed": 16,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.0,
+        "constraint_blind_spot_rate": 0.25
+      },
+      "exclusion": {
+        "n_first_failed": 27,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.05,
+        "constraint_blind_spot_rate": null
+      },
+      "personalized": {
+        "n_first_failed": 2,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.05,
+        "constraint_blind_spot_rate": null
+      },
+      "similar": {
+        "n_first_failed": 2,
+        "rescue_rate": 0.0,
+        "mean_reflections": 0.05,
+        "constraint_blind_spot_rate": null
+      },
+      "unanswerable": {
+        "n_first_failed": 6,
+        "rescue_rate": 0.6666666666666666,
+        "mean_reflections": 1.0,
+        "constraint_blind_spot_rate": null
+      }
+    }
+  },
+  "pool_stage": {
+    "planner_memory": {
+      "ambiguous": {
+        "n_rows": 6
+      },
+      "cold_text": {
+        "n_rows": 20,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_sql": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_semantic": {
+            "rate": 1.0,
+            "n": 20
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 20
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 4
+          },
+          "retrieved_by_sql": {
+            "rate": 0.0,
+            "n": 2
+          },
+          "retrieved_by_semantic": {
+            "rate": 0.0,
+            "n": 2
+          },
+          "query_hit_any_title_token": {
+            "rate": 1.0,
+            "n": 2
+          }
+        },
+        "stage_lost_counts": {
+          "pool": 5,
+          "retrieve": 4
+        }
+      },
+      "exclusion": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_sql": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.875,
+            "n": 16
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.8125,
+            "n": 16
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 5
+          },
+          "retrieved_by_sql": {
+            "rate": 0.0,
+            "n": 1
+          },
+          "retrieved_by_semantic": {
+            "rate": 0.0,
+            "n": 3
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 1
+          },
+          "query_hit_any_title_token": {
+            "rate": 0.0,
+            "n": 2
+          }
+        },
+        "stage_lost_counts": {
+          "pool": 6,
+          "retrieve": 4
+        }
+      },
+      "personalized": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.825,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.7,
+            "n": 40
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 38
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 38
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 7,
+          "pool": 12,
+          "retrieve": 20
+        }
+      },
+      "similar": {
+        "n_rows": 40,
+        "rates": {
+          "target_in_any_path_pool": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_sql": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_semantic": {
+            "rate": 0.925,
+            "n": 40
+          },
+          "target_in_pool_itemcf": {
+            "rate": 0.9,
+            "n": 40
+          },
+          "target_reachable": {
+            "rate": 0.0,
+            "n": 40
+          },
+          "retrieved_by_itemcf": {
+            "rate": 0.0,
+            "n": 40
+          }
+        },
+        "stage_lost_counts": {
+          "mixed": 9,
+          "pool": 4,
+          "retrieve": 27
+        }
+      },
+      "unanswerable": {
+        "n_rows": 6
+      }
+    }
+  }
+}

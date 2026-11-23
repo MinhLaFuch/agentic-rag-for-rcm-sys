@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from package.agents import PlanExecutor, build_tools
+from package.agents import PlanExecutor, build_tools, get_agent_limits
 from package.agents.results import extract_recommendations
 from package.api import build_llm_provider
 from package.config import load_config
@@ -43,8 +43,28 @@ class RealAgentRunner:
         corpus = create_test_corpus()
         knn = ItemKNNRecommender(10).fit(interactions[["user_idx", "item_idx"]])
         agent_tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
-        # reflect_rounds from agent.yaml default; session is bound per turn
-        self.executor = PlanExecutor(llm=self.llm, tools=agent_tools.for_planner_memory())
+        # reflect_rounds resolved EXPLICITLY (was implicit via PlanExecutor's
+        # limits default — same value through CONFIG_OVERLAY_PATH, but now the
+        # resolved value is inspectable via resolved_config()).
+        # `limits` (agent_eval.multi_turn.limits) is plumbed through for
+        # Phase-C per-turn knobs; nothing enforces it yet — recorded, not applied.
+        self.limits = self.config.get("limits") or {}
+        self.executor = PlanExecutor(
+            llm=self.llm,
+            tools=agent_tools.for_planner_memory(),
+            reflect_rounds=get_agent_limits().reflect_rounds,
+        )
+
+    def resolved_config(self) -> dict[str, Any]:
+        """The experiment configuration this runner actually resolved —
+        recorded into multi_turn.json so artifact provenance is explicit
+        (previously only inferable from the campaign config_overlay.yaml)."""
+        return {
+            "reflect_rounds": self.executor.reflect_rounds,
+            "tools": sorted(self.executor.tools),
+            "limits": dict(self.limits),
+            "limits_enforced": False,  # Phase-C knobs are recorded, not yet enforced
+        }
 
     def run_turn(self, turn_input: Any, session: Any) -> dict[str, Any]:
         """Execute one turn through the real planner/executor with session state."""

@@ -37,7 +37,7 @@ def test_fake_tool_matches_real_schema(real_tool_class, fake_tool_class):
 
 def test_prompt_references_match_tool_output_schemas():
     """
-    Verify that every $N.path reference in planner/_prompt.py examples
+    Verify that every $N.path reference in the planner system_prompt examples
     only uses fields that exist in the corresponding tool's output_schema.
     """
     from package.tools.ranking import SimilarTool, RankTool

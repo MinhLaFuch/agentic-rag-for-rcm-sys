@@ -1,0 +1,52 @@
+{
+  "method": "per-target best-category rank under rating_number DESC (FilterTool order) among protocol-visible competitors; ceiling = share of all 196 targets with rank<=K; hidden or no-category targets count as misses",
+  "n_targets": 196,
+  "ks": [
+    200,
+    1000
+  ],
+  "ordering": "rating_number DESC, NULLs last, item_id tiebreak (tiebreak approximated by global item order)",
+  "future_info_note": "meta rating_number/price/average_rating are scrape-time snapshots -> contain post-cutoff information under protocols A/B/C (and trivially D). Only train-derived counts are causal. rating_number vs held-out interactions Spearman=0.65 quantifies the leaked future signal.",
+  "protocols": {
+    "A_current_single_cutoff": {
+      "n_hidden": 36,
+      "hidden_pct": 18.37,
+      "n_visible_but_unranked_no_cat_or_not_member": 3,
+      "recall": {
+        "@200": 0.5663,
+        "@1000": 0.6837
+      },
+      "median_best_rank_visible": 58.0
+    },
+    "B_per_target_rewind": {
+      "n_hidden": 8,
+      "hidden_pct": 4.08,
+      "n_visible_but_unranked_no_cat_or_not_member": 9,
+      "recall": {
+        "@200": 0.5969,
+        "@1000": 0.75
+      },
+      "median_best_rank_visible": 64.0
+    },
+    "C_late_cutoff_end_of_data": {
+      "n_hidden": 0,
+      "hidden_pct": 0.0,
+      "n_visible_but_unranked_no_cat_or_not_member": 9,
+      "recall": {
+        "@200": 0.5969,
+        "@1000": 0.7551
+      },
+      "median_best_rank_visible": 78.0
+    },
+    "D_no_visibility_filter": {
+      "n_hidden": 0,
+      "hidden_pct": 0.0,
+      "n_visible_but_unranked_no_cat_or_not_member": 9,
+      "recall": {
+        "@200": 0.5969,
+        "@1000": 0.7551
+      },
+      "median_best_rank_visible": 78.0
+    }
+  }
+}

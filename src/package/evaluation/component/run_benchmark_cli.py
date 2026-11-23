@@ -104,7 +104,7 @@ def _get_evaluator(component: str, config: dict[str, Any]):
     """Import and instantiate the appropriate evaluator for the component."""
     if component == "memory":
         from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
-        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+        from .benchmarks import create_test_interactions, create_test_meta, create_test_mappings
 
         interactions = create_test_interactions()
         user2id, item2id, _ = create_test_mappings(interactions)
@@ -112,7 +112,7 @@ def _get_evaluator(component: str, config: dict[str, Any]):
         return MemoryCorrectnessEvaluator(interactions, user2id, item2id, create_test_meta(), config)
     elif component == "memory_correctness":
         from .benchmarks.memory_correctness_evaluator import MemoryCorrectnessEvaluator
-        from .benchmarks.memory_correctness_setup import create_test_interactions, create_test_meta, create_test_mappings
+        from .benchmarks import create_test_interactions, create_test_meta, create_test_mappings
 
         interactions = create_test_interactions()
         user2id, item2id, _ = create_test_mappings(interactions)
@@ -267,7 +267,3 @@ def run_benchmark_cli() -> None:
         )
     passed = sum(1 for r in summary.per_case_results if r.success)
     print(f"Total cases: {len(summary.per_case_results)}, Passed: {passed}")
-
-    # Regression report only when comparing two runs (not for single runs)
-    # format_regression_report expects a RegressionReport object, not JSON
-    # Skip regression report for single-run benchmarks

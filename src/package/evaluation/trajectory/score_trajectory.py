@@ -8,9 +8,9 @@ from typing import Any
 from package.corpus import ItemCorpus
 from package.evaluation._schema import PLANNER_AGENTS
 from package.evaluation.requests import AgentRequest
-from package.evaluation.layer1_outcome import score_layer1_outcome, _extract_retrieval_funnel
+from package.evaluation.layer1_outcome import score_layer1_outcome, _extract_retrieval_funnel, _extract_stage_diagnostics
 from package.evaluation.layer2_interaction import score_layer2_interaction
-from package.evaluation.layer3_grounding import score_layer3_grounding, _extract_retrieval_diagnostics
+from package.evaluation.layer3_grounding import score_layer3_grounding
 from package.evaluation.layer4_process import score_layer4_process
 from package.evaluation.layer5_deployment import score_layer5_deployment
 
@@ -23,6 +23,9 @@ def score_trajectory(
     corpus: ItemCorpus,
     k: int,
     seen_item_ids: set[int] | None = None,
+    id2item: Mapping[int, str] | None = None,
+    itemcf_reachable: set[int] | None = None,
+    itemcf_reachable_request: set[int] | None = None,
 ) -> dict[str, Any]:
     """
     trajectory: {agent, plan, ask_user, steps[{tool, ok, invented_ids, latency_seconds, error_kind}], recommended[item_id],
@@ -44,8 +47,9 @@ def score_trajectory(
     is_planner = agent in PLANNER_AGENTS
 
     # Score each layer independently
-    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids, corpus=corpus)
-    layer2 = score_layer2_interaction(request, trajectory, corpus=corpus)
+    layer1 = score_layer1_outcome(request, trajectory, item2id=item2id, k=k, seen_item_ids=seen_item_ids,
+                                  corpus=corpus, id2item=id2item, itemcf_reachable=itemcf_reachable)
+    layer2 = score_layer2_interaction(request, trajectory, corpus=corpus, item2id=item2id)
     layer3 = score_layer3_grounding(trajectory)
     layer4 = score_layer4_process(request, trajectory)
     layer5 = score_layer5_deployment(trajectory)
@@ -53,7 +57,10 @@ def score_trajectory(
     # ===== Retrieval Funnel & Diagnostics =====
     # Extract funnel metrics from trajectory steps
     funnel = _extract_retrieval_funnel(trajectory, item2id=item2id, k=k, corpus=corpus)
-    diagnostics = _extract_retrieval_diagnostics(trajectory, item2id=item2id, k=k)
+    stage = _extract_stage_diagnostics(
+        request, trajectory, item2id=item2id, id2item=id2item, corpus=corpus,
+        itemcf_reachable=itemcf_reachable, itemcf_reachable_request=itemcf_reachable_request,
+    )
 
     # Combine all layers into one row
     row: dict[str, Any] = {
@@ -61,6 +68,7 @@ def score_trajectory(
         "agent": agent,
         "kind": request.kind,
         "segment": request.segment,
+        "oracle": request.oracle,
     }
     row.update(layer1)
     row.update(layer2)
@@ -68,14 +76,20 @@ def score_trajectory(
     row.update(layer4)
     row.update(layer5)
 
-    # Merge funnel and diagnostics (funnel takes precedence for overlapping keys)
+    # Merge funnel and stage diagnostics (later updates win)
     row.update(funnel)
-    row.update(diagnostics)
+    row.update(stage)
 
     # Special case: personalized planner without MemoryTool cannot honestly personalize
     # This override is applied in the combiner, not in individual layers
     if request.kind == "personalized" and is_planner and "MemoryTool" not in trajectory.get("tools_available", []):
         # a planner that cannot read the user's history has no honest way to personalize: not scored (asking back is fine)
         row["tool_selection_ok"] = row["task_success"] = None
+
+    # cost_per_successful_request needs the FINAL task_success (after overrides)
+    # and cost_per_request (layer5); neither layer sees both, so the combiner derives it.
+    row["cost_per_successful_request"] = (
+        row.get("cost_per_request") if row.get("task_success") else None
+    )
 
     return row

@@ -25,7 +25,7 @@ def error_taxonomy(trajectories: list[dict[str, Any]]) -> dict[str, Any]:
                         "bad_reference": int,
                         "tool_error": int,
                         "exception": int,
-                        "None": int,  # steps with no error
+                        "no_error": int,  # steps that ran without an error_kind
                     },
                     "plan_errors": {
                         "plan_invalid": int,  # trajectory["error"] starts with ValueError
@@ -52,7 +52,7 @@ def error_taxonomy(trajectories: list[dict[str, Any]]) -> dict[str, Any]:
             for step in traj.get("steps", []):
                 error_kind = step.get("error_kind", None)
                 if error_kind is None:
-                    step_error_counts["None"] += 1
+                    step_error_counts["no_error"] += 1
                 else:
                     step_error_counts[error_kind] += 1
 

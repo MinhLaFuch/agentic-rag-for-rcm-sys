@@ -1,8 +1,8 @@
 """Validation-only Phase 4 tuning, with an optional one-time final test run.
 
 Example:
-    PYTHONPATH=. python scripts/evaluation/tune_baselines.py
-    PYTHONPATH=. python scripts/evaluation/tune_baselines.py --domain Video_Games
+    PYTHONPATH=. python benchmarks/tune_baselines.py
+    PYTHONPATH=. python benchmarks/tune_baselines.py --domain Video_Games
 
 Mọi tham số đọc từ configs/eval/tuning.yaml, baselines.yaml, recommendation_metrics.yaml
 và output dir từ data_paths.yaml — không có override flag. Đánh giá test một lần

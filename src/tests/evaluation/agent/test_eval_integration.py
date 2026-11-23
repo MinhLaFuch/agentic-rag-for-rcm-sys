@@ -20,6 +20,8 @@ from tests.tools_helpers import VG_A, VG_B
 
 NEW_COLUMNS = ("answer_grounded", "answer_fallback", "inference_attempts", "inference_prompt_tokens",
                "inference_completion_tokens", "inference_latency_seconds", *(f"answer_status_{s}" for s in STATUSES))
+# Cost columns legitimately change when a trajectory carries inference usage (inference LLM cost is included).
+COST_COLUMNS = ("inference_cost_usd", "cost_per_request", "cost_per_successful_request")
 
 
 def _request(text="t"):
@@ -47,7 +49,8 @@ def test_new_columns_do_not_change_any_existing_column(corpus):
     bare = _trajectory(steps=[_step("SimilarTool"), _step("RankTool")], recommended=[VG_A, VG_B])
     row_bare = score_trajectory(_request(), bare, item2id=ITEM2ID, corpus=corpus, k=2)
     row_full = score_trajectory(_request(), _answered(), item2id=ITEM2ID, corpus=corpus, k=2)
-    assert {k: v for k, v in row_full.items() if k not in NEW_COLUMNS} == {k: v for k, v in row_bare.items() if k not in NEW_COLUMNS}
+    skip = set(NEW_COLUMNS) | set(COST_COLUMNS)
+    assert {k: v for k, v in row_full.items() if k not in skip} == {k: v for k, v in row_bare.items() if k not in skip}
     assert row_full["task_success"] is True and row_full["recall@2"] == row_bare["recall@2"]
 
 
@@ -108,6 +111,15 @@ def test_run_planner_without_an_answerer_leaves_the_answer_fields_empty(corpus):
     assert traj["answer"] is None and traj["answer_status"] is None and traj["inference_usage"] == {} and traj["inference_mode"] is None
 
 
+def test_run_planner_steps_carry_tool_data(corpus):
+    """Trajectory steps keep the tool payload (`data`) so funnel/diagnostic metrics stay measurable."""
+    traj = _load_run_agent_eval().run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
+    assert traj["steps"], "expected at least one executed step"
+    assert all(isinstance(s.get("data"), dict) for s in traj["steps"])
+    assert "items" in traj["steps"][0]["data"]  # LookupTool payload preserved, parity with run_type1
+    json.dumps(traj, ensure_ascii=False)
+
+
 def test_run_planner_adds_the_answer_without_touching_the_recommendation_or_planner_usage(corpus):
     script = _load_run_agent_eval()
     plain = script.run_planner(_executor(corpus, QUERY_PLAN), _two_items_request(), "planner", 2)
@@ -152,6 +164,67 @@ class _FakeType1:
 
     def recommend(self, user_id, seed_items, top_k=10):
         return self.out
+
+
+def test_itemcf_reachable_ignores_edges_from_hidden_seeds(corpus):
+    """Seed-side temporal visibility: a target reachable only via a hidden item is NOT in the pool."""
+    from scipy import sparse
+
+    script = _load_run_agent_eval()
+    # similarity[0, 1] = 1.0: item idx 1 is a neighbour of idx 0 only
+    sim = sparse.csr_matrix(([1.0], ([0], [1])), shape=(3, 3))
+    item2id = {"A::a": 0, "B::b": 1, "C::c": 2}
+
+    # No policy: every mapped in-bounds index is a valid seed -> idx 1 reachable via row 0
+    assert script._itemcf_reachable(sim, item2id) == {1}
+    # Policy active, only C visible: seed rows = {2}, which has no edges -> nothing reachable
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"C::c"}) == set()
+    # Policy active, A and C visible: row 0 is a valid seed -> idx 1 reachable
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"A::a", "C::c"}) == {1}
+    # Visible id outside the mapping / out of bounds is ignored, not fatal
+    assert script._itemcf_reachable(sim, item2id, visible_item_ids={"Ghost::x", "C::c"}) == set()
+
+
+def test_itemcf_reachable_for_seeds_uses_only_actual_seeds(corpus):
+    """Request-specific reachability: only the trajectory's own seeds contribute edges."""
+    from scipy import sparse
+
+    script = _load_run_agent_eval()
+    # row 0 -> col 1, row 2 -> col 1 as well? keep it simple: only row 0 has an edge
+    sim = sparse.csr_matrix(([1.0], ([0], [1])), shape=(3, 3))
+    item2id = {"A::a": 0, "B::b": 1, "C::c": 2}
+    id2item = {v: k for k, v in item2id.items()}
+
+    # seeding with A reaches idx 1; seeding with C (no edges) reaches nothing
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a"}, item2id, id2item) == {1}
+    assert script._itemcf_reachable_for_seeds(sim, {"C::c"}, item2id, id2item) == set()
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a", "C::c"}, item2id, id2item) == {1}
+    # unknown / hidden seeds contribute nothing; visible_item_ids gates both sides
+    assert script._itemcf_reachable_for_seeds(sim, {"Ghost::x"}, item2id, id2item) == set()
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a"}, item2id, id2item,
+                                              visible_item_ids={"C::c"}) == set()  # seed hidden
+    # candidate-side visibility: idx 1 maps to B::b, hidden under this policy
+    assert script._itemcf_reachable_for_seeds(sim, {"A::a", "C::c"}, item2id, id2item,
+                                              visible_item_ids={"A::a", "C::c"}) == set()
+
+
+def test_trajectory_itemcf_seeds_recovers_logged_args():
+    script = _load_run_agent_eval()
+    traj = {"steps": [
+        {"tool": "SimilarTool", "ok": True, "args": {"items": ["A::a", "B::b"], "top_k": 10}},
+        {"tool": "RankTool", "ok": True, "args": {"candidates": "<list length=9 first_3=[...]>"}},
+        {"tool": "SimilarTool", "ok": True, "args": {"items": ["C::c"]}},
+    ]}
+    assert script._trajectory_itemcf_seeds(traj) == ({"A::a", "B::b", "C::c"}, True)
+    # no SimilarTool step -> path unexercised
+    assert script._trajectory_itemcf_seeds({"steps": [{"tool": "SearchTool", "ok": True, "args": {}}]}) is None
+    # truncated args list -> seeds unknowable
+    truncated = {"steps": [{"tool": "SimilarTool", "ok": True,
+                            "args": {"items": "<list length=9 first_3=['A::a']>"}}]}
+    assert script._trajectory_itemcf_seeds(truncated) == (set(), False)
+    # failed SimilarTool steps do not count as exercising the path
+    failed = {"steps": [{"tool": "SimilarTool", "ok": False, "args": {"items": ["A::a"]}}]}
+    assert script._trajectory_itemcf_seeds(failed) is None
 
 
 def test_run_type1_keeps_the_recommendation_and_adds_the_answer():

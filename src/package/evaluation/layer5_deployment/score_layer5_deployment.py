@@ -6,6 +6,18 @@ from typing import Any
 
 from package.evaluation import PLANNER_AGENTS
 from package.agents.planner import check_time_budget_error
+from package.config import load_config
+
+
+def _token_cost_usd(prompt_tokens: Any, completion_tokens: Any, pricing: dict | None) -> float | None:
+    """USD cost of a token usage pair; None when pricing is unconfigured."""
+    if not pricing:
+        return None
+    pin = pricing.get("prompt_usd_per_1m_tokens")
+    pout = pricing.get("completion_usd_per_1m_tokens")
+    if pin is None or pout is None:
+        return None
+    return ((prompt_tokens or 0) * pin + (completion_tokens or 0) * pout) / 1_000_000
 
 
 def score_layer5_deployment(
@@ -20,8 +32,7 @@ def score_layer5_deployment(
                        inference_prompt_tokens, inference_completion_tokens,
                        inference_latency_seconds, provider_error, sql_time_budget_hits,
                        per_step_tokens, per_step_latency, per_step_cost,
-                       cost_per_request, cost_per_successful_request,
-                       cost_breakdown_by_component, latency_distribution
+                       cost_per_request, cost_breakdown_by_component, latency_distribution
     """
     agent = trajectory["agent"]
     is_planner = agent in PLANNER_AGENTS
@@ -85,21 +96,38 @@ def score_layer5_deployment(
     row["per_step_latency"] = per_step_latency
     row["per_step_cost"] = per_step_cost
 
-    # Cost per request and per successful request
-    total_cost = sum(step.get("cost", 0.0) for step in steps) if is_planner else 0.0
-    row["cost_per_request"] = total_cost
-    row["cost_per_successful_request"] = total_cost if trajectory.get("task_success") else None
+    # Cost per request = planner LLM tokens + inference (answer) LLM tokens,
+    # priced via configs/agent/llm.yaml `pricing`. Steps carry no per-call cost,
+    # so token totals are the only cost basis. Unpriced model + nonzero tokens
+    # -> None (unmeasurable); zero tokens -> 0.0. cost_per_successful_request is
+    # derived in score_trajectory (it needs task_success from layer2).
+    try:
+        pricing = (load_config("agent/llm") or {}).get("pricing")
+    except Exception:
+        pricing = None
+    planner_cost = (
+        _token_cost_usd(usage.get("prompt_tokens"), usage.get("completion_tokens"), pricing)
+        if is_planner else 0.0
+    )
+    inference_cost = (
+        _token_cost_usd(inference.get("prompt_tokens"), inference.get("completion_tokens"), pricing)
+        if answered else 0.0
+    )
+    row["planner_cost_usd"] = planner_cost
+    row["inference_cost_usd"] = inference_cost
+    total_tokens = (
+        (usage.get("prompt_tokens") or 0) + (usage.get("completion_tokens") or 0) if is_planner else 0
+    ) + (
+        (inference.get("prompt_tokens") or 0) + (inference.get("completion_tokens") or 0) if answered else 0
+    )
+    if planner_cost is None or inference_cost is None:
+        row["cost_per_request"] = None if total_tokens > 0 else 0.0
+    else:
+        row["cost_per_request"] = planner_cost + inference_cost
 
-    # Cost breakdown by component
-    cost_breakdown = {}
-    if is_planner and steps:
-        for step in steps:
-            tool = step.get("tool", "unknown")
-            cost = step.get("cost", 0.0)
-            if tool not in cost_breakdown:
-                cost_breakdown[tool] = 0.0
-            cost_breakdown[tool] += cost
-    row["cost_breakdown_by_component"] = cost_breakdown
+    # Per-tool cost breakdown is not measurable: steps record no token/cost
+    # payloads, only aggregate usage above.
+    row["cost_breakdown_by_component"] = {}
 
     # Latency distribution
     latencies = [s.get("latency_seconds", 0.0) for s in steps] if is_planner and steps else []

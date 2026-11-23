@@ -1,0 +1,4620 @@
+[
+  {
+    "run": "experiments\\agent_eval\\filter_ab\\exp_1_always_category\\run_1",
+    "n_requests": 116,
+    "n_targets": 196,
+    "fate_counts": {
+      "ranked": 160,
+      "hidden_policy": 36
+    },
+    "fate_frac": {
+      "ranked": 0.8163265306122449,
+      "hidden_policy": 0.1836734693877551
+    },
+    "ranked_rescue": {
+      "@1": 7,
+      "@5": 19,
+      "@10": 26,
+      "@20": 66,
+      "@50": 90,
+      "@100": 140
+    },
+    "ranked_rescue_frac": {
+      "@1": 0.04375,
+      "@5": 0.11875,
+      "@10": 0.1625,
+      "@20": 0.4125,
+      "@50": 0.5625,
+      "@100": 0.875
+    },
+    "rank_dist": {
+      "n": 160,
+      "median": 41.5,
+      "p90": 150.1,
+      "max": 1004
+    },
+    "cf_nonzero_frac_ranked": 0.0,
+    "score_margin_vs_best_other": {
+      "median": NaN,
+      "frac_beats_best_other": 0.0
+    },
+    "per_kind": {
+      "similar": {
+        "ranked": 67,
+        "hidden_policy": 10
+      },
+      "personalized": {
+        "hidden_policy": 20,
+        "ranked": 53
+      },
+      "cold_text": {
+        "ranked": 20
+      },
+      "exclusion": {
+        "ranked": 20,
+        "hidden_policy": 6
+      }
+    },
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 10,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BTR6295J": 12,
+          "Electronics::B0C571K6X5": 11
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BTR6295J": 1.099572388515577e-09,
+          "Electronics::B0C571K6X5": 2.687843616371411e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BTR6295J": 0.0,
+          "Toys_and_Games::B0BW3DF1XN": 0.0,
+          "Electronics::B0C571K6X5": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 56,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B075R97C9K": 57
+        },
+        "target_scores": {
+          "Electronics::B075R97C9K": 2.810018326206475e-09
+        },
+        "target_cf": {
+          "Electronics::B075R97C9K": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 37,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B09XV4PSK8": 26,
+          "Electronics::B07S8PVSDS": 22
+        },
+        "target_scores": {
+          "Video_Games::B09XV4PSK8": 1.6289961311341885e-09,
+          "Electronics::B07S8PVSDS": 2.3824068417837505e-08
+        },
+        "target_cf": {
+          "Video_Games::B09XV4PSK8": 0.0,
+          "Electronics::B07S8PVSDS": 0.0,
+          "Electronics::B09WDCP5MC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 58,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07R32PZZ6": 59
+        },
+        "target_scores": {
+          "Electronics::B07R32PZZ6": 3.0543677458766033e-10
+        },
+        "target_cf": {
+          "Electronics::B07R32PZZ6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 32,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08BG6CVQD": 23
+        },
+        "target_scores": {
+          "Toys_and_Games::B08BG6CVQD": 4.886988393402565e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08BG6CVQD": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B08F1P3BCC": 19,
+          "Electronics::B086JXJ1LF": 20
+        },
+        "target_scores": {
+          "Electronics::B08F1P3BCC": 6.929342292812054e-08,
+          "Electronics::B086JXJ1LF": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B08F1P3BCC": 0.0,
+          "Electronics::B086JXJ1LF": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 11,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B083TBWLPR": 12
+        },
+        "target_scores": {
+          "Electronics::B083TBWLPR": 4.4797393606190186e-10
+        },
+        "target_cf": {
+          "Electronics::B083TBWLPR": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 19,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00354951S": 20
+        },
+        "target_scores": {
+          "Electronics::B00354951S": 9.366727754021583e-10
+        },
+        "target_cf": {
+          "Electronics::B00354951S": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 15,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08Q42V4TY": 17,
+          "Electronics::B07TBBB9BQ": 16
+        },
+        "target_scores": {
+          "Video_Games::B08Q42V4TY": 0.0,
+          "Electronics::B07TBBB9BQ": 2.647118713093056e-10
+        },
+        "target_cf": {
+          "Video_Games::B08Q42V4TY": 0.0,
+          "Electronics::B0BH13KJ64": 0.0,
+          "Electronics::B07TBBB9BQ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 37,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08CM3B4WC": 26
+        },
+        "target_scores": {
+          "Toys_and_Games::B08CM3B4WC": 8.755854204846262e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08CM3B4WC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 13,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07WRDBG88": 14
+        },
+        "target_scores": {
+          "Toys_and_Games::B07WRDBG88": 3.8688658114436975e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B07WRDBG88": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 55,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09C5TBQQ2": 56
+        },
+        "target_scores": {
+          "Electronics::B09C5TBQQ2": 1.0384850335980452e-09
+        },
+        "target_cf": {
+          "Electronics::B09C5TBQQ2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 17,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0007ZCIUI": 19,
+          "Electronics::B0B9GFKYSZ": 18
+        },
+        "target_scores": {
+          "Toys_and_Games::B0007ZCIUI": 1.140297291793932e-09,
+          "Electronics::B0B9GFKYSZ": 7.0250458155161875e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0007ZCIUI": 0.0,
+          "Electronics::B0B9GFKYSZ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 57,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07H4Q33H3": 58
+        },
+        "target_scores": {
+          "Toys_and_Games::B07H4Q33H3": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B07H4Q33H3": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08K8W68BX": 5
+        },
+        "target_scores": {
+          "Electronics::B08K8W68BX": 6.719609040928528e-10
+        },
+        "target_cf": {
+          "Electronics::B08K8W68BX": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B095WQVC5M": 14,
+          "Electronics::B088CW81Y6": 13
+        },
+        "target_scores": {
+          "Electronics::B095WQVC5M": 0.0,
+          "Electronics::B088CW81Y6": 5.090612909794339e-10
+        },
+        "target_cf": {
+          "Electronics::B095WQVC5M": 0.0,
+          "Electronics::B088CW81Y6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 12,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B08CBGJ8P7": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08QCYNLPC": 19
+        },
+        "target_scores": {
+          "Electronics::B08QCYNLPC": 7.126858073712074e-10
+        },
+        "target_cf": {
+          "Electronics::B08QCYNLPC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 37,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B08WJSHSLC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BG56H1NZ": 13
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BG56H1NZ": 4.907350845041743e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BG56H1NZ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08QRYTPGH": 15
+        },
+        "target_scores": {
+          "Electronics::B08QRYTPGH": 6.515984524536754e-10
+        },
+        "target_cf": {
+          "Electronics::B08QRYTPGH": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 32,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00IM3P8GS": 19
+        },
+        "target_scores": {
+          "Electronics::B00IM3P8GS": 2.7082060680105884e-08
+        },
+        "target_cf": {
+          "Electronics::B00IM3P8GS": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "n_targets": 6,
+        "n_union_candidates": 7,
+        "fates": {
+          "hidden_policy": 1,
+          "ranked": 5
+        },
+        "target_ranks": {
+          "Electronics::B0BKPX3YSH": 9,
+          "Electronics::B08BC188VJ": 11,
+          "Electronics::B0C5B6XN1C": 8,
+          "Electronics::B01NAZ27PM": 10,
+          "Electronics::B07TZGV19Z": 12
+        },
+        "target_scores": {
+          "Electronics::B0BKPX3YSH": 2.3824068417837507e-09,
+          "Electronics::B08BC188VJ": 1.0181225819588678e-10,
+          "Electronics::B0C5B6XN1C": 2.76929342292812e-09,
+          "Electronics::B01NAZ27PM": 1.2217470983506414e-10,
+          "Electronics::B07TZGV19Z": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08ZKL77Q5": 0.0,
+          "Electronics::B0BKPX3YSH": 0.0,
+          "Electronics::B08BC188VJ": 0.0,
+          "Electronics::B0C5B6XN1C": 0.0,
+          "Electronics::B01NAZ27PM": 0.0,
+          "Electronics::B07TZGV19Z": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08FD52RR6": 14
+        },
+        "target_scores": {
+          "Electronics::B08FD52RR6": 5.70148645896966e-10
+        },
+        "target_cf": {
+          "Electronics::B08FD52RR6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 48,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0748KYTZN": 49
+        },
+        "target_scores": {
+          "Electronics::B0748KYTZN": 1.9385053960496844e-08
+        },
+        "target_cf": {
+          "Electronics::B0748KYTZN": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 60,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0861S37C3": 61,
+          "Electronics::B07QH53F42": 60
+        },
+        "target_scores": {
+          "Electronics::B0861S37C3": 0.0,
+          "Electronics::B07QH53F42": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B0861S37C3": 0.0,
+          "Electronics::B07QH53F42": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BLZZRZ2H": 13,
+          "Electronics::B085G96HZ2": 14
+        },
+        "target_scores": {
+          "Electronics::B0BLZZRZ2H": 1.2828344532681734e-09,
+          "Electronics::B085G96HZ2": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B0BLZZRZ2H": 0.0,
+          "Electronics::B085G96HZ2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Electronics::B08F1XLD1Z": 16,
+          "Electronics::B07X9YQDFD": 15,
+          "Electronics::B07D3ZFTMW": 17
+        },
+        "target_scores": {
+          "Electronics::B08F1XLD1Z": 1.8326206475259622e-10,
+          "Electronics::B07X9YQDFD": 4.988800651598452e-09,
+          "Electronics::B07D3ZFTMW": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08F1XLD1Z": 0.0,
+          "Electronics::B07X9YQDFD": 0.0,
+          "Electronics::B07D3ZFTMW": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "n_targets": 4,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 4
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07MBFG9W2": 1,
+          "Electronics::B07V3JYVQH": 2,
+          "Electronics::B08G3NV1VZ": 3,
+          "Electronics::B084H2QBXB": 4
+        },
+        "target_scores": {
+          "Toys_and_Games::B07MBFG9W2": 1.3439218081857055e-09,
+          "Electronics::B07V3JYVQH": 1.2421095499898187e-09,
+          "Electronics::B08G3NV1VZ": 4.683363877010792e-10,
+          "Electronics::B084H2QBXB": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B07MBFG9W2": 0.0,
+          "Electronics::B07V3JYVQH": 0.0,
+          "Electronics::B08G3NV1VZ": 0.0,
+          "Electronics::B084H2QBXB": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B088BP48Z9": 19,
+          "Electronics::B08NSTS1TM": 20
+        },
+        "target_scores": {
+          "Electronics::B088BP48Z9": 3.46161677866015e-10,
+          "Electronics::B08NSTS1TM": 1.6289961311341885e-10
+        },
+        "target_cf": {
+          "Electronics::B088BP48Z9": 0.0,
+          "Electronics::B08NSTS1TM": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 36,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09G3MBH6V": 20
+        },
+        "target_scores": {
+          "Electronics::B09G3MBH6V": 8.44430869476685e-08
+        },
+        "target_cf": {
+          "Electronics::B09G3MBH6V": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "n_targets": 9,
+        "n_union_candidates": 46,
+        "fates": {
+          "ranked": 7,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0791X617D": 52,
+          "Electronics::B088C3KRH3": 46,
+          "Electronics::B091Y3DNXS": 49,
+          "Electronics::B00J2TGZTK": 48,
+          "Electronics::B08GKHQS92": 50,
+          "Electronics::B071R7HSH5": 53,
+          "Electronics::B09ZD2G75S": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B0791X617D": 1.0181225819588678e-10,
+          "Electronics::B088C3KRH3": 1.5475463245774792e-08,
+          "Electronics::B091Y3DNXS": 2.9525554876807166e-09,
+          "Electronics::B00J2TGZTK": 1.0201588271227855e-08,
+          "Electronics::B08GKHQS92": 1.8937080024434943e-09,
+          "Electronics::B071R7HSH5": 0.0,
+          "Electronics::B09ZD2G75S": 2.85074322948483e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B0791X617D": 0.0,
+          "Electronics::B088C3KRH3": 0.0,
+          "Electronics::B091Y3DNXS": 0.0,
+          "Electronics::B00J2TGZTK": 0.0,
+          "Electronics::B08GKHQS92": 0.0,
+          "Electronics::B071R7HSH5": 0.0,
+          "Electronics::B08TGXFZJT": 0.0,
+          "Electronics::B09ZD2G75S": 0.0,
+          "Electronics::B09PDL84HF": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "n_targets": 4,
+        "n_union_candidates": 7,
+        "fates": {
+          "ranked": 4
+        },
+        "target_ranks": {
+          "Video_Games::B08JP2FT27": 11,
+          "Video_Games::B076GYVWRY": 9,
+          "Electronics::B0C49KQRX4": 8,
+          "Electronics::B086W7PH7N": 10
+        },
+        "target_scores": {
+          "Video_Games::B08JP2FT27": 6.31236000814498e-10,
+          "Video_Games::B076GYVWRY": 5.599674200773773e-09,
+          "Electronics::B0C49KQRX4": 1.347994298513541e-08,
+          "Electronics::B086W7PH7N": 1.4253716147424148e-09
+        },
+        "target_cf": {
+          "Video_Games::B08JP2FT27": 0.0,
+          "Video_Games::B076GYVWRY": 0.0,
+          "Electronics::B0C49KQRX4": 0.0,
+          "Electronics::B086W7PH7N": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 6,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B088BKY69Y": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 3,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08N7PX4WX": 4
+        },
+        "target_scores": {
+          "Video_Games::B08N7PX4WX": 1.4640602728568518e-08
+        },
+        "target_cf": {
+          "Video_Games::B08N7PX4WX": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B087QJKRY8": 20,
+          "Electronics::B07R8GCP7D": 21
+        },
+        "target_scores": {
+          "Electronics::B087QJKRY8": 3.6448788434127468e-09,
+          "Electronics::B07R8GCP7D": 5.090612909794339e-10
+        },
+        "target_cf": {
+          "Electronics::B087QJKRY8": 0.0,
+          "Electronics::B07R8GCP7D": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 31,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0C5J8Q9LY": 19,
+          "Electronics::B0B428Z89X": 20
+        },
+        "target_scores": {
+          "Electronics::B0C5J8Q9LY": 3.7874160048869885e-09,
+          "Electronics::B0B428Z89X": 3.5634290368560377e-09
+        },
+        "target_cf": {
+          "Electronics::B0C5J8Q9LY": 0.0,
+          "Electronics::B0B428Z89X": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B07JL18G1D": 20,
+          "Electronics::B07W75MYB2": 21
+        },
+        "target_scores": {
+          "Electronics::B07JL18G1D": 6.010995723885155e-08,
+          "Electronics::B07W75MYB2": 6.31236000814498e-10
+        },
+        "target_cf": {
+          "Electronics::B07JL18G1D": 0.0,
+          "Electronics::B07W75MYB2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 21,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0989VJ8KY": 10
+        },
+        "target_scores": {
+          "Electronics::B0989VJ8KY": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B0989VJ8KY": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 11,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BM64W6NY": 12
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BM64W6NY": 1.4253716147424148e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BM64W6NY": 0.0,
+          "Toys_and_Games::B09B1YCT71": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1,
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09V1FT19S": 355
+        },
+        "target_scores": {
+          "Electronics::B09V1FT19S": 4.862553451435553e-08
+        },
+        "target_cf": {
+          "Toys_and_Games::B08FW9Q2GG": 0.0,
+          "Electronics::B09V1FT19S": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09S1FPFVS": 1000
+        },
+        "target_scores": {
+          "Electronics::B09S1FPFVS": 4.8055385868458566e-09
+        },
+        "target_cf": {
+          "Electronics::B09S1FPFVS": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 900,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B09198674S": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 150,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Video_Games::B09FBW2988": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B0827SLLMB": 1000
+        },
+        "target_scores": {
+          "Electronics::B0827SLLMB": 6.108735491753207e-10
+        },
+        "target_cf": {
+          "Electronics::B0827SLLMB": 0.0,
+          "Electronics::B09L423J1Q": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B07T85XHX6": 1001
+        },
+        "target_scores": {
+          "Video_Games::B07T85XHX6": 1.9751578090002033e-09
+        },
+        "target_cf": {
+          "Video_Games::B07T85XHX6": 0.0,
+          "Video_Games::B0941XMYPV": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BCXY36KF": 51,
+          "Electronics::B09C2JCWT6": 52
+        },
+        "target_scores": {
+          "Electronics::B0BCXY36KF": 3.257992262268377e-10,
+          "Electronics::B09C2JCWT6": 1.0181225819588678e-10
+        },
+        "target_cf": {
+          "Electronics::B0BCXY36KF": 0.0,
+          "Electronics::B09C2JCWT6": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B09FJV3GBC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00NVKHLP8": 807
+        },
+        "target_scores": {
+          "Electronics::B00NVKHLP8": 2.4944003257992262e-08
+        },
+        "target_cf": {
+          "Electronics::B00NVKHLP8": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B08YFJYD5Z": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Video_Games::B09QRWMVD7": 102,
+          "Toys_and_Games::B00JVF64WS": 101
+        },
+        "target_scores": {
+          "Video_Games::B09QRWMVD7": 1.6289961311341885e-10,
+          "Toys_and_Games::B00JVF64WS": 2.2398696803095093e-10
+        },
+        "target_cf": {
+          "Video_Games::B09QRWMVD7": 0.0,
+          "Toys_and_Games::B00JVF64WS": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08KY684PB": 51
+        },
+        "target_scores": {
+          "Electronics::B08KY684PB": 8.348605172062716e-10
+        },
+        "target_cf": {
+          "Electronics::B08KY684PB": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0013N2182": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B0013N2182": 2.260232131948687e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0013N2182": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "n_targets": 11,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 9,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07171L4FT": 56,
+          "Toys_and_Games::B07C9W8DJK": 54,
+          "Toys_and_Games::B01BFK66P6": 57,
+          "Electronics::B09LQ6T5WP": 53,
+          "Electronics::B0BRTXHKYZ": 58,
+          "Electronics::B095JX15XF": 51,
+          "Electronics::B0BFM2GP2B": 52,
+          "Electronics::B07YFG742J": 55,
+          "Electronics::B08CY958PD": 59
+        },
+        "target_scores": {
+          "Toys_and_Games::B07171L4FT": 6.515984524536754e-10,
+          "Toys_and_Games::B07C9W8DJK": 1.9140704540826714e-09,
+          "Toys_and_Games::B01BFK66P6": 6.31236000814498e-10,
+          "Electronics::B09LQ6T5WP": 2.9932803909590714e-09,
+          "Electronics::B0BRTXHKYZ": 3.0543677458766033e-10,
+          "Electronics::B095JX15XF": 6.656485440847077e-08,
+          "Electronics::B0BFM2GP2B": 2.8120545713703928e-08,
+          "Electronics::B07YFG742J": 7.737731622887395e-10,
+          "Electronics::B08CY958PD": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B07171L4FT": 0.0,
+          "Toys_and_Games::B07C9W8DJK": 0.0,
+          "Toys_and_Games::B01BFK66P6": 0.0,
+          "Toys_and_Games::B00E72RMEE": 0.0,
+          "Electronics::B09LQ6T5WP": 0.0,
+          "Electronics::B0BRTXHKYZ": 0.0,
+          "Electronics::B095JX15XF": 0.0,
+          "Electronics::B0BFM2GP2B": 0.0,
+          "Electronics::B07YFG742J": 0.0,
+          "Electronics::B08Q7RDZ27": 0.0,
+          "Electronics::B08CY958PD": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 50,
+        "fates": {
+          "hidden_policy": 3,
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BXLH8PGN": 51,
+          "Electronics::B095WN7D2T": 52
+        },
+        "target_scores": {
+          "Electronics::B0BXLH8PGN": 5.029525554876807e-09,
+          "Electronics::B095WN7D2T": 2.2398696803095093e-10
+        },
+        "target_cf": {
+          "Electronics::B09DFL95SV": 0.0,
+          "Electronics::B0BXLH8PGN": 0.0,
+          "Electronics::B099LCK96Q": 0.0,
+          "Electronics::B09M65RWQP": 0.0,
+          "Electronics::B095WN7D2T": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BMQD4ZWR": 1001
+        },
+        "target_scores": {
+          "Electronics::B0BMQD4ZWR": 1.6900834860517206e-09
+        },
+        "target_cf": {
+          "Electronics::B0BMQD4ZWR": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "n_targets": 3,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Electronics::B08932J7NC": 51,
+          "Electronics::B08F9LN79L": 52,
+          "Electronics::B08NT5JQPD": 53
+        },
+        "target_scores": {
+          "Electronics::B08932J7NC": 2.524944003257992e-09,
+          "Electronics::B08F9LN79L": 2.0362451639177356e-10,
+          "Electronics::B08NT5JQPD": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B08932J7NC": 0.0,
+          "Electronics::B08F9LN79L": 0.0,
+          "Electronics::B08NT5JQPD": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "n_targets": 3,
+        "n_union_candidates": 150,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08F56X6QN": 150
+        },
+        "target_scores": {
+          "Toys_and_Games::B08F56X6QN": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08F56X6QN": 0.0,
+          "Electronics::B08YR4HF3V": 0.0,
+          "Electronics::B09BN2VKJG": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B015329HQC": 100
+        },
+        "target_scores": {
+          "Toys_and_Games::B015329HQC": 3.8688658114436975e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B015329HQC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01FFACQYW": 1001
+        },
+        "target_scores": {
+          "Electronics::B01FFACQYW": 4.4797393606190186e-10
+        },
+        "target_cf": {
+          "Electronics::B01FFACQYW": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BDF4DVXC": 51
+        },
+        "target_scores": {
+          "Electronics::B0BDF4DVXC": 7.697006719609041e-09
+        },
+        "target_cf": {
+          "Electronics::B0BDF4DVXC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 4,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B085TDV9DW": 51,
+          "Electronics::B07823T5BG": 52,
+          "Electronics::B01LAFEDEW": 53,
+          "Electronics::B081XSL347": 54
+        },
+        "target_scores": {
+          "Electronics::B085TDV9DW": 1.3235593565465281e-09,
+          "Electronics::B07823T5BG": 3.6652412950519243e-10,
+          "Electronics::B01LAFEDEW": 2.647118713093056e-10,
+          "Electronics::B081XSL347": 0.0
+        },
+        "target_cf": {
+          "Electronics::B085TDV9DW": 0.0,
+          "Electronics::B00C6A1IB2": 0.0,
+          "Electronics::B07823T5BG": 0.0,
+          "Electronics::B01LAFEDEW": 0.0,
+          "Electronics::B081XSL347": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B0BDMZ1DJ8": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B082M94GY9": 51
+        },
+        "target_scores": {
+          "Electronics::B082M94GY9": 6.760333944206882e-09
+        },
+        "target_cf": {
+          "Electronics::B082M94GY9": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B092W3K376": 47
+        },
+        "target_scores": {
+          "Electronics::B092W3K376": 3.451435552840562e-08
+        },
+        "target_cf": {
+          "Electronics::B092W3K376": 0.0,
+          "Electronics::B09B36FJVT": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08PSQ2SS1": 999
+        },
+        "target_scores": {
+          "Electronics::B08PSQ2SS1": 5.762573813887192e-09
+        },
+        "target_cf": {
+          "Electronics::B08PSQ2SS1": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08FNT65ZN": 997
+        },
+        "target_scores": {
+          "Electronics::B08FNT65ZN": 2.810018326206475e-09
+        },
+        "target_cf": {
+          "Electronics::B08FNT65ZN": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07K9DD2SZ": 49
+        },
+        "target_scores": {
+          "Electronics::B07K9DD2SZ": 7.941356139279169e-10
+        },
+        "target_cf": {
+          "Electronics::B07K9DD2SZ": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 150,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09PZW8R7L": 151
+        },
+        "target_scores": {
+          "Electronics::B09PZW8R7L": 5.70148645896966e-10
+        },
+        "target_cf": {
+          "Electronics::B09PZW8R7L": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07GZFM1ZM": 4
+        },
+        "target_scores": {
+          "Electronics::B07GZFM1ZM": 6.190796171859092e-07
+        },
+        "target_cf": {
+          "Electronics::B07GZFM1ZM": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 120,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B002DPUUL4": 97
+        },
+        "target_scores": {
+          "Electronics::B002DPUUL4": 3.280390959071472e-08
+        },
+        "target_cf": {
+          "Electronics::B002DPUUL4": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B08GWG9D4Z": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 4,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B00NETKFJU": 963,
+          "Video_Games::B015NKL2YO": 1003,
+          "Toys_and_Games::B0BWGV4DCS": 1002,
+          "Toys_and_Games::B079X4C3FN": 1004
+        },
+        "target_scores": {
+          "Video_Games::B00NETKFJU": 1.4538790470372632e-08,
+          "Video_Games::B015NKL2YO": 2.4434941967012827e-10,
+          "Toys_and_Games::B0BWGV4DCS": 3.909590714722052e-09,
+          "Toys_and_Games::B079X4C3FN": 0.0
+        },
+        "target_cf": {
+          "Video_Games::B00NETKFJU": 0.0,
+          "Video_Games::B015NKL2YO": 0.0,
+          "Toys_and_Games::B0BWGV4DCS": 0.0,
+          "Toys_and_Games::B09DGTKLVF": 0.0,
+          "Toys_and_Games::B079X4C3FN": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 150,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RJZPTLX": 148
+        },
+        "target_scores": {
+          "Electronics::B07RJZPTLX": 1.531256363266137e-08
+        },
+        "target_cf": {
+          "Electronics::B07RJZPTLX": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08GHHBPFB": 51
+        },
+        "target_scores": {
+          "Electronics::B08GHHBPFB": 7.941356139279169e-10
+        },
+        "target_cf": {
+          "Electronics::B08GHHBPFB": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B00VS1MGB6": 999
+        },
+        "target_scores": {
+          "Toys_and_Games::B00VS1MGB6": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B00VS1MGB6": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 150,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Video_Games::B09CW63H33": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01621M1S4": 100
+        },
+        "target_scores": {
+          "Electronics::B01621M1S4": 8.511504785176136e-09
+        },
+        "target_cf": {
+          "Electronics::B01621M1S4": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B089K11VG4": 52,
+          "Electronics::B0BYMMJBSC": 51
+        },
+        "target_scores": {
+          "Electronics::B089K11VG4": 2.321319486866219e-09,
+          "Electronics::B0BYMMJBSC": 2.46385664834046e-09
+        },
+        "target_cf": {
+          "Electronics::B089K11VG4": 0.0,
+          "Electronics::B0BYMMJBSC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0784XD4XP": 51
+        },
+        "target_scores": {
+          "Electronics::B0784XD4XP": 1.0812461820403177e-08
+        },
+        "target_cf": {
+          "Electronics::B0784XD4XP": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 30,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0912WH4VL": 13
+        },
+        "target_scores": {
+          "Toys_and_Games::B0912WH4VL": 1.1810221950722868e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0912WH4VL": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08M9N1QY4": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B08M9N1QY4": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08M9N1QY4": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07VXGNHWY": 51
+        },
+        "target_scores": {
+          "Electronics::B07VXGNHWY": 1.8326206475259622e-10
+        },
+        "target_cf": {
+          "Electronics::B07VXGNHWY": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07BLNWZHS": 51
+        },
+        "target_scores": {
+          "Electronics::B07BLNWZHS": 8.144980655670942e-10
+        },
+        "target_cf": {
+          "Electronics::B07BLNWZHS": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07R4SPKVM": 51
+        },
+        "target_scores": {
+          "Electronics::B07R4SPKVM": 1.934432905721849e-09
+        },
+        "target_cf": {
+          "Electronics::B07R4SPKVM": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BWVDRR6L": 14
+        },
+        "target_scores": {
+          "Electronics::B0BWVDRR6L": 3.152107513744655e-08
+        },
+        "target_cf": {
+          "Electronics::B0BWVDRR6L": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BMH2BCFZ": 41
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BMH2BCFZ": 1.1199348401547545e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BMH2BCFZ": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08LKNZTSP": 51
+        },
+        "target_scores": {
+          "Electronics::B08LKNZTSP": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08LKNZTSP": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08HCTHLHL": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B08HCTHLHL": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08HCTHLHL": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B073SF1VCH": 15
+        },
+        "target_scores": {
+          "Electronics::B073SF1VCH": 4.744451231928324e-09
+        },
+        "target_cf": {
+          "Electronics::B073SF1VCH": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08LT6PT1X": 19
+        },
+        "target_scores": {
+          "Video_Games::B08LT6PT1X": 1.671757279576461e-08
+        },
+        "target_cf": {
+          "Video_Games::B08LT6PT1X": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09632TN9J": 41
+        },
+        "target_scores": {
+          "Electronics::B09632TN9J": 0.0
+        },
+        "target_cf": {
+          "Electronics::B09632TN9J": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08C9K34RZ": 41
+        },
+        "target_scores": {
+          "Toys_and_Games::B08C9K34RZ": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08C9K34RZ": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B078G91T8X": 47
+        },
+        "target_scores": {
+          "Electronics::B078G91T8X": 1.0140500916310322e-08
+        },
+        "target_cf": {
+          "Electronics::B078G91T8X": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0006BCCAE": 4
+        },
+        "target_scores": {
+          "Electronics::B0006BCCAE": 3.278354713907554e-09
+        },
+        "target_cf": {
+          "Electronics::B0006BCCAE": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07XZJ1V1P": 41
+        },
+        "target_scores": {
+          "Electronics::B07XZJ1V1P": 1.8326206475259622e-10
+        },
+        "target_cf": {
+          "Electronics::B07XZJ1V1P": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C8HDXFXN": 5
+        },
+        "target_scores": {
+          "Electronics::B0C8HDXFXN": 1.455915292201181e-08
+        },
+        "target_cf": {
+          "Electronics::B0C8HDXFXN": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09QJDR8YS": 37
+        },
+        "target_scores": {
+          "Electronics::B09QJDR8YS": 1.0181225819588679e-08
+        },
+        "target_cf": {
+          "Electronics::B09QJDR8YS": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 30,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C3HNDTW1": 16
+        },
+        "target_scores": {
+          "Electronics::B0C3HNDTW1": 2.1665648544084706e-08
+        },
+        "target_cf": {
+          "Electronics::B0C3HNDTW1": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08XW49GYK": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B08XW49GYK": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08XW49GYK": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B005OC00XG": 41,
+          "Toys_and_Games::B084P3SM82": 42
+        },
+        "target_scores": {
+          "Toys_and_Games::B005OC00XG": 1.140297291793932e-09,
+          "Toys_and_Games::B084P3SM82": 3.46161677866015e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B005OC00XG": 0.0,
+          "Toys_and_Games::B084P3SM82": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B092QF2K74": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C9K1X2N3": 51
+        },
+        "target_scores": {
+          "Electronics::B0C9K1X2N3": 2.199144777031154e-09
+        },
+        "target_cf": {
+          "Electronics::B0C9K1X2N3": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01KG57RIG": 51
+        },
+        "target_scores": {
+          "Electronics::B01KG57RIG": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B01KG57RIG": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 200,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RLLP698": 28
+        },
+        "target_scores": {
+          "Electronics::B07RLLP698": 2.647118713093056e-10
+        },
+        "target_cf": {
+          "Electronics::B07RLLP698": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09B2CKQ7C": 50
+        },
+        "target_scores": {
+          "Electronics::B09B2CKQ7C": 6.1698228466707384e-09
+        },
+        "target_cf": {
+          "Electronics::B09B2CKQ7C": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BDFX1HPD": 1
+        },
+        "target_scores": {
+          "Electronics::B0BDFX1HPD": 1.2339645693341477e-08
+        },
+        "target_cf": {
+          "Electronics::B0BDFX1HPD": 0.0,
+          "Electronics::B08SQBMV1H": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "n_targets": 3,
+        "n_union_candidates": 500,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B08JV6MDDN": 16,
+          "Electronics::B08PV2NRFT": 502
+        },
+        "target_scores": {
+          "Electronics::B08JV6MDDN": 1.7104459376908977e-09,
+          "Electronics::B08PV2NRFT": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08JV6MDDN": 0.0,
+          "Electronics::B08PV2NRFT": 0.0,
+          "Electronics::B08XLGVVVX": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08CK31S42": 1
+        },
+        "target_scores": {
+          "Electronics::B08CK31S42": 6.108735491753207e-10
+        },
+        "target_cf": {
+          "Electronics::B08CK31S42": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 40,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00IO62DO8": 41
+        },
+        "target_scores": {
+          "Electronics::B00IO62DO8": 3.604153940134392e-09
+        },
+        "target_cf": {
+          "Electronics::B00IO62DO8": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "n_targets": 3,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08LQ8MM7X": 2,
+          "Electronics::B00W95RR32": 1,
+          "Electronics::B0C2TS4D2V": 3
+        },
+        "target_scores": {
+          "Toys_and_Games::B08LQ8MM7X": 0.0,
+          "Electronics::B00W95RR32": 3.7874160048869885e-09,
+          "Electronics::B0C2TS4D2V": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08LQ8MM7X": 0.0,
+          "Electronics::B00W95RR32": 0.0,
+          "Electronics::B0C2TS4D2V": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 50,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B073M8QT1S": 51
+        },
+        "target_scores": {
+          "Toys_and_Games::B073M8QT1S": 8.959478721238037e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B073M8QT1S": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "n_targets": 4,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 3,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BBQ4SHC1": 1,
+          "Toys_and_Games::B08JYG9TTW": 2,
+          "Toys_and_Games::B07DM9SLC2": 3
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BBQ4SHC1": 2.2398696803095093e-10,
+          "Toys_and_Games::B08JYG9TTW": 0.0,
+          "Toys_and_Games::B07DM9SLC2": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BBQ4SHC1": 0.0,
+          "Toys_and_Games::B08J4L7FHY": 0.0,
+          "Toys_and_Games::B08JYG9TTW": 0.0,
+          "Toys_and_Games::B07DM9SLC2": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RRN9GZY": 1
+        },
+        "target_scores": {
+          "Electronics::B07RRN9GZY": 1.5882712278558337e-09
+        },
+        "target_cf": {
+          "Electronics::B07RRN9GZY": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07416LZDH": 1
+        },
+        "target_scores": {
+          "Electronics::B07416LZDH": 6.515984524536754e-10
+        },
+        "target_cf": {
+          "Electronics::B07416LZDH": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 50,
+        "fates": {
+          "hidden_policy": 2
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B09QS7P4RQ": 0.0,
+          "Electronics::B0939MWKDK": 0.0
+        }
+      }
+    ]
+  },
+  {
+    "run": "experiments\\agent_eval\\filter_ab\\exp_2_baseline\\run_1",
+    "n_requests": 116,
+    "n_targets": 196,
+    "fate_counts": {
+      "ranked": 160,
+      "hidden_policy": 36
+    },
+    "fate_frac": {
+      "ranked": 0.8163265306122449,
+      "hidden_policy": 0.1836734693877551
+    },
+    "ranked_rescue": {
+      "@1": 15,
+      "@5": 26,
+      "@10": 33,
+      "@20": 81,
+      "@50": 91,
+      "@100": 95
+    },
+    "ranked_rescue_frac": {
+      "@1": 0.09375,
+      "@5": 0.1625,
+      "@10": 0.20625,
+      "@20": 0.50625,
+      "@50": 0.56875,
+      "@100": 0.59375
+    },
+    "rank_dist": {
+      "n": 160,
+      "median": 20.0,
+      "p90": 1001.0,
+      "max": 1004
+    },
+    "cf_nonzero_frac_ranked": 0.0,
+    "score_margin_vs_best_other": {
+      "median": NaN,
+      "frac_beats_best_other": 0.0
+    },
+    "per_kind": {
+      "similar": {
+        "ranked": 67,
+        "hidden_policy": 10
+      },
+      "personalized": {
+        "hidden_policy": 20,
+        "ranked": 53
+      },
+      "cold_text": {
+        "ranked": 20
+      },
+      "exclusion": {
+        "ranked": 20,
+        "hidden_policy": 6
+      }
+    },
+    "per_request": [
+      {
+        "request_id": "similar-sparse-0",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 10,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BTR6295J": 12,
+          "Electronics::B0C571K6X5": 11
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BTR6295J": 1.099572388515577e-09,
+          "Electronics::B0C571K6X5": 2.687843616371411e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BTR6295J": 0.0,
+          "Toys_and_Games::B0BW3DF1XN": 0.0,
+          "Electronics::B0C571K6X5": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-1",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 16,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B075R97C9K": 17
+        },
+        "target_scores": {
+          "Electronics::B075R97C9K": 2.810018326206475e-09
+        },
+        "target_cf": {
+          "Electronics::B075R97C9K": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-2",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B09XV4PSK8": 22,
+          "Electronics::B07S8PVSDS": 21
+        },
+        "target_scores": {
+          "Video_Games::B09XV4PSK8": 1.6289961311341885e-09,
+          "Electronics::B07S8PVSDS": 2.3824068417837505e-08
+        },
+        "target_cf": {
+          "Video_Games::B09XV4PSK8": 0.0,
+          "Electronics::B07S8PVSDS": 0.0,
+          "Electronics::B09WDCP5MC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-3",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07R32PZZ6": 19
+        },
+        "target_scores": {
+          "Electronics::B07R32PZZ6": 3.0543677458766033e-10
+        },
+        "target_cf": {
+          "Electronics::B07R32PZZ6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-4",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 15,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08BG6CVQD": 16
+        },
+        "target_scores": {
+          "Toys_and_Games::B08BG6CVQD": 4.886988393402565e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08BG6CVQD": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-5",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B08F1P3BCC": 19,
+          "Electronics::B086JXJ1LF": 20
+        },
+        "target_scores": {
+          "Electronics::B08F1P3BCC": 6.929342292812054e-08,
+          "Electronics::B086JXJ1LF": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B08F1P3BCC": 0.0,
+          "Electronics::B086JXJ1LF": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-6",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 11,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B083TBWLPR": 12
+        },
+        "target_scores": {
+          "Electronics::B083TBWLPR": 4.4797393606190186e-10
+        },
+        "target_cf": {
+          "Electronics::B083TBWLPR": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-7",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 19,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00354951S": 20
+        },
+        "target_scores": {
+          "Electronics::B00354951S": 9.366727754021583e-10
+        },
+        "target_cf": {
+          "Electronics::B00354951S": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-8",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 15,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08Q42V4TY": 17,
+          "Electronics::B07TBBB9BQ": 16
+        },
+        "target_scores": {
+          "Video_Games::B08Q42V4TY": 0.0,
+          "Electronics::B07TBBB9BQ": 2.647118713093056e-10
+        },
+        "target_cf": {
+          "Video_Games::B08Q42V4TY": 0.0,
+          "Electronics::B0BH13KJ64": 0.0,
+          "Electronics::B07TBBB9BQ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-9",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08CM3B4WC": 21
+        },
+        "target_scores": {
+          "Toys_and_Games::B08CM3B4WC": 8.755854204846262e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08CM3B4WC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-10",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 13,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07WRDBG88": 14
+        },
+        "target_scores": {
+          "Toys_and_Games::B07WRDBG88": 3.8688658114436975e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B07WRDBG88": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-11",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 15,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09C5TBQQ2": 16
+        },
+        "target_scores": {
+          "Electronics::B09C5TBQQ2": 1.0384850335980452e-09
+        },
+        "target_cf": {
+          "Electronics::B09C5TBQQ2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-12",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 17,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0007ZCIUI": 19,
+          "Electronics::B0B9GFKYSZ": 18
+        },
+        "target_scores": {
+          "Toys_and_Games::B0007ZCIUI": 1.140297291793932e-09,
+          "Electronics::B0B9GFKYSZ": 7.0250458155161875e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0007ZCIUI": 0.0,
+          "Electronics::B0B9GFKYSZ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-13",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07H4Q33H3": 21
+        },
+        "target_scores": {
+          "Toys_and_Games::B07H4Q33H3": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B07H4Q33H3": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-14",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08K8W68BX": 1
+        },
+        "target_scores": {
+          "Electronics::B08K8W68BX": 6.719609040928528e-10
+        },
+        "target_cf": {
+          "Electronics::B08K8W68BX": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-15",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B095WQVC5M": 14,
+          "Electronics::B088CW81Y6": 13
+        },
+        "target_scores": {
+          "Electronics::B095WQVC5M": 0.0,
+          "Electronics::B088CW81Y6": 5.090612909794339e-10
+        },
+        "target_cf": {
+          "Electronics::B095WQVC5M": 0.0,
+          "Electronics::B088CW81Y6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-16",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 12,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B08CBGJ8P7": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-17",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08QCYNLPC": 19
+        },
+        "target_scores": {
+          "Electronics::B08QCYNLPC": 7.126858073712074e-10
+        },
+        "target_cf": {
+          "Electronics::B08QCYNLPC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-18",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 20,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B08WJSHSLC": 0.0
+        }
+      },
+      {
+        "request_id": "similar-sparse-19",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BG56H1NZ": 13
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BG56H1NZ": 4.907350845041743e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BG56H1NZ": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-0",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08QRYTPGH": 15
+        },
+        "target_scores": {
+          "Electronics::B08QRYTPGH": 6.515984524536754e-10
+        },
+        "target_cf": {
+          "Electronics::B08QRYTPGH": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-1",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 19,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00IM3P8GS": 19
+        },
+        "target_scores": {
+          "Electronics::B00IM3P8GS": 2.7082060680105884e-08
+        },
+        "target_cf": {
+          "Electronics::B00IM3P8GS": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-2",
+        "kind": "similar",
+        "n_targets": 6,
+        "n_union_candidates": 7,
+        "fates": {
+          "hidden_policy": 1,
+          "ranked": 5
+        },
+        "target_ranks": {
+          "Electronics::B0BKPX3YSH": 9,
+          "Electronics::B08BC188VJ": 11,
+          "Electronics::B0C5B6XN1C": 8,
+          "Electronics::B01NAZ27PM": 10,
+          "Electronics::B07TZGV19Z": 12
+        },
+        "target_scores": {
+          "Electronics::B0BKPX3YSH": 2.3824068417837507e-09,
+          "Electronics::B08BC188VJ": 1.0181225819588678e-10,
+          "Electronics::B0C5B6XN1C": 2.76929342292812e-09,
+          "Electronics::B01NAZ27PM": 1.2217470983506414e-10,
+          "Electronics::B07TZGV19Z": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08ZKL77Q5": 0.0,
+          "Electronics::B0BKPX3YSH": 0.0,
+          "Electronics::B08BC188VJ": 0.0,
+          "Electronics::B0C5B6XN1C": 0.0,
+          "Electronics::B01NAZ27PM": 0.0,
+          "Electronics::B07TZGV19Z": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-3",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08FD52RR6": 14
+        },
+        "target_scores": {
+          "Electronics::B08FD52RR6": 5.70148645896966e-10
+        },
+        "target_cf": {
+          "Electronics::B08FD52RR6": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-4",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0748KYTZN": 19
+        },
+        "target_scores": {
+          "Electronics::B0748KYTZN": 1.9385053960496844e-08
+        },
+        "target_cf": {
+          "Electronics::B0748KYTZN": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-5",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0861S37C3": 21,
+          "Electronics::B07QH53F42": 20
+        },
+        "target_scores": {
+          "Electronics::B0861S37C3": 0.0,
+          "Electronics::B07QH53F42": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B0861S37C3": 0.0,
+          "Electronics::B07QH53F42": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-6",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 12,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BLZZRZ2H": 13,
+          "Electronics::B085G96HZ2": 14
+        },
+        "target_scores": {
+          "Electronics::B0BLZZRZ2H": 1.2828344532681734e-09,
+          "Electronics::B085G96HZ2": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B0BLZZRZ2H": 0.0,
+          "Electronics::B085G96HZ2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-7",
+        "kind": "similar",
+        "n_targets": 3,
+        "n_union_candidates": 14,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Electronics::B08F1XLD1Z": 16,
+          "Electronics::B07X9YQDFD": 15,
+          "Electronics::B07D3ZFTMW": 17
+        },
+        "target_scores": {
+          "Electronics::B08F1XLD1Z": 1.8326206475259622e-10,
+          "Electronics::B07X9YQDFD": 4.988800651598452e-09,
+          "Electronics::B07D3ZFTMW": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08F1XLD1Z": 0.0,
+          "Electronics::B07X9YQDFD": 0.0,
+          "Electronics::B07D3ZFTMW": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-8",
+        "kind": "similar",
+        "n_targets": 4,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 4
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07MBFG9W2": 1,
+          "Electronics::B07V3JYVQH": 2,
+          "Electronics::B08G3NV1VZ": 3,
+          "Electronics::B084H2QBXB": 4
+        },
+        "target_scores": {
+          "Toys_and_Games::B07MBFG9W2": 1.3439218081857055e-09,
+          "Electronics::B07V3JYVQH": 1.2421095499898187e-09,
+          "Electronics::B08G3NV1VZ": 4.683363877010792e-10,
+          "Electronics::B084H2QBXB": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B07MBFG9W2": 0.0,
+          "Electronics::B07V3JYVQH": 0.0,
+          "Electronics::B08G3NV1VZ": 0.0,
+          "Electronics::B084H2QBXB": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-9",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B088BP48Z9": 19,
+          "Electronics::B08NSTS1TM": 20
+        },
+        "target_scores": {
+          "Electronics::B088BP48Z9": 3.46161677866015e-10,
+          "Electronics::B08NSTS1TM": 1.6289961311341885e-10
+        },
+        "target_cf": {
+          "Electronics::B088BP48Z9": 0.0,
+          "Electronics::B08NSTS1TM": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-10",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 19,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09G3MBH6V": 20
+        },
+        "target_scores": {
+          "Electronics::B09G3MBH6V": 8.44430869476685e-08
+        },
+        "target_cf": {
+          "Electronics::B09G3MBH6V": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-11",
+        "kind": "similar",
+        "n_targets": 9,
+        "n_union_candidates": 16,
+        "fates": {
+          "ranked": 7,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0791X617D": 22,
+          "Electronics::B088C3KRH3": 17,
+          "Electronics::B091Y3DNXS": 19,
+          "Electronics::B00J2TGZTK": 18,
+          "Electronics::B08GKHQS92": 20,
+          "Electronics::B071R7HSH5": 23,
+          "Electronics::B09ZD2G75S": 21
+        },
+        "target_scores": {
+          "Toys_and_Games::B0791X617D": 1.0181225819588678e-10,
+          "Electronics::B088C3KRH3": 1.5475463245774792e-08,
+          "Electronics::B091Y3DNXS": 2.9525554876807166e-09,
+          "Electronics::B00J2TGZTK": 1.0201588271227855e-08,
+          "Electronics::B08GKHQS92": 1.8937080024434943e-09,
+          "Electronics::B071R7HSH5": 0.0,
+          "Electronics::B09ZD2G75S": 2.85074322948483e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B0791X617D": 0.0,
+          "Electronics::B088C3KRH3": 0.0,
+          "Electronics::B091Y3DNXS": 0.0,
+          "Electronics::B00J2TGZTK": 0.0,
+          "Electronics::B08GKHQS92": 0.0,
+          "Electronics::B071R7HSH5": 0.0,
+          "Electronics::B08TGXFZJT": 0.0,
+          "Electronics::B09ZD2G75S": 0.0,
+          "Electronics::B09PDL84HF": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-12",
+        "kind": "similar",
+        "n_targets": 4,
+        "n_union_candidates": 7,
+        "fates": {
+          "ranked": 4
+        },
+        "target_ranks": {
+          "Video_Games::B08JP2FT27": 11,
+          "Video_Games::B076GYVWRY": 9,
+          "Electronics::B0C49KQRX4": 8,
+          "Electronics::B086W7PH7N": 10
+        },
+        "target_scores": {
+          "Video_Games::B08JP2FT27": 6.31236000814498e-10,
+          "Video_Games::B076GYVWRY": 5.599674200773773e-09,
+          "Electronics::B0C49KQRX4": 1.347994298513541e-08,
+          "Electronics::B086W7PH7N": 1.4253716147424148e-09
+        },
+        "target_cf": {
+          "Video_Games::B08JP2FT27": 0.0,
+          "Video_Games::B076GYVWRY": 0.0,
+          "Electronics::B0C49KQRX4": 0.0,
+          "Electronics::B086W7PH7N": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-13",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 6,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B088BKY69Y": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-14",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 3,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08N7PX4WX": 4
+        },
+        "target_scores": {
+          "Video_Games::B08N7PX4WX": 1.4640602728568518e-08
+        },
+        "target_cf": {
+          "Video_Games::B08N7PX4WX": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-15",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B087QJKRY8": 20,
+          "Electronics::B07R8GCP7D": 21
+        },
+        "target_scores": {
+          "Electronics::B087QJKRY8": 3.6448788434127468e-09,
+          "Electronics::B07R8GCP7D": 5.090612909794339e-10
+        },
+        "target_cf": {
+          "Electronics::B087QJKRY8": 0.0,
+          "Electronics::B07R8GCP7D": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-16",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 18,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0C5J8Q9LY": 19,
+          "Electronics::B0B428Z89X": 20
+        },
+        "target_scores": {
+          "Electronics::B0C5J8Q9LY": 3.7874160048869885e-09,
+          "Electronics::B0B428Z89X": 3.5634290368560377e-09
+        },
+        "target_cf": {
+          "Electronics::B0C5J8Q9LY": 0.0,
+          "Electronics::B0B428Z89X": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-17",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 20,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B07JL18G1D": 20,
+          "Electronics::B07W75MYB2": 21
+        },
+        "target_scores": {
+          "Electronics::B07JL18G1D": 6.010995723885155e-08,
+          "Electronics::B07W75MYB2": 6.31236000814498e-10
+        },
+        "target_cf": {
+          "Electronics::B07JL18G1D": 0.0,
+          "Electronics::B07W75MYB2": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-18",
+        "kind": "similar",
+        "n_targets": 1,
+        "n_union_candidates": 8,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0989VJ8KY": 9
+        },
+        "target_scores": {
+          "Electronics::B0989VJ8KY": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B0989VJ8KY": 0.0
+        }
+      },
+      {
+        "request_id": "similar-warm-19",
+        "kind": "similar",
+        "n_targets": 2,
+        "n_union_candidates": 11,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BM64W6NY": 12
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BM64W6NY": 1.4253716147424148e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BM64W6NY": 0.0,
+          "Toys_and_Games::B09B1YCT71": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-0",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1,
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09V1FT19S": 355
+        },
+        "target_scores": {
+          "Electronics::B09V1FT19S": 4.862553451435553e-08
+        },
+        "target_cf": {
+          "Toys_and_Games::B08FW9Q2GG": 0.0,
+          "Electronics::B09V1FT19S": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-1",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 500,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09S1FPFVS": 501
+        },
+        "target_scores": {
+          "Electronics::B09S1FPFVS": 4.8055385868458566e-09
+        },
+        "target_cf": {
+          "Electronics::B09S1FPFVS": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-2",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 900,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B09198674S": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-3",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Video_Games::B09FBW2988": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-4",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 900,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B0827SLLMB": 900
+        },
+        "target_scores": {
+          "Electronics::B0827SLLMB": 6.108735491753207e-10
+        },
+        "target_cf": {
+          "Electronics::B0827SLLMB": 0.0,
+          "Electronics::B09L423J1Q": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-5",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 900,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B07T85XHX6": 901
+        },
+        "target_scores": {
+          "Video_Games::B07T85XHX6": 1.9751578090002033e-09
+        },
+        "target_cf": {
+          "Video_Games::B07T85XHX6": 0.0,
+          "Video_Games::B0941XMYPV": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-6",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 500,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BCXY36KF": 501,
+          "Electronics::B09C2JCWT6": 502
+        },
+        "target_scores": {
+          "Electronics::B0BCXY36KF": 3.257992262268377e-10,
+          "Electronics::B09C2JCWT6": 1.0181225819588678e-10
+        },
+        "target_cf": {
+          "Electronics::B0BCXY36KF": 0.0,
+          "Electronics::B09C2JCWT6": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-7",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B09FJV3GBC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-8",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00NVKHLP8": 807
+        },
+        "target_scores": {
+          "Electronics::B00NVKHLP8": 2.4944003257992262e-08
+        },
+        "target_cf": {
+          "Electronics::B00NVKHLP8": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-9",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B08YFJYD5Z": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-10",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Video_Games::B09QRWMVD7": 1002,
+          "Toys_and_Games::B00JVF64WS": 1001
+        },
+        "target_scores": {
+          "Video_Games::B09QRWMVD7": 1.6289961311341885e-10,
+          "Toys_and_Games::B00JVF64WS": 2.2398696803095093e-10
+        },
+        "target_cf": {
+          "Video_Games::B09QRWMVD7": 0.0,
+          "Toys_and_Games::B00JVF64WS": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-11",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08KY684PB": 1001
+        },
+        "target_scores": {
+          "Electronics::B08KY684PB": 8.348605172062716e-10
+        },
+        "target_cf": {
+          "Electronics::B08KY684PB": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-12",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0013N2182": 1001
+        },
+        "target_scores": {
+          "Toys_and_Games::B0013N2182": 2.260232131948687e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0013N2182": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-13",
+        "kind": "personalized",
+        "n_targets": 11,
+        "n_union_candidates": 900,
+        "fates": {
+          "ranked": 9,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B07171L4FT": 905,
+          "Toys_and_Games::B07C9W8DJK": 903,
+          "Toys_and_Games::B01BFK66P6": 906,
+          "Electronics::B09LQ6T5WP": 901,
+          "Electronics::B0BRTXHKYZ": 907,
+          "Electronics::B095JX15XF": 182,
+          "Electronics::B0BFM2GP2B": 424,
+          "Electronics::B07YFG742J": 904,
+          "Electronics::B08CY958PD": 908
+        },
+        "target_scores": {
+          "Toys_and_Games::B07171L4FT": 6.515984524536754e-10,
+          "Toys_and_Games::B07C9W8DJK": 1.9140704540826714e-09,
+          "Toys_and_Games::B01BFK66P6": 6.31236000814498e-10,
+          "Electronics::B09LQ6T5WP": 2.9932803909590714e-09,
+          "Electronics::B0BRTXHKYZ": 3.0543677458766033e-10,
+          "Electronics::B095JX15XF": 6.656485440847077e-08,
+          "Electronics::B0BFM2GP2B": 2.8120545713703928e-08,
+          "Electronics::B07YFG742J": 7.737731622887395e-10,
+          "Electronics::B08CY958PD": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B07171L4FT": 0.0,
+          "Toys_and_Games::B07C9W8DJK": 0.0,
+          "Toys_and_Games::B01BFK66P6": 0.0,
+          "Toys_and_Games::B00E72RMEE": 0.0,
+          "Electronics::B09LQ6T5WP": 0.0,
+          "Electronics::B0BRTXHKYZ": 0.0,
+          "Electronics::B095JX15XF": 0.0,
+          "Electronics::B0BFM2GP2B": 0.0,
+          "Electronics::B07YFG742J": 0.0,
+          "Electronics::B08Q7RDZ27": 0.0,
+          "Electronics::B08CY958PD": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-14",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 900,
+        "fates": {
+          "hidden_policy": 3,
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B0BXLH8PGN": 895,
+          "Electronics::B095WN7D2T": 902
+        },
+        "target_scores": {
+          "Electronics::B0BXLH8PGN": 5.029525554876807e-09,
+          "Electronics::B095WN7D2T": 2.2398696803095093e-10
+        },
+        "target_cf": {
+          "Electronics::B09DFL95SV": 0.0,
+          "Electronics::B0BXLH8PGN": 0.0,
+          "Electronics::B099LCK96Q": 0.0,
+          "Electronics::B09M65RWQP": 0.0,
+          "Electronics::B095WN7D2T": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-15",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BMQD4ZWR": 1001
+        },
+        "target_scores": {
+          "Electronics::B0BMQD4ZWR": 1.6900834860517206e-09
+        },
+        "target_cf": {
+          "Electronics::B0BMQD4ZWR": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-16",
+        "kind": "personalized",
+        "n_targets": 3,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Electronics::B08932J7NC": 1001,
+          "Electronics::B08F9LN79L": 1002,
+          "Electronics::B08NT5JQPD": 1003
+        },
+        "target_scores": {
+          "Electronics::B08932J7NC": 2.524944003257992e-09,
+          "Electronics::B08F9LN79L": 2.0362451639177356e-10,
+          "Electronics::B08NT5JQPD": 1.2217470983506414e-10
+        },
+        "target_cf": {
+          "Electronics::B08932J7NC": 0.0,
+          "Electronics::B08F9LN79L": 0.0,
+          "Electronics::B08NT5JQPD": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-17",
+        "kind": "personalized",
+        "n_targets": 3,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08F56X6QN": 1000
+        },
+        "target_scores": {
+          "Toys_and_Games::B08F56X6QN": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08F56X6QN": 0.0,
+          "Electronics::B08YR4HF3V": 0.0,
+          "Electronics::B09BN2VKJG": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-18",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 300,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B015329HQC": 300
+        },
+        "target_scores": {
+          "Toys_and_Games::B015329HQC": 3.8688658114436975e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B015329HQC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-sparse-19",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01FFACQYW": 1001
+        },
+        "target_scores": {
+          "Electronics::B01FFACQYW": 4.4797393606190186e-10
+        },
+        "target_cf": {
+          "Electronics::B01FFACQYW": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-0",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BDF4DVXC": 996
+        },
+        "target_scores": {
+          "Electronics::B0BDF4DVXC": 7.697006719609041e-09
+        },
+        "target_cf": {
+          "Electronics::B0BDF4DVXC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-1",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 300,
+        "fates": {
+          "ranked": 4,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B085TDV9DW": 301,
+          "Electronics::B07823T5BG": 302,
+          "Electronics::B01LAFEDEW": 303,
+          "Electronics::B081XSL347": 304
+        },
+        "target_scores": {
+          "Electronics::B085TDV9DW": 1.3235593565465281e-09,
+          "Electronics::B07823T5BG": 3.6652412950519243e-10,
+          "Electronics::B01LAFEDEW": 2.647118713093056e-10,
+          "Electronics::B081XSL347": 0.0
+        },
+        "target_cf": {
+          "Electronics::B085TDV9DW": 0.0,
+          "Electronics::B00C6A1IB2": 0.0,
+          "Electronics::B07823T5BG": 0.0,
+          "Electronics::B01LAFEDEW": 0.0,
+          "Electronics::B081XSL347": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-2",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B0BDMZ1DJ8": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-3",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B082M94GY9": 1001
+        },
+        "target_scores": {
+          "Electronics::B082M94GY9": 6.760333944206882e-09
+        },
+        "target_cf": {
+          "Electronics::B082M94GY9": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-4",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B092W3K376": 585
+        },
+        "target_scores": {
+          "Electronics::B092W3K376": 3.451435552840562e-08
+        },
+        "target_cf": {
+          "Electronics::B092W3K376": 0.0,
+          "Electronics::B09B36FJVT": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-5",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08PSQ2SS1": 999
+        },
+        "target_scores": {
+          "Electronics::B08PSQ2SS1": 5.762573813887192e-09
+        },
+        "target_cf": {
+          "Electronics::B08PSQ2SS1": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-6",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08FNT65ZN": 997
+        },
+        "target_scores": {
+          "Electronics::B08FNT65ZN": 2.810018326206475e-09
+        },
+        "target_cf": {
+          "Electronics::B08FNT65ZN": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-7",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07K9DD2SZ": 998
+        },
+        "target_scores": {
+          "Electronics::B07K9DD2SZ": 7.941356139279169e-10
+        },
+        "target_cf": {
+          "Electronics::B07K9DD2SZ": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-8",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09PZW8R7L": 1001
+        },
+        "target_scores": {
+          "Electronics::B09PZW8R7L": 5.70148645896966e-10
+        },
+        "target_cf": {
+          "Electronics::B09PZW8R7L": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-9",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07GZFM1ZM": 4
+        },
+        "target_scores": {
+          "Electronics::B07GZFM1ZM": 6.190796171859092e-07
+        },
+        "target_cf": {
+          "Electronics::B07GZFM1ZM": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-10",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B002DPUUL4": 625
+        },
+        "target_scores": {
+          "Electronics::B002DPUUL4": 3.280390959071472e-08
+        },
+        "target_cf": {
+          "Electronics::B002DPUUL4": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-11",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Toys_and_Games::B08GWG9D4Z": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-12",
+        "kind": "personalized",
+        "n_targets": 5,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 4,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Video_Games::B00NETKFJU": 963,
+          "Video_Games::B015NKL2YO": 1003,
+          "Toys_and_Games::B0BWGV4DCS": 1002,
+          "Toys_and_Games::B079X4C3FN": 1004
+        },
+        "target_scores": {
+          "Video_Games::B00NETKFJU": 1.4538790470372632e-08,
+          "Video_Games::B015NKL2YO": 2.4434941967012827e-10,
+          "Toys_and_Games::B0BWGV4DCS": 3.909590714722052e-09,
+          "Toys_and_Games::B079X4C3FN": 0.0
+        },
+        "target_cf": {
+          "Video_Games::B00NETKFJU": 0.0,
+          "Video_Games::B015NKL2YO": 0.0,
+          "Toys_and_Games::B0BWGV4DCS": 0.0,
+          "Toys_and_Games::B09DGTKLVF": 0.0,
+          "Toys_and_Games::B079X4C3FN": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-13",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 900,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RJZPTLX": 738
+        },
+        "target_scores": {
+          "Electronics::B07RJZPTLX": 1.531256363266137e-08
+        },
+        "target_cf": {
+          "Electronics::B07RJZPTLX": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-14",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 900,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08GHHBPFB": 901
+        },
+        "target_scores": {
+          "Electronics::B08GHHBPFB": 7.941356139279169e-10
+        },
+        "target_cf": {
+          "Electronics::B08GHHBPFB": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-15",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B00VS1MGB6": 999
+        },
+        "target_scores": {
+          "Toys_and_Games::B00VS1MGB6": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B00VS1MGB6": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-16",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Video_Games::B09CW63H33": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-17",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01621M1S4": 995
+        },
+        "target_scores": {
+          "Electronics::B01621M1S4": 8.511504785176136e-09
+        },
+        "target_cf": {
+          "Electronics::B01621M1S4": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-18",
+        "kind": "personalized",
+        "n_targets": 2,
+        "n_union_candidates": 500,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Electronics::B089K11VG4": 502,
+          "Electronics::B0BYMMJBSC": 501
+        },
+        "target_scores": {
+          "Electronics::B089K11VG4": 2.321319486866219e-09,
+          "Electronics::B0BYMMJBSC": 2.46385664834046e-09
+        },
+        "target_cf": {
+          "Electronics::B089K11VG4": 0.0,
+          "Electronics::B0BYMMJBSC": 0.0
+        }
+      },
+      {
+        "request_id": "personalized-warm-19",
+        "kind": "personalized",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0784XD4XP": 990
+        },
+        "target_scores": {
+          "Electronics::B0784XD4XP": 1.0812461820403177e-08
+        },
+        "target_cf": {
+          "Electronics::B0784XD4XP": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-0",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0912WH4VL": 13
+        },
+        "target_scores": {
+          "Toys_and_Games::B0912WH4VL": 1.1810221950722868e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0912WH4VL": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-1",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08M9N1QY4": 101
+        },
+        "target_scores": {
+          "Toys_and_Games::B08M9N1QY4": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08M9N1QY4": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-2",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07VXGNHWY": 100
+        },
+        "target_scores": {
+          "Electronics::B07VXGNHWY": 1.8326206475259622e-10
+        },
+        "target_cf": {
+          "Electronics::B07VXGNHWY": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-3",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07BLNWZHS": 1
+        },
+        "target_scores": {
+          "Electronics::B07BLNWZHS": 8.144980655670942e-10
+        },
+        "target_cf": {
+          "Electronics::B07BLNWZHS": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-4",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07R4SPKVM": 101
+        },
+        "target_scores": {
+          "Electronics::B07R4SPKVM": 1.934432905721849e-09
+        },
+        "target_cf": {
+          "Electronics::B07R4SPKVM": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-5",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BWVDRR6L": 1
+        },
+        "target_scores": {
+          "Electronics::B0BWVDRR6L": 3.152107513744655e-08
+        },
+        "target_cf": {
+          "Electronics::B0BWVDRR6L": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-6",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BMH2BCFZ": 74
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BMH2BCFZ": 1.1199348401547545e-09
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BMH2BCFZ": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-7",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08LKNZTSP": 1
+        },
+        "target_scores": {
+          "Electronics::B08LKNZTSP": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08LKNZTSP": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-8",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08HCTHLHL": 101
+        },
+        "target_scores": {
+          "Toys_and_Games::B08HCTHLHL": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08HCTHLHL": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-9",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B073SF1VCH": 1
+        },
+        "target_scores": {
+          "Electronics::B073SF1VCH": 4.744451231928324e-09
+        },
+        "target_cf": {
+          "Electronics::B073SF1VCH": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-10",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Video_Games::B08LT6PT1X": 19
+        },
+        "target_scores": {
+          "Video_Games::B08LT6PT1X": 1.671757279576461e-08
+        },
+        "target_cf": {
+          "Video_Games::B08LT6PT1X": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-11",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09632TN9J": 101
+        },
+        "target_scores": {
+          "Electronics::B09632TN9J": 0.0
+        },
+        "target_cf": {
+          "Electronics::B09632TN9J": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-12",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08C9K34RZ": 83
+        },
+        "target_scores": {
+          "Toys_and_Games::B08C9K34RZ": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B08C9K34RZ": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-13",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B078G91T8X": 63
+        },
+        "target_scores": {
+          "Electronics::B078G91T8X": 1.0140500916310322e-08
+        },
+        "target_cf": {
+          "Electronics::B078G91T8X": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-14",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0006BCCAE": 4
+        },
+        "target_scores": {
+          "Electronics::B0006BCCAE": 3.278354713907554e-09
+        },
+        "target_cf": {
+          "Electronics::B0006BCCAE": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-15",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07XZJ1V1P": 1
+        },
+        "target_scores": {
+          "Electronics::B07XZJ1V1P": 1.8326206475259622e-10
+        },
+        "target_cf": {
+          "Electronics::B07XZJ1V1P": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-16",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C8HDXFXN": 5
+        },
+        "target_scores": {
+          "Electronics::B0C8HDXFXN": 1.455915292201181e-08
+        },
+        "target_cf": {
+          "Electronics::B0C8HDXFXN": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-17",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09QJDR8YS": 1
+        },
+        "target_scores": {
+          "Electronics::B09QJDR8YS": 1.0181225819588679e-08
+        },
+        "target_cf": {
+          "Electronics::B09QJDR8YS": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-18",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C3HNDTW1": 15
+        },
+        "target_scores": {
+          "Electronics::B0C3HNDTW1": 2.1665648544084706e-08
+        },
+        "target_cf": {
+          "Electronics::B0C3HNDTW1": 0.0
+        }
+      },
+      {
+        "request_id": "cold_text-cold-19",
+        "kind": "cold_text",
+        "n_targets": 1,
+        "n_union_candidates": 100,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08XW49GYK": 101
+        },
+        "target_scores": {
+          "Toys_and_Games::B08XW49GYK": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08XW49GYK": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-4",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 2
+        },
+        "target_ranks": {
+          "Toys_and_Games::B005OC00XG": 1001,
+          "Toys_and_Games::B084P3SM82": 1002
+        },
+        "target_scores": {
+          "Toys_and_Games::B005OC00XG": 1.140297291793932e-09,
+          "Toys_and_Games::B084P3SM82": 3.46161677866015e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B005OC00XG": 0.0,
+          "Toys_and_Games::B084P3SM82": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-11",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "hidden_policy": 1
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B092QF2K74": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-13",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B0C9K1X2N3": 1001
+        },
+        "target_scores": {
+          "Electronics::B0C9K1X2N3": 2.199144777031154e-09
+        },
+        "target_cf": {
+          "Electronics::B0C9K1X2N3": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-sparse-16",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B01KG57RIG": 1
+        },
+        "target_scores": {
+          "Electronics::B01KG57RIG": 6.9232335573203e-10
+        },
+        "target_cf": {
+          "Electronics::B01KG57RIG": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-0",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RLLP698": 1
+        },
+        "target_scores": {
+          "Electronics::B07RLLP698": 2.647118713093056e-10
+        },
+        "target_cf": {
+          "Electronics::B07RLLP698": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-1",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B09B2CKQ7C": 1
+        },
+        "target_scores": {
+          "Electronics::B09B2CKQ7C": 6.1698228466707384e-09
+        },
+        "target_cf": {
+          "Electronics::B09B2CKQ7C": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-2",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B0BDFX1HPD": 682
+        },
+        "target_scores": {
+          "Electronics::B0BDFX1HPD": 1.2339645693341477e-08
+        },
+        "target_cf": {
+          "Electronics::B0BDFX1HPD": 0.0,
+          "Electronics::B08SQBMV1H": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-4",
+        "kind": "exclusion",
+        "n_targets": 3,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 2,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Electronics::B08JV6MDDN": 1000,
+          "Electronics::B08PV2NRFT": 1001
+        },
+        "target_scores": {
+          "Electronics::B08JV6MDDN": 1.7104459376908977e-09,
+          "Electronics::B08PV2NRFT": 0.0
+        },
+        "target_cf": {
+          "Electronics::B08JV6MDDN": 0.0,
+          "Electronics::B08PV2NRFT": 0.0,
+          "Electronics::B08XLGVVVX": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-8",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B08CK31S42": 1
+        },
+        "target_scores": {
+          "Electronics::B08CK31S42": 6.108735491753207e-10
+        },
+        "target_cf": {
+          "Electronics::B08CK31S42": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-9",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 1000,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B00IO62DO8": 998
+        },
+        "target_scores": {
+          "Electronics::B00IO62DO8": 3.604153940134392e-09
+        },
+        "target_cf": {
+          "Electronics::B00IO62DO8": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-11",
+        "kind": "exclusion",
+        "n_targets": 3,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 3
+        },
+        "target_ranks": {
+          "Toys_and_Games::B08LQ8MM7X": 2,
+          "Electronics::B00W95RR32": 1,
+          "Electronics::B0C2TS4D2V": 3
+        },
+        "target_scores": {
+          "Toys_and_Games::B08LQ8MM7X": 0.0,
+          "Electronics::B00W95RR32": 3.7874160048869885e-09,
+          "Electronics::B0C2TS4D2V": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B08LQ8MM7X": 0.0,
+          "Electronics::B00W95RR32": 0.0,
+          "Electronics::B0C2TS4D2V": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-12",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B073M8QT1S": 1
+        },
+        "target_scores": {
+          "Toys_and_Games::B073M8QT1S": 8.959478721238037e-10
+        },
+        "target_cf": {
+          "Toys_and_Games::B073M8QT1S": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-14",
+        "kind": "exclusion",
+        "n_targets": 4,
+        "n_union_candidates": 0,
+        "fates": {
+          "ranked": 3,
+          "hidden_policy": 1
+        },
+        "target_ranks": {
+          "Toys_and_Games::B0BBQ4SHC1": 1,
+          "Toys_and_Games::B08JYG9TTW": 2,
+          "Toys_and_Games::B07DM9SLC2": 3
+        },
+        "target_scores": {
+          "Toys_and_Games::B0BBQ4SHC1": 2.2398696803095093e-10,
+          "Toys_and_Games::B08JYG9TTW": 0.0,
+          "Toys_and_Games::B07DM9SLC2": 0.0
+        },
+        "target_cf": {
+          "Toys_and_Games::B0BBQ4SHC1": 0.0,
+          "Toys_and_Games::B08J4L7FHY": 0.0,
+          "Toys_and_Games::B08JYG9TTW": 0.0,
+          "Toys_and_Games::B07DM9SLC2": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-15",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 300,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07RRN9GZY": 12
+        },
+        "target_scores": {
+          "Electronics::B07RRN9GZY": 1.5882712278558337e-09
+        },
+        "target_cf": {
+          "Electronics::B07RRN9GZY": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-17",
+        "kind": "exclusion",
+        "n_targets": 1,
+        "n_union_candidates": 200,
+        "fates": {
+          "ranked": 1
+        },
+        "target_ranks": {
+          "Electronics::B07416LZDH": 201
+        },
+        "target_scores": {
+          "Electronics::B07416LZDH": 6.515984524536754e-10
+        },
+        "target_cf": {
+          "Electronics::B07416LZDH": 0.0
+        }
+      },
+      {
+        "request_id": "exclusion-warm-18",
+        "kind": "exclusion",
+        "n_targets": 2,
+        "n_union_candidates": 0,
+        "fates": {
+          "hidden_policy": 2
+        },
+        "target_ranks": {},
+        "target_scores": {},
+        "target_cf": {
+          "Electronics::B09QS7P4RQ": 0.0,
+          "Electronics::B0939MWKDK": 0.0
+        }
+      }
+    ]
+  }
+]

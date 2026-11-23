@@ -1,0 +1,112 @@
+{
+  "method": "targets = requests.jsonl targets joined to validation timestamps; hidden = first_seen NULL or > as_of=1617737606549; months bucket = (target_ts - cutoff_1)/30.44d",
+  "n_target_pairs": 196,
+  "n_matched": 196,
+  "n_missing_val_row": 0,
+  "n_unique_items": 196,
+  "hidden_rate_by_months_cutoff_to_target": {
+    "<1mo": {
+      "n": 16,
+      "hidden": 0,
+      "hidden_pct": 0.0
+    },
+    "1-3mo": {
+      "n": 35,
+      "hidden": 4,
+      "hidden_pct": 11.43
+    },
+    "3-6mo": {
+      "n": 48,
+      "hidden": 7,
+      "hidden_pct": 14.58
+    },
+    "6-12mo": {
+      "n": 82,
+      "hidden": 19,
+      "hidden_pct": 23.17
+    },
+    ">12mo": {
+      "n": 15,
+      "hidden": 6,
+      "hidden_pct": 40.0
+    }
+  },
+  "hidden_decomposition": {
+    "n_hidden": 36,
+    "pct_of_targets": 18.37,
+    "first_seen_null": 0,
+    "first_seen_within_30d_after_c1": 6,
+    "first_seen_within_90d_after_c1": 14,
+    "first_seen_>90d_after_c1": 22,
+    "first_seen_before_or_at_c1_but_still_hidden": 0,
+    "first_seen_equals_target_ts": 8,
+    "first_seen_after_target_ts": 0,
+    "by_domain": {
+      "Electronics": 24,
+      "Toys_and_Games": 9,
+      "Video_Games": 3
+    },
+    "examples": [
+      {
+        "item_id": "Video_Games::B0941XMYPV",
+        "domain": "Video_Games",
+        "target_ts": 1631922490435,
+        "first_seen_ts": 1627623196427,
+        "fs_minus_c1_days": 114.4
+      },
+      {
+        "item_id": "Electronics::B0BH13KJ64",
+        "domain": "Electronics",
+        "target_ts": 1647287816852,
+        "first_seen_ts": 1643951997975,
+        "fs_minus_c1_days": 303.4
+      },
+      {
+        "item_id": "Electronics::B09WDCP5MC",
+        "domain": "Electronics",
+        "target_ts": 1650159747386,
+        "first_seen_ts": 1625293567158,
+        "fs_minus_c1_days": 87.5
+      },
+      {
+        "item_id": "Electronics::B08TGXFZJT",
+        "domain": "Electronics",
+        "target_ts": 1622825199222,
+        "first_seen_ts": 1619714951577,
+        "fs_minus_c1_days": 22.9
+      },
+      {
+        "item_id": "Electronics::B09PDL84HF",
+        "domain": "Electronics",
+        "target_ts": 1651269941113,
+        "first_seen_ts": 1651269941113,
+        "fs_minus_c1_days": 388.1
+      },
+      {
+        "item_id": "Toys_and_Games::B09DGTKLVF",
+        "domain": "Toys_and_Games",
+        "target_ts": 1635379931742,
+        "first_seen_ts": 1635379931742,
+        "fs_minus_c1_days": 204.2
+      },
+      {
+        "item_id": "Video_Games::B09CW63H33",
+        "domain": "Video_Games",
+        "target_ts": 1631732412888,
+        "first_seen_ts": 1631138565823,
+        "fs_minus_c1_days": 155.1
+      },
+      {
+        "item_id": "Video_Games::B09FBW2988",
+        "domain": "Video_Games",
+        "target_ts": 1645902445347,
+        "first_seen_ts": 1645143288812,
+        "fs_minus_c1_days": 317.2
+      }
+    ]
+  },
+  "visible_first_seen_proximity": {
+    "n": 160,
+    "pct_first_seen_within_30d_before_c1": 3.12
+  }
+}

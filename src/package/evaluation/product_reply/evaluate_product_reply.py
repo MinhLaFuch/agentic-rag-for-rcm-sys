@@ -1,4 +1,11 @@
-"""Evaluate product recommendation assistant replies for faithfulness and communication quality."""
+"""Evaluate product recommendation assistant replies for faithfulness and communication quality.
+
+Heuristic CLI evaluator — NOT the official grounding benchmark. The official
+faithfulness/communication evaluation is `evaluate_product_reply_with_jev`
+(Jev LLM-as-judge). Sub-scores here, especially `communication.language`
+(see `_score_language`), are coarse ASCII-script heuristics and must not be
+cited as language-quality measurements.
+"""
 
 from __future__ import annotations
 
@@ -26,10 +33,8 @@ def evaluate_product_reply(request: str, items: list[dict[str, Any]], answer: st
         - communication: scores for relevance, clarity, language, honesty_about_gaps
         - summary: brief summary of main strength and flaw
     """
-    # Extract factual claims about products
     claims = _extract_claims(answer, items)
 
-    # Evaluate each claim
     evaluated_claims = []
     for claim in claims:
         verdict, why = _evaluate_claim(claim["text"], claim["item_id"], items)
@@ -43,13 +48,10 @@ def evaluate_product_reply(request: str, items: list[dict[str, Any]], answer: st
     unsupported_count = sum(1 for c in evaluated_claims if c["verdict"] == "unsupported")
     total_claims = len(evaluated_claims)
 
-    # Check if all items are listed in order
     lists_all_items_in_order = _check_items_in_order(answer, items)
 
-    # Score communication quality
     communication = _score_communication(request, items, answer)
 
-    # Generate summary
     summary = _generate_summary(evaluated_claims, communication)
 
     return {
@@ -69,7 +71,6 @@ def _extract_claims(answer: str, items: list[dict[str, Any]]) -> list[dict[str, 
     Ignores greetings, formatting, and generic phrases that assert nothing about a product.
     """
     # Simple heuristic: split by sentences, then filter for product-related claims
-    # This is a basic implementation; could be enhanced with NLP
     sentences = re.split(r'[.!?]+', answer)
 
     claims = []
@@ -78,7 +79,6 @@ def _extract_claims(answer: str, items: list[dict[str, Any]]) -> list[dict[str, 
         if not sentence:
             continue
 
-        # Skip generic phrases
         if _is_generic_phrase(sentence):
             continue
 
@@ -151,7 +151,6 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
     if item_id is None:
         return "unsupported", "No item_id matched"
 
-    # Find the item
     item = None
     for it in items:
         if it.get("item_id") == item_id:
@@ -161,10 +160,8 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
     if item is None:
         return "unsupported", "Item not found"
 
-    # Check if claim is supported by item fields
     claim_lower = claim_text.lower()
 
-    # Check for price claims
     if _is_price_claim(claim_lower):
         if item.get("price") is None:
             return "unsupported", "Price field is null"
@@ -177,7 +174,6 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
                 return "unsupported", f"Price mismatch: {claimed_price} vs {actual_price}"
         return "supported", "Price in data"
 
-    # Check for rating claims
     if _is_rating_claim(claim_lower):
         if item.get("average_rating") is None:
             return "unsupported", "Rating field is null"
@@ -189,7 +185,6 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
                 return "unsupported", f"Rating mismatch: {claimed_rating} vs {actual_rating}"
         return "supported", "Rating in data"
 
-    # Check for review count claims
     if _is_review_count_claim(claim_lower):
         if item.get("rating_number") is None:
             return "unsupported", "Review count field is null"
@@ -201,7 +196,6 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
                 return "unsupported", f"Review count mismatch: {claimed_count} vs {actual_count}"
         return "supported", "Review count in data"
 
-    # Check for store claims
     if _is_store_claim(claim_lower):
         if item.get("store") is None:
             return "unsupported", "Store field is null"
@@ -209,7 +203,6 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
             return "unsupported", "Store not in claim"
         return "supported", "Store in data"
 
-    # Check for category claims
     if _is_category_claim(claim_lower):
         if item.get("main_category") is None:
             return "unsupported", "Category field is null"
@@ -217,12 +210,10 @@ def _evaluate_claim(claim_text: str, item_id: str | None, items: list[dict[str, 
             return "unsupported", "Category not in claim"
         return "supported", "Category in data"
 
-    # Check for title-based claims (what the product is)
     title = item.get("title", "")
     if title and _has_significant_overlap(claim_text, title):
         return "supported", "Supported by title"
 
-    # Check for unsupported features/adjectives
     unsupported_features = [
         'wireless', 'best seller', 'great for kids', 'cheap', 'expensive',
         'popular', 'suitable', 'excellent', 'amazing', 'perfect'
@@ -264,18 +255,15 @@ def _check_items_in_order(answer: str, items: list[dict[str, Any]]) -> bool:
     """
     Check if every item appears exactly once in the given order, and no product outside items is mentioned.
     """
-    # Extract item mentions from answer
     mentioned_items = []
     for item in items:
         title = item.get("title", "")
         if title and title.lower() in answer.lower():
             mentioned_items.append(item["item_id"])
 
-    # Check if all items are mentioned exactly once
     if len(mentioned_items) != len(items):
         return False
 
-    # Check order
     for i, item in enumerate(items):
         if mentioned_items[i] != item["item_id"]:
             return False
@@ -284,7 +272,11 @@ def _check_items_in_order(answer: str, items: list[dict[str, Any]]) -> bool:
 
 
 def _score_communication(request: str, items: list[dict[str, Any]], answer: str) -> dict[str, int]:
-    """Score communication quality on four criteria (1-5 scale)."""
+    """Score communication quality on four criteria (1-5 scale).
+
+    `language` is a coarse ASCII-script heuristic (see `_score_language`), not a
+    language-quality measurement; the other three are simple structural checks.
+    """
     return {
         "relevance": _score_relevance(request, items, answer),
         "clarity": _score_clarity(answer),
@@ -295,12 +287,9 @@ def _score_communication(request: str, items: list[dict[str, Any]], answer: str)
 
 def _score_relevance(request: str, items: list[dict[str, Any]], answer: str) -> int:
     """Score if reply addresses what the request asked."""
-    # Basic check: do the items match the request type?
-    # This is a simplified version
     request_lower = request.lower()
     answer_lower = answer.lower()
 
-    # Check for category mentions
     for item in items:
         category = item.get("main_category", "")
         if category and category.lower() in request_lower:
@@ -308,7 +297,6 @@ def _score_relevance(request: str, items: list[dict[str, Any]], answer: str) -> 
                 return 5
             return 3
 
-    # Check for price constraints
     if any(word in request_lower for word in ['under', 'below', 'less than', 'cheap', 'budget']):
         if any(word in answer_lower for word in ['price', '$', 'dollar']):
             return 5
@@ -334,14 +322,19 @@ def _score_clarity(answer: str) -> int:
 
 
 def _score_language(request: str, answer: str) -> int:
-    """Score if reply is in the same language as request."""
-    # Very basic check: if request is English, answer should be English
-    # This is a placeholder; real implementation would use language detection
+    """Coarse ASCII-script heuristic, NOT language detection.
+
+    Returns 5 when request and answer share the same script class (both ASCII
+    or both non-ASCII) and 3 when they differ. It cannot detect real language
+    mismatches (e.g. an English answer to a Vietnamese request may still score
+    3 = "undetermined", not a failure). Real language-quality evaluation is
+    the Jev judge's job (`evaluate_product_reply_with_jev`).
+    """
     if request.isascii() and answer.isascii():
         return 5
     elif not request.isascii() and not answer.isascii():
         return 5
-    return 3  # Default to acceptable
+    return 3  # Script classes differ: undetermined, not a measured defect
 
 
 def _score_honesty(items: list[dict[str, Any]], answer: str) -> int:
@@ -359,7 +352,6 @@ def _score_honesty(items: list[dict[str, Any]], answer: str) -> int:
     if not has_null_fields:
         return 5  # No null fields, nothing to hide
 
-    # Check if answer acknowledges unavailability
     if any(phrase in answer_lower for phrase in ['unavailable', 'not available', 'no data', 'unknown']):
         return 5
 
@@ -371,7 +363,12 @@ def _score_honesty(items: list[dict[str, Any]], answer: str) -> int:
 
 
 def _generate_summary(claims: list[dict[str, Any]], communication: dict[str, int]) -> str:
-    """Generate a brief summary of main strength and flaw (max 40 words)."""
+    """Generate a brief summary of main strength and flaw (max 40 words).
+
+    `avg_comm` averages the four communication sub-scores, one of which
+    (`language`) is an ASCII-script heuristic — treat the resulting wording as
+    a rough CLI hint, not an official quality verdict.
+    """
     supported_count = sum(1 for c in claims if c["verdict"] == "supported")
     total_claims = len(claims)
 

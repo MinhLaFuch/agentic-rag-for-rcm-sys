@@ -8,9 +8,13 @@ from ...api import LLMProviderError
 from .._dataclass import AgentOutcome, Answer
 from ..cut import cut
 from ..grounding import check_grounding, parse_llm_reply
+from ...config.load_config import load_config
 from .item_view import item_view
-from ._prompt import RETRY_NOTICE, SYSTEM_PROMPT
 from .compose_template import compose_template
+
+_compose_prompts = load_config("agent/prompts")["inference"]
+SYSTEM_PROMPT = _compose_prompts["system_prompt"]
+RETRY_NOTICE = _compose_prompts["retry_notice"]
 
 
 def compose_llm(

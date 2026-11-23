@@ -3,7 +3,7 @@ from ._schema import TEMPLATES
 from .planner import PlanExecutor
 from .results import extract_recommendations
 from .session import Session
-from .toolkit import AgentTools, build_tool_prompt, build_tools
+from .toolkit import AgentTools, build_tool_prompt, build_tools, validate_tool_names
 from .type1 import Type1Agent
 
 __all__ = [
@@ -14,6 +14,7 @@ __all__ = [
     "Type1Agent",
     "build_tool_prompt",
     "build_tools",
+    "validate_tool_names",
     "extract_recommendations",
     "get_agent_limits",
     "get_session_limits",

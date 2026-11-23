@@ -4,7 +4,7 @@ Agent evaluation: does the agent layer add anything over the plain recommender, 
 One run builds a fixed set of simulated requests from held-out data, sends the SAME requests to every agent
 listed in configs/agent/agent_eval.yaml and scores them (ranking metrics + agent metrics).  Request kinds:
   similar / personalized   built from the user's fit history only (honest)
-  constrained / cold_text  category (+ price ceiling) taken from held-out items = ORACLE scenario, an upper bound
+  constrained / cold_text / exclusion   constraints (or the excluded item+category) taken from held-out items = ORACLE scenario, an upper bound
   ambiguous                missing information; the right move is to ask back instead of inventing ids
 Agents: baseline (ItemKNN, no LLM) | type1 (fixed plan, no LLM) | planner (LLM, E6) | planner_memory (+MemoryTool, E7).
 By default, target-informed oracle request kinds are excluded (agent_eval.request_scope); set it to ``oracle``
@@ -33,6 +33,7 @@ import hashlib
 import json
 import shutil
 import time
+from collections.abc import Mapping
 from dataclasses import asdict
 from itertools import islice
 from pathlib import Path
@@ -41,7 +42,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from package.agents import PlanExecutor, Type1Agent, build_tools, Session
+from package.agents import PlanExecutor, Type1Agent, build_tools, Session, validate_tool_names
 from package.agents import extract_recommendations, get_agent_limits, get_session_limits
 from package.evaluation import (
     AGENTS,
@@ -54,6 +55,14 @@ from package.evaluation import (
 )
 from package.evaluation import EVAL_SCHEMA_VERSION
 from package.evaluation.trajectory import score_trajectory, summarize
+from package.evaluation.diagnostics import error_taxonomy, pool_stage_diagnostics, reflection_diagnostics
+from package.evaluation.reporting import (
+    build_report_results,
+    generate_all_charts,
+    generate_csv_export,
+    generate_failure_report,
+    generate_markdown_report,
+)
 from package.evaluation.provenance import build_run_provenance
 from package.config import get_data_paths, get_domains, load_config
 from package.config.load_config import ConfigError
@@ -66,14 +75,15 @@ from package.data.split import load_splits
 from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
-from package.tools import BaselineScorer, HybridScorer, ToolCallLogger
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
-from package.recommenders.evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
+from package.tools import BaselineScorer, HybridScorer, LearnedScorer, ToolCallLogger
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
 from package.evaluation.recommender.utils import sha256_file
+from package.embeddings.build_dense_retrieval import build_dense_retrieval
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.recommenders.shared.load_item_knn import load_item_knn
@@ -82,6 +92,7 @@ from package.utils import ensure_utf8_stdout
 from package.corpus.apply_metadata_policy import apply_metadata_policy
 from package.evaluation.recommender.core.evaluation_protocol import evaluation_protocol
 from package.evaluation.recommender.analysis.cohort_policy_for_paths import cohort_policy_for_paths
+from package.evaluation.recommender.analysis.build_core_model import build_core_model
 
 SUMMARY_COLUMNS = (  # printed per (agent, kind); the full set is in metrics.json
     "task_success", "precision@{k}", "recall@{k}", "ndcg@{k}", "map@{k}", "constraint_satisfaction", "tool_selection_ok",
@@ -145,6 +156,78 @@ def _error_chars() -> int:
     return chars
 
 
+def _itemcf_reachable(similarity: Any, item2id: Mapping[str, int], *,
+                      visible_item_ids: set[str] | None = None) -> set[int]:
+    """Item indices ItemCF can return from at least one valid seed.
+
+    Mirrors SimilarTool: candidates are the nonzero columns of the kept
+    (top-k per row, asymmetric) similarity rows, counted only over rows that
+    are valid seeds. Under the temporal metadata policy seeds must be
+    corpus-visible (visible_item_ids); without it any mapped index in bounds
+    is a valid seed (visible_item_ids=None).
+    """
+    n = similarity.shape[0]
+    if visible_item_ids is None:
+        seed_idx = sorted({idx for idx in item2id.values() if 0 <= idx < n})
+    else:
+        seed_idx = sorted({item2id[i] for i in visible_item_ids if i in item2id and 0 <= item2id[i] < n})
+    if not seed_idx:
+        return set()
+    return {int(col) for col, cnt in enumerate(similarity[seed_idx].getnnz(axis=0)) if cnt > 0}
+
+
+def _itemcf_reachable_for_seeds(
+    similarity: Any,
+    seed_item_ids: set[str],
+    item2id: Mapping[str, int],
+    id2item: Mapping[int, str],
+    *,
+    visible_item_ids: set[str] | None = None,
+) -> set[int]:
+    """Item indices reachable as ItemCF candidates from the given seed items only.
+
+    Same candidate semantics as _itemcf_reachable (nonzero similarity columns over
+    valid seed rows), but restricted to the seeds a trajectory actually used.
+    Under the temporal policy both seeds and candidates must be corpus-visible,
+    mirroring SimilarTool.execute.
+    """
+    n = similarity.shape[0]
+    seed_idx = sorted({
+        item2id[s] for s in seed_item_ids
+        if s in item2id and 0 <= item2id[s] < n
+        and (visible_item_ids is None or s in visible_item_ids)
+    })
+    if not seed_idx:
+        return set()
+    cols = {int(c) for c, cnt in enumerate(similarity[seed_idx].getnnz(axis=0)) if cnt > 0}
+    if visible_item_ids is not None:
+        cols = {c for c in cols if id2item.get(c) in visible_item_ids}
+    return cols
+
+
+def _trajectory_itemcf_seeds(trajectory: dict[str, Any]) -> tuple[set[str], bool] | None:
+    """(seed item ids, all_recovered) from a trajectory's ok SimilarTool steps.
+
+    Returns None when no SimilarTool step ran (path unexercised). all_recovered
+    is False when a step's `items` arg was truncated by args simplification,
+    making the true seed set unknowable.
+    """
+    seeds: set[str] = set()
+    saw = False
+    complete = True
+    for step in trajectory.get("steps") or []:
+        if step.get("tool") == "SimilarTool" and step.get("ok"):
+            saw = True
+            items = (step.get("args") or {}).get("items")
+            if isinstance(items, list):
+                seeds.update(i for i in items if isinstance(i, str))
+            else:
+                complete = False
+    if not saw:
+        return None
+    return seeds, complete
+
+
 def run_planner(
     executor: PlanExecutor, request: AgentRequest, agent: str, k: int, *, answerer: Any = None, inference_mode: str | None = None,
     session_enabled: bool = False,
@@ -169,6 +252,7 @@ def run_planner(
         results = executor.run(request.text)
         traj["steps"] = [
             {**{key: r.get(key) for key in ("tool", "ok", "invented_ids", "latency_seconds", "args", "output_summary", "note", "error_kind")},
+             "data": r.get("data") or {},
              "error": None if r.get("error") is None else str(r["error"])[:error_chars]}
             for r in results
         ]
@@ -261,6 +345,82 @@ def run_optional_multi_turn(cfg: dict[str, Any], exp_dir_candidate: Path) -> dic
         }
 
 
+def run_optional_jev(
+    cfg: dict[str, Any],
+    trajectories: list[dict[str, Any]],
+    requests_by_id: Mapping[str, Any],
+    corpus: Any,
+    output_dir: Path,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    """Jev judge pass over answered trajectories; never let it sink the main eval.
+
+    Returns ``(info, rows)``. ``info`` is None when ``agent_eval.jev.enabled``
+    is false (nothing changes downstream). Missing credentials ->
+    ``skipped_no_credentials``; judge failures per-answer surface inside each
+    row's ``evaluation_state``; a crash of the pass itself -> ``error``.
+    """
+    jev_cfg = cfg.get("jev") or {}
+    if not jev_cfg.get("enabled"):
+        return None, []
+    info: dict[str, Any] = {
+        "enabled": True,
+        "status": "success",
+        "n_cases": 0,
+        "output_path": str(output_dir / "jev_eval.jsonl"),
+    }
+    try:
+        from package.evaluation.judge import (
+            evaluate_trajectories_with_jev,
+            jev_credentials_configured,
+        )
+
+        if not jev_credentials_configured():
+            info["status"] = "skipped_no_credentials"
+            info["reason"] = (
+                "no Jev credential: set JEV_API_KEY (or TYPESAFE_API_KEY / OPENROUTER_API_KEY)"
+            )
+            return info, []
+        rows = evaluate_trajectories_with_jev(
+            trajectories,
+            requests_by_id,
+            corpus,
+            max_requests=jev_cfg.get("max_requests"),
+        )
+        info["n_cases"] = len(rows)
+        return info, rows
+    except Exception as exc:
+        info["status"] = "error"
+        info["error"] = f"{type(exc).__name__}: {exc}"
+        return info, []
+
+
+def _multi_turn_report_scalars(mt_info: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Extract the scalar metrics the report's multi_turn section expects.
+
+    Reads the multi_turn.json written by the optional step; returns None when
+    absent/unreadable so the report simply omits the section. None-valued
+    scalars are dropped — the markdown renderer cannot format them.
+    """
+    if not mt_info or not mt_info.get("output_path"):
+        return None
+    path = Path(mt_info["output_path"])
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    retention = data.get("context_retention_metrics") or {}
+    ctx_vals = [float(v) for v in retention.values() if isinstance(v, (int, float))]
+    scalars = {
+        "turn_success_rate": data.get("turn_success_rate"),
+        "conversation_success_rate": data.get("conversation_success_rate"),
+        "context_retention": sum(ctx_vals) / len(ctx_vals) if ctx_vals else None,
+    }
+    scalars = {k: v for k, v in scalars.items() if isinstance(v, (int, float))}
+    return scalars or None
+
+
 def main() -> None:
     ensure_utf8_stdout()
     ap = argparse.ArgumentParser()
@@ -277,13 +437,19 @@ def main() -> None:
     scoring_cfg = load_config("agent/scoring")["scoring"]
     scorer_mode = scoring_cfg["mode"]
     scorer_weight = float(scoring_cfg["hybrid_popularity_weight"])
-    if scorer_mode not in ("baseline", "hybrid") or not np.isfinite(scorer_weight) or scorer_weight < 0:
-        raise SystemExit("agent/scoring.yaml: mode must be baseline/hybrid and hybrid_popularity_weight finite and nonnegative")
+    learned_weights = scoring_cfg.get("learned_weights")
+    if (scorer_mode not in ("baseline", "hybrid", "learned")
+            or not np.isfinite(scorer_weight) or scorer_weight < 0):
+        raise SystemExit("agent/scoring.yaml: mode must be baseline/hybrid/learned and hybrid_popularity_weight finite and nonnegative")
     k, seed = int(cfg["k"]), int(baselines["seed"])
     agents = [str(a) for a in cfg["agents"]]
     if set(agents) - set(AGENTS):
         raise SystemExit(f"Unknown agent(s) {sorted(set(agents) - set(AGENTS))}; choose from {list(AGENTS)}")
     per_segment = int(cfg["per_segment"])
+    # Optional tool subset for ablations (e.g. exclude_tools: [RankTool]);
+    # empty/absent = full toolset, unchanged behaviour. Hashed into
+    # resume_identity via _resume_agent_config.
+    exclude_tools = validate_tool_names(cfg.get("exclude_tools") or [])
     reflect_rounds = get_agent_limits().reflect_rounds
     inference_mode = get_inference_limits().mode
     request_scope = str(cfg["request_scope"])
@@ -303,7 +469,7 @@ def main() -> None:
     t_start = time.time()
 
     # ---- splits, mapping, fit/target (same protocol as run_baselines.py / candidate_recall.py)
-    train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp"))
+    train, val, test = load_splits(data_paths.splits_dir, ("user_idx", "item_idx", "timestamp", "rating"))
     fit_df, target_df = select_fit_target(train, val, test, args.eval_on)
     if "timestamp" not in fit_df.columns:
         raise SystemExit("Splits have no `timestamp` column: re-run python scripts/data_pipeline/run_pipeline.py --stages 3")
@@ -346,7 +512,37 @@ def main() -> None:
         file_size_mb = corpus_path.stat().st_size / (1024 * 1024)
         print(f"Corpus: loaded from {corpus_path} in (see backup time above) ({file_size_mb:.1f} MB)")
 
-    metadata_policy = apply_metadata_policy(corpus, metadata_policy_name, as_of_timestamp=as_of)
+    # Causal popularity proxy for masked mutable fields: interaction counts from
+    # the fit split only (pre-as_of by construction). Exposed as `popularity`
+    # so FilterTool can order candidates without leaking post-cutoff metadata.
+    idx2name = {v: k for k, v in item2id.items()}
+    fit_counts = fit_df["item_idx"].value_counts()
+    popularity = {idx2name[i]: int(c) for i, c in fit_counts.items() if i in idx2name}
+    # Causal mean-rating proxy for masked average_rating: mean of fit-split
+    # ratings per item (pre-as_of by construction). Splits without a rating
+    # column simply leave the proxy unavailable.
+    ratings = None
+    if "rating" in fit_df.columns:
+        fit_means = fit_df.groupby("item_idx")["rating"].mean()
+        ratings = {idx2name[i]: float(m) for i, m in fit_means.items() if i in idx2name}
+    # Inferred categories for the uncategorized tail (Q2): optional artifact
+    # produced by investigations/q2_build_inferred_categories.py. Absent file
+    # simply leaves the tail unreachable by category filters, as before.
+    inferred_categories = None
+    _corpus_file = data_paths.corpus_path
+    inferred_path = _corpus_file.parent / "item_categories_inferred.parquet" \
+        if _corpus_file is not None else None
+    if inferred_path is not None and inferred_path.exists():
+        inferred_df = pd.read_parquet(inferred_path, columns=["item_id", "category"])
+        inferred_categories = {
+            r.item_id: r.category for r in inferred_df.itertuples(index=False)
+        }
+        print(f"Inferred categories: {len(inferred_categories)} items "
+              f"from {inferred_path.name}", flush=True)
+    metadata_policy = apply_metadata_policy(
+        corpus, metadata_policy_name, as_of_timestamp=as_of,
+        popularity=popularity, ratings=ratings,
+        inferred_categories=inferred_categories)
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
@@ -368,7 +564,13 @@ def main() -> None:
     # falls back to a fresh fit, which is always the gold standard.
     reuse_cache = bool(cfg.get("item_knn_reuse_cache", False))
     knn = None
-    if reuse_cache and item_knn_path.exists():
+    core_knn = build_core_model(data_paths, args.eval_on, knn_k, fit_df, user2id, item2id)
+    if core_knn is not None:
+        knn = core_knn
+        knn_artifact_status = knn._evaluation_artifact_status
+        knn_fit_data_hash = knn._fit_data_hash
+        print(f"ItemKNN: {knn_artifact_status} (train_core)", flush=True)
+    if knn is None and reuse_cache and item_knn_path.exists():
         try:
             t0 = time.perf_counter()
             knn = load_item_knn(
@@ -406,7 +608,10 @@ def main() -> None:
                 print(f"ItemKNN cache save failed ({exc}); siblings will refit")
 
     logger = ToolCallLogger()  # shared; cleared after every request so it never grows
-    scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
+    if scorer_mode == "learned":
+        scorer = LearnedScorer(knn, tuple(learned_weights) if learned_weights else None)
+    else:
+        scorer = HybridScorer(knn, scorer_weight) if scorer_mode == "hybrid" else BaselineScorer(knn)
     baseline_model = knn
     if scorer_mode == "hybrid":
         cf = ItemKNNMatrixRecommender(k=knn_k)
@@ -417,6 +622,7 @@ def main() -> None:
     scorer_provenance = {
         "mode": scorer_mode, "name": scorer.name,
         "popularity_weight": scorer_weight if scorer_mode == "hybrid" else scorer.popularity_weight,
+        "learned_weights": list(scorer.weights) if scorer_mode == "learned" else None,
         "popularity_source": "full pre-target unique user-item history" if scorer_mode == "hybrid" else "CF fit popularity",
         "cf_normalization": "per-user full-catalog max before exclusion" if scorer_mode == "hybrid" else "none",
         "cf_provenance": protocol_manifest["item_knn"],
@@ -424,7 +630,34 @@ def main() -> None:
         "candidate_ties": "input order (RecoModelTool)", "baseline_ties": "global item index",
     }
     protocol_manifest["scorer"] = scorer_provenance
-    tools = build_tools(knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of)
+
+    # Optional dense retrieval leg for SearchTool (configs/eval/dense_retrieval.yaml).
+    # enabled=true with missing/invalid artifacts raises — never silently BM25-only.
+    dense_cfg = load_config("eval/dense_retrieval")["dense_retrieval"]
+    vector_store = query_encoder = None
+    dense_provenance: dict[str, Any] | None = None
+    if dense_cfg.get("enabled"):
+        src_root = Path(__file__).resolve().parents[2]
+        if not dense_cfg.get("artifacts_dir") or not dense_cfg.get("encoder_lock"):
+            raise SystemExit(
+                "dense_retrieval.enabled=true requires artifacts_dir and encoder_lock "
+                "in configs/eval/dense_retrieval.yaml"
+            )
+        vector_store, query_encoder, dense_provenance = build_dense_retrieval(
+            src_root / dense_cfg["artifacts_dir"],
+            src_root / dense_cfg["encoder_lock"],
+            rrf_k=int(dense_cfg.get("rrf_k", 60)),
+        )
+        print(
+            f"Dense retrieval: {dense_provenance['valid_rows']}/{dense_provenance['rows']} items, "
+            f"encoder={dense_provenance['encoder_model_id']}@{str(dense_provenance['encoder_revision'])[:12]}"
+        )
+    protocol_manifest["dense_retrieval"] = dense_provenance or {"enabled": False}
+
+    tools = build_tools(
+        knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of,
+        vector_store=vector_store, query_encoder=query_encoder, rrf_k=int(dense_cfg.get("rrf_k", 60)),
+    )
 
     runners: dict[str, Any] = {}
     if "type1" in agents:
@@ -440,13 +673,15 @@ def main() -> None:
         # Single-turn evaluation: no session (session=None).
         # Multi-turn evaluation (agent_eval.enable_session): a fresh Session is created per request inside run_planner.
         # This prevents cross-request contamination of shown_items/candidates/constraints.
-        runners["planner"] = PlanExecutor(llm, tools.for_planner(), reflect_rounds=reflect_rounds, session=None)
-        runners["planner_memory"] = PlanExecutor(llm, tools.for_planner_memory(), reflect_rounds=reflect_rounds, session=None)
+        planner_tool_list = tools.for_planner(exclude_tools=exclude_tools)
+        planner_memory_tool_list = tools.for_planner_memory(exclude_tools=exclude_tools)
+        runners["planner"] = PlanExecutor(llm, planner_tool_list, reflect_rounds=reflect_rounds, session=None)
+        runners["planner_memory"] = PlanExecutor(llm, planner_memory_tool_list, reflect_rounds=reflect_rounds, session=None)
 
     # Build provenance (hashes of prompts, tool schemas, git state, limits)
     provenance = build_run_provenance(
-        planner_tools=tools.for_planner(),
-        memory_tools=tools.for_planner_memory() if "planner_memory" in agents else None,
+        planner_tools=tools.for_planner(exclude_tools=exclude_tools),
+        memory_tools=tools.for_planner_memory(exclude_tools=exclude_tools) if "planner_memory" in agents else None,
     )
 
     def answerer(outcome: Any) -> Any:
@@ -484,13 +719,32 @@ def main() -> None:
     trajectory_name = str(cfg["trajectory_file"])
     if Path(trajectory_name).name != trajectory_name or not trajectory_name.endswith(".jsonl"):
         raise SystemExit("agent_eval.trajectory_file must be a simple .jsonl filename")
-    traj_path = data_paths.log_dir / trajectory_name
+    # Campaign runs pin experiment_dir -> keep the trajectory log inside the run
+    # dir so deleting the campaign removes its trajectories too (no global
+    # log_dir residue, no cross-campaign filename collisions). Legacy campaign
+    # logs still in log_dir remain a valid resume source and are migrated on
+    # the next --resume; standalone runs keep the log_dir location.
+    exp_dir_override = cfg.get("experiment_dir")
+    traj_path = (
+        Path(exp_dir_override) / trajectory_name if exp_dir_override
+        else data_paths.log_dir / trajectory_name
+    )
+    legacy_traj_path = (
+        data_paths.log_dir / trajectory_name
+        if exp_dir_override and traj_path != data_paths.log_dir / trajectory_name
+        else None
+    )
     traj_path.parent.mkdir(parents=True, exist_ok=True)
-    if traj_path.exists() and not args.resume:
-        raise SystemExit(f"Trajectory already exists: {traj_path}; use --resume with the identical protocol or set a new agent_eval.trajectory_file")
+    source_path = traj_path if traj_path.exists() else (
+        legacy_traj_path
+        if legacy_traj_path is not None and legacy_traj_path.exists()
+        else None
+    )
+    if source_path is not None and not args.resume:
+        raise SystemExit(f"Trajectory already exists: {source_path}; use --resume with the identical protocol or set a new agent_eval.trajectory_file")
     done: dict[tuple[str, str], dict[str, Any]] = {}
-    if args.resume and traj_path.exists():
-        for line in traj_path.read_text(encoding="utf-8").splitlines():
+    if args.resume and source_path is not None:
+        for line in source_path.read_text(encoding="utf-8").splitlines():
             rec = json.loads(line)
             if rec.get("evaluation_protocol_hash") != protocol_hash:
                 raise SystemExit("Resume protocol mismatch or legacy trajectory: source log preserved; set a new agent_eval.trajectory_file")
@@ -543,7 +797,35 @@ def main() -> None:
 
     # ---- score + report
     by_id = {r.request_id: r for r in requests}
-    rows = [score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k) for t in trajectories]
+    # ItemCF pool = item indices reachable as a candidate from at least one valid
+    # seed (nonzero similarity column over valid seed rows), the same candidate
+    # space SimilarTool can return. Under the temporal policy, hidden items can
+    # be neither seeds nor candidates, so seed rows are restricted to the
+    # corpus-visible catalog the tools actually see.
+    visible_item_ids = None
+    if (metadata_policy or {}).get("first_seen_filter"):
+        n_visible = corpus.count("1=1", ())
+        visible_rows, truncated = corpus.select("SELECT item_id FROM items", max_rows=n_visible)
+        if truncated:
+            raise SystemExit("corpus item listing truncated; cannot establish the ItemCF seed universe")
+        visible_item_ids = {r["item_id"] for r in visible_rows}
+    itemcf_reachable = _itemcf_reachable(knn.similarity, item2id, visible_item_ids=visible_item_ids)
+    rows = []
+    for t in trajectories:
+        # Request-specific ItemCF reachability: candidate space of the seeds this
+        # trajectory actually passed to SimilarTool (None when unexercised or the
+        # seed list was truncated in the logged args).
+        itemcf_reachable_request = None
+        seed_info = _trajectory_itemcf_seeds(t)
+        if seed_info is not None:
+            seeds, complete = seed_info
+            if complete:
+                itemcf_reachable_request = _itemcf_reachable_for_seeds(
+                    knn.similarity, seeds, item2id, id2item, visible_item_ids=visible_item_ids
+                )
+        rows.append(score_trajectory(by_id[t["request_id"]], t, item2id=item2id, corpus=corpus, k=k,
+                                     id2item=id2item, itemcf_reachable=itemcf_reachable,
+                                     itemcf_reachable_request=itemcf_reachable_request))
     summary = summarize(rows)
     columns = [c.format(k=k) for c in SUMMARY_COLUMNS]
     for agent, per_kind in summary.items():
@@ -574,6 +856,24 @@ def main() -> None:
         else next_experiment_dir(data_paths.output_dir("agent_eval"))
     )
     mt_info = run_optional_multi_turn(cfg, exp_dir_candidate)
+
+    # ---- optional Jev judge pass (yaml-gated; runs after trajectory scoring) ----
+    # Writes <exp_dir>/jev_eval.jsonl next to scored.jsonl; disabled ->
+    # jev_info is None and nothing below changes.
+    jev_info, jev_rows = run_optional_jev(cfg, trajectories, by_id, corpus, exp_dir_candidate)
+
+    # ---- diagnostics (always-on; cheap aggregation, no extra LLM calls) ----
+    # error_taxonomy reads trajectory steps, so kind is injected from the
+    # request lookup on copies — trajectories.jsonl stays unchanged.
+    # metrics.json gains a top-level "diagnostics" block; campaign metric
+    # flattening only reads "summary", so these never enter comparisons.
+    diagnostics = {
+        "error_taxonomy": error_taxonomy(
+            [{**t, "kind": by_id[t["request_id"]].kind} for t in trajectories]
+        ),
+        "reflection": reflection_diagnostics(rows),
+        "pool_stage": pool_stage_diagnostics(rows),
+    }
 
     exp_config = {"manifest_status": tag_manifest["status"], "manifest_sha256": tag_manifest["manifest_sha256"],
                 "protocol": protocol_manifest, "agents": agents, "k": k, "per_segment": per_segment, "n_ambiguous": cfg["n_ambiguous"], "language": cfg["language"],
@@ -608,10 +908,12 @@ def main() -> None:
             "output_path": mt_info["output_path"],
             "dataset": (cfg.get("multi_turn") or {}).get("dataset"),
         }
+    if jev_info is not None:
+        exp_config["jev"] = jev_info
     exp_dir = save_experiment(
         exp_dir_candidate,
         config=exp_config,
-        metrics={"k": k, "summary": summary},
+        metrics={"k": k, "summary": summary, "diagnostics": diagnostics},
         seed=seed,
         dataset_info={"tag": data_paths.tag, "splits_dir": str(data_paths.splits_dir), "eval_on": args.eval_on, "num_users": num_users,
                       "num_items": len(item2id), "metadata_coverage": round(coverage, 4), "n_requests": len(requests),
@@ -624,16 +926,44 @@ def main() -> None:
                                       for name in ("train", "validation", "test")}},
         runtime_seconds=time.time() - t_start,
         exist_ok=mt_info is not None or bool(exp_dir_override),
-        notes=(f"Kinds {list(ORACLE_KINDS)} take their category/price constraints from held-out items: an ORACLE upper bound, "
+        notes=(f"Kinds {list(ORACLE_KINDS)} take their constraints/exclusions from held-out items: an ORACLE upper bound, "
                "never report them as real-query results. 'similar' and 'personalized' use fit history only. "
                "Ambiguous requests have no ground truth; their success = the agent asked a question instead of acting."),
     )
     shutil.copyfile(traj_path, exp_dir / "trajectories.jsonl")
     (exp_dir / "requests.jsonl").write_text("".join(json.dumps(r.to_dict(), ensure_ascii=False) + "\n" for r in requests), encoding="utf-8")
     (exp_dir / "scored.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    if jev_rows:
+        (exp_dir / "jev_eval.jsonl").write_text(
+            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in jev_rows), encoding="utf-8"
+        )
+    (exp_dir / "diagnostics.json").write_text(
+        json.dumps(diagnostics, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # ---- human-readable report (always-on; pure rendering, no LLM calls) ----
+    # A rendering failure must not sink a completed eval — warn and continue.
+    try:
+        report_results = build_report_results(
+            rows,
+            trajectories,
+            k=k,
+            trajectory_path=traj_path.name,
+            multi_turn=_multi_turn_report_scalars(mt_info),
+        )
+        generate_markdown_report(report_results, exp_dir / "report.md")
+        generate_csv_export(report_results, exp_dir / "report.csv")
+        if report_results["failures"]:
+            generate_failure_report(report_results["failures"], exp_dir / "failures.md")
+        generate_all_charts(report_results, exp_dir / "charts")
+    except Exception as exc:  # noqa: BLE001 — reporting is auxiliary
+        print(f"warning: report generation failed ({exc}); eval artifacts are unaffected")
+
     print(f"\nsaved -> {exp_dir}")
     if mt_info is not None:
         print(f"multi_turn -> {mt_info['output_path']} [{mt_info['status']}]")
+    if jev_info is not None:
+        print(f"jev -> {jev_info['output_path']} [{jev_info['status']}] n={jev_info['n_cases']}")
 
 
 if __name__ == "__main__":

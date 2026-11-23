@@ -1,0 +1,29 @@
+510 probe queries
+BM25 on restricted (restricted_corpus.sqlite) ...
+  restricted: 50/510 queries (0s)
+  restricted: 100/510 queries (0s)
+  restricted: 150/510 queries (0s)
+  restricted: 200/510 queries (0s)
+  restricted: 250/510 queries (0s)
+  restricted: 300/510 queries (0s)
+  restricted: 350/510 queries (0s)
+  restricted: 400/510 queries (0s)
+  restricted: 450/510 queries (0s)
+  restricted: 500/510 queries (0s)
+BM25 on full (corpus_multi_domain.sqlite) ...
+  full: 50/510 queries (52s)
+  full: 100/510 queries (105s)
+  full: 150/510 queries (162s)
+  full: 200/510 queries (212s)
+  full: 250/510 queries (253s)
+  full: 300/510 queries (293s)
+  full: 350/510 queries (343s)
+  full: 400/510 queries (442s)
+  full: 450/510 queries (553s)
+  full: 500/510 queries (669s)
+                    n  found<=1000  found<=200  found<=50  found<=10       mrr
+universe   arm                                                                
+full       en   510.0        337.0       249.0      163.0       98.0  0.104391
+           vi   510.0         37.0        20.0       10.0        3.0  0.004852
+restricted en   510.0          0.0         0.0        0.0        0.0  0.000000
+           vi   510.0          0.0         0.0        0.0        0.0  0.000000

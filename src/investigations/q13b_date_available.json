@@ -1,0 +1,139 @@
+{
+  "method": "stream raw meta_*.jsonl.gz; details['Date First Available'] parsed with %B %d %Y etc; joined to items.first_seen_ts on (domain, parent_asin); lag_days = (first_seen - date_available)/86400000",
+  "n_meta_rows": 2638155,
+  "coverage": {
+    "Electronics": {
+      "corpus_items": 1609860,
+      "with_date_available_raw": 1509603,
+      "with_parseable_date": 1509056,
+      "pct_parseable": 93.74
+    },
+    "Toys_and_Games": {
+      "corpus_items": 890667,
+      "with_date_available_raw": 164286,
+      "with_parseable_date": 164210,
+      "pct_parseable": 18.44
+    },
+    "Video_Games": {
+      "corpus_items": 137249,
+      "with_date_available_raw": 128480,
+      "with_parseable_date": 128435,
+      "pct_parseable": 93.58
+    }
+  },
+  "lag": {
+    "Electronics": {
+      "n_both": 1509056,
+      "lag_days_median": 185.9966848900463,
+      "lag_days_p10": 4.533202783564815,
+      "lag_days_p90": 1259.5659241319445,
+      "pct_date_after_first_seen": 9.67,
+      "pct_lag_gt_365d": 33.46,
+      "pct_lag_lt_30d": 14.91
+    },
+    "Toys_and_Games": {
+      "n_both": 164210,
+      "lag_days_median": 230.58602855324074,
+      "lag_days_p10": 32.047229334490744,
+      "lag_days_p90": 1802.0996400462966,
+      "pct_date_after_first_seen": 6.05,
+      "pct_lag_gt_365d": 39.73,
+      "pct_lag_lt_30d": 9.58
+    },
+    "Video_Games": {
+      "n_both": 128435,
+      "lag_days_median": 173.72467592592594,
+      "lag_days_p10": 11.164433701388894,
+      "lag_days_p90": 1666.4490347222243,
+      "pct_date_after_first_seen": 8.25,
+      "pct_lag_gt_365d": 34.15,
+      "pct_lag_lt_30d": 15.06
+    }
+  },
+  "examples": [
+    {
+      "domain": "Electronics",
+      "item_id": "Electronics::B00004U8JQ",
+      "date_available": "April 27, 2023",
+      "first_seen_ts": 966111256000,
+      "lag_days": -8292.2
+    },
+    {
+      "domain": "Electronics",
+      "item_id": "Electronics::B00005BX0H",
+      "date_available": "August 14, 2023",
+      "first_seen_ts": 999720900000,
+      "lag_days": -8012.2
+    },
+    {
+      "domain": "Electronics",
+      "item_id": "Electronics::B002S53D9U",
+      "date_available": "July 6, 1931",
+      "first_seen_ts": 1421897829000,
+      "lag_days": 30516.2
+    },
+    {
+      "domain": "Electronics",
+      "item_id": "Electronics::B002H4O24W",
+      "date_available": "July 6, 1931",
+      "first_seen_ts": 1422420249000,
+      "lag_days": 30522.2
+    },
+    {
+      "domain": "Toys_and_Games",
+      "item_id": "Toys_and_Games::B00004YV1Z",
+      "date_available": "April 27, 2023",
+      "first_seen_ts": 983158286000,
+      "lag_days": -8094.9
+    },
+    {
+      "domain": "Toys_and_Games",
+      "item_id": "Toys_and_Games::B00005M8X7",
+      "date_available": "August 14, 2023",
+      "first_seen_ts": 1006926568000,
+      "lag_days": -7928.8
+    },
+    {
+      "domain": "Toys_and_Games",
+      "item_id": "Toys_and_Games::B08VKPS3WN",
+      "date_available": "July 2, 2000",
+      "first_seen_ts": 1662592985648,
+      "lag_days": 8103.0
+    },
+    {
+      "domain": "Toys_and_Games",
+      "item_id": "Toys_and_Games::B087ZWHY4Z",
+      "date_available": "December 31, 1979",
+      "first_seen_ts": 1641475256353,
+      "lag_days": 15347.6
+    },
+    {
+      "domain": "Video_Games",
+      "item_id": "Video_Games::B00004ZDG4",
+      "date_available": "April 27, 2023",
+      "first_seen_ts": 983833997000,
+      "lag_days": -8087.0
+    },
+    {
+      "domain": "Video_Games",
+      "item_id": "Video_Games::B00005NCBG",
+      "date_available": "April 27, 2023",
+      "first_seen_ts": 1000424041000,
+      "lag_days": -7895.0
+    },
+    {
+      "domain": "Video_Games",
+      "item_id": "Video_Games::B07S3QFMPP",
+      "date_available": "January 1, 1970",
+      "first_seen_ts": 1645749315655,
+      "lag_days": 19048.0
+    },
+    {
+      "domain": "Video_Games",
+      "item_id": "Video_Games::B0031QBX7Y",
+      "date_available": "December 30, 1899",
+      "first_seen_ts": 1264731273000,
+      "lag_days": 40207.1
+    }
+  ]
+}

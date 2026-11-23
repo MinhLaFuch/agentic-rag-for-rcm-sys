@@ -1,0 +1,109 @@
+{
+  "method": "corpus items table direct scan (title/store/main_category); raw meta rescan for description/features/store/title coverage",
+  "note": "corpus has NO description/features columns; embeddings use title+store+main_category+categories only -> description/features exist in raw meta but are unused everywhere",
+  "corpus": {
+    "Electronics": {
+      "n": 1609860,
+      "title_empty_pct": 0.006,
+      "title_chars_p10": 50.0,
+      "title_chars_median": 122.0,
+      "title_chars_p90": 194.0,
+      "title_tokens_p10": 8.0,
+      "title_tokens_median": 19.0,
+      "title_tokens_p90": 31.0,
+      "title_tokens_gt20_pct": 44.47,
+      "store_empty_pct": 0.591,
+      "main_category_empty_pct": 6.605
+    },
+    "Toys_and_Games": {
+      "n": 890667,
+      "title_empty_pct": 0.004,
+      "title_chars_p10": 37.0,
+      "title_chars_median": 85.0,
+      "title_chars_p90": 183.0,
+      "title_tokens_p10": 6.0,
+      "title_tokens_median": 14.0,
+      "title_tokens_p90": 29.0,
+      "title_tokens_gt20_pct": 29.47,
+      "store_empty_pct": 0.602,
+      "main_category_empty_pct": 2.454
+    },
+    "Video_Games": {
+      "n": 137249,
+      "title_empty_pct": 0.007,
+      "title_chars_p10": 24.0,
+      "title_chars_median": 66.0,
+      "title_chars_p90": 181.0,
+      "title_tokens_p10": 4.0,
+      "title_tokens_median": 11.0,
+      "title_tokens_p90": 27.0,
+      "title_tokens_gt20_pct": 24.63,
+      "store_empty_pct": 3.177,
+      "main_category_empty_pct": 8.04
+    }
+  },
+  "raw_meta": {
+    "Electronics": {
+      "n": 1610012,
+      "description_coverage_pct": 57.59,
+      "desc_chars_median": 546.0,
+      "desc_chars_p90": 1633.0,
+      "features_coverage_pct": 73.72,
+      "features_count_median": 5.0,
+      "store_coverage_pct": 99.41,
+      "title_coverage_pct": 99.99
+    },
+    "Toys_and_Games": {
+      "n": 890874,
+      "description_coverage_pct": 65.69,
+      "desc_chars_median": 422.0,
+      "desc_chars_p90": 1150.0,
+      "features_coverage_pct": 80.13,
+      "features_count_median": 5.0,
+      "store_coverage_pct": 99.4,
+      "title_coverage_pct": 100.0
+    },
+    "Video_Games": {
+      "n": 137269,
+      "description_coverage_pct": 62.31,
+      "desc_chars_median": 546.0,
+      "desc_chars_p90": 1860.0,
+      "features_coverage_pct": 71.23,
+      "features_count_median": 5.0,
+      "store_coverage_pct": 96.82,
+      "title_coverage_pct": 99.99
+    }
+  },
+  "examples": [
+    {
+      "domain": "Electronics",
+      "parent_asin": "B00MCW7G9M",
+      "desc_chars": 658,
+      "n_features": 0
+    },
+    {
+      "domain": "Electronics",
+      "parent_asin": "B004E2Z88O",
+      "desc_chars": 242,
+      "n_features": 3
+    },
+    {
+      "domain": "Electronics",
+      "parent_asin": "B00TX536EK",
+      "desc_chars": 415,
+      "n_features": 5
+    },
+    {
+      "domain": "Electronics",
+      "parent_asin": "B07BJ7ZZL7",
+      "desc_chars": 678,
+      "n_features": 5
+    },
+    {
+      "domain": "Electronics",
+      "parent_asin": "B005G99O2U",
+      "desc_chars": 452,
+      "n_features": 5
+    }
+  ]
+}

@@ -56,3 +56,17 @@ def mcnemar_test(
     p = 1.0 if statistic < 3.841 else 0.05 if statistic < 6.635 else 0.01 if statistic < 10.828 else 0.001
     
     return (float(b), float(c), p)
+
+
+def wilson_interval(successes: int, n: int, confidence: float = 0.95) -> tuple[float, float] | None:
+    """Wilson score interval cho tỉ lệ nhị phân; None khi n = 0."""
+    if n <= 0:
+        return None
+    import math
+
+    z = {0.90: 1.6449, 0.95: 1.9600, 0.99: 2.5758}.get(round(confidence, 2), 1.9600)
+    p_hat = successes / n
+    denom = 1 + z * z / n
+    center = (p_hat + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p_hat * (1 - p_hat) / n + z * z / (4 * n * n)) / denom
+    return (max(0.0, center - half), min(1.0, center + half))

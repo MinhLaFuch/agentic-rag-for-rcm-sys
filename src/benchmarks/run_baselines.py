@@ -1,8 +1,8 @@
 """
 Chạy các baseline trên splits của stage 3.
 
-    PYTHONPATH=. python scripts/evaluation/run_baselines.py --eval-on validation
-    PYTHONPATH=. python scripts/evaluation/run_baselines.py --domain Video_Games
+    PYTHONPATH=. python benchmarks/run_baselines.py --eval-on validation
+    PYTHONPATH=. python benchmarks/run_baselines.py --domain Video_Games
 
 Mọi tham số (models, ks, seed, tham số từng model, popularity_source,
 item_knn_hybrid_weight) đọc từ
@@ -19,6 +19,8 @@ import argparse
 import time
 from pathlib import Path
 
+import numpy as np
+
 from package.config import get_data_paths, get_domains, load_config
 from package.data.manifest import verify_tag_manifest
 from package.data.mapping import load_mappings
@@ -30,7 +32,7 @@ from package.evaluation.recommender.core import evaluate_recommender
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import select_fit_target
 from package.evaluation.recommender.utils import sha256_file
-from package.recommenders.evaluation.hybrid_item_knn_recommender import HybridItemKNNRecommender
+from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.shared import build_interaction_matrix, build_model
 from package.utils import ensure_utf8_stdout
 
@@ -100,6 +102,19 @@ def main() -> None:
     print(f"=== BASELINE REPORT (eval_on={args.eval_on}) ===")
     print(f"dataset {dataset_info}")
 
+    # Optionally cap the evaluated population: dense models cannot score every
+    # target-bearing user in reasonable time. The identical sample is used for
+    # all models so comparisons stay fair.
+    eval_users = None
+    eval_sample = int(model_cfg.get("eval_user_sample", 0) or 0)
+    if eval_sample > 0:
+        target_users = np.where(np.diff(target_matrix.indptr) > 0)[0]
+        rng = np.random.default_rng(int(model_cfg.get("seed", 42)))
+        eval_users = np.sort(rng.choice(
+            target_users, size=min(eval_sample, len(target_users)), replace=False))
+        print(f"eval_user_sample={eval_sample} -> evaluating {len(eval_users)} of "
+              f"{len(target_users)} target-bearing users")
+
     t_start = time.time()
     all_metrics = {}
     fit_splits_by_model = {}
@@ -133,7 +148,12 @@ def main() -> None:
 
         fit_seconds = time.time() - t0
 
-        result = evaluate_recommender(model, fit_matrix, target_matrix, ks, sparse_max=sparse_max)
+        # Large element budget: dense paths now stream tiled top-k so batch size
+        # is bounded by users, not materialised score memory.
+        result = evaluate_recommender(model, fit_matrix, target_matrix, ks,
+                                      sparse_max=sparse_max,
+                                      batch_elements=200_000_000,
+                                      evaluation_users=eval_users)
         all_metrics[model.name] = result.to_metrics(fit_seconds)
         fit_splits_by_model[model.name] = (
             (["train"] if args.eval_on == "validation" else ["train", "validation"])

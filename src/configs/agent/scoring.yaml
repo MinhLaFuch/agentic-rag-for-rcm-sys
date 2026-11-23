@@ -1,3 +1,12 @@
 scoring:
-  mode: baseline  # baseline | hybrid; use hybrid explicitly for new comparisons
+  # baseline | hybrid | learned. learned = affine reranker on min-max
+  # [popularity, CF] fit offline on injected-target rescue@10.
+  # NOTE: live A/B (experiments/agent_eval/learned_scorer/exp_5 vs
+  # filter_ab/exp_2_baseline, same 152 requests) was NET-NEGATIVE — the
+  # negative CF weight demotes the personalization signal and hurt
+  # target_reachable/task_success on every kind. Kept for future weight
+  # refits; do not enable without a new live A/B.
+  mode: baseline
   hybrid_popularity_weight: 4.0
+  # learned_weights: [w_pop, w_cf, w_bias] — null uses the fitted defaults
+  # baked into LearnedScorer (documented in learned_scorer.py).

@@ -18,7 +18,7 @@ class RankTool(Tool):
 
     Leakage: the tool has no timestamp; the "as-of" time is fixed by which
     interactions the scorer's model was fitted on (train for validation runs,
-    train+validation for test runs, as in scripts/evaluation/run_baselines.py).
+    train+validation for test runs, as in benchmarks/run_baselines.py).
 
     """
 
@@ -29,7 +29,7 @@ class RankTool(Tool):
     )
     input_schema = {
         "user_id": "str  -- required",
-        "candidates": "list[str | {item_id: str}]  -- required, e.g. \"$1.candidates\" from a retrieval step",
+        "candidates": "list[str | {item_id: str}]  -- required, e.g. \"$1.candidates\" from a retrieval step, or \"$union.candidates\" for all retrieval steps so far",
         "top_k": "int | None  -- default: all scorable candidates",
         "exclude_seen": "bool (default true)  -- drop items the user already interacted with",
     }
@@ -37,6 +37,7 @@ class RankTool(Tool):
         "ranked": "list[{rank, item_id, score, domain}]  -- best first",
         "model": "str  -- name of the scorer that produced the scores",
         "cold_start": "bool", "excluded_seen": "list[str]", "unscored_item_ids": "list[str]",
+        "candidate_item_ids": "list[str]  -- deduped input candidate ids, in input order",
         "has_personal_signal": "bool  -- true if user has collaborative/personal signal vs only popularity",
         "note": "str | None  -- explanation when ranked is empty",
     }
@@ -146,6 +147,7 @@ class RankTool(Tool):
             "cold_start": cold_start,
             "excluded_seen": excluded_seen,
             "unscored_item_ids": unscored,
+            "candidate_item_ids": ids,
             "has_personal_signal": self.scorer.has_personal_signal(user_idx),
             "note": note,
         }

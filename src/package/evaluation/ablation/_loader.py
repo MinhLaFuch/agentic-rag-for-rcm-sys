@@ -39,32 +39,40 @@ def load_config_data(exp_dir: Path) -> dict[str, Any]:
 def load_group_data(group_name: str, exp_names: list[str]) -> dict[str, Any]:
     """
     Load dữ liệu từ một group (nhiều exp directories).
-    
+
     Trả về dict với:
     - configs: list[dict] - config của từng exp
     - scored: list[list[dict]] - scored data của từng exp
     - exp_dirs: list[Path] - đường dẫn các exp directories
     """
     base_dir = get_data_paths().output_dir("agent_eval")
-    
+    exp_dirs = [base_dir / name for name in exp_names]
+    return load_group_data_dirs(group_name, exp_dirs)
+
+
+def load_group_data_dirs(group_name: str, exp_dirs: list[Path]) -> dict[str, Any]:
+    """Same as load_group_data but takes resolved directories directly.
+
+    Used by the campaign runner, which knows each run's experiment_dir
+    without reconstructing paths relative to outputs.agent_eval.
+    """
     configs = []
     scored_list = []
-    exp_dirs = []
-    
-    for exp_name in exp_names:
-        exp_dir = base_dir / exp_name
+    resolved_dirs = []
+
+    for exp_dir in exp_dirs:
         if not exp_dir.exists():
             raise ConfigError(f"Experiment directory not found: {exp_dir}")
-        
+
         configs.append(load_config_data(exp_dir))
         scored_list.append(load_scored_data(exp_dir))
-        exp_dirs.append(exp_dir)
-    
+        resolved_dirs.append(exp_dir)
+
     return {
         "group_name": group_name,
         "configs": configs,
         "scored": scored_list,
-        "exp_dirs": exp_dirs,
+        "exp_dirs": resolved_dirs,
     }
 
 

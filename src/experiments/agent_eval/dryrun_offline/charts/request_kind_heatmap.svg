@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="268" font-family="sans-serif" font-size="12">
+<rect width="100%" height="100%" fill="white"/>
+<text x="360" y="24" text-anchor="middle" font-size="15" font-weight="bold">Request Kind Performance</text>
+
+<text x="178" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 178 42)">hit_rate@10</text>
+<text x="234" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 234 42)">map@10</text>
+<text x="290" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 290 42)">mrr@10</text>
+<text x="346" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 346 42)">ndcg@10</text>
+<text x="402" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 402 42)">precision@10</text>
+<text x="458" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 458 42)">recall@10</text>
+<text x="514" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 514 42)">task_success</text>
+<text x="570" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 570 42)">answer_fallback</text>
+<text x="626" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 626 42)">answer_grounded</text>
+<text x="682" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 682 42)">answer_status_ok</text>
+<text x="738" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 738 42)">n_steps</text>
+<text x="142" y="82" text-anchor="end" font-size="10">baseline/personalized</text>
+<rect x="150" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / hit_rate@10: 0.000</title></rect>
+<text x="178" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="206" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / map@10: 0.000</title></rect>
+<text x="234" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="262" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / mrr@10: 0.000</title></rect>
+<text x="290" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="318" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / ndcg@10: 0.000</title></rect>
+<text x="346" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / precision@10: 0.000</title></rect>
+<text x="402" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="430" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/personalized / recall@10: 0.000</title></rect>
+<text x="458" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="50" width="54" height="54" fill="rgb(171,198,224)"><title>baseline/personalized / task_success: 1.000</title></rect>
+<text x="514" y="82" text-anchor="middle" font-size="10">1.00</text>
+<rect x="542" y="50" width="54" height="54" fill="#eee"/>
+<rect x="598" y="50" width="54" height="54" fill="#eee"/>
+<rect x="654" y="50" width="54" height="54" fill="#eee"/>
+<rect x="710" y="50" width="54" height="54" fill="#eee"/>
+<text x="142" y="138" text-anchor="end" font-size="10">baseline/similar</text>
+<rect x="150" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / hit_rate@10: 0.000</title></rect>
+<text x="178" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="206" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / map@10: 0.000</title></rect>
+<text x="234" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="262" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / mrr@10: 0.000</title></rect>
+<text x="290" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="318" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / ndcg@10: 0.000</title></rect>
+<text x="346" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / precision@10: 0.000</title></rect>
+<text x="402" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="430" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>baseline/similar / recall@10: 0.000</title></rect>
+<text x="458" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="106" width="54" height="54" fill="rgb(171,198,224)"><title>baseline/similar / task_success: 1.000</title></rect>
+<text x="514" y="138" text-anchor="middle" font-size="10">1.00</text>
+<rect x="542" y="106" width="54" height="54" fill="#eee"/>
+<rect x="598" y="106" width="54" height="54" fill="#eee"/>
+<rect x="654" y="106" width="54" height="54" fill="#eee"/>
+<rect x="710" y="106" width="54" height="54" fill="#eee"/>
+<text x="142" y="194" text-anchor="end" font-size="10">type1/similar</text>
+<rect x="150" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / hit_rate@10: 0.000</title></rect>
+<text x="178" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="206" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / map@10: 0.000</title></rect>
+<text x="234" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="262" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / mrr@10: 0.000</title></rect>
+<text x="290" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="318" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / ndcg@10: 0.000</title></rect>
+<text x="346" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / precision@10: 0.000</title></rect>
+<text x="402" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="430" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / recall@10: 0.000</title></rect>
+<text x="458" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="162" width="54" height="54" fill="rgb(171,198,224)"><title>type1/similar / task_success: 1.000</title></rect>
+<text x="514" y="194" text-anchor="middle" font-size="10">1.00</text>
+<rect x="542" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>type1/similar / answer_fallback: 0.000</title></rect>
+<text x="570" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="598" y="162" width="54" height="54" fill="rgb(171,198,224)"><title>type1/similar / answer_grounded: 1.000</title></rect>
+<text x="626" y="194" text-anchor="middle" font-size="10">1.00</text>
+<rect x="654" y="162" width="54" height="54" fill="rgb(171,198,224)"><title>type1/similar / answer_status_ok: 1.000</title></rect>
+<text x="682" y="194" text-anchor="middle" font-size="10">1.00</text>
+<rect x="710" y="162" width="54" height="54" fill="rgb(38,118,198)"><title>type1/similar / n_steps: 3.000</title></rect>
+<text x="738" y="194" text-anchor="middle" font-size="10">3.00</text>
+</svg>

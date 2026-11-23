@@ -9,10 +9,11 @@ from __future__ import annotations
 import yaml
 from pathlib import Path
 from typing import Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 import hashlib
 import json
+import re
 from itertools import product
 
 
@@ -118,9 +119,17 @@ class CampaignConfig:
     default_agents: list[str] = field(
         default_factory=lambda: ["baseline", "type1", "planner", "planner_memory"]
     )
+    # Campaign-wide agent_config defaults merged under each experiment's own
+    # agent_config (experiment keys win). Use for always-on opt-ins like jev.
+    agent_config_defaults: dict[str, Any] = field(default_factory=dict)
     allow_missing_corpus_sources: bool = True
     experiment_timeout_seconds: int = 3600
     multi_turn: str = "once"
+    # Optional post-run ablation contrasts. contrasts[] entries mirror
+    # configs/agent/ablation.yaml but reference experiment NAMES (resolved to
+    # run dirs at runtime) instead of paths: a/b are [agent, experiment_name].
+    # Metrics/bootstrap params still come from agent/ablation.yaml.
+    ablation: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -134,9 +143,11 @@ class CampaignConfig:
             _comparison_pairs_key(): self.comparison_pairs,
             _statistical_settings_key(): self.statistical_settings,
             "default_agents": self.default_agents,
+            "agent_config_defaults": self.agent_config_defaults,
             "allow_missing_corpus_sources": self.allow_missing_corpus_sources,
             "experiment_timeout_seconds": self.experiment_timeout_seconds,
             "multi_turn": self.multi_turn,
+            "ablation": self.ablation,
         }
 
     @classmethod
@@ -152,9 +163,11 @@ class CampaignConfig:
             comparison_pairs=data.get(_comparison_pairs_key(), []),
             statistical_settings=data.get(_statistical_settings_key(), ""),
             default_agents=data.get("default_agents", ["baseline", "type1", "planner", "planner_memory"]),
+            agent_config_defaults=data.get("agent_config_defaults", {}),
             allow_missing_corpus_sources=data.get("allow_missing_corpus_sources", True),
             experiment_timeout_seconds=data.get("experiment_timeout_seconds", 3600),
             multi_turn=data.get("multi_turn", "once"),
+            ablation=data.get("ablation", {}),
         )
 
     @classmethod
@@ -194,6 +207,31 @@ class CampaignConfig:
             _statistical_settings_key(): self.statistical_settings,
         }
         return hashlib.sha256(json.dumps(hash_input, sort_keys=True).encode()).hexdigest()[:16]
+
+    def next_version(self, times: int = 1) -> "CampaignConfig":
+        """Return a copy with the first digit group of campaign_id and
+        output_dir incremented (campaign_002 -> campaign_003).
+
+        Trajectory filenames and the campaign output dir derive from these
+        fields, so a bumped copy is fully isolated from the previous run.
+        ``times`` applies the bump repeatedly (rerun_campaign uses it to
+        resolve --next-created campaigns back to their source YAML).
+        """
+        def bump(value: str) -> str:
+            m = re.search(r"\d+", value)
+            if not m:
+                raise ValueError(
+                    f"campaign versioning needs a digit group in {value!r}; "
+                    "bump campaign_id/output_dir manually instead"
+                )
+            n = int(m.group(0)) + times
+            return value[: m.start()] + f"{n:0{len(m.group(0))}d}" + value[m.end() :]
+
+        return replace(
+            self,
+            campaign_id=bump(self.campaign_id),
+            output_dir=bump(self.output_dir),
+        )
 
     def expand_parameter_grid(self) -> list[ExperimentConfig]:
         """Expand parameter_grid into experiment configurations.
@@ -294,6 +332,7 @@ class ExperimentRun:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     duration_seconds: float = 0.0
     metrics: dict[str, Any] = field(default_factory=dict)
+    git_sha: str = ""  # SHA at the run that produced this entry; "" for entries predating the field
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -306,6 +345,7 @@ class ExperimentRun:
             "timestamp": self.timestamp,
             "duration_seconds": self.duration_seconds,
             "metrics": self.metrics,
+            "git_sha": self.git_sha,
         }
 
     @classmethod
@@ -320,6 +360,7 @@ class ExperimentRun:
             timestamp=data.get("timestamp"),
             duration_seconds=data.get("duration_seconds", 0.0),
             metrics=data.get("metrics", {}),
+            git_sha=data.get("git_sha", ""),
         )
 
 
@@ -344,6 +385,8 @@ class CampaignResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     git_sha: str = ""
     multi_turn: dict[str, Any] = field(default_factory=dict)
+    ablation: dict[str, Any] = field(default_factory=dict)  # post-run contrast statuses; {} when not configured
+    subset: dict[str, Any] = field(default_factory=dict)  # non-empty only for --only runs: which experiments ran/were skipped
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -355,6 +398,8 @@ class CampaignResult:
             "timestamp": self.timestamp,
             "git_sha": self.git_sha,
             "multi_turn": self.multi_turn,
+            "ablation": self.ablation,
+            "subset": self.subset,
         }
 
     @classmethod
@@ -368,4 +413,6 @@ class CampaignResult:
             timestamp=data.get("timestamp"),
             git_sha=data.get("git_sha", ""),
             multi_turn=data.get("multi_turn", {}),
+            ablation=data.get("ablation", {}),
+            subset=data.get("subset", {}),
         )

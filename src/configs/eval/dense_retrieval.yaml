@@ -1,0 +1,14 @@
+# Dense retrieval (hybrid BM25 + vector RRF trong SearchTool) — OPT-IN.
+#
+# Để bật: tạo artifacts bằng scripts/evaluation/build_semantic_embeddings.py
+# (lệnh `pin` rồi `build`), điền artifacts_dir/encoder_lock, đặt enabled: true.
+# Khi enabled=true mà artifacts/encoder thiếu hoặc checksum sai → run_agent_eval
+# và demo raise lỗi rõ ràng, KHÔNG lặng lẽ fallback về BM25-only.
+#
+# Đường dẫn tương đối tính từ thư mục src/ (vd experiments/semantic_embeddings/exp_001).
+
+dense_retrieval:
+  enabled: true
+  artifacts_dir: experiments/embedding_builds/multi_domain_semantic  # format-A artifacts (converted từ full build)
+  encoder_lock: experiments/embedding_builds/encoder.lock.json      # encoder lock từ lệnh `pin`
+  rrf_k: 60               # hằng số RRF fusion giữa BM25 và dense legs

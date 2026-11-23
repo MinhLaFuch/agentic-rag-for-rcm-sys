@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from .recommender import Recommender
-from ..evaluation.bpr_mf_recommender import BPRMFRecommender
-from ..evaluation.fallback_recommender import FallbackRecommender
-from ..evaluation.item_knn_matrix_recommender import ItemKNNMatrixRecommender
-from ..evaluation.popularity_matrix_recommender import PopularityMatrixRecommender
-from ..evaluation.random_recommender import RandomRecommender
+from ..offline.bpr_mf_recommender import BPRMFRecommender
+from ..offline.fallback_recommender import FallbackRecommender
+from ..offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
+from ..offline.popularity_matrix_recommender import PopularityMatrixRecommender
+from ..offline.random_recommender import RandomRecommender
 
 # Model registry: the ONLY list of buildable models (keep in sync with the branches in build_model).
 ALL_MODELS = ["random", "popularity", "item_knn", "bpr_mf"]

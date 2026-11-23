@@ -1,0 +1,39 @@
+{
+  "n_holdout": 6000,
+  "n_uncat": 6000,
+  "k": 10,
+  "reference_size": 2401801,
+  "holdout": {
+    "any_hit@1": 0.9896666666666667,
+    "any_hit@3": 0.9913333333333333,
+    "exact_set@1": 0.0,
+    "level_hit_rate": {
+      "0": 0.6603553625984885
+    }
+  },
+  "uncategorized": {
+    "top_vote_share": {
+      "mean": 0.2535965543381306,
+      "p25": 0.20844415217196105,
+      "p50": 0.25,
+      "p75": 0.28789677892552507
+    },
+    "frac_share_gt_0.5": 0.0,
+    "frac_share_gt_0.7": 0.0,
+    "top_level1_categories": {
+      "Electronics": 3060,
+      "Toys & Games": 2300,
+      "Video Games": 545,
+      "Remote & App Controlled Vehicles & Parts": 42,
+      "Accessories": 16,
+      "Remote & App Controlled Vehicle Parts": 15,
+      "Car & Vehicle Electronics": 10,
+      "Amazon Devices & Accessories": 4,
+      "Batteries": 3,
+      "Screen Protectors": 2,
+      "Mounts": 1,
+      "Headsets": 1,
+      "Battery Chargers": 1
+    }
+  }
+}

@@ -14,7 +14,7 @@ from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k
 from package.corpus import ItemCorpus
 from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
-from .compile_filters import compile_filters
+from .compile_filters import _as_float, compile_filters
 
 class FilterTool(Tool):
     """
@@ -42,7 +42,8 @@ class FilterTool(Tool):
             "title_contains": "str",
             "exclude_item_ids": "list[str]",
         },
-        "order_by": "rating_number | average_rating | price (default rating_number)",
+        "order_by": "rating_number | average_rating | price | popularity (default rating_number; "
+                    "masked fields fall back to causal proxies when available)",
         "descending": "bool (default true)",
         "limit": f"int (<= {MAX_CANDIDATES}, default {SQL_DEFAULT_LIMIT})",
     }
@@ -78,18 +79,140 @@ class FilterTool(Tool):
             raise ToolInputError(f"`descending` must be a boolean (true/false), got {descending!r}")
         limit = check_top_k(limit, name="limit")
 
-        where, params, normalized = compile_filters(filters, set(self.corpus.domains()), corpus=self.corpus)
+        # Metadata policy may mask mutable fields (price/average_rating/
+        # rating_number -> NULL). Constraints on masked fields silently match
+        # nothing; ordering by them degenerates to item_id order. Fail loudly
+        # for filters, and fall back to causal proxies for ordering/filters
+        # when the policy exposed them.
+        policy = getattr(self.corpus, "_evaluation_metadata_policy", None) or {}
+        masked = set(policy.get("masked_fields") or ())
+        policy_name = policy.get("name")
+
+        # min_rating on masked average_rating can be evaluated on the causal
+        # fit-split mean rating (temp.item_rating) when the policy provides it.
+        # Pop it before compile_filters so the NULL-column clause is not emitted.
+        causal_min_rating = None
+        compile_input = filters
+        if (
+            masked
+            and "average_rating" in masked
+            and filters.get("min_rating") is not None
+            and policy.get("rating_proxy_available")
+        ):
+            compile_input = dict(filters)
+            causal_min_rating = _as_float(compile_input.pop("min_rating"), "min_rating")
+
+        where, params, normalized = compile_filters(compile_input, set(self.corpus.domains()), corpus=self.corpus)
+
+        filter_proxy_note = None
+        if causal_min_rating is not None:
+            where = (f"{where} AND items.item_id IN "
+                     "(SELECT item_id FROM item_rating WHERE avg_rating >= ?)")
+            params.append(causal_min_rating)
+            filter_proxy_note = (
+                "min_rating evaluated on causal fit-split mean rating "
+                "(average_rating is masked under the metadata policy)"
+            )
+
+        if masked:
+            blocked = sorted(
+                f for f in normalized
+                if {"price_min": "price", "price_max": "price",
+                    "include_missing_price": "price",
+                    "min_rating": "average_rating",
+                    "min_rating_number": "rating_number"}.get(f) in masked
+            )
+            if blocked:
+                raise ToolInputError(
+                    f"filter(s) {blocked} target masked field(s) under metadata policy "
+                    f"'{policy_name}' (mutable fields are hidden to prevent future "
+                    "leakage, so these constraints cannot be evaluated). Drop them "
+                    "or use domain/categories/store/title_contains instead."
+                )
+        if causal_min_rating is not None:
+            normalized["min_rating"] = causal_min_rating
+        order_by_effective = order_by
+        order_by_note = None
+        degenerate_order = False
+        if order_by in masked:
+            if order_by == "average_rating" and policy.get("rating_proxy_available"):
+                order_by_effective = "causal_rating"
+                order_by_note = (
+                    f"order_by '{order_by}' is masked under '{policy_name}'; "
+                    "using causal mean fit-split rating"
+                )
+            elif policy.get("popularity_available"):
+                order_by_effective = "popularity"
+                order_by_note = (
+                    f"order_by '{order_by}' is masked under '{policy_name}'; "
+                    "using causal popularity proxy (fit-split interaction count)"
+                )
+            else:
+                # No causal proxy available: keep the old deterministic
+                # item_id ordering rather than failing every FilterTool call,
+                # but surface it so the planner/eval logs show the degradation.
+                order_by_effective = "item_id"
+                degenerate_order = True
+                order_by_note = (
+                    f"order_by '{order_by}' is masked under '{policy_name}' and "
+                    "no popularity proxy is available; results are in item_id "
+                    "order (effectively unordered by popularity)"
+                )
+
         direction = "DESC" if descending else "ASC"
         cols = ", ".join(ITEM_COLUMNS)
-        # NULLs last, then item_id so results are deterministic
-        sql = (
-            f"SELECT {cols} FROM items WHERE {where} "
-            f"ORDER BY {order_by} IS NULL, {order_by} {direction}, item_id"
-        )
+        if order_by_effective == "popularity":
+            if not policy.get("popularity_available"):
+                raise ToolInputError(
+                    "order_by='popularity' requires the evaluation metadata "
+                    "policy to expose fit-split interaction counts; unavailable "
+                    f"under '{policy_name}'."
+                )
+            # Drive from the item_popularity index (cnt, item_id) and probe the
+            # items view per row — ORDER BY over the 2M-row view would need a
+            # full sort (~24s) and always blow the SQL time budget. CROSS JOIN
+            # pins the join order so the index scan + early LIMIT applies.
+            sql = (
+                f"SELECT {', '.join('items.' + c for c in ITEM_COLUMNS)} "
+                "FROM (SELECT item_id AS pid, cnt FROM item_popularity "
+                f"ORDER BY cnt {direction}, item_id) AS p "
+                "CROSS JOIN items ON p.pid = items.item_id "
+                f"WHERE {where} "
+                f"ORDER BY p.cnt {direction}, p.pid"
+            )
+        elif order_by_effective == "causal_rating":
+            if not policy.get("rating_proxy_available"):
+                raise ToolInputError(
+                    "order_by='average_rating' under a masked policy requires "
+                    "the evaluation metadata policy to expose fit-split mean "
+                    f"ratings; unavailable under '{policy_name}'."
+                )
+            sql = (
+                f"SELECT {', '.join('items.' + c for c in ITEM_COLUMNS)} "
+                "FROM (SELECT item_id AS pid, avg_rating FROM item_rating "
+                f"ORDER BY avg_rating IS NULL, avg_rating {direction}, item_id) AS p "
+                "CROSS JOIN items ON p.pid = items.item_id "
+                f"WHERE {where} "
+                f"ORDER BY p.avg_rating IS NULL, p.avg_rating {direction}, p.pid"
+            )
+        elif degenerate_order:
+            sql = f"SELECT {cols} FROM items WHERE {where} ORDER BY item_id"
+        else:
+            # NULLs last, then item_id so results are deterministic
+            sql = (
+                f"SELECT {cols} FROM items WHERE {where} "
+                f"ORDER BY {order_by_effective} IS NULL, {order_by_effective} {direction}, item_id"
+            )
         rows, truncated = self.corpus.select(sql, params, max_rows=limit)
-        return {
+        out = {
             "candidates": rows,
             "total_matches": self.corpus.count(where, params),
             "truncated": truncated,
             "applied_filters": normalized,
         }
+        if filter_proxy_note:
+            out["filter_proxy_note"] = filter_proxy_note
+        if order_by_effective != order_by:
+            out["order_by_effective"] = order_by_effective
+            out["order_by_note"] = order_by_note
+        return out

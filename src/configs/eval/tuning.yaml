@@ -1,14 +1,25 @@
 # Tuning config (mục VIII, XX).
 # Chọn cấu hình chỉ bằng validation; không dùng test cho hyperparameter search.
+#
+# Trạng thái wiring:
+#   - selection_metric, models, item_knn.k, bpr_mf grids, run_final_test:
+#     ĐANG được src/benchmarks/tune_baselines.py đọc (sweep tham số trên
+#     validation; run_final_test=true đánh giá test đúng một lần sau khi
+#     chọn model — chỉ bật sau khi review).
+#   - item_knn_hybrid.weights: ĐANG được
+#     scripts/evaluation/tune_item_knn_hybrid.py đọc (mặc định cho --weights
+#     và metric mục tiêu khi flag không truyền).
 
 tuning:
   selection_metric: "ndcg@10"
   run_final_test: false      # true = refit cấu hình thắng trên train+validation rồi đánh giá test MỘT lần (chỉ bật sau khi đã review model được chọn)
-  models: [popularity, item_knn, bpr_mf]   # danh sách model tuning mặc định
+  models: [popularity, item_knn, bpr_mf]   # tune_baselines.py: model sweep list
   item_knn:
-    k: [10, 20, 50, 100]
+    k: [10, 20, 50, 100]                  # tune_baselines.py: ItemKNN k sweep
+  item_knn_hybrid:
+    weights: [0, 0.25, 0.5, 1, 2, 4, 8]   # hybrid_weight grid — tune_item_knn_hybrid.py
   bpr_mf:
-    embedding_dim: [32, 64]
+    embedding_dim: [32, 64]               # tune_baselines.py: BPR-MF sweep
     learning_rate: [0.001, 0.005]
     reg: [0.001, 0.01]
     epochs: [20]

@@ -44,10 +44,14 @@ class VectorStore:
         self.item_ids = np.asarray(item_ids, dtype=object)
         self.embeddings = np.asarray(embeddings, dtype=np.float32)
 
-        # Ensure L2 normalized
-        norms = np.linalg.norm(self.embeddings, axis=1, keepdims=True)
+        # Ensure L2 normalized (chunked: avoid multi-GiB temporaries on full-catalog stores)
+        emb = self.embeddings
+        norms = np.empty(len(emb), dtype=np.float32)
+        for start in range(0, len(emb), 65536):
+            chunk = emb[start:start + 65536]
+            norms[start:start + 65536] = np.sqrt(np.einsum("ij,ij->i", chunk, chunk))
         norms = np.where(norms > 1e-9, norms, 1.0)
-        self.embeddings = self.embeddings / norms
+        emb /= norms[:, None]
 
         self.id2idx = {item_id: idx for idx, item_id in enumerate(self.item_ids)}
 

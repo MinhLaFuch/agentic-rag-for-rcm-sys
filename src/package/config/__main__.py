@@ -52,6 +52,8 @@ def _lookup(key: str):
             "tool_validation": "eval",
             "memory_utility": "eval",
             "component_benchmarks": "eval",
+            "dense_retrieval": "eval",
+            "campaign": "eval",
             "judge": "eval",
             "tools": "agent",
             "agent": "agent",
