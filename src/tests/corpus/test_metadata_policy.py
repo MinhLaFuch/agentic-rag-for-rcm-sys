@@ -248,3 +248,26 @@ def test_temporal_policy_requires_first_seen_and_cannot_change_cutoff():
     apply_metadata_policy(corpus, "snapshot", as_of_timestamp=10)
     with pytest.raises(ValueError, match="reload"):
         apply_metadata_policy(corpus, "snapshot", as_of_timestamp=11)
+
+
+def test_availability_dates_recover_preexisting_items():
+    """Plausible 'Date First Available' <= as_of grants visibility even when
+    first_seen_ts (interaction proxy) is later; junk dates are rejected."""
+    corpus = ItemCorpus.from_dataframe(pd.DataFrame({
+        "parent_asin": ["a", "b", "c", "d"], "domain": ["D"] * 4,
+        "title": ["kb"] * 4,
+        # epoch-ms: a=900e9 (>as_of), b=100e9 (visible), c=950e9, d=950e9
+        "first_seen_ts": [900_000_000_000, 100_000_000_000,
+                          950_000_000_000, 950_000_000_000],
+    }))
+    availability = {
+        "D::a": 840_000_000_000,   # plausible: >=1995, <=first_seen, <=as_of -> RECOVERED
+        "D::c": 100_000_000_000,   # <1995 placeholder -> junk, stays hidden
+        "D::d": 960_000_000_000,   # >first_seen impossible -> junk, stays hidden
+    }
+    record = apply_metadata_policy(
+        corpus, "historical_static_catalog", as_of_timestamp=850_000_000_000,
+        availability=availability)
+    assert record["availability_dates"] is True
+    ids = sorted(r["item_id"] for r in FilterTool(corpus).execute()["candidates"])
+    assert ids == ["D::a", "D::b"]

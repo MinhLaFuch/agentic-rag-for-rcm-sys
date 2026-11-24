@@ -149,6 +149,10 @@ class AgentEvalConfig(BaseModel):
         default=False,
         description="Pre-planner query distillation: one extractor LLM call per request, spec JSON injected into the planner system prompt",
     )
+    availability_dates: bool = Field(
+        default=False,
+        description="Use details['Date First Available'] (item_availability.parquet cạnh corpus) as an additional causal visibility source alongside first_seen_ts",
+    )
     experiment_dir: str | None = Field(
         default=None,
         description="Explicit experiment output dir; null allocates the next exp_NNN under outputs.agent_eval",
@@ -784,6 +788,10 @@ class PlannerPromptsConfig(BaseModel):
     distilled_spec_block: str = Field(
         default="",
         description="Optional block appended to the planner system prompt when agent_eval.distill_spec injects a spec; {spec_json} placeholder",
+    )
+    memory_guidance: str = Field(
+        default="",
+        description="MemoryTool-specific rules + few-shot examples; injected via {memory_guidance} only when the toolkit actually contains MemoryTool",
     )
 
 

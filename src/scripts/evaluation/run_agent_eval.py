@@ -543,10 +543,29 @@ def main() -> None:
         }
         print(f"Inferred categories: {len(inferred_categories)} items "
               f"from {inferred_path.name}", flush=True)
+    # Availability dates ('Date First Available', causal fixed fact) as an
+    # additional visibility source: optional corpus-adjacent artifact built by
+    # scripts/data_pipeline/build_item_availability.py. Absent file simply
+    # leaves first_seen_ts as the only visibility gate, as before.
+    availability = None
+    if bool(cfg.get("availability_dates")):
+        avail_path = _corpus_file.parent / "item_availability.parquet" \
+            if _corpus_file is not None else None
+        if avail_path is not None and avail_path.exists():
+            avail_df = pd.read_parquet(avail_path, columns=["item_id", "avail_ts"])
+            availability = {
+                r.item_id: int(r.avail_ts) for r in avail_df.itertuples(index=False)
+            }
+            print(f"Availability dates: {len(availability)} items "
+                  f"from {avail_path.name}", flush=True)
+        else:
+            print("WARNING: agent_eval.availability_dates=true but "
+                  f"{avail_path} missing — continuing without availability dates",
+                  flush=True)
     metadata_policy = apply_metadata_policy(
         corpus, metadata_policy_name, as_of_timestamp=as_of,
         popularity=popularity, ratings=ratings,
-        inferred_categories=inferred_categories)
+        inferred_categories=inferred_categories, availability=availability)
     # Agent request cohorts are recorded separately after request construction.
     protocol_manifest = evaluation_protocol(eval_on=args.eval_on, tag=data_paths.tag, fit_df=fit_df,
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
