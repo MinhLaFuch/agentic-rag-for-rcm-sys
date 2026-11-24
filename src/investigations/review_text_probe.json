@@ -1,0 +1,2351 @@
+{
+ "method": "missed targets from dropped_fields_probe.json; review title+text tokens (cap 500/item) vs query tokens; new_signal = in reviews but absent from title+categories.",
+ "n_missed_targets": 195,
+ "by_kind": {
+  "cold_text": {
+   "n": 20,
+   "pct_with_review_text": 100.0,
+   "pct_new_signal_ge_15pct": 0.0,
+   "mean_new_signal_coverage": 0.052
+  },
+  "exclusion": {
+   "n": 26,
+   "pct_with_review_text": 100.0,
+   "pct_new_signal_ge_15pct": 15.4,
+   "mean_new_signal_coverage": 0.058
+  },
+  "personalized": {
+   "n": 72,
+   "pct_with_review_text": 100.0,
+   "pct_new_signal_ge_15pct": 45.8,
+   "mean_new_signal_coverage": 0.092
+  },
+  "similar": {
+   "n": 77,
+   "pct_with_review_text": 100.0,
+   "pct_new_signal_ge_15pct": 42.9,
+   "mean_new_signal_coverage": 0.116
+  }
+ },
+ "top": [
+  {
+   "request_id": "similar-warm-12",
+   "kind": "similar",
+   "item_id": "Electronics::B0C49KQRX4",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.6,
+   "new_signal_tokens": [
+    "games",
+    "toys",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-5",
+   "kind": "similar",
+   "item_id": "Electronics::B08F1P3BCC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.5,
+   "new_signal_tokens": [
+    "electronics",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-18",
+   "kind": "similar",
+   "item_id": "Electronics::B08WJSHSLC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.5,
+   "new_signal_tokens": [
+    "electronics",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-12",
+   "kind": "similar",
+   "item_id": "Electronics::B0B9GFKYSZ",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.4,
+   "new_signal_tokens": [
+    "games",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-1",
+   "kind": "similar",
+   "item_id": "Electronics::B075R97C9K",
+   "n_query_tokens": 4,
+   "n_reviews": 347,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Video_Games::B09XV4PSK8",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Electronics::B07S8PVSDS",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Electronics::B09WDCP5MC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-4",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B08BG6CVQD",
+   "n_query_tokens": 4,
+   "n_reviews": 158,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-5",
+   "kind": "similar",
+   "item_id": "Electronics::B086JXJ1LF",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-7",
+   "kind": "similar",
+   "item_id": "Electronics::B00354951S",
+   "n_query_tokens": 4,
+   "n_reviews": 97,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-8",
+   "kind": "similar",
+   "item_id": "Electronics::B0BH13KJ64",
+   "n_query_tokens": 4,
+   "n_reviews": 112,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-8",
+   "kind": "similar",
+   "item_id": "Electronics::B07TBBB9BQ",
+   "n_query_tokens": 4,
+   "n_reviews": 21,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-11",
+   "kind": "similar",
+   "item_id": "Electronics::B09C5TBQQ2",
+   "n_query_tokens": 4,
+   "n_reviews": 448,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-14",
+   "kind": "similar",
+   "item_id": "Electronics::B08K8W68BX",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "request_id": "similar-sparse-0",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0BTR6295J",
+   "n_query_tokens": 5,
+   "n_reviews": 301,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-0",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0BW3DF1XN",
+   "n_query_tokens": 5,
+   "n_reviews": 44,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-0",
+   "kind": "similar",
+   "item_id": "Electronics::B0C571K6X5",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "games"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-1",
+   "kind": "similar",
+   "item_id": "Electronics::B075R97C9K",
+   "n_query_tokens": 4,
+   "n_reviews": 347,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Video_Games::B09XV4PSK8",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Electronics::B07S8PVSDS",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-2",
+   "kind": "similar",
+   "item_id": "Electronics::B09WDCP5MC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-3",
+   "kind": "similar",
+   "item_id": "Electronics::B07R32PZZ6",
+   "n_query_tokens": 4,
+   "n_reviews": 56,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-4",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B08BG6CVQD",
+   "n_query_tokens": 4,
+   "n_reviews": 158,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-5",
+   "kind": "similar",
+   "item_id": "Electronics::B08F1P3BCC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.5,
+   "new_signal_tokens": [
+    "electronics",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-5",
+   "kind": "similar",
+   "item_id": "Electronics::B086JXJ1LF",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-6",
+   "kind": "similar",
+   "item_id": "Electronics::B083TBWLPR",
+   "n_query_tokens": 4,
+   "n_reviews": 181,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-7",
+   "kind": "similar",
+   "item_id": "Electronics::B00354951S",
+   "n_query_tokens": 4,
+   "n_reviews": 97,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-8",
+   "kind": "similar",
+   "item_id": "Video_Games::B08Q42V4TY",
+   "n_query_tokens": 4,
+   "n_reviews": 66,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-8",
+   "kind": "similar",
+   "item_id": "Electronics::B0BH13KJ64",
+   "n_query_tokens": 4,
+   "n_reviews": 112,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-8",
+   "kind": "similar",
+   "item_id": "Electronics::B07TBBB9BQ",
+   "n_query_tokens": 4,
+   "n_reviews": 21,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-9",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B08CM3B4WC",
+   "n_query_tokens": 4,
+   "n_reviews": 386,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-10",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B07WRDBG88",
+   "n_query_tokens": 4,
+   "n_reviews": 159,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-11",
+   "kind": "similar",
+   "item_id": "Electronics::B09C5TBQQ2",
+   "n_query_tokens": 4,
+   "n_reviews": 448,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-12",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0007ZCIUI",
+   "n_query_tokens": 5,
+   "n_reviews": 238,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-12",
+   "kind": "similar",
+   "item_id": "Electronics::B0B9GFKYSZ",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.4,
+   "new_signal_tokens": [
+    "games",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-13",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B07H4Q33H3",
+   "n_query_tokens": 5,
+   "n_reviews": 9,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-14",
+   "kind": "similar",
+   "item_id": "Electronics::B08K8W68BX",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-15",
+   "kind": "similar",
+   "item_id": "Electronics::B095WQVC5M",
+   "n_query_tokens": 4,
+   "n_reviews": 122,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-15",
+   "kind": "similar",
+   "item_id": "Electronics::B088CW81Y6",
+   "n_query_tokens": 4,
+   "n_reviews": 228,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-16",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B08CBGJ8P7",
+   "n_query_tokens": 4,
+   "n_reviews": 29,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-sparse-17",
+   "kind": "similar",
+   "item_id": "Electronics::B08QCYNLPC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-18",
+   "kind": "similar",
+   "item_id": "Electronics::B08WJSHSLC",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.5,
+   "new_signal_tokens": [
+    "electronics",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-sparse-19",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0BG56H1NZ",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-0",
+   "kind": "similar",
+   "item_id": "Electronics::B08QRYTPGH",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-1",
+   "kind": "similar",
+   "item_id": "Electronics::B00IM3P8GS",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B08ZKL77Q5",
+   "n_query_tokens": 4,
+   "n_reviews": 68,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B0BKPX3YSH",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B08BC188VJ",
+   "n_query_tokens": 4,
+   "n_reviews": 189,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B0C5B6XN1C",
+   "n_query_tokens": 4,
+   "n_reviews": 479,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B01NAZ27PM",
+   "n_query_tokens": 4,
+   "n_reviews": 15,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-2",
+   "kind": "similar",
+   "item_id": "Electronics::B07TZGV19Z",
+   "n_query_tokens": 4,
+   "n_reviews": 10,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-3",
+   "kind": "similar",
+   "item_id": "Electronics::B08FD52RR6",
+   "n_query_tokens": 5,
+   "n_reviews": 153,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-4",
+   "kind": "similar",
+   "item_id": "Electronics::B0748KYTZN",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-5",
+   "kind": "similar",
+   "item_id": "Electronics::B0861S37C3",
+   "n_query_tokens": 4,
+   "n_reviews": 32,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-5",
+   "kind": "similar",
+   "item_id": "Electronics::B07QH53F42",
+   "n_query_tokens": 4,
+   "n_reviews": 40,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-6",
+   "kind": "similar",
+   "item_id": "Electronics::B0BLZZRZ2H",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-6",
+   "kind": "similar",
+   "item_id": "Electronics::B085G96HZ2",
+   "n_query_tokens": 4,
+   "n_reviews": 404,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-7",
+   "kind": "similar",
+   "item_id": "Electronics::B08F1XLD1Z",
+   "n_query_tokens": 4,
+   "n_reviews": 220,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-7",
+   "kind": "similar",
+   "item_id": "Electronics::B07X9YQDFD",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-7",
+   "kind": "similar",
+   "item_id": "Electronics::B07D3ZFTMW",
+   "n_query_tokens": 4,
+   "n_reviews": 13,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-8",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B07MBFG9W2",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "electronics"
+   ]
+  },
+  {
+   "request_id": "similar-warm-8",
+   "kind": "similar",
+   "item_id": "Electronics::B07V3JYVQH",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-8",
+   "kind": "similar",
+   "item_id": "Electronics::B08G3NV1VZ",
+   "n_query_tokens": 4,
+   "n_reviews": 429,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-8",
+   "kind": "similar",
+   "item_id": "Electronics::B084H2QBXB",
+   "n_query_tokens": 4,
+   "n_reviews": 84,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-9",
+   "kind": "similar",
+   "item_id": "Electronics::B088BP48Z9",
+   "n_query_tokens": 4,
+   "n_reviews": 55,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-9",
+   "kind": "similar",
+   "item_id": "Electronics::B08NSTS1TM",
+   "n_query_tokens": 4,
+   "n_reviews": 313,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-10",
+   "kind": "similar",
+   "item_id": "Electronics::B09G3MBH6V",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0791X617D",
+   "n_query_tokens": 5,
+   "n_reviews": 39,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B088C3KRH3",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "games"
+   ]
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B091Y3DNXS",
+   "n_query_tokens": 5,
+   "n_reviews": 410,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "games"
+   ]
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B00J2TGZTK",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B08GKHQS92",
+   "n_query_tokens": 5,
+   "n_reviews": 291,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "games"
+   ]
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B071R7HSH5",
+   "n_query_tokens": 5,
+   "n_reviews": 58,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B08TGXFZJT",
+   "n_query_tokens": 5,
+   "n_reviews": 141,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B09ZD2G75S",
+   "n_query_tokens": 5,
+   "n_reviews": 45,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-11",
+   "kind": "similar",
+   "item_id": "Electronics::B09PDL84HF",
+   "n_query_tokens": 5,
+   "n_reviews": 7,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-12",
+   "kind": "similar",
+   "item_id": "Video_Games::B08JP2FT27",
+   "n_query_tokens": 5,
+   "n_reviews": 142,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-12",
+   "kind": "similar",
+   "item_id": "Video_Games::B076GYVWRY",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-12",
+   "kind": "similar",
+   "item_id": "Electronics::B0C49KQRX4",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.6,
+   "new_signal_tokens": [
+    "games",
+    "toys",
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-12",
+   "kind": "similar",
+   "item_id": "Electronics::B086W7PH7N",
+   "n_query_tokens": 5,
+   "n_reviews": 324,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "toys"
+   ]
+  },
+  {
+   "request_id": "similar-warm-13",
+   "kind": "similar",
+   "item_id": "Electronics::B088BKY69Y",
+   "n_query_tokens": 5,
+   "n_reviews": 1,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-14",
+   "kind": "similar",
+   "item_id": "Video_Games::B08N7PX4WX",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-15",
+   "kind": "similar",
+   "item_id": "Electronics::B087QJKRY8",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-15",
+   "kind": "similar",
+   "item_id": "Electronics::B07R8GCP7D",
+   "n_query_tokens": 4,
+   "n_reviews": 109,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-16",
+   "kind": "similar",
+   "item_id": "Electronics::B0C5J8Q9LY",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-16",
+   "kind": "similar",
+   "item_id": "Electronics::B0B428Z89X",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-17",
+   "kind": "similar",
+   "item_id": "Electronics::B07JL18G1D",
+   "n_query_tokens": 4,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "similar-warm-17",
+   "kind": "similar",
+   "item_id": "Electronics::B07W75MYB2",
+   "n_query_tokens": 4,
+   "n_reviews": 447,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-18",
+   "kind": "similar",
+   "item_id": "Electronics::B0989VJ8KY",
+   "n_query_tokens": 4,
+   "n_reviews": 62,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-19",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B0BM64W6NY",
+   "n_query_tokens": 5,
+   "n_reviews": 302,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "similar-warm-19",
+   "kind": "similar",
+   "item_id": "Toys_and_Games::B09B1YCT71",
+   "n_query_tokens": 5,
+   "n_reviews": 38,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-0",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B08FW9Q2GG",
+   "n_query_tokens": 5,
+   "n_reviews": 2,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-0",
+   "kind": "personalized",
+   "item_id": "Electronics::B09V1FT19S",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B09S1FPFVS",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-2",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B09198674S",
+   "n_query_tokens": 5,
+   "n_reviews": 1,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-3",
+   "kind": "personalized",
+   "item_id": "Video_Games::B09FBW2988",
+   "n_query_tokens": 5,
+   "n_reviews": 478,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-4",
+   "kind": "personalized",
+   "item_id": "Electronics::B0827SLLMB",
+   "n_query_tokens": 5,
+   "n_reviews": 226,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-4",
+   "kind": "personalized",
+   "item_id": "Electronics::B09L423J1Q",
+   "n_query_tokens": 5,
+   "n_reviews": 7,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-5",
+   "kind": "personalized",
+   "item_id": "Video_Games::B07T85XHX6",
+   "n_query_tokens": 5,
+   "n_reviews": 235,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-5",
+   "kind": "personalized",
+   "item_id": "Video_Games::B0941XMYPV",
+   "n_query_tokens": 5,
+   "n_reviews": 13,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-6",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BCXY36KF",
+   "n_query_tokens": 5,
+   "n_reviews": 276,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-6",
+   "kind": "personalized",
+   "item_id": "Electronics::B09C2JCWT6",
+   "n_query_tokens": 5,
+   "n_reviews": 214,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-7",
+   "kind": "personalized",
+   "item_id": "Electronics::B09FJV3GBC",
+   "n_query_tokens": 5,
+   "n_reviews": 161,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-8",
+   "kind": "personalized",
+   "item_id": "Electronics::B00NVKHLP8",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-9",
+   "kind": "personalized",
+   "item_id": "Electronics::B08YFJYD5Z",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-10",
+   "kind": "personalized",
+   "item_id": "Video_Games::B09QRWMVD7",
+   "n_query_tokens": 5,
+   "n_reviews": 264,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-10",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B00JVF64WS",
+   "n_query_tokens": 5,
+   "n_reviews": 44,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-11",
+   "kind": "personalized",
+   "item_id": "Electronics::B08KY684PB",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-12",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B0013N2182",
+   "n_query_tokens": 5,
+   "n_reviews": 302,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B07171L4FT",
+   "n_query_tokens": 5,
+   "n_reviews": 127,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B07C9W8DJK",
+   "n_query_tokens": 5,
+   "n_reviews": 304,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B01BFK66P6",
+   "n_query_tokens": 5,
+   "n_reviews": 109,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B00E72RMEE",
+   "n_query_tokens": 5,
+   "n_reviews": 1,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B09LQ6T5WP",
+   "n_query_tokens": 5,
+   "n_reviews": 386,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BRTXHKYZ",
+   "n_query_tokens": 5,
+   "n_reviews": 291,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B095JX15XF",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BFM2GP2B",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B07YFG742J",
+   "n_query_tokens": 5,
+   "n_reviews": 473,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B08Q7RDZ27",
+   "n_query_tokens": 5,
+   "n_reviews": 5,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B08CY958PD",
+   "n_query_tokens": 5,
+   "n_reviews": 12,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B09DFL95SV",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BXLH8PGN",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B099LCK96Q",
+   "n_query_tokens": 5,
+   "n_reviews": 69,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B09M65RWQP",
+   "n_query_tokens": 5,
+   "n_reviews": 195,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B095WN7D2T",
+   "n_query_tokens": 5,
+   "n_reviews": 219,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-15",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BMQD4ZWR",
+   "n_query_tokens": 5,
+   "n_reviews": 280,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-16",
+   "kind": "personalized",
+   "item_id": "Electronics::B08932J7NC",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-16",
+   "kind": "personalized",
+   "item_id": "Electronics::B08F9LN79L",
+   "n_query_tokens": 5,
+   "n_reviews": 41,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-16",
+   "kind": "personalized",
+   "item_id": "Electronics::B08NT5JQPD",
+   "n_query_tokens": 5,
+   "n_reviews": 12,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-17",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B08F56X6QN",
+   "n_query_tokens": 5,
+   "n_reviews": 71,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-17",
+   "kind": "personalized",
+   "item_id": "Electronics::B08YR4HF3V",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-sparse-17",
+   "kind": "personalized",
+   "item_id": "Electronics::B09BN2VKJG",
+   "n_query_tokens": 5,
+   "n_reviews": 30,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-18",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B015329HQC",
+   "n_query_tokens": 5,
+   "n_reviews": 51,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-sparse-19",
+   "kind": "personalized",
+   "item_id": "Electronics::B01FFACQYW",
+   "n_query_tokens": 5,
+   "n_reviews": 45,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-0",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BDF4DVXC",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B085TDV9DW",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B00C6A1IB2",
+   "n_query_tokens": 5,
+   "n_reviews": 75,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B07823T5BG",
+   "n_query_tokens": 5,
+   "n_reviews": 120,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B01LAFEDEW",
+   "n_query_tokens": 5,
+   "n_reviews": 22,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-1",
+   "kind": "personalized",
+   "item_id": "Electronics::B081XSL347",
+   "n_query_tokens": 5,
+   "n_reviews": 13,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-2",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BDMZ1DJ8",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-3",
+   "kind": "personalized",
+   "item_id": "Electronics::B082M94GY9",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-4",
+   "kind": "personalized",
+   "item_id": "Electronics::B092W3K376",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-4",
+   "kind": "personalized",
+   "item_id": "Electronics::B09B36FJVT",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-5",
+   "kind": "personalized",
+   "item_id": "Electronics::B08PSQ2SS1",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-6",
+   "kind": "personalized",
+   "item_id": "Electronics::B08FNT65ZN",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-7",
+   "kind": "personalized",
+   "item_id": "Electronics::B07K9DD2SZ",
+   "n_query_tokens": 5,
+   "n_reviews": 166,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-8",
+   "kind": "personalized",
+   "item_id": "Electronics::B09PZW8R7L",
+   "n_query_tokens": 5,
+   "n_reviews": 380,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-10",
+   "kind": "personalized",
+   "item_id": "Electronics::B002DPUUL4",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-11",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B08GWG9D4Z",
+   "n_query_tokens": 5,
+   "n_reviews": 8,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-12",
+   "kind": "personalized",
+   "item_id": "Video_Games::B00NETKFJU",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-12",
+   "kind": "personalized",
+   "item_id": "Video_Games::B015NKL2YO",
+   "n_query_tokens": 5,
+   "n_reviews": 19,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-12",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B0BWGV4DCS",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-12",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B09DGTKLVF",
+   "n_query_tokens": 5,
+   "n_reviews": 17,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-12",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B079X4C3FN",
+   "n_query_tokens": 5,
+   "n_reviews": 6,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-13",
+   "kind": "personalized",
+   "item_id": "Electronics::B07RJZPTLX",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-14",
+   "kind": "personalized",
+   "item_id": "Electronics::B08GHHBPFB",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-15",
+   "kind": "personalized",
+   "item_id": "Toys_and_Games::B00VS1MGB6",
+   "n_query_tokens": 5,
+   "n_reviews": 3,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-16",
+   "kind": "personalized",
+   "item_id": "Video_Games::B09CW63H33",
+   "n_query_tokens": 5,
+   "n_reviews": 84,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-17",
+   "kind": "personalized",
+   "item_id": "Electronics::B01621M1S4",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "personalized-warm-18",
+   "kind": "personalized",
+   "item_id": "Electronics::B089K11VG4",
+   "n_query_tokens": 5,
+   "n_reviews": 185,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-18",
+   "kind": "personalized",
+   "item_id": "Electronics::B0BYMMJBSC",
+   "n_query_tokens": 5,
+   "n_reviews": 286,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "personalized-warm-19",
+   "kind": "personalized",
+   "item_id": "Electronics::B0784XD4XP",
+   "n_query_tokens": 5,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.2,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-0",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B0912WH4VL",
+   "n_query_tokens": 8,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-1",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B08M9N1QY4",
+   "n_query_tokens": 8,
+   "n_reviews": 24,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-2",
+   "kind": "cold_text",
+   "item_id": "Electronics::B07VXGNHWY",
+   "n_query_tokens": 8,
+   "n_reviews": 34,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-3",
+   "kind": "cold_text",
+   "item_id": "Electronics::B07BLNWZHS",
+   "n_query_tokens": 7,
+   "n_reviews": 419,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-4",
+   "kind": "cold_text",
+   "item_id": "Electronics::B07R4SPKVM",
+   "n_query_tokens": 7,
+   "n_reviews": 260,
+   "has_review_text": true,
+   "new_signal_coverage": 0.143,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-5",
+   "kind": "cold_text",
+   "item_id": "Electronics::B0BWVDRR6L",
+   "n_query_tokens": 9,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.111,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-6",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B0BMH2BCFZ",
+   "n_query_tokens": 10,
+   "n_reviews": 471,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-7",
+   "kind": "cold_text",
+   "item_id": "Electronics::B08LKNZTSP",
+   "n_query_tokens": 9,
+   "n_reviews": 41,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-8",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B08HCTHLHL",
+   "n_query_tokens": 8,
+   "n_reviews": 18,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-9",
+   "kind": "cold_text",
+   "item_id": "Electronics::B073SF1VCH",
+   "n_query_tokens": 8,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-10",
+   "kind": "cold_text",
+   "item_id": "Video_Games::B08LT6PT1X",
+   "n_query_tokens": 7,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.143,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-11",
+   "kind": "cold_text",
+   "item_id": "Electronics::B09632TN9J",
+   "n_query_tokens": 9,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-12",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B08C9K34RZ",
+   "n_query_tokens": 7,
+   "n_reviews": 129,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-13",
+   "kind": "cold_text",
+   "item_id": "Electronics::B078G91T8X",
+   "n_query_tokens": 9,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.111,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-14",
+   "kind": "cold_text",
+   "item_id": "Electronics::B0006BCCAE",
+   "n_query_tokens": 8,
+   "n_reviews": 236,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "cold_text-cold-15",
+   "kind": "cold_text",
+   "item_id": "Electronics::B07XZJ1V1P",
+   "n_query_tokens": 7,
+   "n_reviews": 115,
+   "has_review_text": true,
+   "new_signal_coverage": 0.143,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-16",
+   "kind": "cold_text",
+   "item_id": "Electronics::B0C8HDXFXN",
+   "n_query_tokens": 7,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.143,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-17",
+   "kind": "cold_text",
+   "item_id": "Electronics::B09QJDR8YS",
+   "n_query_tokens": 9,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.111,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-18",
+   "kind": "cold_text",
+   "item_id": "Electronics::B0C3HNDTW1",
+   "n_query_tokens": 8,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.125,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "cold_text-cold-19",
+   "kind": "cold_text",
+   "item_id": "Toys_and_Games::B08XW49GYK",
+   "n_query_tokens": 8,
+   "n_reviews": 14,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-sparse-4",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B005OC00XG",
+   "n_query_tokens": 11,
+   "n_reviews": 113,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-sparse-4",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B084P3SM82",
+   "n_query_tokens": 11,
+   "n_reviews": 78,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-sparse-11",
+   "kind": "exclusion",
+   "item_id": "Electronics::B092QF2K74",
+   "n_query_tokens": 10,
+   "n_reviews": 13,
+   "has_review_text": true,
+   "new_signal_coverage": 0.1,
+   "new_signal_tokens": [
+    "cases"
+   ]
+  },
+  {
+   "request_id": "exclusion-sparse-13",
+   "kind": "exclusion",
+   "item_id": "Electronics::B0C9K1X2N3",
+   "n_query_tokens": 11,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.091,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-sparse-16",
+   "kind": "exclusion",
+   "item_id": "Electronics::B01KG57RIG",
+   "n_query_tokens": 11,
+   "n_reviews": 145,
+   "has_review_text": true,
+   "new_signal_coverage": 0.182,
+   "new_signal_tokens": [
+    "usb",
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-0",
+   "kind": "exclusion",
+   "item_id": "Electronics::B07RLLP698",
+   "n_query_tokens": 10,
+   "n_reviews": 117,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-1",
+   "kind": "exclusion",
+   "item_id": "Electronics::B09B2CKQ7C",
+   "n_query_tokens": 11,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.182,
+   "new_signal_tokens": [
+    "games",
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-2",
+   "kind": "exclusion",
+   "item_id": "Electronics::B0BDFX1HPD",
+   "n_query_tokens": 12,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.083,
+   "new_signal_tokens": [
+    "vehicle"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-2",
+   "kind": "exclusion",
+   "item_id": "Electronics::B08SQBMV1H",
+   "n_query_tokens": 12,
+   "n_reviews": 26,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-4",
+   "kind": "exclusion",
+   "item_id": "Electronics::B08JV6MDDN",
+   "n_query_tokens": 10,
+   "n_reviews": 500,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-4",
+   "kind": "exclusion",
+   "item_id": "Electronics::B08PV2NRFT",
+   "n_query_tokens": 10,
+   "n_reviews": 41,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-4",
+   "kind": "exclusion",
+   "item_id": "Electronics::B08XLGVVVX",
+   "n_query_tokens": 10,
+   "n_reviews": 85,
+   "has_review_text": true,
+   "new_signal_coverage": 0.1,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-8",
+   "kind": "exclusion",
+   "item_id": "Electronics::B08CK31S42",
+   "n_query_tokens": 10,
+   "n_reviews": 103,
+   "has_review_text": true,
+   "new_signal_coverage": 0.1,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-9",
+   "kind": "exclusion",
+   "item_id": "Electronics::B00IO62DO8",
+   "n_query_tokens": 13,
+   "n_reviews": 267,
+   "has_review_text": true,
+   "new_signal_coverage": 0.077,
+   "new_signal_tokens": [
+    "camcorder"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-11",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B08LQ8MM7X",
+   "n_query_tokens": 12,
+   "n_reviews": 20,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-11",
+   "kind": "exclusion",
+   "item_id": "Electronics::B00W95RR32",
+   "n_query_tokens": 12,
+   "n_reviews": 493,
+   "has_review_text": true,
+   "new_signal_coverage": 0.25,
+   "new_signal_tokens": [
+    "games",
+    "play",
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-11",
+   "kind": "exclusion",
+   "item_id": "Electronics::B0C2TS4D2V",
+   "n_query_tokens": 12,
+   "n_reviews": 228,
+   "has_review_text": true,
+   "new_signal_coverage": 0.167,
+   "new_signal_tokens": [
+    "games",
+    "play"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-12",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B073M8QT1S",
+   "n_query_tokens": 12,
+   "n_reviews": 75,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-14",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B0BBQ4SHC1",
+   "n_query_tokens": 12,
+   "n_reviews": 40,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-14",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B08J4L7FHY",
+   "n_query_tokens": 12,
+   "n_reviews": 33,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-14",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B08JYG9TTW",
+   "n_query_tokens": 12,
+   "n_reviews": 8,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-14",
+   "kind": "exclusion",
+   "item_id": "Toys_and_Games::B07DM9SLC2",
+   "n_query_tokens": 12,
+   "n_reviews": 3,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-15",
+   "kind": "exclusion",
+   "item_id": "Electronics::B07RRN9GZY",
+   "n_query_tokens": 11,
+   "n_reviews": 208,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-17",
+   "kind": "exclusion",
+   "item_id": "Electronics::B07416LZDH",
+   "n_query_tokens": 12,
+   "n_reviews": 124,
+   "has_review_text": true,
+   "new_signal_coverage": 0.0,
+   "new_signal_tokens": []
+  },
+  {
+   "request_id": "exclusion-warm-18",
+   "kind": "exclusion",
+   "item_id": "Electronics::B09QS7P4RQ",
+   "n_query_tokens": 11,
+   "n_reviews": 48,
+   "has_review_text": true,
+   "new_signal_coverage": 0.091,
+   "new_signal_tokens": [
+    "user"
+   ]
+  },
+  {
+   "request_id": "exclusion-warm-18",
+   "kind": "exclusion",
+   "item_id": "Electronics::B0939MWKDK",
+   "n_query_tokens": 11,
+   "n_reviews": 18,
+   "has_review_text": true,
+   "new_signal_coverage": 0.091,
+   "new_signal_tokens": [
+    "user"
+   ]
+  }
+ ]
+}

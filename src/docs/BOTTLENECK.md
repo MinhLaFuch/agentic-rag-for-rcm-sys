@@ -209,8 +209,13 @@ can't express the request.
    cold_text mean sim drops 0.354→0.297. "beats worst rec" rates are
    inflated for personalized/similar (their query↔item sims ≈ 0 anyway).
    Verdict: enrichment not justified for this eval on either channel;
-   revisit only for a VI/search product. verified_purchase/
-   helpful_vote stay speculative. Report:
+   revisit only for a VI/search product. **Review text also probed —
+   closed** (`review_text_probe.py/.json`): cold_text mean new-signal
+   5.2% (0% ≥15%); personalized/similar apparent hits are junk tokens
+   ("user", "electronics") matching review boilerplate, not product
+   signal. Enrichment question fully closed — do not pursue further
+   for this eval. verified_purchase/helpful_vote stay speculative.
+   Report:
    `docs/investigations/amazon_source_compare/REPORT.md`.
 5. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
    (snapshot/no_filter sensitivity, larger eval set for decision-critical
