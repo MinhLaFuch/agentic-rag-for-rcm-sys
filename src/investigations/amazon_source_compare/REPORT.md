@@ -99,6 +99,13 @@ Lưu ý: `categories` rỗng 100% ở Subscription_Boxes và All_Beauty — fiel
 
 - **`details["Date First Available"]`** — 93.61% items Video_Games, 97.51% items có `details` non-empty. Có thể làm `first_seen` causal-safe thay proxy "earliest review" hiện tại (`package/data/_schema.py:12` ghi rõ first_seen_ts chỉ là proxy). Ở All_Beauty chỉ 0.3% nên coverage domain-dependent — cần đo trên Electronics/Toys_and_Games trước khi dùng.
 - **`features`** (71.23% VG), **`description`** (62.31% VG) — text enrichment cho retrieval/FTS; hiện corpus FTS chỉ index `title, store, main_category, categories` (`package/corpus/_sql.py:38-39, 63-64`).
+  - `features` là `list[str]` các bullet-point marketing ("About this item" trên trang Amazon), text tự do không cấu trúc. Ví dụ thật từ `meta_Video_Games.jsonl.gz` (item `B00Z9TLVK0`, "NBA 2K17"):
+    ```
+    - The #1 rated NBA video game simulation series for the last 15 years (Metacritic).
+    - BEST IN CLASS GAMEPLAY - 2K puts shot making in your hands like never before.
+    - MyCAREER - It's all-new and all about basketball in 2K17 — and you're in control.
+    ```
+  - Coverage rất không đều theo domain: Video_Games 71.2%, All_Beauty 15.4%, Subscription_Boxes 97% (nhưng chỉ 641 items). Vì là text tự do nên chỉ dùng được qua embed/FTS, không filter trực tiếp; thuộc tính factual thật nằm trong `details`. `description` cũng là `list[str]` nhưng thường 1 phần tử dài — `features` cô đọng và "bán hàng" hơn, hợp làm item text representation hơn là nguồn facts.
 - **`details`** còn chứa `Brand` (VG: nằm trong top details keys), `Best Sellers Rank`, `Release date`, `Manufacturer` — nguồn brand/rank sạch hơn `store` hiện tại.
 - **`images`/`videos` meta** (99.9%/21.1% VG) — chưa rõ use-case; có thể bỏ qua.
 - **Review `text` (99.99%), `title` (100%), `helpful_vote` (100%), `verified_purchase` (100%)** — hiện bị drop ở stage 1; `text`/`title` review có thể enrich item representation, `verified_purchase`/`helpful_vote` có thể lọc/rerank. Lưu ý `OPTIONAL_COLUMNS` đã định nghĩa các field này (`package/data/_schema.py:7`) nhưng không nơi nào dùng.
