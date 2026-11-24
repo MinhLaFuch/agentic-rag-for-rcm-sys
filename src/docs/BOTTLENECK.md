@@ -163,6 +163,34 @@ can't express the request.
 - Lesson reinforced: single-run deltas on n≤40 kinds are unreliable —
   exp_1 vs exp_2 differ hugely on personalized purely from planner sampling.
 
+### In-flight (2026-11-24, post-merge `tools-building`)
+
+- **`distill_spec/exp_3`** (`--resume`, ~88 left): validates clarify-hint +
+  MemoryTool-conditional fix **and now `category_unverified`** — extractor
+  post-checks labels against the catalog (`distill.py`), flags fake
+  categories so the planner clarifies instead of forcing retrieval.
+  Targets the residual unanswerable gap honestly (verify-then-clarify,
+  not oracle guessing).
+- **`availability/exp_2`** running: exp_1 was **contaminated** — the
+  per-row `LEFT JOIN item_availability` in the items view blew the SQL
+  time budget (64/152 tool_error). Fixed by precomputing `avail_extra`
+  (items visible ONLY via availability) once at setup; view predicate is
+  now a PK `IN`-subquery — verified `count()` 0.9s on real corpus.
+  Clean-subset sanity check on exp_1: cold_text recall@10 0.100 vs 0.000
+  baseline (lower bound only, most kinds errored).
+- **Offline analyses done**: spec_* backfill extended to 8 arms
+  (`distill2`); `bad_reference` cascades root-caused
+  (`investigations/bad_reference_analysis.md` — first-failures are
+  MemoryTool hallucination [fixed], SQL timeouts, empty candidates);
+  enrichment question **fully closed** (meta lexical ~1–2%, meta semantic
+  negative, review text junk tokens — `dropped_fields_probe`,
+  `semantic_enrichment_probe`, `review_text_probe`).
+- **Infra**: `scripts/evaluation/run_agent_eval_resilient.py` auto-resumes
+  on transient 5xx (today's 502/402 deaths cost two manual restarts).
+- **Commits on `tools-building`**: `1bc8f78` avail_extra fix, `899a880`
+  review probe, `d4867b8` category_unverified + wrapper + analyses.
+  Flag defaults stay OFF until §6.2 criteria are met.
+
 ## 6. Open decisions (priority order)
 
 1. **Request-content gap** — the root decision: which product is being built?
@@ -202,9 +230,10 @@ can't express the request.
    (availability=)` grants visibility when a plausible avail_ts ≤ as_of
    even if `first_seen_ts` is later; `agent_eval.availability_dates`
    flag + `experiments/agent_eval/availability_overlay.yaml` (vs
-   prompt_fix exp_2). **Live A/B not yet run — blocked on LLM balance
-   (HTTP 402 — resolved, runs in flight). Remaining: decide flag default
-   after A/B; Toys still 82% uncovered (hybrid keeps proxy there).
+   prompt_fix exp_2). **A/B in flight**: exp_1 contaminated by the JOIN
+   perf bug (see §5 in-flight); exp_2 running post-`avail_extra` fix.
+   Remaining: decide flag default after A/B (§6.2 criteria); Toys still
+   82% uncovered (hybrid keeps proxy there).
    **features/description enrichment PROBED — no headroom for this eval**
    (`investigations/dropped_fields_probe.py/.json`): 195 missed targets,
    100% have dropped fields, but new query-token signal from them is
