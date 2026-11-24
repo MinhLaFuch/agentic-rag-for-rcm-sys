@@ -170,9 +170,17 @@ can't express the request.
    queries ready, eval pending — needs LLM key); (b) category-level scoring;
    (c) accept ceiling, optimize `task_success`. Supersedes embedding urgency
    for the *eval* question (still relevant for demo VI queries).
-2. **distill_spec replicate + unanswerable fix validation** — rerun the arm
-   (~$3, ~45min) to confirm the clarify-hint recovers unanswerable and firm up
-   exclusion/personalized. Then decide flag default.
+2. **distill_spec replicate + flag-default criteria (pre-staged 2026-11-24)**
+   — exp_3 validates clarify-hint + `category_unverified` flag. Flip
+   `distill_spec` default to true IFF: (a) unanswerable task_success
+   recovers to ≥0.33 (exp_1 baseline level) AND (b) cold_text task_success
+   stays ≥0.95 AND (c) no kind regresses >10pp vs prompt_fix exp_2 beyond
+   the ~10–15pp noise band. Otherwise keep flag off and iterate prompt.
+   **availability_dates flip criteria** (exp_2 vs prompt_fix exp_2):
+   enable by default IFF task_success delta ≥ −5pp (non-inferiority — it is
+   a correctness fix even when gain is inside noise) AND no kind
+   tool_error rate increases. Expected effect ~3–4pp ceiling, likely
+   inside noise — do not demand a positive delta.
 3. **Commit/PR scope (Q21/Q22)** — large uncommitted WIP across the whole arc;
    `configs/historical/.../baselines.yaml` LF fix must be included;
    `stash@{0}` must not be touched. Run GitNexus `detect_changes` first.

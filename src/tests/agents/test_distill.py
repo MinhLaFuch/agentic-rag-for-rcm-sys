@@ -110,3 +110,17 @@ def test_extractor_failure_never_sinks_planning(corpus):
     assert results and results[0]["ok"]
     assert executor.last_distill["spec"] is None
     assert "exploded" in executor.last_distill["usage"]["error"]
+
+
+def test_extract_spec_flags_unverified_category(corpus):
+    cats = corpus.categories()
+    if not cats:
+        pytest.skip("empty corpus fixture")
+    real = cats[0]
+    llm = ScriptedLLM(_spec_json(category_leaf="NonExistentCategory999"))
+    spec, _ = extract_spec(llm, "x", corpus=corpus)
+    assert spec["category_unverified"] == ["NonExistentCategory999"]
+
+    llm2 = ScriptedLLM(_spec_json(category_leaf=real))
+    spec2, _ = extract_spec(llm2, "x", corpus=corpus)
+    assert "category_unverified" not in spec2

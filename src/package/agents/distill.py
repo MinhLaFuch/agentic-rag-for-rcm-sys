@@ -9,6 +9,7 @@ fuzzy suggestions are left for FilterTool's own validation to report).
 
 from __future__ import annotations
 
+import difflib
 import json
 from typing import Any
 
@@ -79,6 +80,53 @@ def _normalize_labels(spec: dict[str, Any], corpus: Any) -> dict[str, Any]:
     return spec
 
 
+_CATEGORY_LEXICON_CACHE: dict[int, list[str]] = {}
+
+
+def _category_lexicon(corpus: Any) -> list[str]:
+    """Distinct category labels, cached per corpus object (one scan)."""
+    key = id(corpus)
+    if key not in _CATEGORY_LEXICON_CACHE:
+        try:
+            _CATEGORY_LEXICON_CACHE[key] = corpus.categories()
+        except Exception:  # noqa: BLE001 — lexicon is advisory only
+            _CATEGORY_LEXICON_CACHE[key] = []
+    return _CATEGORY_LEXICON_CACHE[key]
+
+
+def _flag_unverified_categories(out: dict[str, Any], corpus: Any) -> dict[str, Any]:
+    """Mark category labels that don't exist in the catalog.
+
+    The extractor has no catalog access, so it happily emits plausible-looking
+        but fake labels (e.g. "NonExistentCategory999") for unanswerable
+        requests. ``category_unverified`` lists labels that fail both exact /
+        case-normalized match and a strict fuzzy match (cutoff 0.8) — the
+        planner prompt tells the agent to clarify rather than force retrieval.
+    """
+    labels: list[str] = []
+    for slot in ("category_leaf", "category_coarse"):
+        v = out.get(slot)
+        if isinstance(v, str) and v.strip():
+            labels.append(v)
+    ex = out.get("exclusions")
+    if isinstance(ex, dict):
+        labels.extend(c for c in (ex.get("category_labels") or [])
+                      if isinstance(c, str) and c.strip())
+    if not labels:
+        return out
+    lexicon = _category_lexicon(corpus)
+    bad = set()
+    for label in labels:
+        if corpus.normalize_category_case(label) is not None:
+            continue
+        if lexicon and difflib.get_close_matches(label, lexicon, n=1, cutoff=0.8):
+            continue
+        bad.add(label)
+    if bad:
+        out["category_unverified"] = sorted(bad)
+    return out
+
+
 def extract_spec(
     llm: LLMProvider,
     text: str,
@@ -140,6 +188,8 @@ def extract_spec(
             if out[slot] is None:
                 del out[slot]
     out = {k: v for k, v in out.items() if v not in (None, {}, [])}
+    if corpus is not None:
+        out = _flag_unverified_categories(out, corpus)
     return out, usage
 
 

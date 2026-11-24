@@ -51,6 +51,7 @@ planner:
       {spec_json}
       How to use it: category_leaf / category_coarse -> FilterTool filters.categories_any (prefer the most specific label); exclusions.item_ids -> filters.exclude_item_ids; exclusions.category_labels -> do NOT put those categories in categories_any; seed_item_id -> SimilarTool items; price_max / min_rating -> the matching FilterTool filters. kind is advisory only.
       The spec is auto-extracted and may be wrong or over-confident: if it conflicts with the user's words, or the user asks for something the spec cannot express (e.g. a category that may not exist), trust the user and ask for clarification when needed — never force retrieval just because a spec is present.
+      If the spec contains "category_unverified", those category names could not be found in the catalog — the request may be unanswerable; prefer asking the user to confirm the category over running retrieval.
 
   retry_notice: |-
       Your previous reply was rejected: {error}
