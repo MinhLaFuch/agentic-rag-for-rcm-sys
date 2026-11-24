@@ -1,0 +1,67 @@
+{
+ "method": "accept date iff 1995-01-01 <= date_available <= first_seen_ts; eff_ts = min(avail, first_seen); targets from q13c_targets.parquet",
+ "as_of": 1617737606549,
+ "catalog": {
+  "n_items": 2637776,
+  "n_parseable_raw": 1801701,
+  "n_valid_after_cleaning": 1633637,
+  "pct_valid": 61.93,
+  "n_eff_earlier_than_first_seen": 1633637
+ },
+ "targets": {
+  "n": 196,
+  "hidden_current": 36,
+  "hidden_avail": 23,
+  "recovered": 13,
+  "recovered_item_ids": [
+   "Electronics::B09WDCP5MC",
+   "Electronics::B08TGXFZJT",
+   "Toys_and_Games::B08FW9Q2GG",
+   "Electronics::B088BKY69Y",
+   "Electronics::B09QS7P4RQ",
+   "Electronics::B08SQBMV1H",
+   "Toys_and_Games::B00E72RMEE",
+   "Electronics::B08Q7RDZ27",
+   "Toys_and_Games::B09198674S",
+   "Electronics::B08XLGVVVX",
+   "Electronics::B08ZKL77Q5",
+   "Electronics::B09L423J1Q",
+   "Electronics::B00C6A1IB2"
+  ],
+  "still_hidden_item_ids": [
+   "Video_Games::B0941XMYPV",
+   "Electronics::B0BH13KJ64",
+   "Electronics::B09PDL84HF",
+   "Toys_and_Games::B09DGTKLVF",
+   "Video_Games::B09CW63H33",
+   "Video_Games::B09FBW2988",
+   "Electronics::B08YR4HF3V",
+   "Electronics::B09BN2VKJG",
+   "Toys_and_Games::B08J4L7FHY",
+   "Toys_and_Games::B0BW3DF1XN",
+   "Toys_and_Games::B08CBGJ8P7",
+   "Toys_and_Games::B09B1YCT71",
+   "Electronics::B0939MWKDK",
+   "Electronics::B09B36FJVT",
+   "Toys_and_Games::B08GWG9D4Z",
+   "Electronics::B09FJV3GBC",
+   "Electronics::B0BDMZ1DJ8",
+   "Electronics::B08YFJYD5Z",
+   "Electronics::B09DFL95SV",
+   "Electronics::B099LCK96Q",
+   "Electronics::B09M65RWQP",
+   "Electronics::B092QF2K74",
+   "Electronics::B08WJSHSLC"
+  ],
+  "by_domain_recovered": {
+   "Electronics": 10,
+   "Toys_and_Games": 3
+  }
+ },
+ "visibility_shift_days": {
+  "n": 1633637,
+  "median": 226.9,
+  "p10": 43.6,
+  "p90": 1422.9
+ }
+}

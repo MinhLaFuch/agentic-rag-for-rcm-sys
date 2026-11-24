@@ -73,3 +73,21 @@ Spec injection is a **clear win on cold_text (the original bottleneck kind), neu
   distilled_spec_block fields), `configs/agent/agent_eval.yaml`,
   `configs/agent/prompts.yaml` (distilled_spec_block),
   `scripts/evaluation/run_agent_eval.py` (wiring + traj field + manifest)
+
+---
+
+## Addendum 2026-11-24 — exp_2 replicate + clarify-hint + MemoryTool prompt fix
+
+**exp_2** (`experiments/agent_eval/distill_spec/exp_2/run_1`, clarify-hint
+prompt, same 152 requests): cold_text 0.90, exclusion 0.50, similar 0.95,
+unanswerable **0.333 (recovered to baseline)** — the clarify-hint fixed the
+exp_1 unanswerable regression. personalized answer_ok crashed to 0.125.
+
+**Root cause (not spec, not hint):** planner `system_prompt` statically
+instructs MemoryTool + shows 3 MemoryTool few-shot examples, but the
+`planner` agent toolkit excludes MemoryTool → 35/40 personalized plans
+emitted "unknown tool" → cascade failure. promptfix baseline had the same
+latent bug at 7/40. Fix: MemoryTool guidance moved to `memory_guidance`
+injected only when the toolkit has MemoryTool (`plan_executor.py`,
+`build_run_provenance.py`, `_schemas.py`, `prompts.yaml`; 338 tests pass).
+**exp_3** (`distill_spec/exp_3/run_1`) validates the combined prompt.

@@ -36,7 +36,7 @@ r@10 = 0.0077 on 50k validation users; low exact-target recall there may be
 |---|---|---|---|
 | 1 | Request specification | category-level request vs item-level target; token overlap 13.3% even after faithful VI→EN; peer-rank ~1% under best arm | **the bottleneck** — no retrieval fix exists |
 | 2 | Intrinsic next-item unpredictability | popularity r@10 = 0.0077 (F10 baselines) | research-level, no quick fix |
-| 3 | Catalog eligibility | `first_seen` proxy hides ~17–24% of targets at pool stage | data ceiling; ~7pp vs availability-date protocol (q13d) |
+| 3 | Catalog eligibility | `first_seen` proxy hides ~17–24% of targets at pool stage | data ceiling; ~7pp vs availability-date protocol (q13d). **`details["Date First Available"]` exists in raw meta (93.6% VG coverage) and is causal-safe — pipeline currently drops it** (see amazon_source_compare) |
 | 4 | Retrieval mechanics | given weak queries, EN-BM25+dense near achievable; VI stack is demo-path only | mostly exhausted |
 | 5 | Ranking/scoring | all 3 learned variants fail live A/B; baseline best measured | closed pending new evidence |
 
@@ -138,7 +138,30 @@ calls (<$0.5). Flag stays **off** by default; overlay
 
 **Mitigation applied 2026-11-24:** `distilled_spec_block` now warns the spec
 may be wrong/over-confident — trust the user, ask clarification when the spec
-can't express the request. Not yet re-evaluated.
+can't express the request.
+
+### Phase 5 exp_2 — clarify-hint replicate (`distill_spec/exp_2`, same 152 requests)
+
+| kind | exp_1 | exp_2 | promptfix |
+|---|---|---|---|
+| cold_text task_success | 1.00 | **0.90** | 0.65 |
+| exclusion task_success | 0.45 | **0.50** | 0.25 |
+| personalized answer_ok | 0.975 | **0.125** ⚠ | 0.70 |
+| unanswerable task_success | 0.00 | **0.333** ✓ | 0.333 |
+
+- **Clarify-hint worked for unanswerable**: 0.00 → 0.333 = baseline level
+  (asked_clarification 0 → 0.333). cold_text/exclusion stayed strong.
+- **personalized collapsed — root cause found, NOT the spec or the hint:**
+  the planner system prompt statically instructs MemoryTool usage + shows 3
+  MemoryTool few-shot examples, but the `planner` agent toolkit has no
+  MemoryTool (only `planner_memory` does). exp_2 drew 35/40 MemoryTool-first
+  plans → "unknown tool" cascade → answer_ok 0.125. promptfix baseline had
+  the same latent bug at 7/40. **Fix:** MemoryTool rules/examples moved to
+  `memory_guidance` block, injected only when the toolkit contains
+  MemoryTool (`plan_executor.py`, `build_run_provenance.py` hashes match).
+  exp_3 running to validate.
+- Lesson reinforced: single-run deltas on n≤40 kinds are unreliable —
+  exp_1 vs exp_2 differ hugely on personalized purely from planner sampling.
 
 ## 6. Open decisions (priority order)
 
@@ -153,7 +176,31 @@ can't express the request. Not yet re-evaluated.
 3. **Commit/PR scope (Q21/Q22)** — large uncommitted WIP across the whole arc;
    `configs/historical/.../baselines.yaml` LF fix must be included;
    `stash@{0}` must not be touched. Run GitNexus `detect_changes` first.
-4. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
+4. **Dropped source fields / `Date First Available` (2026-11-24)** —
+   `amazon_source_compare` confirms UCSD=HF=local raw identical; the
+   pipeline itself drops `details` (97.5%, incl. `Date First Available`),
+   `features` (71%), `description` (62%) at corpus build and review
+   `text`/`title`/`helpful_vote`/`verified_purchase` at stage 1.
+   **Coverage probe DONE** (`investigations/date_available_probe.json` +
+   `q13b_date_available.parquet`): parseable coverage Electronics 93.7%,
+   Video_Games 93.6%, Toys 18.4%; cleaning rule `1995-01-01 ≤ date ≤
+   first_seen_ts` yields 1,633,637 valid dates; recovers **13/36 hidden
+   eval targets** (Electronics 10, Toys 3, VG 0 — VG genuinely new),
+   hidden rate 18.4%→11.7%, median visibility −227 days. ~3–4pp
+   reachability-ceiling gain expected (eligibility, not recall).
+   **Implementation DONE (flag-off)**: `scripts/data_pipeline/
+   build_item_availability.py` → `resource/corpus/multi_domain/
+   item_availability.parquet` (1,801,894 items); `apply_metadata_policy
+   (availability=)` grants visibility when a plausible avail_ts ≤ as_of
+   even if `first_seen_ts` is later; `agent_eval.availability_dates`
+   flag + `experiments/agent_eval/availability_overlay.yaml` (vs
+   prompt_fix exp_2). **Live A/B not yet run — blocked on LLM balance
+   (HTTP 402).** Remaining: decide flag default after A/B; Toys still
+   82% uncovered (hybrid keeps proxy there). Other fields
+   (features/description = retrieval-layer rank 4; verified_purchase/
+   helpful_vote = speculative) stay parked. Report:
+   `docs/investigations/amazon_source_compare/REPORT.md`.
+5. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
    (snapshot/no_filter sensitivity, larger eval set for decision-critical
    changes), optional scorer refit, embedding-based category completion
    (parked — prior A/B negative, F3 check shows uncategorized items reach
@@ -185,6 +232,7 @@ can't express the request. Not yet re-evaluated.
 | VI retrieval audit | `docs/investigations/vi_retrieval/REPORT.md` |
 | Direct retrieval benchmark | `docs/investigations/retrieval_benchmark/REPORT.md` |
 | Request-content analysis | `docs/investigations/request_content_analysis.md` |
+| Source-vs-pipeline field audit | `docs/investigations/amazon_source_compare/REPORT.md` |
 | Distill infra audit | `docs/investigations/distill_infra_audit/REPORT.md` |
 | Distill phases 0.5/1 (A–E + summary) | `docs/investigations/distill_phase05_1/` |
 | Distill phase 2 (spec_* backfill, 7 arms) | `docs/investigations/distill_phase2/REPORT.md` |
