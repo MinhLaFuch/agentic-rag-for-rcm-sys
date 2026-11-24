@@ -263,11 +263,24 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
                 "ON item_rating(avg_rating IS NULL, avg_rating ASC, item_id)"
             )
         if availability:
+            # Materialize as a TABLE, not a view: the OR-visibility predicate
+            # costs ~2-3x per scanned row (count 0.23s->0.72s, light filter
+            # 0.41s->0.92s on the real corpus), pushing borderline exclusion
+            # queries over the 5s SQL budget (availability exp_2: 32/40
+            # timeouts vs ~8 baseline). Baking visibility in at setup makes
+            # per-query scans cheaper than even the baseline view. The stored
+            # `rowid` column preserves main.items rowids for FTS joins.
             conn.execute(
-                "CREATE TEMP VIEW items AS "
+                "CREATE TEMP TABLE items AS "
                 f"SELECT {rowid_expr} AS rowid, {projection} FROM main.items AS i{avail_join} "
                 f"WHERE {visibility_where}"
             )
+            for idx_sql in (
+                "CREATE UNIQUE INDEX idx_temp_items_id ON items(item_id)",
+                "CREATE INDEX idx_temp_items_domain ON items(domain)",
+                "CREATE INDEX idx_temp_items_price ON items(price)",
+            ):
+                conn.execute(idx_sql)
         else:
             conn.execute(
                 "CREATE TEMP VIEW items AS "
@@ -316,7 +329,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         for kind, name in (("table", "items_fts"), ("table", "item_categories"),
                            ("table", "item_popularity"), ("table", "item_rating"),
                            ("table", "item_availability"), ("table", "avail_extra"),
-                           ("view", "items")):
+                           ("table", "items"), ("view", "items")):
             try:
                 conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
             except sqlite3.Error:

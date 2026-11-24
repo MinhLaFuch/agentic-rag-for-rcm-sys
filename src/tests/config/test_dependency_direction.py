@@ -22,7 +22,11 @@ FORBIDDEN_IMPORTS = {
 }
 
 # (importing file, imported package) pairs that are allowed on purpose.
-ALLOWED_EXCEPTIONS: set[tuple[str, str]] = set()
+ALLOWED_EXCEPTIONS: set[tuple[str, str]] = {
+    # DistillTool validates extractor output against the same Spec schema the
+    # evaluation scores with — the schema is the shared contract, not eval logic.
+    ("package/agents/distill.py", "package.evaluation.spec"),
+}
 
 
 def _is_under(dotted: str, package: str) -> bool:

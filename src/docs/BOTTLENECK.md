@@ -171,15 +171,26 @@ can't express the request.
   categories so the planner clarifies instead of forcing retrieval.
   Targets the residual unanswerable gap honestly (verify-then-clarify,
   not oracle guessing).
-- **`availability/exp_2`** running: exp_1 was **contaminated** — the
-  per-row `LEFT JOIN item_availability` in the items view blew the SQL
-  time budget (64/152 tool_error). Fixed by precomputing `avail_extra`
-  (items visible ONLY via availability) once at setup; view predicate is
-  now a PK `IN`-subquery — verified `count()` 0.9s on real corpus.
-  Clean-subset sanity check on exp_1: cold_text recall@10 0.100 vs 0.000
-  baseline (lower bound only, most kinds errored).
-- **Offline analyses done**: spec_* backfill extended to 8 arms
-  (`distill2`); `bad_reference` cascades root-caused
+- **`availability/exp_2` DONE — mixed, exclusion arm contaminated by a
+  NEW perf bug**: cold_text task_success **1.00** (vs 0.65), personalized
+  answer_ok **1.00** (vs 0.70), similar flat 0.95; spec_* backfill:
+  cold_text spec_precision@10 0.935 vs 0.735, paired diff **+0.20
+  CI[0.06,0.37] excludes 0** — real spec-level gain, consistent with the
+  13/36 hidden-target recovery. BUT exclusion collapsed to 0.175 (vs
+  0.25): **32/40 requests hit the 5s SQL budget** (vs ~8 in promptfix) —
+  even "light" catalog-scan queries timed out 29× vs 4×. Root cause
+  hypothesis: the view predicate `first_seen_ts <= as_of OR item_id IN
+  (avail_extra)` adds a per-row probe over 2.6M rows, pushing borderline
+  queries over budget (avail_extra = 141,239 items; +7% visible rows).
+  exp_1 had been contaminated by the JOIN version of the same bug;
+  exp_2's `avail_extra` precompute fixed `count()` (0.9s) but NOT the
+  per-row OR cost on heavy scans. **Perf probe running**
+  (`investigations/avail_view_perf_probe.py`) to confirm before fix.
+  Candidate fix: materialize `items` as a TEMP TABLE at setup (visibility
+  baked in, like `item_categories` already is) so per-query scans skip
+  the OR entirely.
+- **Offline analyses done**: spec_* backfill extended to **9 arms**
+  (`distill2`, `avail2`); `bad_reference` cascades root-caused
   (`investigations/bad_reference_analysis.md` — first-failures are
   MemoryTool hallucination [fixed], SQL timeouts, empty candidates);
   enrichment question **fully closed** (meta lexical ~1–2%, meta semantic
@@ -230,10 +241,9 @@ can't express the request.
    (availability=)` grants visibility when a plausible avail_ts ≤ as_of
    even if `first_seen_ts` is later; `agent_eval.availability_dates`
    flag + `experiments/agent_eval/availability_overlay.yaml` (vs
-   prompt_fix exp_2). **A/B in flight**: exp_1 contaminated by the JOIN
-   perf bug (see §5 in-flight); exp_2 running post-`avail_extra` fix.
-   Remaining: decide flag default after A/B (§6.2 criteria); Toys still
-   82% uncovered (hybrid keeps proxy there).
+   prompt_fix exp_2). **A/B exp_2 DONE — positive on cold_text/personalized
+   but exclusion contaminated by view-perf regression** (see §5 in-flight);
+   needs the materialized-items fix + exp_3 rerun before flag decision.
    **features/description enrichment PROBED — no headroom for this eval**
    (`investigations/dropped_fields_probe.py/.json`): 195 missed targets,
    100% have dropped fields, but new query-token signal from them is
