@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="430" font-family="sans-serif" font-size="12">
+<rect width="100%" height="100%" fill="white"/>
+<text x="360" y="24" text-anchor="middle" font-size="15" font-weight="bold">Latency Distribution</text>
+
+<line x1="70" y1="40" x2="70" y2="340" stroke="#333"/>
+<line x1="70" y1="340" x2="700" y2="340" stroke="#333"/>
+<line x1="66" y1="340.0" x2="70" y2="340.0" stroke="#333"/>
+<text x="62" y="344.0" text-anchor="end" font-size="10">0.00</text>
+<line x1="66" y1="280.0" x2="70" y2="280.0" stroke="#333"/>
+<text x="62" y="284.0" text-anchor="end" font-size="10">13.42</text>
+<line x1="66" y1="220.0" x2="70" y2="220.0" stroke="#333"/>
+<text x="62" y="224.0" text-anchor="end" font-size="10">26.84</text>
+<line x1="66" y1="160.0" x2="70" y2="160.0" stroke="#333"/>
+<text x="62" y="164.0" text-anchor="end" font-size="10">40.26</text>
+<line x1="66" y1="100.0" x2="70" y2="100.0" stroke="#333"/>
+<text x="62" y="104.0" text-anchor="end" font-size="10">53.68</text>
+<line x1="66" y1="40.0" x2="70" y2="40.0" stroke="#333"/>
+<text x="62" y="44.0" text-anchor="end" font-size="10">67.10</text>
+<text x="16" y="190" text-anchor="middle" transform="rotate(-90 16 190)" font-size="11">count</text>
+<rect x="71.0" y="268.5" width="46.5" height="71.5" fill="#4C78A8"/>
+<rect x="119.5" y="67.3" width="46.5" height="272.7" fill="#4C78A8"/>
+<rect x="167.9" y="201.4" width="46.5" height="138.6" fill="#4C78A8"/>
+<rect x="216.4" y="281.9" width="46.5" height="58.1" fill="#4C78A8"/>
+<rect x="264.8" y="322.1" width="46.5" height="17.9" fill="#4C78A8"/>
+<rect x="313.3" y="290.8" width="46.5" height="49.2" fill="#4C78A8"/>
+<rect x="361.8" y="304.2" width="46.5" height="35.8" fill="#4C78A8"/>
+<rect x="410.2" y="322.1" width="46.5" height="17.9" fill="#4C78A8"/>
+<rect x="458.7" y="340.0" width="46.5" height="0.0" fill="#4C78A8"/>
+<rect x="507.2" y="340.0" width="46.5" height="0.0" fill="#4C78A8"/>
+<rect x="555.6" y="335.5" width="46.5" height="4.5" fill="#4C78A8"/>
+<rect x="604.1" y="331.1" width="46.5" height="8.9" fill="#4C78A8"/>
+<rect x="652.5" y="335.5" width="46.5" height="4.5" fill="#4C78A8"/>
+<text x="70.0" y="356" text-anchor="middle" font-size="10">3.22s</text>
+<text x="166.9" y="356" text-anchor="middle" font-size="10">7.73s</text>
+<text x="263.8" y="356" text-anchor="middle" font-size="10">12.24s</text>
+<text x="360.8" y="356" text-anchor="middle" font-size="10">16.75s</text>
+<text x="457.7" y="356" text-anchor="middle" font-size="10">21.25s</text>
+<text x="554.6" y="356" text-anchor="middle" font-size="10">25.76s</text>
+<text x="651.5" y="356" text-anchor="middle" font-size="10">30.27s</text>
+<line x1="166.3" y1="40" x2="166.3" y2="340" stroke="#F58518" stroke-dasharray="4,3"/>
+<text x="169.3" y="52" font-size="10" fill="#F58518">P50=7.70s</text>
+<line x1="407.7" y1="40" x2="407.7" y2="340" stroke="#E45756" stroke-dasharray="4,3"/>
+<text x="410.7" y="52" font-size="10" fill="#E45756">P95=18.93s</text>
+</svg>

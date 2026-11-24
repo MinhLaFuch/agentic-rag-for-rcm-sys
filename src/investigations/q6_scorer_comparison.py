@@ -52,7 +52,7 @@ sys.path.insert(0, str(ROOT))
 from ranktool_score_audit import build_scorer, _load_jsonl  # noqa: E402
 
 RUN = ROOT / "experiments/agent_eval/campaigns/campaign_005/exp_5_agents_planner_inference_mode_template_reflect_rounds_0_multi_turn_True/run_1"
-INJ = ROOT / "ranktool_injection_exp5.json"
+INJ = ROOT / "investigations" / "ranktool_injection_exp5.json"
 DB = "resource/corpus/multi_domain/corpus_multi_domain.sqlite"
 OUT = Path(__file__).parent / "q6_scorer_comparison.json"
 RETRIEVAL_TOOLS = ("SearchTool", "FilterTool", "SimilarTool")

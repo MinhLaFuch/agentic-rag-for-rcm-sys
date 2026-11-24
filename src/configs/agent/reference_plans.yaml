@@ -21,4 +21,7 @@ reference_plans:
     - ["MemoryTool"]
     - ["SearchTool", "FilterTool"]
     - ["RankTool"]
+  descriptive:
+    - ["SearchTool"]
+    - ["RankTool"]
   unanswerable: []

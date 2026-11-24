@@ -17,6 +17,7 @@ _planner_prompts = load_config("agent/prompts")["planner"]
 SYSTEM_PROMPT = _planner_prompts["system_prompt"]
 RETRY_NOTICE = _planner_prompts["retry_notice"]
 REFLECT_NOTICE = _planner_prompts["reflect_notice"]
+DISTILL_BLOCK = _planner_prompts.get("distilled_spec_block", "")
 
 
 class PlanExecutor:
@@ -55,6 +56,7 @@ class PlanExecutor:
         reflect_rounds: int | None = None,
         reflect_quality_threshold: float | None = None,
         session: Session | None = None,
+        spec_extractor: Any | None = None,
     ) -> None:
         limits = get_agent_limits()
         memory_limits = get_memory_limits()
@@ -71,6 +73,11 @@ class PlanExecutor:
         if not (0.0 <= self.reflect_quality_threshold <= 1.0):
             raise ValueError("reflect_quality_threshold must be between 0.0 and 1.0")
         self.session = session
+        # Optional pre-planner distillation: callable (text) -> (spec|None, usage).
+        # When set, plan() runs it once per request and appends DISTILL_BLOCK to
+        # the system prompt; the spec is also kept on self.last_distill.
+        self.spec_extractor = spec_extractor
+        self.last_distill: dict[str, Any] | None = None
         self.last_response = None
         self.last_reflections = 0
         self.last_first_attempt_ok = True
@@ -104,10 +111,26 @@ class PlanExecutor:
             # No session or no session state to inject - use empty object placeholder
             session_state = "{}"
 
+        # Distill the request into a structured spec once per plan() call.
+        # Runs before last_usage reset so its tokens are NOT counted in usage —
+        # they are reported separately via last_distill for cost attribution.
+        self.last_distill = None
+        distill_spec: dict[str, Any] | None = None
+        if self.spec_extractor is not None:
+            try:
+                distill_spec, distill_usage = self.spec_extractor(user_request)
+            except Exception as exc:  # noqa: BLE001 — distillation must never sink planning
+                distill_spec, distill_usage = None, {"error": f"{type(exc).__name__}: {exc}"}
+            self.last_distill = {"spec": distill_spec, "usage": distill_usage}
+
         system = SYSTEM_PROMPT.format(
             tools=build_tool_prompt(list(self.tools.values())),
             session_state=session_state
         )
+        if distill_spec and DISTILL_BLOCK:
+            system = system + "\n" + DISTILL_BLOCK.format(
+                spec_json=json.dumps(distill_spec, ensure_ascii=False)
+            )
         messages = [LLMMessage(role="system", content=system), LLMMessage(role="user", content=user_request)]
         self.last_plan, self.last_question, self.last_truncated = [], None, False
         self.last_reflections, self.last_first_attempt_ok, self.last_attempt_plans = 0, True, []

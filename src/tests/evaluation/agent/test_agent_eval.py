@@ -168,6 +168,19 @@ def test_build_requests_is_deterministic_and_rejects_unknown_language(corpus):
         _requests(corpus, language="xx")
 
 
+def test_build_requests_adds_descriptive_kind_from_queries(corpus):
+    reqs = _requests(corpus, descriptive_queries={1: "a kids game", 3: "a laptop"})
+    warm = reqs["descriptive-warm-0"]   # item_idx 1 = VG_B, held out for user 0 (warm)
+    cold = reqs["descriptive-cold-0"]   # item_idx 3 = EL_A, held out for user 1 (cold)
+    assert warm.kind == "descriptive" and warm.text == "a kids game" and warm.targets == [1]
+    assert warm.user_idx == 0 and warm.oracle  # query text derives from a held-out target
+    assert cold.kind == "descriptive" and cold.text == "a laptop" and cold.targets == [3]
+    assert cold.user_idx == 1 and cold.oracle
+    # unknown item_idx / blank query are skipped, not fatal
+    reqs2 = _requests(corpus, descriptive_queries={999: "ghost", 2: "   "})
+    assert not any(r.kind == "descriptive" for r in reqs2.values())
+
+
 def test_extract_recommendations_prefers_ranking_then_retrieval_then_query():
     ranked = {"tool": "RankTool", "ok": True, "data": {"ranked": [{"item_id": "a"}, {"item_id": "b"}, {"item_id": "c"}]}}
     cands = {"tool": "SearchTool", "ok": True, "data": {"candidates": [{"item_id": "x"}, {"item_id": "y"}]}}

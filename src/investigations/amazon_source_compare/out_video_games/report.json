@@ -1,0 +1,1788 @@
+{
+ "domain": "Video_Games",
+ "sources": {
+  "ucsd_meta": {
+   "n_rows": 137269,
+   "fields": {
+    "main_category": {
+     "nonempty": 126233,
+     "pct": 91.96,
+     "types": {
+      "str": 126234,
+      "NoneType": 11035
+     }
+    },
+    "title": {
+     "nonempty": 137260,
+     "pct": 99.99,
+     "types": {
+      "str": 137269
+     }
+    },
+    "average_rating": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "float": 137269
+     }
+    },
+    "rating_number": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "int": 137269
+     }
+    },
+    "features": {
+     "nonempty": 97771,
+     "pct": 71.23,
+     "types": {
+      "list": 137269
+     }
+    },
+    "description": {
+     "nonempty": 85539,
+     "pct": 62.31,
+     "types": {
+      "list": 137269
+     }
+    },
+    "price": {
+     "nonempty": 62008,
+     "pct": 45.17,
+     "types": {
+      "NoneType": 75261,
+      "float": 61972,
+      "str": 36
+     }
+    },
+    "images": {
+     "nonempty": 137127,
+     "pct": 99.9,
+     "types": {
+      "list": 137269
+     }
+    },
+    "videos": {
+     "nonempty": 28913,
+     "pct": 21.06,
+     "types": {
+      "list": 137269
+     }
+    },
+    "store": {
+     "nonempty": 132908,
+     "pct": 96.82,
+     "types": {
+      "str": 132908,
+      "NoneType": 4361
+     }
+    },
+    "categories": {
+     "nonempty": 124632,
+     "pct": 90.79,
+     "types": {
+      "list": 137269
+     }
+    },
+    "details": {
+     "nonempty": 133847,
+     "pct": 97.51,
+     "types": {
+      "dict": 137269
+     }
+    },
+    "parent_asin": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "str": 137269
+     }
+    },
+    "bought_together": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "NoneType": 137269
+     }
+    },
+    "subtitle": {
+     "nonempty": 350,
+     "pct": 0.25,
+     "types": {
+      "str": 350,
+      "NoneType": 66
+     }
+    },
+    "author": {
+     "nonempty": 262,
+     "pct": 0.19,
+     "types": {
+      "dict": 262,
+      "NoneType": 154
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 12637,
+    "categories_empty_pct": 9.21,
+    "date_first_available": 128499,
+    "date_first_available_pct": 93.61,
+    "details_keys_top": [
+     [
+      "Date First Available",
+      128499
+     ],
+     [
+      "Manufacturer",
+      115433
+     ],
+     [
+      "Item Weight",
+      110232
+     ],
+     [
+      "Pricing",
+      83932
+     ],
+     [
+      "Best Sellers Rank",
+      75847
+     ],
+     [
+      "Type of item",
+      75437
+     ],
+     [
+      "Is Discontinued By Manufacturer",
+      65753
+     ],
+     [
+      "Item model number",
+      59269
+     ],
+     [
+      "Product Dimensions",
+      59175
+     ],
+     [
+      "Package Dimensions",
+      52439
+     ],
+     [
+      "Rated",
+      41405
+     ],
+     [
+      "Brand",
+      37751
+     ],
+     [
+      "Release date",
+      35086
+     ],
+     [
+      "Color",
+      24221
+     ],
+     [
+      "Compatible Devices",
+      20921
+     ],
+     [
+      "Special Feature",
+      18205
+     ],
+     [
+      "Connectivity Technology",
+      15120
+     ],
+     [
+      "Material",
+      10675
+     ],
+     [
+      "Countries",
+      9887
+     ],
+     [
+      "Terms of Use",
+      9887
+     ],
+     [
+      "Return Policy",
+      9877
+     ],
+     [
+      "Hardware Platform",
+      9621
+     ],
+     [
+      "Country of Origin",
+      8356
+     ],
+     [
+      "Language",
+      7146
+     ],
+     [
+      "Batteries",
+      6562
+     ],
+     [
+      "Form Factor",
+      6218
+     ],
+     [
+      "Item Dimensions  LxWxH",
+      4965
+     ],
+     [
+      "Item Dimensions LxWxH",
+      4896
+     ],
+     [
+      "Operating System",
+      4688
+     ],
+     [
+      "Connector Type",
+      4304
+     ]
+    ]
+   },
+   "path": "investigations\\amazon_source_compare\\out_video_games\\cache\\ucsd_meta_Video_Games.jsonl.gz"
+  },
+  "hf_meta": {
+   "n_rows": 137269,
+   "fields": {
+    "main_category": {
+     "nonempty": 126233,
+     "pct": 91.96,
+     "types": {
+      "str": 126234,
+      "NoneType": 11035
+     }
+    },
+    "title": {
+     "nonempty": 137260,
+     "pct": 99.99,
+     "types": {
+      "str": 137269
+     }
+    },
+    "average_rating": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "float": 137269
+     }
+    },
+    "rating_number": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "int": 137269
+     }
+    },
+    "features": {
+     "nonempty": 97771,
+     "pct": 71.23,
+     "types": {
+      "list": 137269
+     }
+    },
+    "description": {
+     "nonempty": 85539,
+     "pct": 62.31,
+     "types": {
+      "list": 137269
+     }
+    },
+    "price": {
+     "nonempty": 62008,
+     "pct": 45.17,
+     "types": {
+      "NoneType": 75261,
+      "float": 61972,
+      "str": 36
+     }
+    },
+    "images": {
+     "nonempty": 137127,
+     "pct": 99.9,
+     "types": {
+      "list": 137269
+     }
+    },
+    "videos": {
+     "nonempty": 28913,
+     "pct": 21.06,
+     "types": {
+      "list": 137269
+     }
+    },
+    "store": {
+     "nonempty": 132908,
+     "pct": 96.82,
+     "types": {
+      "str": 132908,
+      "NoneType": 4361
+     }
+    },
+    "categories": {
+     "nonempty": 124632,
+     "pct": 90.79,
+     "types": {
+      "list": 137269
+     }
+    },
+    "details": {
+     "nonempty": 133847,
+     "pct": 97.51,
+     "types": {
+      "dict": 137269
+     }
+    },
+    "parent_asin": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "str": 137269
+     }
+    },
+    "bought_together": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "NoneType": 137269
+     }
+    },
+    "subtitle": {
+     "nonempty": 350,
+     "pct": 0.25,
+     "types": {
+      "str": 350,
+      "NoneType": 66
+     }
+    },
+    "author": {
+     "nonempty": 262,
+     "pct": 0.19,
+     "types": {
+      "dict": 262,
+      "NoneType": 154
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 12637,
+    "categories_empty_pct": 9.21,
+    "date_first_available": 128499,
+    "date_first_available_pct": 93.61,
+    "details_keys_top": [
+     [
+      "Date First Available",
+      128499
+     ],
+     [
+      "Manufacturer",
+      115433
+     ],
+     [
+      "Item Weight",
+      110232
+     ],
+     [
+      "Pricing",
+      83932
+     ],
+     [
+      "Best Sellers Rank",
+      75847
+     ],
+     [
+      "Type of item",
+      75437
+     ],
+     [
+      "Is Discontinued By Manufacturer",
+      65753
+     ],
+     [
+      "Item model number",
+      59269
+     ],
+     [
+      "Product Dimensions",
+      59175
+     ],
+     [
+      "Package Dimensions",
+      52439
+     ],
+     [
+      "Rated",
+      41405
+     ],
+     [
+      "Brand",
+      37751
+     ],
+     [
+      "Release date",
+      35086
+     ],
+     [
+      "Color",
+      24221
+     ],
+     [
+      "Compatible Devices",
+      20921
+     ],
+     [
+      "Special Feature",
+      18205
+     ],
+     [
+      "Connectivity Technology",
+      15120
+     ],
+     [
+      "Material",
+      10675
+     ],
+     [
+      "Countries",
+      9887
+     ],
+     [
+      "Terms of Use",
+      9887
+     ],
+     [
+      "Return Policy",
+      9877
+     ],
+     [
+      "Hardware Platform",
+      9621
+     ],
+     [
+      "Country of Origin",
+      8356
+     ],
+     [
+      "Language",
+      7146
+     ],
+     [
+      "Batteries",
+      6562
+     ],
+     [
+      "Form Factor",
+      6218
+     ],
+     [
+      "Item Dimensions  LxWxH",
+      4965
+     ],
+     [
+      "Item Dimensions LxWxH",
+      4896
+     ],
+     [
+      "Operating System",
+      4688
+     ],
+     [
+      "Connector Type",
+      4304
+     ]
+    ]
+   },
+   "path": "C:\\Users\\ph181\\.cache\\huggingface\\hub\\datasets--McAuley-Lab--Amazon-Reviews-2023\\snapshots\\2b6d039ed471f2ba5fd2acb718bf33b0a7e5598e\\raw\\meta_categories\\meta_Video_Games.jsonl"
+  },
+  "ucsd_reviews": {
+   "n_rows": 4624615,
+   "fields": {
+    "rating": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "float": 4624615
+     }
+    },
+    "title": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "text": {
+     "nonempty": 4624292,
+     "pct": 99.99,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "images": {
+     "nonempty": 204701,
+     "pct": 4.43,
+     "types": {
+      "list": 4624615
+     }
+    },
+    "asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "parent_asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "user_id": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "timestamp": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "helpful_vote": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "verified_purchase": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "bool": 4624615
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 2766656,
+    "n_items": 167645,
+    "ts_min": 911332729000,
+    "ts_max": 1694509355529,
+    "asin_ne_parent": 2132429,
+    "asin_ne_parent_pct": 46.11
+   },
+   "path": "investigations\\amazon_source_compare\\out_video_games\\cache\\ucsd_reviews_Video_Games.jsonl.gz"
+  },
+  "hf_reviews": {
+   "n_rows": 4624615,
+   "fields": {
+    "rating": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "float": 4624615
+     }
+    },
+    "title": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "text": {
+     "nonempty": 4624292,
+     "pct": 99.99,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "images": {
+     "nonempty": 204701,
+     "pct": 4.43,
+     "types": {
+      "list": 4624615
+     }
+    },
+    "asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "parent_asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "user_id": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "timestamp": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "helpful_vote": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "verified_purchase": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "bool": 4624615
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 2766656,
+    "n_items": 167645,
+    "ts_min": 911332729000,
+    "ts_max": 1694509355529,
+    "asin_ne_parent": 2132429,
+    "asin_ne_parent_pct": 46.11
+   },
+   "path": "C:\\Users\\ph181\\.cache\\huggingface\\hub\\datasets--McAuley-Lab--Amazon-Reviews-2023\\snapshots\\2b6d039ed471f2ba5fd2acb718bf33b0a7e5598e\\raw\\review_categories\\Video_Games.jsonl"
+  },
+  "local_meta": {
+   "n_rows": 137269,
+   "fields": {
+    "main_category": {
+     "nonempty": 126233,
+     "pct": 91.96,
+     "types": {
+      "str": 126234,
+      "NoneType": 11035
+     }
+    },
+    "title": {
+     "nonempty": 137260,
+     "pct": 99.99,
+     "types": {
+      "str": 137269
+     }
+    },
+    "average_rating": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "float": 137269
+     }
+    },
+    "rating_number": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "int": 137269
+     }
+    },
+    "features": {
+     "nonempty": 97771,
+     "pct": 71.23,
+     "types": {
+      "list": 137269
+     }
+    },
+    "description": {
+     "nonempty": 85539,
+     "pct": 62.31,
+     "types": {
+      "list": 137269
+     }
+    },
+    "price": {
+     "nonempty": 62008,
+     "pct": 45.17,
+     "types": {
+      "NoneType": 75261,
+      "float": 61972,
+      "str": 36
+     }
+    },
+    "images": {
+     "nonempty": 137127,
+     "pct": 99.9,
+     "types": {
+      "list": 137269
+     }
+    },
+    "videos": {
+     "nonempty": 28913,
+     "pct": 21.06,
+     "types": {
+      "list": 137269
+     }
+    },
+    "store": {
+     "nonempty": 132908,
+     "pct": 96.82,
+     "types": {
+      "str": 132908,
+      "NoneType": 4361
+     }
+    },
+    "categories": {
+     "nonempty": 124632,
+     "pct": 90.79,
+     "types": {
+      "list": 137269
+     }
+    },
+    "details": {
+     "nonempty": 133847,
+     "pct": 97.51,
+     "types": {
+      "dict": 137269
+     }
+    },
+    "parent_asin": {
+     "nonempty": 137269,
+     "pct": 100.0,
+     "types": {
+      "str": 137269
+     }
+    },
+    "bought_together": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "NoneType": 137269
+     }
+    },
+    "subtitle": {
+     "nonempty": 350,
+     "pct": 0.25,
+     "types": {
+      "str": 350,
+      "NoneType": 66
+     }
+    },
+    "author": {
+     "nonempty": 262,
+     "pct": 0.19,
+     "types": {
+      "dict": 262,
+      "NoneType": 154
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 12637,
+    "categories_empty_pct": 9.21,
+    "date_first_available": 128499,
+    "date_first_available_pct": 93.61,
+    "details_keys_top": [
+     [
+      "Date First Available",
+      128499
+     ],
+     [
+      "Manufacturer",
+      115433
+     ],
+     [
+      "Item Weight",
+      110232
+     ],
+     [
+      "Pricing",
+      83932
+     ],
+     [
+      "Best Sellers Rank",
+      75847
+     ],
+     [
+      "Type of item",
+      75437
+     ],
+     [
+      "Is Discontinued By Manufacturer",
+      65753
+     ],
+     [
+      "Item model number",
+      59269
+     ],
+     [
+      "Product Dimensions",
+      59175
+     ],
+     [
+      "Package Dimensions",
+      52439
+     ],
+     [
+      "Rated",
+      41405
+     ],
+     [
+      "Brand",
+      37751
+     ],
+     [
+      "Release date",
+      35086
+     ],
+     [
+      "Color",
+      24221
+     ],
+     [
+      "Compatible Devices",
+      20921
+     ],
+     [
+      "Special Feature",
+      18205
+     ],
+     [
+      "Connectivity Technology",
+      15120
+     ],
+     [
+      "Material",
+      10675
+     ],
+     [
+      "Countries",
+      9887
+     ],
+     [
+      "Terms of Use",
+      9887
+     ],
+     [
+      "Return Policy",
+      9877
+     ],
+     [
+      "Hardware Platform",
+      9621
+     ],
+     [
+      "Country of Origin",
+      8356
+     ],
+     [
+      "Language",
+      7146
+     ],
+     [
+      "Batteries",
+      6562
+     ],
+     [
+      "Form Factor",
+      6218
+     ],
+     [
+      "Item Dimensions  LxWxH",
+      4965
+     ],
+     [
+      "Item Dimensions LxWxH",
+      4896
+     ],
+     [
+      "Operating System",
+      4688
+     ],
+     [
+      "Connector Type",
+      4304
+     ]
+    ]
+   },
+   "path": "resource\\raw\\meta_Video_Games.jsonl.gz"
+  },
+  "local_meta_1": {
+   "n_rows": 137249,
+   "fields": {
+    "item_id": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "str": 137249
+     }
+    },
+    "domain": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "str": 137249
+     }
+    },
+    "original_item_id": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "str": 137249
+     }
+    },
+    "first_seen_ts": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "int": 137249
+     }
+    },
+    "title": {
+     "nonempty": 137240,
+     "pct": 99.99,
+     "types": {
+      "str": 137249
+     }
+    },
+    "store": {
+     "nonempty": 132889,
+     "pct": 96.82,
+     "types": {
+      "str": 132889,
+      "NoneType": 4360
+     }
+    },
+    "price": {
+     "nonempty": 61965,
+     "pct": 45.15,
+     "types": {
+      "float": 61965,
+      "NoneType": 75284
+     }
+    },
+    "average_rating": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "float": 137249
+     }
+    },
+    "rating_number": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "float": 137249
+     }
+    },
+    "main_category": {
+     "nonempty": 126214,
+     "pct": 91.96,
+     "types": {
+      "str": 126215,
+      "NoneType": 11034
+     }
+    },
+    "categories": {
+     "nonempty": 124621,
+     "pct": 90.8,
+     "types": {
+      "list": 124621,
+      "NoneType": 12628
+     }
+    },
+    "parent_asin": {
+     "nonempty": 137249,
+     "pct": 100.0,
+     "types": {
+      "str": 137249
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 12628,
+    "categories_empty_pct": 9.2,
+    "date_first_available": 0,
+    "date_first_available_pct": 0.0,
+    "details_keys_top": []
+   },
+   "path": "investigations\\amazon_source_compare\\corpus_items_video_games.parquet"
+  },
+  "local_reviews": {
+   "n_rows": 4624615,
+   "fields": {
+    "rating": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "float": 4624615
+     }
+    },
+    "title": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "text": {
+     "nonempty": 4624292,
+     "pct": 99.99,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "images": {
+     "nonempty": 204701,
+     "pct": 4.43,
+     "types": {
+      "list": 4624615
+     }
+    },
+    "asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "parent_asin": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "user_id": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "str": 4624615
+     }
+    },
+    "timestamp": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "helpful_vote": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "int": 4624615
+     }
+    },
+    "verified_purchase": {
+     "nonempty": 4624615,
+     "pct": 100.0,
+     "types": {
+      "bool": 4624615
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 2766656,
+    "n_items": 167645,
+    "ts_min": 911332729000,
+    "ts_max": 1694509355529,
+    "asin_ne_parent": 2132429,
+    "asin_ne_parent_pct": 46.11
+   },
+   "path": "resource\\raw\\Video_Games.jsonl.gz"
+  },
+  "local_reviews_3": {
+   "n_rows": 4570962,
+   "fields": {
+    "user_id": {
+     "nonempty": 4570962,
+     "pct": 100.0,
+     "types": {
+      "str": 4570962
+     }
+    },
+    "parent_asin": {
+     "nonempty": 4570962,
+     "pct": 100.0,
+     "types": {
+      "str": 4570962
+     }
+    },
+    "rating": {
+     "nonempty": 4570962,
+     "pct": 100.0,
+     "types": {
+      "float": 4570962
+     }
+    },
+    "timestamp": {
+     "nonempty": 4570962,
+     "pct": 100.0,
+     "types": {
+      "int": 4570962
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 2766656,
+    "n_items": 0,
+    "ts_min": 911332729000,
+    "ts_max": 1694509355529,
+    "asin_ne_parent": 0,
+    "asin_ne_parent_pct": 0.0
+   },
+   "path": "resource\\cleaned\\Video_Games\\interactions.parquet"
+  }
+ },
+ "diffs": {
+  "ucsd_meta__vs__hf_meta": {
+   "field_value_diffs": {},
+   "identical_rows": 137269,
+   "n_a": 137269,
+   "n_b": 137269
+  },
+  "ucsd_meta__vs__local_meta": {
+   "field_value_diffs": {},
+   "identical_rows": 137269,
+   "n_a": 137269,
+   "n_b": 137269
+  },
+  "ucsd_meta__vs__local_meta_1": {
+   "field_value_diffs": {
+    "author": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 262
+    },
+    "average_rating": {
+     "n_only_ucsd_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "5.0",
+      "4.6"
+     ],
+     "examples_local_meta_1": []
+    },
+    "bought_together": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 0
+    },
+    "categories": {
+     "n_only_ucsd_meta": 11,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "[\"Video Games\", \"PC\", \"Games\"]",
+      "[\"Video Games\", \"PlayStation 4\", \"Games\"]"
+     ],
+     "examples_local_meta_1": []
+    },
+    "description": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 85539
+    },
+    "details": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 133847
+    },
+    "domain": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "features": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 97771
+    },
+    "first_seen_ts": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "images": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 137127
+    },
+    "item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "main_category": {
+     "n_only_ucsd_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "Video Games",
+      "All Electronics"
+     ],
+     "examples_local_meta_1": []
+    },
+    "original_item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "parent_asin": {
+     "n_only_ucsd_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "B07MJC4TDD",
+      "B07D45SYHT"
+     ],
+     "examples_local_meta_1": []
+    },
+    "price": {
+     "n_only_ucsd_meta": 43,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "—",
+      "from 29.99"
+     ],
+     "examples_local_meta_1": []
+    },
+    "rating_number": {
+     "n_only_ucsd_meta": 137269,
+     "n_only_local_meta_1": 137249,
+     "examples_ucsd_meta": [
+      "1",
+      "2"
+     ],
+     "examples_local_meta_1": [
+      "1.0",
+      "2.0"
+     ]
+    },
+    "store": {
+     "n_only_ucsd_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "HUDSON SOFT",
+      "Amazon Renewed"
+     ],
+     "examples_local_meta_1": []
+    },
+    "subtitle": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 350
+    },
+    "title": {
+     "n_only_ucsd_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_ucsd_meta": [
+      "PlayStation 5 Console",
+      "UUShop Vinyl Skin Sticker Decal Cover for Sony Playstation 4 Slim PS4 Console Red Purple Nebula"
+     ],
+     "examples_local_meta_1": []
+    },
+    "videos": {
+     "only_in": "ucsd_meta",
+     "nonempty_a": 28913
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 137269,
+   "n_b": 137249
+  },
+  "hf_meta__vs__local_meta": {
+   "field_value_diffs": {},
+   "identical_rows": 137269,
+   "n_a": 137269,
+   "n_b": 137269
+  },
+  "hf_meta__vs__local_meta_1": {
+   "field_value_diffs": {
+    "author": {
+     "only_in": "hf_meta",
+     "nonempty_a": 262
+    },
+    "average_rating": {
+     "n_only_hf_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "5.0",
+      "4.6"
+     ],
+     "examples_local_meta_1": []
+    },
+    "bought_together": {
+     "only_in": "hf_meta",
+     "nonempty_a": 0
+    },
+    "categories": {
+     "n_only_hf_meta": 11,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "[\"Video Games\", \"PC\", \"Games\"]",
+      "[\"Video Games\", \"PlayStation 4\", \"Games\"]"
+     ],
+     "examples_local_meta_1": []
+    },
+    "description": {
+     "only_in": "hf_meta",
+     "nonempty_a": 85539
+    },
+    "details": {
+     "only_in": "hf_meta",
+     "nonempty_a": 133847
+    },
+    "domain": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "features": {
+     "only_in": "hf_meta",
+     "nonempty_a": 97771
+    },
+    "first_seen_ts": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "images": {
+     "only_in": "hf_meta",
+     "nonempty_a": 137127
+    },
+    "item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "main_category": {
+     "n_only_hf_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "Video Games",
+      "All Electronics"
+     ],
+     "examples_local_meta_1": []
+    },
+    "original_item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "parent_asin": {
+     "n_only_hf_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "B07MJC4TDD",
+      "B07D45SYHT"
+     ],
+     "examples_local_meta_1": []
+    },
+    "price": {
+     "n_only_hf_meta": 43,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "—",
+      "from 29.99"
+     ],
+     "examples_local_meta_1": []
+    },
+    "rating_number": {
+     "n_only_hf_meta": 137269,
+     "n_only_local_meta_1": 137249,
+     "examples_hf_meta": [
+      "1",
+      "2"
+     ],
+     "examples_local_meta_1": [
+      "1.0",
+      "2.0"
+     ]
+    },
+    "store": {
+     "n_only_hf_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "HUDSON SOFT",
+      "Amazon Renewed"
+     ],
+     "examples_local_meta_1": []
+    },
+    "subtitle": {
+     "only_in": "hf_meta",
+     "nonempty_a": 350
+    },
+    "title": {
+     "n_only_hf_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_hf_meta": [
+      "PlayStation 5 Console",
+      "UUShop Vinyl Skin Sticker Decal Cover for Sony Playstation 4 Slim PS4 Console Red Purple Nebula"
+     ],
+     "examples_local_meta_1": []
+    },
+    "videos": {
+     "only_in": "hf_meta",
+     "nonempty_a": 28913
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 137269,
+   "n_b": 137249
+  },
+  "local_meta__vs__local_meta_1": {
+   "field_value_diffs": {
+    "author": {
+     "only_in": "local_meta",
+     "nonempty_a": 262
+    },
+    "average_rating": {
+     "n_only_local_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "5.0",
+      "4.6"
+     ],
+     "examples_local_meta_1": []
+    },
+    "bought_together": {
+     "only_in": "local_meta",
+     "nonempty_a": 0
+    },
+    "categories": {
+     "n_only_local_meta": 11,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "[\"Video Games\", \"PC\", \"Games\"]",
+      "[\"Video Games\", \"PlayStation 4\", \"Games\"]"
+     ],
+     "examples_local_meta_1": []
+    },
+    "description": {
+     "only_in": "local_meta",
+     "nonempty_a": 85539
+    },
+    "details": {
+     "only_in": "local_meta",
+     "nonempty_a": 133847
+    },
+    "domain": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "features": {
+     "only_in": "local_meta",
+     "nonempty_a": 97771
+    },
+    "first_seen_ts": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "images": {
+     "only_in": "local_meta",
+     "nonempty_a": 137127
+    },
+    "item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "main_category": {
+     "n_only_local_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "Video Games",
+      "All Electronics"
+     ],
+     "examples_local_meta_1": []
+    },
+    "original_item_id": {
+     "only_in": "local_meta_1",
+     "nonempty_b": 137249
+    },
+    "parent_asin": {
+     "n_only_local_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "B07MJC4TDD",
+      "B07D45SYHT"
+     ],
+     "examples_local_meta_1": []
+    },
+    "price": {
+     "n_only_local_meta": 43,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "—",
+      "from 29.99"
+     ],
+     "examples_local_meta_1": []
+    },
+    "rating_number": {
+     "n_only_local_meta": 137269,
+     "n_only_local_meta_1": 137249,
+     "examples_local_meta": [
+      "1",
+      "2"
+     ],
+     "examples_local_meta_1": [
+      "1.0",
+      "2.0"
+     ]
+    },
+    "store": {
+     "n_only_local_meta": 19,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "HUDSON SOFT",
+      "Amazon Renewed"
+     ],
+     "examples_local_meta_1": []
+    },
+    "subtitle": {
+     "only_in": "local_meta",
+     "nonempty_a": 350
+    },
+    "title": {
+     "n_only_local_meta": 20,
+     "n_only_local_meta_1": 0,
+     "examples_local_meta": [
+      "PlayStation 5 Console",
+      "UUShop Vinyl Skin Sticker Decal Cover for Sony Playstation 4 Slim PS4 Console Red Purple Nebula"
+     ],
+     "examples_local_meta_1": []
+    },
+    "videos": {
+     "only_in": "local_meta",
+     "nonempty_a": 28913
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 137269,
+   "n_b": 137249
+  },
+  "ucsd_reviews__vs__hf_reviews": {
+   "field_value_diffs": {
+    "text": {
+     "values_skipped": "counter cap reached"
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "values_skipped": "counter cap reached"
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    }
+   },
+   "identical_rows": 4624615,
+   "n_a": 4624615,
+   "n_b": 4624615
+  },
+  "ucsd_reviews__vs__local_reviews": {
+   "field_value_diffs": {
+    "text": {
+     "values_skipped": "counter cap reached"
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "values_skipped": "counter cap reached"
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    }
+   },
+   "identical_rows": 4624615,
+   "n_a": 4624615,
+   "n_b": 4624615
+  },
+  "ucsd_reviews__vs__local_reviews_3": {
+   "field_value_diffs": {
+    "asin": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 4624615
+    },
+    "helpful_vote": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 4624615
+    },
+    "images": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 204701
+    },
+    "parent_asin": {
+     "n_only_ucsd_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_ucsd_reviews": [
+      "B00DU2CHE2",
+      "B01N3ASPNV"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "rating": {
+     "n_only_ucsd_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_ucsd_reviews": [
+      "5.0",
+      "1.0"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "text": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 4624292
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 4624615
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    },
+    "verified_purchase": {
+     "only_in": "ucsd_reviews",
+     "nonempty_a": 4624615
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 4624615,
+   "n_b": 4570962
+  },
+  "hf_reviews__vs__local_reviews": {
+   "field_value_diffs": {
+    "text": {
+     "values_skipped": "counter cap reached"
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "values_skipped": "counter cap reached"
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    }
+   },
+   "identical_rows": 4624615,
+   "n_a": 4624615,
+   "n_b": 4624615
+  },
+  "hf_reviews__vs__local_reviews_3": {
+   "field_value_diffs": {
+    "asin": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 4624615
+    },
+    "helpful_vote": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 4624615
+    },
+    "images": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 204701
+    },
+    "parent_asin": {
+     "n_only_hf_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_hf_reviews": [
+      "B00DU2CHE2",
+      "B01N3ASPNV"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "rating": {
+     "n_only_hf_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_hf_reviews": [
+      "5.0",
+      "1.0"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "text": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 4624292
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 4624615
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    },
+    "verified_purchase": {
+     "only_in": "hf_reviews",
+     "nonempty_a": 4624615
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 4624615,
+   "n_b": 4570962
+  },
+  "local_reviews__vs__local_reviews_3": {
+   "field_value_diffs": {
+    "asin": {
+     "only_in": "local_reviews",
+     "nonempty_a": 4624615
+    },
+    "helpful_vote": {
+     "only_in": "local_reviews",
+     "nonempty_a": 4624615
+    },
+    "images": {
+     "only_in": "local_reviews",
+     "nonempty_a": 204701
+    },
+    "parent_asin": {
+     "n_only_local_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_local_reviews": [
+      "B00DU2CHE2",
+      "B01N3ASPNV"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "rating": {
+     "n_only_local_reviews": 53653,
+     "n_only_local_reviews_3": 0,
+     "examples_local_reviews": [
+      "5.0",
+      "1.0"
+     ],
+     "examples_local_reviews_3": []
+    },
+    "text": {
+     "only_in": "local_reviews",
+     "nonempty_a": 4624292
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "only_in": "local_reviews",
+     "nonempty_a": 4624615
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    },
+    "verified_purchase": {
+     "only_in": "local_reviews",
+     "nonempty_a": 4624615
+    }
+   },
+   "identical_rows": 0,
+   "n_a": 4624615,
+   "n_b": 4570962
+  }
+ }
+}

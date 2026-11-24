@@ -1,0 +1,38 @@
+# Hybrid-scorer eval: identical to filter_ab baseline (exp_2) — same 152
+# requests, planner, template inference, reflect_rounds=0, seed 42.
+# ONLY delta vs exp_2: agent/scoring mode=hybrid (HybridScorer,
+# popularity_weight=4.0 — the weight validated by the retrieval_matrix /
+# ranking_eval replay work in commit bd0f4c9 "big").
+# Inferred categories artifact disabled (same as exp_5) so the scorer delta
+# is isolated.
+agent/agent_eval:
+  agent_eval:
+    agents:
+    - planner
+    allow_missing_corpus_sources: true
+    trajectory_file: hybrid_scorer_exp_6_run1_trajectories.jsonl
+    campaign_id: null
+    per_segment: 20
+    request_scope: all
+    multi_turn:
+      enabled: false
+    jev:
+      enabled: false
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\hybrid_scorer\exp_6\run_1
+    item_knn_reuse_cache: true
+path/data_paths:
+  paths:
+    item_knn_dir: experiments/agent_eval/campaigns/campaign_005/item_knn
+agent/inference:
+  inference:
+    mode: template
+agent/agent:
+  agent:
+    reflect_rounds: 0
+agent/scoring:
+  scoring:
+    mode: hybrid
+    hybrid_popularity_weight: 4.0
+eval/baselines:
+  baselines:
+    seed: 42

@@ -1,0 +1,108 @@
+{
+  "distill": {
+    "cold_text": {
+      "n": 20,
+      "task_success": 1.0,
+      "spec_precision@10": 0.935,
+      "spec_precision@10_lenient": 0.935,
+      "spec_hit@10": 1.0,
+      "spec_precision_ancestor@10": 0.865,
+      "spec_result_coverage": 1.0,
+      "spec_random_baseline@10": 0.0196,
+      "spec_popularity_baseline@10": 0.0029,
+      "spec_target_recall_norm@10": 28.18,
+      "spec_set_size": 5175.5,
+      "spec_n_recommended": 10.0
+    },
+    "exclusion": {
+      "n": 40,
+      "task_success": 0.45,
+      "spec_violation_rate": 0.025,
+      "spec_result_coverage": 0.475,
+      "spec_random_baseline@10": 0.0,
+      "spec_popularity_baseline@10": 0.0,
+      "spec_set_size": 0.0,
+      "spec_n_recommended": 4.75
+    },
+    "similar": {
+      "n": 40,
+      "task_success": 0.95,
+      "spec_precision@10": 0.075,
+      "spec_precision@10_lenient": 0.1625,
+      "spec_hit@10": 0.4,
+      "spec_precision_ancestor@10": 0.095,
+      "spec_result_coverage": 0.95,
+      "spec_random_baseline@10": 0.04,
+      "spec_popularity_baseline@10": 0.0362,
+      "spec_target_recall_norm@10": 0.0,
+      "spec_set_size": 10554.55,
+      "spec_n_recommended": 9.025
+    }
+  },
+  "promptfix": {
+    "cold_text": {
+      "n": 20,
+      "task_success": 0.65,
+      "spec_precision@10": 0.735,
+      "spec_precision@10_lenient": 0.77,
+      "spec_hit@10": 0.8,
+      "spec_precision_ancestor@10": 0.645,
+      "spec_result_coverage": 0.85,
+      "spec_random_baseline@10": 0.0196,
+      "spec_popularity_baseline@10": 0.0029,
+      "spec_target_recall_norm@10": 0.0,
+      "spec_set_size": 5175.5,
+      "spec_n_recommended": 8.5
+    },
+    "exclusion": {
+      "n": 40,
+      "task_success": 0.25,
+      "spec_violation_rate": 0.075,
+      "spec_result_coverage": 0.35,
+      "spec_random_baseline@10": 0.0,
+      "spec_popularity_baseline@10": 0.0,
+      "spec_set_size": 0.0,
+      "spec_n_recommended": 3.5
+    },
+    "similar": {
+      "n": 40,
+      "task_success": 0.95,
+      "spec_precision@10": 0.075,
+      "spec_precision@10_lenient": 0.165,
+      "spec_hit@10": 0.4,
+      "spec_precision_ancestor@10": 0.095,
+      "spec_result_coverage": 0.95,
+      "spec_random_baseline@10": 0.04,
+      "spec_popularity_baseline@10": 0.0362,
+      "spec_target_recall_norm@10": 0.0,
+      "spec_set_size": 10554.55,
+      "spec_n_recommended": 9.1
+    }
+  },
+  "_paired_diff_vs_promptfix": {
+    "distill|cold_text": {
+      "spec_precision@10": {
+        "diff": 0.2,
+        "ci_low": 0.06,
+        "ci_high": 0.37,
+        "n": 20.0
+      }
+    },
+    "distill|exclusion": {
+      "spec_violation_rate": {
+        "diff": -0.05,
+        "ci_low": -0.15,
+        "ci_high": 0.05,
+        "n": 40.0
+      }
+    },
+    "distill|similar": {
+      "spec_precision@10": {
+        "diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "n": 40.0
+      }
+    }
+  }
+}

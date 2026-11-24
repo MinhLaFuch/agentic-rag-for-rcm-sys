@@ -44,6 +44,7 @@ import pandas as pd
 
 from package.agents import PlanExecutor, Type1Agent, build_tools, Session, validate_tool_names
 from package.agents import extract_recommendations, get_agent_limits, get_session_limits
+from package.agents.distill import make_spec_extractor
 from package.evaluation import (
     AGENTS,
     INFERENCE_AGENTS,
@@ -263,6 +264,8 @@ def run_planner(
     traj.update(plan=executor.last_plan, ask_user=executor.last_question, truncated=executor.last_truncated,
                 usage=dict(executor.last_usage), reflections=executor.last_reflections, reflect_rounds=executor.reflect_rounds,
                 first_attempt_ok=executor.last_first_attempt_ok and traj["error"] is None)
+    if executor.last_distill is not None:
+        traj["distilled_spec"] = executor.last_distill
     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
 
     # Capture session state if enabled
@@ -450,6 +453,7 @@ def main() -> None:
     # empty/absent = full toolset, unchanged behaviour. Hashed into
     # resume_identity via _resume_agent_config.
     exclude_tools = validate_tool_names(cfg.get("exclude_tools") or [])
+    distill_spec = bool(cfg.get("distill_spec"))
     reflect_rounds = get_agent_limits().reflect_rounds
     inference_mode = get_inference_limits().mode
     request_scope = str(cfg["request_scope"])
@@ -653,6 +657,7 @@ def main() -> None:
             f"encoder={dense_provenance['encoder_model_id']}@{str(dense_provenance['encoder_revision'])[:12]}"
         )
     protocol_manifest["dense_retrieval"] = dense_provenance or {"enabled": False}
+    protocol_manifest["distill_spec"] = {"enabled": distill_spec}
 
     tools = build_tools(
         knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of,
@@ -675,8 +680,11 @@ def main() -> None:
         # This prevents cross-request contamination of shown_items/candidates/constraints.
         planner_tool_list = tools.for_planner(exclude_tools=exclude_tools)
         planner_memory_tool_list = tools.for_planner_memory(exclude_tools=exclude_tools)
-        runners["planner"] = PlanExecutor(llm, planner_tool_list, reflect_rounds=reflect_rounds, session=None)
-        runners["planner_memory"] = PlanExecutor(llm, planner_memory_tool_list, reflect_rounds=reflect_rounds, session=None)
+        spec_extractor = make_spec_extractor(llm, corpus=corpus) if distill_spec else None
+        runners["planner"] = PlanExecutor(llm, planner_tool_list, reflect_rounds=reflect_rounds, session=None,
+                                          spec_extractor=spec_extractor)
+        runners["planner_memory"] = PlanExecutor(llm, planner_memory_tool_list, reflect_rounds=reflect_rounds, session=None,
+                                                  spec_extractor=spec_extractor)
 
     # Build provenance (hashes of prompts, tool schemas, git state, limits)
     provenance = build_run_provenance(
@@ -687,13 +695,31 @@ def main() -> None:
     def answerer(outcome: Any) -> Any:
         return compose_answer(outcome, llm, mode=inference_mode)
 
-    # ---- requests (deterministic given the seed) and the trajectory file
-    requests = build_requests(
-        seg_of=seg_of, target_by_user=target_by_user, last_item_of=last_item_of, id2user=id2user, id2item=id2item,
-        item2id=item2id, corpus=corpus, per_segment=per_segment, n_ambiguous=int(cfg["n_ambiguous"]),
-        language=cfg["language"], k=k, price_slack=float(cfg["price_slack"]), price_round_to=float(cfg["price_round_to"]),
-        rng=np.random.default_rng(seed),
-    )
+    # ---- requests (deterministic given the seed, or an explicit requests_file override)
+    # and the trajectory file. requests_file: JSONL of AgentRequest dicts — used for
+    # eval sets that cannot be produced by build_requests (e.g. LLM-descriptive queries).
+    requests_file = cfg.get("requests_file")
+    if requests_file:
+        requests = [
+            AgentRequest(**json.loads(line))
+            for line in Path(requests_file).read_text(encoding="utf-8").splitlines() if line.strip()
+        ]
+        print(f"Loaded {len(requests)} requests from {requests_file}", flush=True)
+    else:
+        descriptive_queries = None
+        dq_path = cfg.get("descriptive_queries_path")
+        if dq_path:
+            descriptive_queries = {
+                int(json.loads(line)["item_idx"]): json.loads(line)["query"]
+                for line in Path(dq_path).read_text(encoding="utf-8").splitlines() if line.strip()
+            }
+            print(f"Loaded {len(descriptive_queries)} descriptive queries from {dq_path}", flush=True)
+        requests = build_requests(
+            seg_of=seg_of, target_by_user=target_by_user, last_item_of=last_item_of, id2user=id2user, id2item=id2item,
+            item2id=item2id, corpus=corpus, per_segment=per_segment, n_ambiguous=int(cfg["n_ambiguous"]),
+            language=cfg["language"], k=k, price_slack=float(cfg["price_slack"]), price_round_to=float(cfg["price_round_to"]),
+            rng=np.random.default_rng(seed), descriptive_queries=descriptive_queries,
+        )
     requests = filter_requests_by_scope(requests, request_scope)
     protocol_manifest["request_ids"] = [r.request_id for r in requests]
     protocol_manifest["request_scope"] = request_scope
