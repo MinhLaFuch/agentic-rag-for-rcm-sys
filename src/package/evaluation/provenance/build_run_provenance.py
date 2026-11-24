@@ -10,6 +10,7 @@ from typing import Any
 from package.agents import get_agent_limits
 from package.config import get_overlay_info
 from package.agents.planner import SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT
+from package.agents.planner.plan_executor import MEMORY_GUIDANCE
 from package.agents.toolkit.build_tool_prompt import build_tool_prompt
 from package.inference import get_inference_limits
 from package.inference.compose import SYSTEM_PROMPT as INFERENCE_SYSTEM_PROMPT
@@ -63,7 +64,8 @@ def build_run_provenance(
     session_state = "{}"  # Empty session state for provenance hash
     planner_prompt = PLANNER_SYSTEM_PROMPT.format(
         tools=build_tool_prompt(planner_tools),
-        session_state=session_state
+        session_state=session_state,
+        memory_guidance=MEMORY_GUIDANCE if any(t.name == "MemoryTool" for t in planner_tools) else "",
     )
     planner_prompt_sha256 = _sha256(planner_prompt)
 
@@ -71,7 +73,8 @@ def build_run_provenance(
     if memory_tools is not None and memory_tools != planner_tools:
         memory_prompt = PLANNER_SYSTEM_PROMPT.format(
             tools=build_tool_prompt(memory_tools),
-            session_state=session_state
+            session_state=session_state,
+            memory_guidance=MEMORY_GUIDANCE if any(t.name == "MemoryTool" for t in memory_tools) else "",
         )
         planner_memory_prompt_sha256 = _sha256(memory_prompt)
 

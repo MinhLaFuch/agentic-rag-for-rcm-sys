@@ -197,6 +197,7 @@ def test_output_summary_is_size_limited(corpus):
 def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     """SYSTEM_PROMPT should include FilterTool, MemoryTool, and the new examples."""
     from package.agents.planner import SYSTEM_PROMPT
+    from package.agents.planner.plan_executor import MEMORY_GUIDANCE
     from package.agents import build_tools
     import json
 
@@ -205,7 +206,11 @@ def test_prompt_includes_new_tools_and_examples(corpus, cf_setup):
     tools = build_tools(knn, BaselineScorer(knn), user2id, item2id, interactions, corpus)
     planner_tools = tools.for_planner_memory()  # Include MemoryTool
     session_state = json.dumps({"turns_count": 0, "shown_items": [], "candidates": [], "ranked": [], "constraints": {}, "feedback": {}}, ensure_ascii=False)
-    prompt = SYSTEM_PROMPT.format(tools=build_tool_prompt(planner_tools), session_state=session_state)
+    prompt = SYSTEM_PROMPT.format(
+        tools=build_tool_prompt(planner_tools),
+        session_state=session_state,
+        memory_guidance=MEMORY_GUIDANCE,
+    )
 
     # Check that FilterTool and MemoryTool are mentioned
     assert "FilterTool" in prompt

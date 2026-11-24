@@ -18,6 +18,7 @@ SYSTEM_PROMPT = _planner_prompts["system_prompt"]
 RETRY_NOTICE = _planner_prompts["retry_notice"]
 REFLECT_NOTICE = _planner_prompts["reflect_notice"]
 DISTILL_BLOCK = _planner_prompts.get("distilled_spec_block", "")
+MEMORY_GUIDANCE = _planner_prompts.get("memory_guidance", "")
 
 
 class PlanExecutor:
@@ -125,7 +126,8 @@ class PlanExecutor:
 
         system = SYSTEM_PROMPT.format(
             tools=build_tool_prompt(list(self.tools.values())),
-            session_state=session_state
+            session_state=session_state,
+            memory_guidance=MEMORY_GUIDANCE if "MemoryTool" in self.tools else "",
         )
         if distill_spec and DISTILL_BLOCK:
             system = system + "\n" + DISTILL_BLOCK.format(

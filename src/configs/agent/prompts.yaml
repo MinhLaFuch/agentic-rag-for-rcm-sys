@@ -22,24 +22,29 @@ planner:
       - In multi-turn conversations, you can reference session state using "$S.<field>": $S.shown_items (items shown previously), $S.candidates (last turn's candidates), $S.ranked (last turn's ranked items), $S.constraints (current constraints like price_max or exclude_item_ids).
       - Reference only outputs a tool actually returned or session state fields; never guess item ids.
       - To recommend items to a known user: retrieve candidates (SimilarTool, SearchTool or FilterTool), then ALWAYS rank them with RankTool — use "$union.candidates" when several retrieval steps ran, else "$<retrieve step>.candidates" — then fetch details with LookupTool using "$<rank step>.ranked.*.item_id".
-      - For personalized recommendations: use MemoryTool to get the user's top_categories, price_range, recent_items, love_categories, hate_categories, loved_items, hated_items. Use "$1.top_categories" or "$1.love_categories" for FilterTool/SearchTool categories_any, "$1.price_range.max" for price_max, "$1.recent_items" for SimilarTool items. Use "$1.hate_categories" to AVOID those categories when picking categories_any — there is no category-exclusion filter.
       - If required information is missing (e.g. no user id and no product type), return {{"steps": [], "ask_user": "<one short question, in the user's language>"}} instead of guessing.
       - No text outside the JSON object.
-      
+      {memory_guidance}
       Example (user u1 bought Video_Games::x, wants similar items):
       {{"steps": [{{"tool": "SimilarTool", "args": {{"items": ["Video_Games::x"], "top_k": 30}}}}, {{"tool": "RankTool", "args": {{"user_id": "u1", "candidates": "$1.candidates", "top_k": 5}}}}, {{"tool": "LookupTool", "args": {{"item_ids": "$2.ranked.*.item_id"}}}}], "ask_user": null}}
       
-      Example (personalized: MemoryTool for user preferences, then FilterTool with love categories):
-      {{"steps": [{{"tool": "MemoryTool", "args": {{"user_id": "u1"}}}}, {{"tool": "FilterTool", "args": {{"filters": {{"categories_any": "$1.love_categories", "price_max": "$1.price_range.max"}}, "limit": 30}}}}, {{"tool": "RankTool", "args": {{"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}}}, {{"tool": "LookupTool", "args": {{"item_ids": "$3.ranked.*.item_id"}}}}], "ask_user": null}}
-      
-      Example (exclude items rejected in earlier turns via session constraints):
-      {{"steps": [{{"tool": "MemoryTool", "args": {{"user_id": "u1"}}}}, {{"tool": "FilterTool", "args": {{"filters": {{"categories_any": "$1.love_categories", "exclude_item_ids": "$S.constraints.exclude_item_ids"}}, "limit": 30}}}}, {{"tool": "RankTool", "args": {{"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}}}, {{"tool": "LookupTool", "args": {{"item_ids": "$3.ranked.*.item_id"}}}}], "ask_user": null}}
-      
-      Example (use recent_items from MemoryTool as seed for SimilarTool):
-      {{"steps": [{{"tool": "MemoryTool", "args": {{"user_id": "u1"}}}}, {{"tool": "SimilarTool", "args": {{"items": "$1.recent_items", "top_k": 30}}}}, {{"tool": "RankTool", "args": {{"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}}}, {{"tool": "LookupTool", "args": {{"item_ids": "$3.ranked.*.item_id"}}}}], "ask_user": null}}
-      
       Example (multi-turn: reference the second item shown in previous turn):
       {{"steps": [{{"tool": "SimilarTool", "args": {{"items": ["$S.shown_items.1"], "top_k": 30}}}}, {{"tool": "RankTool", "args": {{"user_id": "u1", "candidates": "$1.candidates", "top_k": 5}}}}, {{"tool": "LookupTool", "args": {{"item_ids": "$2.ranked.*.item_id"}}}}], "ask_user": null}}
+
+  # Injected via {memory_guidance} ONLY when the toolkit contains MemoryTool
+  # (planner_memory / demo). The `planner` agent has no MemoryTool — showing
+  # these rules/examples there makes the planner emit "unknown tool" plans.
+  memory_guidance: |-
+      - For personalized recommendations: use MemoryTool to get the user's top_categories, price_range, recent_items, love_categories, hate_categories, loved_items, hated_items. Use "$1.top_categories" or "$1.love_categories" for FilterTool/SearchTool categories_any, "$1.price_range.max" for price_max, "$1.recent_items" for SimilarTool items. Use "$1.hate_categories" to AVOID those categories when picking categories_any — there is no category-exclusion filter.
+
+      Example (personalized: MemoryTool for user preferences, then FilterTool with love categories):
+      {"steps": [{"tool": "MemoryTool", "args": {"user_id": "u1"}}, {"tool": "FilterTool", "args": {"filters": {"categories_any": "$1.love_categories", "price_max": "$1.price_range.max"}, "limit": 30}}, {"tool": "RankTool", "args": {"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}, {"tool": "LookupTool", "args": {"item_ids": "$3.ranked.*.item_id"}}], "ask_user": null}
+
+      Example (exclude items rejected in earlier turns via session constraints):
+      {"steps": [{"tool": "MemoryTool", "args": {"user_id": "u1"}}, {"tool": "FilterTool", "args": {"filters": {"categories_any": "$1.love_categories", "exclude_item_ids": "$S.constraints.exclude_item_ids"}, "limit": 30}}, {"tool": "RankTool", "args": {"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}, {"tool": "LookupTool", "args": {"item_ids": "$3.ranked.*.item_id"}}], "ask_user": null}
+
+      Example (use recent_items from MemoryTool as seed for SimilarTool):
+      {"steps": [{"tool": "MemoryTool", "args": {"user_id": "u1"}}, {"tool": "SimilarTool", "args": {"items": "$1.recent_items", "top_k": 30}}, {"tool": "RankTool", "args": {"user_id": "u1", "candidates": "$2.candidates", "top_k": 5}}, {"tool": "LookupTool", "args": {"item_ids": "$3.ranked.*.item_id"}}], "ask_user": null}
 
   distilled_spec_block: |-
       Distilled request spec (auto-extracted; absent fields carry no constraint):
