@@ -195,10 +195,22 @@ can't express the request.
    even if `first_seen_ts` is later; `agent_eval.availability_dates`
    flag + `experiments/agent_eval/availability_overlay.yaml` (vs
    prompt_fix exp_2). **Live A/B not yet run — blocked on LLM balance
-   (HTTP 402).** Remaining: decide flag default after A/B; Toys still
-   82% uncovered (hybrid keeps proxy there). Other fields
-   (features/description = retrieval-layer rank 4; verified_purchase/
-   helpful_vote = speculative) stay parked. Report:
+   (HTTP 402 — resolved, runs in flight). Remaining: decide flag default
+   after A/B; Toys still 82% uncovered (hybrid keeps proxy there).
+   **features/description enrichment PROBED — no headroom for this eval**
+   (`investigations/dropped_fields_probe.py/.json`): 195 missed targets,
+   100% have dropped fields, but new query-token signal from them is
+   ~1–2% (cold_text 1.3%, 0% of missed targets ≥15% new signal) —
+   recommendation-style queries don't lexically match product text.
+   **Semantic channel also probed — negative**
+   (`semantic_enrichment_probe.py/.json`, all-MiniLM-L6-v2, production
+   doc format): appending features/description DILUTES the embedding —
+   mean Δsim −0.03…−0.06 across kinds, only ~10–20% of targets improve;
+   cold_text mean sim drops 0.354→0.297. "beats worst rec" rates are
+   inflated for personalized/similar (their query↔item sims ≈ 0 anyway).
+   Verdict: enrichment not justified for this eval on either channel;
+   revisit only for a VI/search product. verified_purchase/
+   helpful_vote stay speculative. Report:
    `docs/investigations/amazon_source_compare/REPORT.md`.
 5. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
    (snapshot/no_filter sensitivity, larger eval set for decision-critical

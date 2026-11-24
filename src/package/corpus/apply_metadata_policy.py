@@ -181,8 +181,10 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         if availability:
             # avail_ts >= 1995-01-01 filters placeholder dates ("July 6, 1931",
             # "January 1, 1970"); avail_ts <= first_seen_ts filters impossible
-            # future dates. first_seen_ts IS NULL items may still qualify via
-            # a plausible availability date alone.
+            # future dates. Precompute the small set of items that become
+            # visible ONLY via availability so per-query cost stays a PK
+            # lookup — a per-row LEFT JOIN here exceeded the SQL time budget
+            # on the 2.6M-item view (availability A/B exp_1, 2026-11-24).
             conn.execute(
                 "CREATE TEMP TABLE item_availability (item_id TEXT PRIMARY KEY, avail_ts INTEGER)"
             )
@@ -190,17 +192,18 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
                 "INSERT INTO item_availability VALUES (?, ?)",
                 ((iid, int(ts)) for iid, ts in availability.items()),
             )
+            conn.execute("CREATE TEMP TABLE avail_extra (item_id TEXT PRIMARY KEY)")
             conn.execute(
-                "CREATE INDEX idx_item_availability_ts ON item_availability(avail_ts)"
+                "INSERT INTO avail_extra(item_id) "
+                "SELECT a.item_id FROM temp.item_availability AS a "
+                "JOIN main.items AS i ON i.item_id = a.item_id "
+                "WHERE a.avail_ts >= 788918400000 "
+                f"AND a.avail_ts <= {as_of} "
+                "AND (i.first_seen_ts IS NULL OR i.first_seen_ts > "
+                f"{as_of}) "
+                "AND (i.first_seen_ts IS NULL OR a.avail_ts <= i.first_seen_ts)"
             )
-            avail_join = (
-                " LEFT JOIN temp.item_availability AS av ON av.item_id = i.item_id"
-            )
-            avail_where = (
-                " OR (av.avail_ts IS NOT NULL AND av.avail_ts >= 788918400000 "
-                f"AND av.avail_ts <= {as_of} "
-                "AND (i.first_seen_ts IS NULL OR av.avail_ts <= i.first_seen_ts))"
-            )
+            avail_where = " OR i.item_id IN (SELECT item_id FROM temp.avail_extra)"
             item_alias = "i."
             rowid_expr = "i.rowid"
         visibility_where = (
@@ -312,7 +315,8 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         conn.execute("PRAGMA query_only = OFF")
         for kind, name in (("table", "items_fts"), ("table", "item_categories"),
                            ("table", "item_popularity"), ("table", "item_rating"),
-                           ("table", "item_availability"), ("view", "items")):
+                           ("table", "item_availability"), ("table", "avail_extra"),
+                           ("view", "items")):
             try:
                 conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
             except sqlite3.Error:

@@ -1,4 +1,7 @@
-# Availability-dates arm: baseline config (no distill_spec) + availability_dates=true.
+# Availability-dates arm, exp_2: baseline config (no distill_spec) +
+# availability_dates=true. exp_1 was contaminated: the per-row LEFT JOIN
+# implementation exceeded the SQL time budget (33/40 exclusion tool_error);
+# policy now precomputes avail_extra (PK lookup) — verified count()=0.9s.
 # item_availability.parquet (details["Date First Available"], causal-safe, cleaned to
 # 1995-01-01 <= date <= first_seen_ts) supplements the first_seen_ts visibility gate —
 # recovers ~13/36 previously-hidden eval targets (see investigations/date_available_probe.json).
@@ -11,7 +14,7 @@ agent/agent_eval:
     agents:
     - planner
     allow_missing_corpus_sources: true
-    trajectory_file: availability_run1_trajectories.jsonl
+    trajectory_file: availability_run2_trajectories.jsonl
     campaign_id: null
     per_segment: 20
     request_scope: all
@@ -19,7 +22,7 @@ agent/agent_eval:
       enabled: false
     jev:
       enabled: false
-    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\availability\exp_1\run_1
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\availability\exp_2\run_1
     item_knn_reuse_cache: true
     availability_dates: true
 path/data_paths:
