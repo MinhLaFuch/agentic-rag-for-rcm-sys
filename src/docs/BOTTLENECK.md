@@ -189,7 +189,30 @@ can't express the request.
   Candidate fix: materialize `items` as a TEMP TABLE at setup (visibility
   baked in, like `item_categories` already is) so per-query scans skip
   the OR entirely.
-- **Offline analyses done**: spec_* backfill extended to **9 arms**
+- **`availability/exp_3` DONE — exclusion collapse was NOT the view**:
+  materialized `items` TEMP TABLE verified faster than baseline
+  (count 0.01s vs 0.23s, light filter 0.51s vs 0.41s real corpus) yet
+  exclusion still 0.175 with 33 tool_error — IDENTICAL spec metrics to
+  exp_2. Root cause refined: exclusion timeouts are dominated by the
+  planner's heavy anti-join SQL (correlated NOT EXISTS >5s even on the
+  materialized table — inherent query-shape problem, documented in
+  bad_reference_analysis) PLUS clarify-sampling variance: avail runs
+  drew clarify=0/40 while promptfix exp_2 drew 21/40 (clarify rates
+  vary 0–21 across ALL arms — pure planner sampling, not config).
+  Availability verdict: cold_text 1.00 (spec_precision +0.20 CI excl.
+  0, replicated identically in exp_2 AND exp_3), personalized ok 1.00,
+  similar flat — real gains hold; exclusion delta is confounded by
+  clarify luck, not the feature. **No further availability runs
+  needed** — flag decision can proceed on non-inferiority reading.
+- **`distill_spec/exp_3` partial (64/152) unusable for decisions** —
+  protocol hash (source fingerprint) changed when category_unverified +
+  materialized-items landed, so --resume refused by design; partial
+  covers only similar 40/40 + personalized 24/40 (no cold_text/
+  exclusion/unanswerable). **exp_4 launched**: fresh full 152-request
+  run validating clarify-hint + MemoryTool fix + category_unverified.
+  Resilient wrapper now captures output and aborts on deterministic
+  failures (protocol mismatch etc.) instead of retrying 8×.
+- **Offline analyses done**: spec_* backfill extended to **10 arms**
   (`distill2`, `avail2`); `bad_reference` cascades root-caused
   (`investigations/bad_reference_analysis.md` — first-failures are
   MemoryTool hallucination [fixed], SQL timeouts, empty candidates);

@@ -1,0 +1,36 @@
+# Availability-dates arm, exp_3: identical to exp_2 overlay but fresh
+# experiment_dir/trajectory_file. exp_2 showed the feature works (cold_text
+# spec_precision +0.20 CI excl. 0) but the OR-visibility VIEW cost ~2-3x per
+# scanned row -> 32/40 exclusion SQL timeouts. apply_metadata_policy now
+# materializes items as a TEMP TABLE when availability is on (count 0.01s,
+# light filter 0.51s on real corpus — see investigations/avail_view_perf_probe2.py).
+# Compared against prompt_fix/exp_2/run_1 (same caveat: prompt drift + ~10-15pp
+# run noise on n=20-40 kinds).
+agent/agent_eval:
+  agent_eval:
+    agents:
+    - planner
+    allow_missing_corpus_sources: true
+    trajectory_file: availability_run3_trajectories.jsonl
+    campaign_id: null
+    per_segment: 20
+    request_scope: all
+    multi_turn:
+      enabled: false
+    jev:
+      enabled: false
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\availability\exp_3\run_1
+    item_knn_reuse_cache: true
+    availability_dates: true
+path/data_paths:
+  paths:
+    item_knn_dir: experiments/agent_eval/campaigns/campaign_005/item_knn
+agent/inference:
+  inference:
+    mode: template
+agent/agent:
+  agent:
+    reflect_rounds: 0
+eval/baselines:
+  baselines:
+    seed: 42

@@ -43,16 +43,33 @@ def main() -> int:
     env = dict(**__import__("os").environ)
     env.setdefault("PYTHONPATH", str(SRC))
 
+    # Deterministic failures that retrying can never fix — abort immediately
+    # instead of burning attempts (e.g. protocol-hash mismatch on --resume
+    # after a code change invalidates the partial trajectory log).
+    FATAL_MARKERS = (
+        "protocol mismatch", "Trajectory already exists",
+        "must be a simple .jsonl filename", "Schema",
+    )
+
     for attempt in range(1, args.max_attempts + 1):
         cmd = [sys.executable, str(TARGET), *fwd]
         if attempt > 1 and "--resume" not in fwd:
             cmd.append("--resume")
         print(f"[resilient] attempt {attempt}/{args.max_attempts}: {' '.join(cmd)}",
               flush=True)
-        proc = subprocess.run(cmd, cwd=SRC, env=env)
+        proc = subprocess.run(cmd, cwd=SRC, env=env,
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                              text=True, encoding="utf-8", errors="replace")
+        tail = proc.stdout[-4000:] if proc.stdout else ""
+        if tail.strip():
+            print(tail, flush=True)
         if proc.returncode == 0:
             print("[resilient] run completed successfully", flush=True)
             return 0
+        lowered = (proc.stdout or "").lower()
+        if any(m.lower() in lowered for m in FATAL_MARKERS):
+            print("[resilient] deterministic failure — not retrying", flush=True)
+            return proc.returncode
         if attempt < args.max_attempts:
             print(f"[resilient] exit={proc.returncode}; retrying in "
                   f"{args.backoff_seconds:.0f}s", flush=True)
