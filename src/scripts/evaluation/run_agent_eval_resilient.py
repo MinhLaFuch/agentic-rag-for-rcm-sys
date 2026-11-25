@@ -28,6 +28,9 @@ TARGET = SRC / "scripts" / "evaluation" / "run_agent_eval.py"
 
 
 def main() -> int:
+    # Child output contains non-ASCII request text; cp1252 consoles crash on print.
+    if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--max-attempts", type=int, default=8)
