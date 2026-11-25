@@ -204,16 +204,20 @@ can't express the request.
   similar flat — real gains hold; exclusion delta is confounded by
   clarify luck, not the feature. **No further availability runs
   needed** — flag decision can proceed on non-inferiority reading.
-- **`distill_spec/exp_3` partial (64/152) unusable for decisions** —
-  protocol hash (source fingerprint) changed when category_unverified +
-  materialized-items landed, so --resume refused by design; partial
-  covers only similar 40/40 + personalized 24/40 (no cold_text/
-  exclusion/unanswerable). **exp_4 launched**: fresh full 152-request
-  run validating clarify-hint + MemoryTool fix + category_unverified.
-  Resilient wrapper now captures output and aborts on deterministic
-  failures (protocol mismatch etc.) instead of retrying 8×.
-- **Offline analyses done**: spec_* backfill extended to **10 arms**
-  (`distill2`, `avail2`); `bad_reference` cascades root-caused
+- **`distill_spec/exp_4` DONE — ALL §6.2 flip criteria MET, flag flipped
+  ON** (`agent_eval.distill_spec: true`): unanswerable task_success
+  **1.000** (clarify 6/6 — clarify-hint + category_unverified worked;
+  was 0.00 exp_1 / 0.333 exp_2 / 0.333 baseline), cold_text **0.950**
+  (≥0.95 threshold), similar 0.925 vs 0.95 (−2.5pp, inside 10pp bound).
+  Bonus: **exclusion 0.575 — best of ANY arm** (baseline 0.25, distill
+  exp_1 0.45, exp_2 0.50; spec_result_coverage 0.625 vs 0.35), personalized
+  answer_status_ok 1.000 vs 0.70. spec_* backfill: cold_text
+  spec_precision@10 0.885 vs 0.735 (+0.15, CI includes 0 at n=20 —
+  task_success carries the signal). Three-replicate picture:
+  exp_1 cold_text 1.00/excl 0.45/unans 0.00 → exp_2 0.90/0.50/0.333 →
+  exp_4 0.95/0.575/1.000 — monotone improvement as fixes landed.
+- **Offline analyses done**: spec_* backfill extended to **11 arms**
+  (`distill2`, `avail2`, `avail3`, `distill4`); `bad_reference` cascades root-caused
   (`investigations/bad_reference_analysis.md` — first-failures are
   MemoryTool hallucination [fixed], SQL timeouts, empty candidates);
   enrichment question **fully closed** (meta lexical ~1–2%, meta semantic
@@ -222,8 +226,10 @@ can't express the request.
 - **Infra**: `scripts/evaluation/run_agent_eval_resilient.py` auto-resumes
   on transient 5xx (today's 502/402 deaths cost two manual restarts).
 - **Commits on `tools-building`**: `1bc8f78` avail_extra fix, `899a880`
-  review probe, `d4867b8` category_unverified + wrapper + analyses.
-  Flag defaults stay OFF until §6.2 criteria are met.
+  review probe, `d4867b8` category_unverified + wrapper + analyses,
+  `ca9e74e` materialized items + dep-direction exception, `3d680ed`
+  exp_3 verdict + wrapper fatal-abort. `distill_spec` default now ON;
+  `availability_dates` still OFF pending decision (§6.2).
 
 ## 6. Open decisions (priority order)
 
@@ -232,17 +238,18 @@ can't express the request.
    queries ready, eval pending — needs LLM key); (b) category-level scoring;
    (c) accept ceiling, optimize `task_success`. Supersedes embedding urgency
    for the *eval* question (still relevant for demo VI queries).
-2. **distill_spec replicate + flag-default criteria (pre-staged 2026-11-24)**
-   — exp_3 validates clarify-hint + `category_unverified` flag. Flip
-   `distill_spec` default to true IFF: (a) unanswerable task_success
-   recovers to ≥0.33 (exp_1 baseline level) AND (b) cold_text task_success
-   stays ≥0.95 AND (c) no kind regresses >10pp vs prompt_fix exp_2 beyond
-   the ~10–15pp noise band. Otherwise keep flag off and iterate prompt.
-   **availability_dates flip criteria** (exp_2 vs prompt_fix exp_2):
-   enable by default IFF task_success delta ≥ −5pp (non-inferiority — it is
-   a correctness fix even when gain is inside noise) AND no kind
-   tool_error rate increases. Expected effect ~3–4pp ceiling, likely
-   inside noise — do not demand a positive delta.
+2. **distill_spec flag-default — DECIDED 2026-11-25: ON** — exp_4 met all
+   pre-staged criteria (unanswerable 1.00 ≥0.33, cold_text 0.95 ≥0.95, no
+   kind regression >10pp); `agent_eval.distill_spec: true` committed.
+   **availability_dates flag-default — PENDING USER CALL**: exp_3 vs
+   prompt_fix exp_2 shows cold_text +35pp, personalized +30pp, similar
+   flat, exclusion −7.5pp. The exclusion delta is PROVEN confounded
+   (identical spec metrics exp_2=exp_3; clarify draws 0 vs 21/40 — pure
+   planner sampling; heavy NOT EXISTS timeouts occur on any access
+   path). Pre-staged criterion was non-inferiority ≥−5pp — strictly
+   read it fails on exclusion, but the failure is not feature-caused.
+   Recommendation: flip ON (correctness fix + replicated gains); a
+   replicate would only re-roll clarify luck, not isolate the feature.
 3. **Commit/PR scope (Q21/Q22)** — large uncommitted WIP across the whole arc;
    `configs/historical/.../baselines.yaml` LF fix must be included;
    `stash@{0}` must not be touched. Run GitNexus `detect_changes` first.
@@ -264,9 +271,11 @@ can't express the request.
    (availability=)` grants visibility when a plausible avail_ts ≤ as_of
    even if `first_seen_ts` is later; `agent_eval.availability_dates`
    flag + `experiments/agent_eval/availability_overlay.yaml` (vs
-   prompt_fix exp_2). **A/B exp_2 DONE — positive on cold_text/personalized
-   but exclusion contaminated by view-perf regression** (see §5 in-flight);
-   needs the materialized-items fix + exp_3 rerun before flag decision.
+   prompt_fix exp_2). **A/B DONE (exp_2 view-perf bug → materialized
+   items fix → exp_3 clean)**: gains replicate (cold_text 1.00, spec_
+   precision +0.20 CI excl. 0, personalized ok 1.00); exclusion −7.5pp
+   proven planner-sampling confound, not feature-caused. Flag decision
+   pending user call — see §6.2.
    **features/description enrichment PROBED — no headroom for this eval**
    (`investigations/dropped_fields_probe.py/.json`): 195 missed targets,
    100% have dropped fields, but new query-token signal from them is

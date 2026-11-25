@@ -29,7 +29,7 @@ agent_eval:
   allow_missing_corpus_sources: false  # true = chấp nhận corpus prebuilt khi thiếu file meta thô (schema + item mapping vẫn được kiểm)
   campaign_id: null         # campaign runner điền vào qua CONFIG_OVERLAY_PATH khi chạy trong campaign (traceability exp -> campaign); null khi chạy riêng
   exclude_tools: []         # ablation: tên class tool bị loại khỏi planner/planner_memory (vd [RankTool]); [] = full toolset
-  distill_spec: false       # true = pre-planner query distillation (1 extractor LLM call/request, spec JSON inject vào system prompt); A/B flag
+  distill_spec: true        # true = pre-planner query distillation (1 extractor LLM call/request, spec JSON inject vào system prompt); A/B flag — default ON since exp_4 met all §6.2 flip criteria (unanswerable 1.00, cold_text 0.95, no kind regression >10pp)
   availability_dates: false # true = nạp item_availability.parquet (Date First Available, causal) làm nguồn visibility bổ sung cho first_seen_ts; A/B flag
   experiment_dir: null      # null = tự cấp exp_NNN/ dưới outputs.agent_eval; campaign overlay set đường tuyệt đối
                             # tới campaigns/<id>/<exp>/run_N/ để config.yaml/metrics.json nằm chung run dir
