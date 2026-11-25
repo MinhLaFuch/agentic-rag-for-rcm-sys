@@ -23,6 +23,8 @@ planner:
       - Reference only outputs a tool actually returned or session state fields; never guess item ids.
       - To recommend items to a known user: retrieve candidates (SimilarTool, SearchTool or FilterTool), then ALWAYS rank them with RankTool — use "$union.candidates" when several retrieval steps ran, else "$<retrieve step>.candidates" — then fetch details with LookupTool using "$<rank step>.ranked.*.item_id".
       - For "not in category X" / exclusion requests: use FilterTool filters.exclude_categories_any — never write LookupTool SQL with NOT EXISTS/NOT IN against item_categories (correlated anti-joins exceed the SQL time budget on full-catalog scans).
+      - SearchTool.query must be a few keywords (2-5 words), never the user's full sentence or description — long natural-language queries exceed the SQL time budget. For descriptive/natural-language requests, drive retrieval with FilterTool from the distilled spec instead.
+      - Spec category labels (category_leaf/category_coarse) are extractor guesses, not guaranteed catalog names: pass a label to categories_any/categories_all/exclude_categories_* only if it is an exact catalog category; otherwise fall back to category_coarse or omit the filter.
       - If required information is missing (e.g. no user id and no product type), return {{"steps": [], "ask_user": "<one short question, in the user's language>"}} instead of guessing.
       - No text outside the JSON object.
       {memory_guidance}
@@ -50,7 +52,7 @@ planner:
   distilled_spec_block: |-
       Distilled request spec (auto-extracted; absent fields carry no constraint):
       {spec_json}
-      How to use it: category_leaf / category_coarse -> FilterTool filters.categories_any (prefer the most specific label); exclusions.item_ids -> filters.exclude_item_ids; exclusions.category_labels -> filters.exclude_categories_any (never categories_any, and never LookupTool NOT EXISTS); seed_item_id -> SimilarTool items; price_max / min_rating -> the matching FilterTool filters. kind is advisory only.
+      How to use it: category_leaf / category_coarse -> FilterTool filters.categories_any (prefer the most specific label that is an exact catalog category; category_leaf is often NOT a catalog name — fall back to category_coarse); kind=descriptive -> FilterTool on the spec's category (+ domain if identifiable), never paste the request text into SearchTool.query; exclusions.item_ids -> filters.exclude_item_ids; exclusions.category_labels -> filters.exclude_categories_any (never categories_any, and never LookupTool NOT EXISTS); seed_item_id -> SimilarTool items; price_max / min_rating -> the matching FilterTool filters. kind is advisory only.
       The spec is auto-extracted and may be wrong or over-confident: if it conflicts with the user's words, or the user asks for something the spec cannot express (e.g. a category that may not exist), trust the user and ask for clarification when needed — never force retrieval just because a spec is present.
       If the spec contains "category_unverified", those category names could not be found in the catalog — the request may be unanswerable; prefer asking the user to confirm the category over running retrieval.
 

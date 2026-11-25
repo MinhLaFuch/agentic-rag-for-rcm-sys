@@ -1,0 +1,37 @@
+# Descriptive-kind eval: identical to exp_2 baseline (planner, template,
+# reflect_rounds=0, seed 42, request_scope=all, scoring=baseline) PLUS the
+# new "descriptive" request kind — 196 LLM-written VI item descriptions
+# (ORACLE: text derived from held-out targets) added on top of the usual
+# 152 requests => 348 total. Measures retrieval quality through the agent
+# loop with human-like query content (see investigations/retrieval_benchmark/).
+# exp_2: same as exp_1 plus planner prompt fix — descriptive requests must
+# use FilterTool+spec instead of long SearchTool queries (exp_1: 71%
+# tool_error, 141/196 SearchTool SQL timeouts).
+agent/agent_eval:
+  agent_eval:
+    agents:
+    - planner
+    allow_missing_corpus_sources: true
+    trajectory_file: descriptive_kind_exp_2_run1_trajectories.jsonl
+    campaign_id: null
+    per_segment: 20
+    request_scope: all
+    descriptive_queries_path: investigations/retrieval_benchmark/descriptive_queries.jsonl
+    multi_turn:
+      enabled: false
+    jev:
+      enabled: false
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\descriptive_kind\exp_2\run_1
+    item_knn_reuse_cache: true
+path/data_paths:
+  paths:
+    item_knn_dir: experiments/agent_eval/campaigns/campaign_005/item_knn
+agent/inference:
+  inference:
+    mode: template
+agent/agent:
+  agent:
+    reflect_rounds: 0
+eval/baselines:
+  baselines:
+    seed: 42
