@@ -76,7 +76,7 @@ def environment(tmp_path, monkeypatch):
     return tmp_path, paths, item2id
 
 
-def _launch(monkeypatch, base: Path, name: str, *, mode: str) -> Path:
+def _launch(monkeypatch, base: Path, name: str, *, mode: str, resume=False, **eval_overrides) -> Path:
     overlay = {
         "agent/agent_eval": {"agent_eval": {
             "agents": ["baseline", "type1"], "k": 3, "per_segment": 1,
@@ -88,12 +88,53 @@ def _launch(monkeypatch, base: Path, name: str, *, mode: str) -> Path:
         "eval/segment_thresholds": {"segment_thresholds": {"sparse_max_history": 4}},
         "agent/inference": {"inference": {"mode": "template"}},
     }
+    overlay["agent/agent_eval"]["agent_eval"].update(eval_overrides)
     overlay_path = base / f"overlay_{name}.yaml"
     overlay_path.write_text(yaml.safe_dump(overlay, sort_keys=False), encoding="utf-8")
     monkeypatch.setenv("CONFIG_OVERLAY_PATH", str(overlay_path))
-    monkeypatch.setattr(sys, "argv", ["run_agent_eval", "--eval-on", "validation"])
+    argv = ["run_agent_eval", "--eval-on", "validation"]
+    if resume:
+        argv.append("--resume")
+    monkeypatch.setattr(sys, "argv", argv)
     script.main()
     return base / "experiments" / "agent_eval" / "exp_001"
+
+
+def test_resume_rejects_changed_availability_file(environment, monkeypatch):
+    base, paths, _ = environment
+    availability = paths.corpus_path.parent / "item_availability.parquet"
+    availability.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"item_id": ["D::i0"], "avail_ts": [1]}).to_parquet(availability)
+
+    build_corpus = script.build_corpus
+
+    def fresh_corpus(*args, **kwargs):
+        _, meta, coverage, times = build_corpus(*args, **kwargs)
+        return ItemCorpus.from_dataframe(meta), meta, coverage, times
+
+    monkeypatch.setattr(script, "build_corpus", fresh_corpus)
+    options = {"mode": "baseline", "availability_dates": True}
+    exp_dir = _launch(monkeypatch, base, "availability", **options)
+    config = yaml.safe_load((exp_dir / "config.yaml").read_text(encoding="utf-8"))["config"]
+    assert config["protocol"]["availability_sha256"] == script.sha256_file(availability)
+    trajectory = paths.log_dir / "availability.jsonl"
+    original = trajectory.read_bytes()
+    pd.DataFrame({"item_id": ["D::i1"], "avail_ts": [1]}).to_parquet(availability)
+
+    with pytest.raises(SystemExit, match="Resume protocol mismatch"):
+        _launch(monkeypatch, base, "availability", resume=True, **options)
+    assert trajectory.read_bytes() == original
+
+
+def test_requests_file_rejects_duplicate_ids(environment, monkeypatch):
+    base, paths, _ = environment
+    requests_path = base / "requests.jsonl"
+    row = {"request_id": "duplicate", "kind": "ambiguous", "segment": "none", "text": "Query"}
+    requests_path.write_text(json.dumps(row) + "\n\n" + json.dumps(row) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match=r"requests\.jsonl:3: duplicate request_id 'duplicate' \(first seen on line 1\)"):
+        _launch(monkeypatch, base, "duplicate", mode="baseline", requests_file=str(requests_path))
+    assert not (paths.log_dir / "duplicate.jsonl").exists()
 
 
 @pytest.mark.parametrize("mode", ["baseline", "hybrid"])

@@ -548,11 +548,15 @@ def main() -> None:
     # scripts/data_pipeline/build_item_availability.py. Absent file simply
     # leaves first_seen_ts as the only visibility gate, as before.
     availability = None
+    availability_sha256 = None
     if bool(cfg.get("availability_dates")):
         avail_path = _corpus_file.parent / "item_availability.parquet" \
             if _corpus_file is not None else None
         if avail_path is not None and avail_path.exists():
-            avail_df = pd.read_parquet(avail_path, columns=["item_id", "avail_ts"])
+            with avail_path.open("rb") as source:
+                availability_sha256 = hashlib.file_digest(source, "sha256").hexdigest()
+                source.seek(0)
+                avail_df = pd.read_parquet(source, columns=["item_id", "avail_ts"])
             availability = {
                 r.item_id: int(r.avail_ts) for r in avail_df.itertuples(index=False)
             }
@@ -571,6 +575,8 @@ def main() -> None:
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
         sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent",
         cohort_policy=cohort_policy_for_paths(data_paths))
+    if availability_sha256 is not None:
+        protocol_manifest["availability_sha256"] = availability_sha256
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
@@ -713,10 +719,21 @@ def main() -> None:
     # eval sets that cannot be produced by build_requests (e.g. LLM-descriptive queries).
     requests_file = cfg.get("requests_file")
     if requests_file:
-        requests = [
-            AgentRequest(**json.loads(line))
-            for line in Path(requests_file).read_text(encoding="utf-8").splitlines() if line.strip()
-        ]
+        requests = []
+        request_id_lines: dict[str, int] = {}
+        with Path(requests_file).open(encoding="utf-8") as source:
+            for line_number, line in enumerate(source, start=1):
+                if not line.strip():
+                    continue
+                request = AgentRequest(**json.loads(line))
+                if request.request_id in request_id_lines:
+                    first_line = request_id_lines[request.request_id]
+                    raise ValueError(
+                        f"{requests_file}:{line_number}: duplicate request_id "
+                        f"{request.request_id!r} (first seen on line {first_line})"
+                    )
+                request_id_lines[request.request_id] = line_number
+                requests.append(request)
         print(f"Loaded {len(requests)} requests from {requests_file}", flush=True)
     else:
         descriptive_queries = None
