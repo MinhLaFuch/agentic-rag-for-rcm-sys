@@ -26,7 +26,9 @@ Baselines under every protocol: random, popularity (causal fit count,
 item_idx tiebreak), same_category_as_history (user's majority deepest
 category over fit history first, then popularity).
 
-Metrics: HR@k, NDCG@k for k in {1,3,5,10,20} (k <= pool size).
+Metrics: HR@k, Recall@k, NDCG@k for k in {1,3,5,10,20} (k <= pool size),
+evaluated per request (matching run_agent_eval) with fit-history items
+excluded, and aggregated as mean ± std across seeds.
 """
 from __future__ import annotations
 
@@ -55,19 +57,31 @@ SEEDS = list(range(5))
 KS = (1, 3, 5, 10, 20)
 
 
-def metrics_from_pos(pos: int, ks: tuple[int, ...]) -> dict[str, float]:
-    """pos = 0-based rank of the single relevant item."""
+def metrics_from_positions(positions: list[int], ks: tuple[int, ...]) -> dict[str, float]:
+    """positions = 0-based ranks of all relevant targets for one request."""
+    m = len(positions)
     out = {}
     for k in ks:
-        hit = pos < k
-        out[f"HR@{k}"] = float(hit)
-        out[f"NDCG@{k}"] = float(1.0 / np.log2(pos + 2)) if hit else 0.0
+        hits = [p for p in positions if p < k]
+        out[f"HR@{k}"] = float(len(hits) > 0)
+        out[f"Recall@{k}"] = float(len(hits) / m)
+        dcg = sum(1.0 / np.log2(p + 2) for p in hits)
+        idcg = sum(1.0 / np.log2(i + 2) for i in range(min(m, k)))
+        out[f"NDCG@{k}"] = float(dcg / idcg) if idcg > 0 else 0.0
     return out
 
 
-def agg(rows: list[dict]) -> dict[str, dict[str, float]]:
-    return {k: {"mean": float(np.mean([r[k] for r in rows])),
-                "std": float(np.std([r[k] for r in rows]))} for k in rows[0]}
+def agg(rows_by_seed: list[list[dict]]) -> dict[str, dict[str, float]]:
+    """Aggregate per-seed means first, then report mean ± std across seeds."""
+    keys = rows_by_seed[0][0].keys()
+    out = {}
+    for k in keys:
+        seed_means = [float(np.mean([r[k] for r in seed_rows])) for seed_rows in rows_by_seed]
+        out[k] = {
+            "mean": float(np.mean(seed_means)),
+            "std": float(np.std(seed_means)),
+        }
+    return out
 
 
 def main() -> None:
@@ -80,12 +94,14 @@ def main() -> None:
     requests = [json.loads(l) for l in open(REQS, encoding="utf-8")]
     cases = []
     for r in requests:
-        for t in r.get("targets", []):
-            nm = idx2name.get(t)
-            if nm:
-                cases.append({"request_id": r["request_id"], "user_idx": r["user_idx"],
-                              "target_idx": t, "target_name": nm})
-    print(f"cases (held-out targets): {len(cases)}", flush=True)
+        targets = [int(t) for t in r.get("targets", []) if t in idx2name]
+        if targets:
+            cases.append({
+                "request_id": r["request_id"],
+                "user_idx": r["user_idx"],
+                "targets": targets,
+            })
+    print(f"requests with targets: {len(cases)} (total targets: {sum(len(c['targets']) for c in cases)})", flush=True)
 
     # ---------- corpus: visible universe + categories ----------
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
@@ -160,7 +176,12 @@ def main() -> None:
             user_cat[u] = next((cat_of_idx(it) for _, it in reversed(rows_)
                                 if cat_of_idx(it) in tied), tied[0])
 
-    target_cat = {c["target_idx"]: cat_of_idx(c["target_idx"]) for c in cases}
+    user_hist_items: dict[int, set[int]] = {
+        u: {int(it) for _, it in rows_} for u, rows_ in hist.items()
+    }
+    target_cats = {
+        t: cat_of_idx(t) for c in cases for t in c["targets"]
+    }
 
     # ---------- fast negative samplers ----------
     # Precompute popularity CDF over universe once (weights are seed-invariant).
@@ -178,33 +199,29 @@ def main() -> None:
             cat_members[cat] = mem
         return cat_members[cat]
 
-    def draw_uniform(n: int, rng: np.random.Generator) -> np.ndarray:
+    def draw_uniform(n: int, rng: np.random.Generator,
+                     exclude: set[int] | None = None) -> np.ndarray:
         """n distinct positions in univ_idx via rejection (collisions ~0)."""
-        out = rng.integers(0, N, size=n * 2)
-        items = univ_idx[out]
-        seen = set()
+        seen = set(exclude) if exclude else set()
         res = []
-        for it in items:
-            i = int(it)
-            if i not in seen:
-                seen.add(i)
-                res.append(i)
-            if len(res) == n:
-                return np.array(res, dtype=np.int64)
-        # rare top-up path
         while len(res) < n:
-            i = int(univ_idx[rng.integers(0, N)])
-            if i not in seen:
-                seen.add(i)
-                res.append(i)
+            out = rng.integers(0, N, size=(n - len(res)) * 2)
+            for it in univ_idx[out]:
+                i = int(it)
+                if i not in seen:
+                    seen.add(i)
+                    res.append(i)
+                    if len(res) == n:
+                        return np.array(res, dtype=np.int64)
         return np.array(res, dtype=np.int64)
 
-    def draw_popneg(n: int, rng: np.random.Generator) -> np.ndarray:
+    def draw_popneg(n: int, rng: np.random.Generator,
+                    exclude: set[int] | None = None) -> np.ndarray:
         if pop_cdf is None:
-            return draw_uniform(n, rng)
-        res, seen = [], set()
+            return draw_uniform(n, rng, exclude=exclude)
+        res, seen = [], (set(exclude) if exclude else set())
         while len(res) < n:
-            u = rng.random(n * 2 - len(res))
+            u = rng.random((n - len(res)) * 3)
             pos = np.searchsorted(pop_cdf, u)
             pos = np.clip(pos, 0, N - 1)
             for it in univ_idx[pos]:
@@ -212,79 +229,85 @@ def main() -> None:
                 if pop[i] > 0 and i not in seen:
                     seen.add(i)
                     res.append(i)
-                if len(res) == n:
-                    return np.array(res, dtype=np.int64)
+                    if len(res) == n:
+                        return np.array(res, dtype=np.int64)
         return np.array(res, dtype=np.int64)
 
-    def draw_catneg(target_idx: int, n: int,
-                    rng: np.random.Generator) -> np.ndarray:
-        tcat = target_cat[target_idx]
-        mem = members_of(tcat)
-        avail = [int(x) for x in mem if int(x) != target_idx]
-        take = min(n, len(avail))
+    def draw_catneg(targets: list[int], n: int,
+                    rng: np.random.Generator,
+                    exclude: set[int]) -> np.ndarray:
+        # Pool negatives from the categories of the request's targets.
+        avail_set: list[int] = []
+        seen_avail: set[int] = set()
+        for t in targets:
+            tcat = target_cats.get(t)
+            for x in members_of(tcat):
+                xi = int(x)
+                if xi not in exclude and xi not in seen_avail:
+                    seen_avail.add(xi)
+                    avail_set.append(xi)
+        take = min(n, len(avail_set))
         out = []
         if take:
-            sel = rng.choice(len(avail), size=take, replace=False)
-            out = [avail[i] for i in sel]
+            sel = rng.choice(len(avail_set), size=take, replace=False)
+            out = [avail_set[i] for i in sel]
         if take < n:
-            chosen = set(out) | {target_idx}
-            # fill remainder uniform over the universe (rare: tiny categories)
-            while len(out) < n:
-                for i in draw_uniform(n, rng):
-                    i = int(i)
-                    if i not in chosen:
-                        chosen.add(i)
-                        out.append(i)
-                    if len(out) == n:
-                        break
+            out.extend(draw_uniform(n - take, rng, exclude=exclude | set(out)).tolist())
         return np.array(out[:n], dtype=np.int64)
 
     # ---------- pool protocol ----------
     def pool_protocol(pool_size: int, variant: str) -> dict:
         ks = tuple(k for k in KS if k <= pool_size)
         samplers = {"uniform": draw_uniform, "popneg": draw_popneg}
-        rows = {b: [] for b in ("random", "popularity", "same_category")}
+        rows_by_seed = {b: [] for b in ("random", "popularity", "same_category")}
         for seed in SEEDS:
             rng = np.random.default_rng(1000 + seed)
+            seed_rows = {b: [] for b in ("random", "popularity", "same_category")}
             for c in cases:
-                t = c["target_idx"]
+                targets = c["targets"]
+                m = len(targets)
+                u_hist = user_hist_items.get(c["user_idx"], set())
+                exclude = u_hist | set(targets)
+                n_neg = max(0, pool_size - m)
                 if variant == "catneg":
-                    neg = draw_catneg(t, pool_size - 1, rng)
+                    neg = draw_catneg(targets, n_neg, rng, exclude)
                 else:
-                    neg = samplers[variant](pool_size - 1, rng)
-                    neg = neg[neg != t]
-                    while len(neg) < pool_size - 1:
-                        extra = samplers[variant](pool_size, rng)
-                        extra = extra[(extra != t) & ~np.isin(extra, neg)]
-                        neg = np.concatenate([neg, extra])[:pool_size - 1]
-                pool = np.concatenate([[t], neg])
+                    neg = samplers[variant](n_neg, rng, exclude=exclude)
+                pool = np.concatenate([np.array(targets, dtype=np.int64), neg])
+                p_len = len(pool)
                 C = user_cat.get(c["user_idx"])
-                # random: perm[j] = pool index at rank j; target is index 0
-                pos = int(np.where(rng.permutation(pool_size) == 0)[0][0])
-                rows["random"].append(metrics_from_pos(pos, ks))
+                # random: perm[j] = pool index at rank j; targets are indices 0..m-1
+                perm = rng.permutation(p_len)
+                pos_map = {int(perm[j]): j for j in range(p_len)}
+                seed_rows["random"].append(
+                    metrics_from_positions([pos_map[idx] for idx in range(m)], ks))
                 # popularity: (-pop, idx)
-                order = sorted(range(pool_size),
+                order = sorted(range(p_len),
                                key=lambda i: (-int(pop[pool[i]]), int(pool[i])))
-                rows["popularity"].append(
-                    metrics_from_pos(order.index(0), ks))
+                rank_in_order = {idx: r for r, idx in enumerate(order)}
+                seed_rows["popularity"].append(
+                    metrics_from_positions([rank_in_order[idx] for idx in range(m)], ks))
                 # same_category: cat==C first, then popularity
                 order = sorted(
-                    range(pool_size),
+                    range(p_len),
                     key=lambda i: (0 if C is not None
                                    and cat_of_idx(int(pool[i])) == C else 1,
                                    -int(pop[pool[i]]), int(pool[i])))
-                rows["same_category"].append(
-                    metrics_from_pos(order.index(0), ks))
-        return {b: agg(v) for b, v in rows.items()}
+                rank_in_order = {idx: r for r, idx in enumerate(order)}
+                seed_rows["same_category"].append(
+                    metrics_from_positions([rank_in_order[idx] for idx in range(m)], ks))
+            for b in rows_by_seed:
+                rows_by_seed[b].append(seed_rows[b])
+        return {b: agg(v) for b, v in rows_by_seed.items()}
 
     # ---------- full-catalog protocol ----------
     def full_catalog_protocol() -> dict:
-        rows = {b: [] for b in ("random", "popularity", "same_category")}
+        rows_by_seed = {b: [] for b in ("random", "popularity", "same_category")}
         # deterministic popularity order: pop desc, item_idx asc
         order = np.lexsort((univ_idx, -pop[univ_idx]))
         sorted_items = univ_idx[order]
         rank_of = {int(i): r for r, i in enumerate(sorted_items)}
-        cat_sorted: dict[str, tuple[list, list]] = {}
+        cat_sorted: dict[str, tuple[np.ndarray, list]] = {}
 
         def cat_sorted_keys(cat: str):
             if cat not in cat_sorted:
@@ -297,31 +320,66 @@ def main() -> None:
 
         for seed in SEEDS:
             rng = np.random.default_rng(2000 + seed)
+            seed_rows = {b: [] for b in ("random", "popularity", "same_category")}
             for c in cases:
-                t = c["target_idx"]
+                targets = c["targets"]
+                u_hist = user_hist_items.get(c["user_idx"], set())
+                hist_in_univ = [h for h in u_hist if h in rank_of]
+                n_avail = max(1, N - len(hist_in_univ))
                 C = user_cat.get(c["user_idx"])
-                pos = int(rng.integers(0, N))
-                rows["random"].append(metrics_from_pos(pos, KS))
-                rows["popularity"].append(
-                    metrics_from_pos(rank_of.get(t, N), KS))
-                tc = target_cat[t]
+
+                # random: distinct positions in [0, n_avail)
+                rand_pos = rng.choice(n_avail, size=min(len(targets), n_avail), replace=False).tolist()
+                if len(rand_pos) < len(targets):
+                    rand_pos.extend([n_avail] * (len(targets) - len(rand_pos)))
+                seed_rows["random"].append(metrics_from_positions(rand_pos, KS))
+
+                # popularity (excluding fit history)
+                pop_positions = []
+                for t in targets:
+                    if t not in rank_of:
+                        pop_positions.append(N)
+                    else:
+                        r = rank_of[t]
+                        hist_above = sum(1 for h in hist_in_univ if rank_of[h] < r)
+                        pop_positions.append(r - hist_above)
+                seed_rows["popularity"].append(metrics_from_positions(pop_positions, KS))
+
+                # same_category (excluding fit history)
                 if C is None:
-                    pos = rank_of.get(t, N)
+                    cat_positions = pop_positions
                 else:
                     mem_s, keys = cat_sorted_keys(C)
                     nC = len(mem_s)
-                    c_above = bisect_left(keys, (-int(pop[t]), int(t)))
-                    if tc == C:
-                        pos = c_above
-                    else:
-                        pos = nC + max(0, rank_of.get(t, N) - c_above)
-                rows["same_category"].append(metrics_from_pos(pos, KS))
-        return {b: agg(v) for b, v in rows.items()}
+                    hist_in_C = [h for h in hist_in_univ if cat_of_idx(h) == C]
+                    hist_out_C = [h for h in hist_in_univ if cat_of_idx(h) != C]
+                    nC_avail = nC - len(hist_in_C)
+                    cat_positions = []
+                    for t in targets:
+                        if t not in rank_of:
+                            cat_positions.append(N)
+                            continue
+                        r = rank_of[t]
+                        c_above = bisect_left(keys, (-int(pop[t]), int(t)))
+                        if target_cats.get(t) == C:
+                            hist_c_above = sum(1 for h in hist_in_C if rank_of[h] < r)
+                            cat_positions.append(c_above - hist_c_above)
+                        else:
+                            hist_out_above = sum(1 for h in hist_out_C if rank_of[h] < r)
+                            cat_positions.append(nC_avail + max(0, (r - c_above) - hist_out_above))
+                seed_rows["same_category"].append(metrics_from_positions(cat_positions, KS))
+            for b in rows_by_seed:
+                rows_by_seed[b].append(seed_rows[b])
+        return {b: agg(v) for b, v in rows_by_seed.items()}
 
     # ---------- run ----------
     results = {"meta": {
-        "as_of": AS_OF, "seeds": SEEDS, "n_cases": len(cases),
+        "as_of": AS_OF, "seeds": SEEDS,
+        "n_requests": len(cases),
+        "n_targets": sum(len(c["targets"]) for c in cases),
         "universe_size": N, "fit_rows": int(len(fit)),
+        "history_excluded": True,
+        "std_semantics": "std across seeds (per-seed request-level mean)",
         "popularity": "fit-split (train.parquet) interaction count per item_idx "
                       "(causal, same proxy as dc100d1 temp.item_popularity)",
         "universe": "items.first_seen_ts <= as_of",
@@ -353,7 +411,7 @@ def main() -> None:
         print(f"\n== {pname} ==")
         for b, mets in prot.items():
             line = f"  {b:14s}"
-            for k in ("HR@1", "HR@3", "HR@5", "HR@10", "HR@20"):
+            for k in ("HR@1", "Recall@5", "Recall@10", "NDCG@10"):
                 if k in mets:
                     line += f" {k}={mets[k]['mean']:.4f}±{mets[k]['std']:.4f}"
             print(line)

@@ -105,6 +105,19 @@ def main() -> None:
              ("uniform", "popneg", "catneg")}
     POPN, CATN = 100, 100  # measure at pool-100 scale (superset of pool-10)
 
+    def sample_uniform(exclude: set[int], n: int) -> np.ndarray:
+        res, seen = [], set(exclude)
+        while len(res) < n:
+            pos = rng.integers(0, N, size=(n - len(res)) * 2)
+            for it in univ_idx[pos]:
+                i = int(it)
+                if i not in seen:
+                    seen.add(i)
+                    res.append(i)
+                    if len(res) == n:
+                        return np.array(res, dtype=np.int64)
+        return np.array(res, dtype=np.int64)
+
     for t in cases:
         tcat = cat_of(t)
         t_rank = int(rank_of[t]) if int(t) in univ_set else N
@@ -112,36 +125,31 @@ def main() -> None:
             overlaps, gaps = [], []
             for _ in SEEDS:
                 if variant == "uniform":
-                    neg = rng.choice(univ_idx[univ_idx != t], size=POPN,
-                                     replace=False)
+                    neg = sample_uniform({int(t)}, POPN)
                 elif variant == "popneg":
-                    # sample with replacement then dedupe (approximation ok
-                    # for stats; matches emulation semantics closely enough)
-                    u = rng.random(POPN * 3)
-                    pos = np.clip(np.searchsorted(pop_cdf, u), 0, N - 1)
-                    neg = []
-                    seen = {int(t)}
-                    for i in univ_idx[pos]:
-                        i = int(i)
-                        if pop[i] > 0 and i not in seen:
-                            seen.add(i)
-                            neg.append(i)
-                        if len(neg) == POPN:
-                            break
-                    neg = np.array(neg, dtype=np.int64)
+                    res, seen = [], {int(t)}
+                    while len(res) < POPN:
+                        u = rng.random((POPN - len(res)) * 3)
+                        pos = np.clip(np.searchsorted(pop_cdf, u), 0, N - 1)
+                        for i in univ_idx[pos]:
+                            i = int(i)
+                            if pop[i] > 0 and i not in seen:
+                                seen.add(i)
+                                res.append(i)
+                                if len(res) == POPN:
+                                    break
+                    neg = np.array(res, dtype=np.int64)
                 else:  # catneg
                     tcode = cat_code.get(tcat, -1)
                     mem = univ_idx[member_mask[tcode]] \
                         if tcode in member_mask else np.empty(0, dtype=np.int64)
                     mem = mem[mem != t]
                     take = min(CATN, len(mem))
-                    neg = list(rng.choice(mem, size=take, replace=False)) \
+                    out = [int(x) for x in rng.choice(mem, size=take, replace=False)] \
                         if take else []
                     if take < CATN:
-                        rest = univ_idx[univ_idx != t]
-                        neg += list(rng.choice(rest, size=CATN - take,
-                                               replace=False))
-                    neg = np.array(neg[:CATN], dtype=np.int64)
+                        out.extend(sample_uniform(set(out) | {int(t)}, CATN - take).tolist())
+                    neg = np.array(out[:CATN], dtype=np.int64)
                 if tcat is not None:
                     overlaps.append(float(np.mean([cat_of(int(i)) == tcat
                                                    for i in neg])))
