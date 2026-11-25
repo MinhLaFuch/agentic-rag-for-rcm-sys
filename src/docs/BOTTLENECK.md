@@ -297,7 +297,21 @@ can't express the request.
    for this eval. verified_purchase/helpful_vote stay speculative.
    Report:
    `docs/investigations/amazon_source_compare/REPORT.md`.
-5. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
+5. **Exclusion SQL timeouts — ROOT-CAUSED + FIXED 2026-11-25**
+   (`8851c6f`): exclusion requests have no positive category constraint,
+   so the planner wrote raw LookupTool SQL with correlated
+   `NOT EXISTS (item_categories)` anti-joins — 32/40 timeouts (avail
+   arms), 12/40 (distill exp_4), same failure on ANY access path
+   (materialized items didn't help; it's query shape, not the view).
+   FilterTool had `exclude_item_ids` but no category-exclusion filter
+   (prompt even said "there is no category-exclusion filter"). Added
+   `exclude_categories_any`/`exclude_categories_all` to FILTER_KEYS +
+   compile_filters (uncorrelated `NOT IN` subquery — same rewrite
+   categories_any already uses after the 20–40s EXISTS lesson) +
+   planner/spec-prompt guidance. 177 sql + 401 agent/corpus tests pass.
+   NOT yet A/B-validated — combined-default eval running measures the
+   pre-fix shipped state; exclusion fix needs a follow-up run.
+6. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
    (snapshot/no_filter sensitivity, larger eval set for decision-critical
    changes), optional scorer refit, embedding-based category completion
    (parked — prior A/B negative, F3 check shows uncategorized items reach
