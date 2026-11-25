@@ -216,6 +216,18 @@ can't express the request.
   task_success carries the signal). Three-replicate picture:
   exp_1 cold_text 1.00/excl 0.45/unans 0.00 → exp_2 0.90/0.50/0.333 →
   exp_4 0.95/0.575/1.000 — monotone improvement as fixes landed.
+- **`combined/exp_1` DONE 2026-11-25 — BEST ARM EVER, shipped-config
+  metric** (`combined_overlay.yaml`, both flags ON): the run accidentally
+  also validated the exclusion fix — tools were imported lazily after
+  `8851c6f` landed, so all 40 exclusion plans used the new
+  `exclude_categories_any` filter (0 NOT EXISTS, tool_err 0.03).
+  Results: **exclusion task_success 0.975** (prior best 0.575; baseline
+  0.25 — the timeout collapse is gone, exclusion_compliance 1.000),
+  cold_text 1.000, personalized answer_ok 1.000, similar 0.950,
+  unanswerable 1.000 (6/6 clarify), ambiguous 1.000. tool_error ≈ 0
+  across all kinds. Caveat: single run, n=40 kinds — exclusion gain is
+  mechanistic (query-shape fix) not sampling, but a replicate would
+  firm the number.
 - **Offline analyses done**: spec_* backfill extended to **11 arms**
   (`distill2`, `avail2`, `avail3`, `distill4`); `bad_reference` cascades root-caused
   (`investigations/bad_reference_analysis.md` — first-failures are
@@ -238,6 +250,9 @@ can't express the request.
    queries ready, eval pending — needs LLM key); (b) category-level scoring;
    (c) accept ceiling, optimize `task_success`. Supersedes embedding urgency
    for the *eval* question (still relevant for demo VI queries).
+   **descriptive_kind eval RUNNING 2026-11-25** (`descriptive_kind/
+   exp_1/run_1`, 348 requests = 152 standard + 196 VI descriptions,
+   shipped config).
 2. **distill_spec flag-default — DECIDED 2026-11-25: ON** — exp_4 met all
    pre-staged criteria (unanswerable 1.00 ≥0.33, cold_text 0.95 ≥0.95, no
    kind regression >10pp); `agent_eval.distill_spec: true` committed.
@@ -309,8 +324,9 @@ can't express the request.
    compile_filters (uncorrelated `NOT IN` subquery — same rewrite
    categories_any already uses after the 20–40s EXISTS lesson) +
    planner/spec-prompt guidance. 177 sql + 401 agent/corpus tests pass.
-   NOT yet A/B-validated — combined-default eval running measures the
-   pre-fix shipped state; exclusion fix needs a follow-up run.
+   **VALIDATED accidentally by `combined/exp_1`**: all 40 exclusion plans
+   used the new filter, task_success 0.975 (best arm ever), tool_err
+   0.03 — the timeout collapse is gone. Single-run caveat noted above.
 6. Standing: embedding-model decision (demo/VI only), F7/Q23 protocol
    (snapshot/no_filter sensitivity, larger eval set for decision-critical
    changes), optional scorer refit, embedding-based category completion
