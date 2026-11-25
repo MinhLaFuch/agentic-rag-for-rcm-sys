@@ -29,6 +29,7 @@ from ._helper import _tokenize
 from package.embeddings import VectorStore
 from .indexed_bm25_rows import indexed_bm25_rows
 from .vietnamese_query_translator import VietnameseQueryTranslator
+from .candidate_trace import record_generation
 
 
 class SearchTool(Tool):
@@ -154,6 +155,8 @@ class SearchTool(Tool):
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)
         cols = ", ".join(f"items.{c}" for c in ITEM_COLUMNS)
+        lexical_probe = None
+        indexed_ids = ()
         if self.bm25_index is not None:
             exclude_set = set(normalized_filters.get("exclude_item_ids") or [])
             rows = []
@@ -180,6 +183,7 @@ class SearchTool(Tool):
                         item_row = dict(found_meta[iid])
                         item_row["score"] = float(score_map[iid])
                         rows.append(item_row)
+                indexed_ids = found_meta
                 if len(rows) >= limit or len(scored) < fetch or fetch >= max_fetch:
                     truncated = len(rows) > limit or len(scored) >= fetch
                     rows = rows[:limit]
@@ -187,6 +191,9 @@ class SearchTool(Tool):
                 fetch = min(fetch * 2, max_fetch)
             total_matches = None if not self.exact_count else len(rows)
         else:
+            lexical_probe = (self.corpus,
+                "SELECT items.item_id FROM items_fts JOIN items ON items.rowid = items_fts.rowid "
+                f"WHERE items_fts MATCH ? AND ({where}) AND items.item_id = ?", [match, *params])
             # Secondary tie-breaker: rating_number DESC for equal BM25 scores
             sql = (
                 f"SELECT {cols}, -bm25(items_fts) AS score "  # bm25() is lower-is-better -> negate
@@ -222,7 +229,8 @@ class SearchTool(Tool):
             }
             if translation_info is not None:
                 out["translated_query"] = effective_query
-            return out
+            return record_generation(out, "fts_matches" if lexical_probe else "bm25_fetch",
+                                     item_ids=indexed_ids, query=lexical_probe)
 
         try:
             encoded = self.query_encoder.encode([effective_query]) if hasattr(self.query_encoder, "encode") else self.query_encoder([effective_query])
@@ -270,7 +278,8 @@ class SearchTool(Tool):
                 }
                 if translation_info is not None:
                     out["translated_query"] = effective_query
-                return out
+                return record_generation(out, "fts_matches" if lexical_probe else "bm25_fetch",
+                                         item_ids=indexed_ids, query=lexical_probe)
             raise
         lexical_rank = {row["item_id"]: rank for rank, row in enumerate(rows, 1)}
         dense_rank = {item_id: rank for rank, item_id in enumerate(dense_ids, 1)}
@@ -300,4 +309,5 @@ class SearchTool(Tool):
         }
         if translation_info is not None:
             out["translated_query"] = effective_query
-        return out
+        return record_generation(out, "lexical_matches_and_dense_fetch", query=lexical_probe,
+                                 item_ids=(*indexed_ids, *dense_ids))

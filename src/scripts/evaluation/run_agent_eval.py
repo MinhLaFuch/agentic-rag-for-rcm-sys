@@ -77,6 +77,7 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, HybridScorer, LearnedScorer, ToolCallLogger
+from package.tools.retrieval.candidate_trace import attach_candidate_trace, trace_candidates
 from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
@@ -827,10 +828,13 @@ def main() -> None:
                 if key in done:
                     trajectories.append(done[key])
                     continue
-                if agent in PLANNER_AGENTS:
-                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=session_enabled)
-                elif agent == "type1":
-                    traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
+                if agent in PLANNER_AGENTS or agent == "type1":
+                    with trace_candidates(id2item[t] for t in request.targets if t in id2item) as trace:
+                        if agent in PLANNER_AGENTS:
+                            traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=session_enabled)
+                        else:
+                            traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
+                    attach_candidate_trace(traj["steps"], trace)
                 else:
                     assert request.user_idx is not None
                     traj = empty_trajectory(request, agent, [])

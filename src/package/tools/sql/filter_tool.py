@@ -15,6 +15,7 @@ from package.corpus import ItemCorpus
 from .._limits import MAX_CANDIDATES, SQL_DEFAULT_LIMIT
 from .._schema import FILTER_KEYS, ITEM_COLUMNS, ORDER_COLUMNS
 from .compile_filters import _as_float, compile_filters
+from ..retrieval.candidate_trace import record_generation
 
 class FilterTool(Tool):
     """
@@ -215,4 +216,5 @@ class FilterTool(Tool):
         if order_by_effective != order_by:
             out["order_by_effective"] = order_by_effective
             out["order_by_note"] = order_by_note
-        return out
+        probe = sql.rsplit(" ORDER BY ", 1)[0] + " AND items.item_id = ?"
+        return record_generation(out, "sql_matches", query=(self.corpus, probe, params))
