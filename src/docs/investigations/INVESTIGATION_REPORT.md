@@ -77,4 +77,4 @@ modes) lives in the referenced JSONs; this file is the consolidated verdict.
 - `investigations/q3_search_timeouts.{py,json}` — Q3
 - `investigations/q12_kcore_sweep.{py,json}` — Q12
 - `investigations/q15_meta_scan.py` + `q15_meta_flags.parquet` + `q15_raw_vs_processed.json` — Q15
-- `investigations/INVESTIGATION_REPORT.md` — this file
+- `docs/investigations/INVESTIGATION_REPORT.md` — this file

@@ -26,9 +26,10 @@ KIND_SEGMENTS = {
     "ambiguous": ("none",),              # missing information: the right move is to ask back
     "exclusion": ("sparse", "warm"),     # items/categories to exclude — built from held-out items (ORACLE)
     "unanswerable": ("none",),           # request that cannot be answered from available information
+    "descriptive": ("cold", "sparse", "warm"),  # LLM-written item description from a precomputed file (ORACLE text)
 }
 KINDS = tuple(KIND_SEGMENTS)
-ORACLE_KINDS = ("constrained", "cold_text", "exclusion")  # built from held-out items: an upper-bound scenario, not a real query log
+ORACLE_KINDS = ("constrained", "cold_text", "exclusion", "descriptive")  # built from held-out items: an upper-bound scenario, not a real query log
 
 
 @lru_cache(maxsize=1)

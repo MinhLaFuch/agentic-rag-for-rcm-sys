@@ -1,0 +1,668 @@
+{
+ "domain": "All_Beauty",
+ "sources": {
+  "ucsd_meta": {
+   "n_rows": 112590,
+   "fields": {
+    "main_category": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "str": 112590
+     }
+    },
+    "title": {
+     "nonempty": 112578,
+     "pct": 99.99,
+     "types": {
+      "str": 112590
+     }
+    },
+    "average_rating": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "float": 112590
+     }
+    },
+    "rating_number": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "int": 112590
+     }
+    },
+    "features": {
+     "nonempty": 17377,
+     "pct": 15.43,
+     "types": {
+      "list": 112590
+     }
+    },
+    "description": {
+     "nonempty": 19162,
+     "pct": 17.02,
+     "types": {
+      "list": 112590
+     }
+    },
+    "price": {
+     "nonempty": 17704,
+     "pct": 15.72,
+     "types": {
+      "NoneType": 94886,
+      "float": 17704
+     }
+    },
+    "images": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "list": 112590
+     }
+    },
+    "videos": {
+     "nonempty": 15882,
+     "pct": 14.11,
+     "types": {
+      "list": 112590
+     }
+    },
+    "store": {
+     "nonempty": 101259,
+     "pct": 89.94,
+     "types": {
+      "str": 101259,
+      "NoneType": 11331
+     }
+    },
+    "categories": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "list": 112590
+     }
+    },
+    "details": {
+     "nonempty": 108078,
+     "pct": 95.99,
+     "types": {
+      "dict": 112590
+     }
+    },
+    "parent_asin": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "str": 112590
+     }
+    },
+    "bought_together": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "NoneType": 112590
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 112590,
+    "categories_empty_pct": 100.0,
+    "date_first_available": 341,
+    "date_first_available_pct": 0.3,
+    "details_keys_top": [
+     [
+      "Brand",
+      72113
+     ],
+     [
+      "Package Dimensions",
+      67825
+     ],
+     [
+      "UPC",
+      60252
+     ],
+     [
+      "Is Discontinued By Manufacturer",
+      39527
+     ],
+     [
+      "Item Form",
+      32439
+     ],
+     [
+      "Material",
+      30942
+     ],
+     [
+      "Hair Type",
+      26719
+     ],
+     [
+      "Unit Count",
+      23855
+     ],
+     [
+      "Product Dimensions",
+      23277
+     ],
+     [
+      "Age Range (Description)",
+      22929
+     ],
+     [
+      "Manufacturer",
+      19802
+     ],
+     [
+      "Item model number",
+      17951
+     ],
+     [
+      "Number of Items",
+      16964
+     ],
+     [
+      "Material Feature",
+      13153
+     ],
+     [
+      "Color",
+      11475
+     ],
+     [
+      "Skin Type",
+      11454
+     ],
+     [
+      "Style",
+      10667
+     ],
+     [
+      "Scent",
+      8428
+     ],
+     [
+      "Special Feature",
+      7653
+     ],
+     [
+      "Extension Length",
+      7254
+     ],
+     [
+      "Item Weight",
+      7172
+     ],
+     [
+      "Finish Type",
+      6771
+     ],
+     [
+      "Product Benefits",
+      5721
+     ],
+     [
+      "Number of Pieces",
+      5306
+     ],
+     [
+      "Installation Type",
+      4452
+     ],
+     [
+      "Item Dimensions LxWxH",
+      4276
+     ],
+     [
+      "Item Volume",
+      4193
+     ],
+     [
+      "Liquid Volume",
+      3783
+     ],
+     [
+      "Size",
+      3742
+     ],
+     [
+      "Package Information",
+      2948
+     ]
+    ]
+   },
+   "path": "investigations\\amazon_source_compare\\out_all_beauty\\cache\\ucsd_meta_All_Beauty.jsonl.gz"
+  },
+  "hf_meta": {
+   "n_rows": 112590,
+   "fields": {
+    "main_category": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "str": 112590
+     }
+    },
+    "title": {
+     "nonempty": 112578,
+     "pct": 99.99,
+     "types": {
+      "str": 112590
+     }
+    },
+    "average_rating": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "float": 112590
+     }
+    },
+    "rating_number": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "int": 112590
+     }
+    },
+    "features": {
+     "nonempty": 17377,
+     "pct": 15.43,
+     "types": {
+      "list": 112590
+     }
+    },
+    "description": {
+     "nonempty": 19162,
+     "pct": 17.02,
+     "types": {
+      "list": 112590
+     }
+    },
+    "price": {
+     "nonempty": 17704,
+     "pct": 15.72,
+     "types": {
+      "NoneType": 94886,
+      "float": 17704
+     }
+    },
+    "images": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "list": 112590
+     }
+    },
+    "videos": {
+     "nonempty": 15882,
+     "pct": 14.11,
+     "types": {
+      "list": 112590
+     }
+    },
+    "store": {
+     "nonempty": 101259,
+     "pct": 89.94,
+     "types": {
+      "str": 101259,
+      "NoneType": 11331
+     }
+    },
+    "categories": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "list": 112590
+     }
+    },
+    "details": {
+     "nonempty": 108078,
+     "pct": 95.99,
+     "types": {
+      "dict": 112590
+     }
+    },
+    "parent_asin": {
+     "nonempty": 112590,
+     "pct": 100.0,
+     "types": {
+      "str": 112590
+     }
+    },
+    "bought_together": {
+     "nonempty": 0,
+     "pct": 0.0,
+     "types": {
+      "NoneType": 112590
+     }
+    }
+   },
+   "metrics": {
+    "categories_empty": 112590,
+    "categories_empty_pct": 100.0,
+    "date_first_available": 341,
+    "date_first_available_pct": 0.3,
+    "details_keys_top": [
+     [
+      "Brand",
+      72113
+     ],
+     [
+      "Package Dimensions",
+      67825
+     ],
+     [
+      "UPC",
+      60252
+     ],
+     [
+      "Is Discontinued By Manufacturer",
+      39527
+     ],
+     [
+      "Item Form",
+      32439
+     ],
+     [
+      "Material",
+      30942
+     ],
+     [
+      "Hair Type",
+      26719
+     ],
+     [
+      "Unit Count",
+      23855
+     ],
+     [
+      "Product Dimensions",
+      23277
+     ],
+     [
+      "Age Range (Description)",
+      22929
+     ],
+     [
+      "Manufacturer",
+      19802
+     ],
+     [
+      "Item model number",
+      17951
+     ],
+     [
+      "Number of Items",
+      16964
+     ],
+     [
+      "Material Feature",
+      13153
+     ],
+     [
+      "Color",
+      11475
+     ],
+     [
+      "Skin Type",
+      11454
+     ],
+     [
+      "Style",
+      10667
+     ],
+     [
+      "Scent",
+      8428
+     ],
+     [
+      "Special Feature",
+      7653
+     ],
+     [
+      "Extension Length",
+      7254
+     ],
+     [
+      "Item Weight",
+      7172
+     ],
+     [
+      "Finish Type",
+      6771
+     ],
+     [
+      "Product Benefits",
+      5721
+     ],
+     [
+      "Number of Pieces",
+      5306
+     ],
+     [
+      "Installation Type",
+      4452
+     ],
+     [
+      "Item Dimensions LxWxH",
+      4276
+     ],
+     [
+      "Item Volume",
+      4193
+     ],
+     [
+      "Liquid Volume",
+      3783
+     ],
+     [
+      "Size",
+      3742
+     ],
+     [
+      "Package Information",
+      2948
+     ]
+    ]
+   },
+   "path": "C:\\Users\\ph181\\.cache\\huggingface\\hub\\datasets--McAuley-Lab--Amazon-Reviews-2023\\snapshots\\2b6d039ed471f2ba5fd2acb718bf33b0a7e5598e\\raw\\meta_categories\\meta_All_Beauty.jsonl"
+  },
+  "ucsd_reviews": {
+   "n_rows": 701528,
+   "fields": {
+    "rating": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "float": 701528
+     }
+    },
+    "title": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "text": {
+     "nonempty": 701421,
+     "pct": 99.98,
+     "types": {
+      "str": 701528
+     }
+    },
+    "images": {
+     "nonempty": 59684,
+     "pct": 8.51,
+     "types": {
+      "list": 701528
+     }
+    },
+    "asin": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "parent_asin": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "user_id": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "timestamp": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "int": 701528
+     }
+    },
+    "helpful_vote": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "int": 701528
+     }
+    },
+    "verified_purchase": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "bool": 701528
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 631986,
+    "n_items": 115709,
+    "ts_min": 973052658000,
+    "ts_max": 1694219976666,
+    "asin_ne_parent": 61188,
+    "asin_ne_parent_pct": 8.722
+   },
+   "path": "investigations\\amazon_source_compare\\out_all_beauty\\cache\\ucsd_reviews_All_Beauty.jsonl.gz"
+  },
+  "hf_reviews": {
+   "n_rows": 701528,
+   "fields": {
+    "rating": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "float": 701528
+     }
+    },
+    "title": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "text": {
+     "nonempty": 701421,
+     "pct": 99.98,
+     "types": {
+      "str": 701528
+     }
+    },
+    "images": {
+     "nonempty": 59684,
+     "pct": 8.51,
+     "types": {
+      "list": 701528
+     }
+    },
+    "asin": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "parent_asin": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "user_id": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "str": 701528
+     }
+    },
+    "timestamp": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "int": 701528
+     }
+    },
+    "helpful_vote": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "int": 701528
+     }
+    },
+    "verified_purchase": {
+     "nonempty": 701528,
+     "pct": 100.0,
+     "types": {
+      "bool": 701528
+     }
+    }
+   },
+   "metrics": {
+    "n_users": 631986,
+    "n_items": 115709,
+    "ts_min": 973052658000,
+    "ts_max": 1694219976666,
+    "asin_ne_parent": 61188,
+    "asin_ne_parent_pct": 8.722
+   },
+   "path": "C:\\Users\\ph181\\.cache\\huggingface\\hub\\datasets--McAuley-Lab--Amazon-Reviews-2023\\snapshots\\2b6d039ed471f2ba5fd2acb718bf33b0a7e5598e\\raw\\review_categories\\All_Beauty.jsonl"
+  }
+ },
+ "diffs": {
+  "ucsd_meta__vs__hf_meta": {
+   "field_value_diffs": {},
+   "identical_rows": 112590,
+   "n_a": 112590,
+   "n_b": 112590
+  },
+  "ucsd_reviews__vs__hf_reviews": {
+   "field_value_diffs": {
+    "text": {
+     "values_skipped": "counter cap reached"
+    },
+    "timestamp": {
+     "values_skipped": "counter cap reached"
+    },
+    "title": {
+     "values_skipped": "counter cap reached"
+    },
+    "user_id": {
+     "values_skipped": "counter cap reached"
+    }
+   },
+   "identical_rows": 701528,
+   "n_a": 701528,
+   "n_b": 701528
+  }
+ }
+}

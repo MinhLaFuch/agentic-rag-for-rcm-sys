@@ -86,6 +86,7 @@ htmlcov/
 # Bulk binary artifacts under retrieval investigations (corpus DBs, embeddings, big parquet).
 # Small scripts, configs, logs and metrics remain versioned.
 /src/investigations/**/*.jsonl
+/src/investigations/**/cache/
 /src/investigations/**/*.npy
 /src/investigations/**/*.npz
 /src/investigations/**/*.parquet

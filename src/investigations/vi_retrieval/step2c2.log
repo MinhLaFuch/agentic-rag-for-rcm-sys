@@ -2,11 +2,92 @@ queries: 510 (510 translated)
 minilm: gathered 433555 rows
 minilm: docs done -> C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\emb_minilm
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 35536.48it/s]
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 35557.28it/s]
 bge-m3: encoding 433555 docs on cuda ...
 C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\step2c2_embed.py:58: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
   out = np.empty((len(texts), model.get_sentence_embedding_dimension()), dtype=np.float32)
-    bge-m3-docs 256/433555 (2s)
-    bge-m3-docs 13056/433555 (130s)
-    bge-m3-docs 25856/433555 (450s)
-    bge-m3-docs 38656/433555 (988s)
+    bge-m3-docs: resuming at 217856/433555
+    bge-m3-docs 230656/433555 (96s)
+    bge-m3-docs 243456/433555 (179s)
+    bge-m3-docs 256256/433555 (261s)
+    bge-m3-docs 269056/433555 (330s)
+    bge-m3-docs 281856/433555 (386s)
+    bge-m3-docs 294656/433555 (451s)
+    bge-m3-docs 307456/433555 (515s)
+    bge-m3-docs 320256/433555 (576s)
+    bge-m3-docs 333056/433555 (642s)
+    bge-m3-docs 345856/433555 (714s)
+    bge-m3-docs 358656/433555 (782s)
+    bge-m3-docs 371456/433555 (871s)
+    bge-m3-docs 384256/433555 (945s)
+    bge-m3-docs 397056/433555 (1018s)
+    bge-m3-docs 409856/433555 (1090s)
+    bge-m3-docs 422656/433555 (1148s)
+    bge-m3-docs done 433555 in 1201s
+bge-m3: docs done -> C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\emb_bge-m3
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\.venv\Lib\site-packages\huggingface_hub\file_download.py:149: UserWarning: `huggingface_hub` cache-system uses symlinks by default to efficiently store duplicated files but your machine does not support them in C:\Users\ph181\.cache\huggingface\hub\models--intfloat--multilingual-e5-base. Caching files will still work but in a degraded version that might require more space on your disk. This warning can be disabled by setting the `HF_HUB_DISABLE_SYMLINKS_WARNING` environment variable. For more details, see https://huggingface.co/docs/huggingface_hub/how-to-cache#limitations.
+To support symlinks on Windows, you either need to activate Developer Mode or to run Python as an administrator. In order to activate developer mode, see this article: https://docs.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
+  warnings.warn(message)
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\.venv\Lib\site-packages\huggingface_hub\file_download.py:149: UserWarning: `huggingface_hub` cache-system uses symlinks by default to efficiently store duplicated files but your machine does not support them in C:\Users\ph181\.cache\huggingface\hub. Caching files will still work but in a degraded version that might require more space on your disk. This warning can be disabled by setting the `HF_HUB_DISABLE_SYMLINKS_WARNING` environment variable. For more details, see https://huggingface.co/docs/huggingface_hub/how-to-cache#limitations.
+To support symlinks on Windows, you either need to activate Developer Mode or to run Python as an administrator. In order to activate developer mode, see this article: https://docs.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
+  warnings.warn(message)
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:   7%|▋         | 13/199 [00:00<00:01, 120.37it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1064.17it/s]
+e5base: encoding 433555 docs on cuda ...
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\step2c2_embed.py:58: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  out = np.empty((len(texts), model.get_sentence_embedding_dimension()), dtype=np.float32)
+    e5base-docs 256/433555 (0s)
+    e5base-docs 13056/433555 (25s)
+    e5base-docs 25856/433555 (66s)
+    e5base-docs 38656/433555 (138s)
+    e5base-docs 51456/433555 (225s)
+    e5base-docs 64256/433555 (330s)
+    e5base-docs 77056/433555 (450s)
+    e5base-docs 89856/433555 (537s)
+    e5base-docs 102656/433555 (588s)
+    e5base-docs 115456/433555 (613s)
+    e5base-docs 128256/433555 (638s)
+    e5base-docs 141056/433555 (663s)
+    e5base-docs 153856/433555 (690s)
+    e5base-docs 166656/433555 (716s)
+    e5base-docs 179456/433555 (741s)
+    e5base-docs 192256/433555 (766s)
+    e5base-docs 205056/433555 (791s)
+    e5base-docs 217856/433555 (817s)
+    e5base-docs 230656/433555 (849s)
+    e5base-docs 243456/433555 (875s)
+    e5base-docs 256256/433555 (900s)
+    e5base-docs 269056/433555 (923s)
+    e5base-docs 281856/433555 (941s)
+    e5base-docs 294656/433555 (961s)
+    e5base-docs 307456/433555 (981s)
+    e5base-docs 320256/433555 (1001s)
+    e5base-docs 333056/433555 (1022s)
+    e5base-docs 345856/433555 (1044s)
+    e5base-docs 358656/433555 (1066s)
+    e5base-docs 371456/433555 (1090s)
+    e5base-docs 384256/433555 (1113s)
+    e5base-docs 397056/433555 (1136s)
+    e5base-docs 409856/433555 (1159s)
+    e5base-docs 422656/433555 (1177s)
+    e5base-docs done 433555 in 1194s
+e5base: docs done -> C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\emb_e5base
+queries: 510 (510 translated)
+minilm: queries cached
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 27929.64it/s]
+bge-m3: encoding queries (0 missing EN) on cuda ...
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\step2c2_embed.py:58: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  out = np.empty((len(texts), model.get_sentence_embedding_dimension()), dtype=np.float32)
+    bge-m3-qvi 64/510 (0s)
+    bge-m3-qvi done 510 in 1s
+    bge-m3-qen 64/510 (0s)
+    bge-m3-qen done 510 in 0s
+bge-m3: queries done
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:  44%|████▎     | 87/199 [00:00<00:00, 861.54it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1163.89it/s]
+e5base: encoding queries (0 missing EN) on cuda ...
+C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\investigations\vi_retrieval\step2c2_embed.py:58: FutureWarning: The `get_sentence_embedding_dimension` method has been renamed to `get_embedding_dimension`.
+  out = np.empty((len(texts), model.get_sentence_embedding_dimension()), dtype=np.float32)
+    e5base-qvi 64/510 (0s)
+    e5base-qvi done 510 in 1s
+    e5base-qen 64/510 (0s)
+    e5base-qen done 510 in 0s
+e5base: queries done

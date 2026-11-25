@@ -13,7 +13,8 @@ _PROTECTED_MAIN_TABLES = {"items", "item_categories"}
 def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
                           popularity: dict | None = None,
                           ratings: dict | None = None,
-                          inferred_categories: dict | None = None) -> dict:
+                          inferred_categories: dict | None = None,
+                          availability: dict | None = None) -> dict:
     """Apply a metadata visibility policy to the corpus.
 
     ``popularity`` (optional): ``{item_id: interaction_count}`` from the fit
@@ -34,6 +35,16 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
     for visible items only, so FilterTool category filters and FTS category
     text reach them. Items that already have real categories are never
     overridden.
+
+    ``availability`` (optional): ``{item_id: avail_ts}`` — raw parseable
+    ``details["Date First Available"]`` timestamps (epoch ms). When provided,
+    an item is ALSO visible if its availability date is plausible and
+    <= as_of, even when ``first_seen_ts`` (the interaction proxy) is later —
+    the item existed but had no cleaned pre-cutoff interactions. Plausibility
+    is enforced here: ``avail_ts >= 1995-01-01`` and, when ``first_seen_ts``
+    exists, ``avail_ts <= first_seen_ts`` (a date after the first observed
+    interaction is junk, e.g. "July 6, 1931" placeholders). This is a causal,
+    fixed historical fact — unlike mutable snapshot fields.
     """
     if policy not in POLICIES:
         raise ValueError(f"metadata policy must be one of {POLICIES}")
@@ -137,6 +148,14 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
             if ratings else None
         ),
         "inferred_categories": bool(inferred_categories),
+        "availability_dates": bool(availability),
+        "availability_proxy": (
+            "details['Date First Available'] epoch-ms per item (fixed historical "
+            "fact, causal); plausible dates (>=1995-01-01, <= first_seen_ts when "
+            "known) also grant visibility at as_of — recovers items that existed "
+            "but had no cleaned pre-cutoff interactions"
+            if availability else None
+        ),
     }
 
     # Trusted setup only. The TEMP items view keeps base rowids for FTS joins,
@@ -153,10 +172,44 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         ).fetchone()[0])
         if total_items and not known_first_seen:
             raise ValueError("corpus has no first_seen_ts values; rebuild it from cleaned interactions before applying as-of policy")
-        projection = ", ".join(
-            f'NULL AS "{column}"' if column in masked else f'"{column}"' for column in columns
-        )
         conn.execute("PRAGMA query_only = OFF")
+        as_of = int(as_of_timestamp)
+        avail_join = ""
+        avail_where = ""
+        item_alias = ""
+        rowid_expr = "rowid"
+        if availability:
+            # avail_ts >= 1995-01-01 filters placeholder dates ("July 6, 1931",
+            # "January 1, 1970"); avail_ts <= first_seen_ts filters impossible
+            # future dates. first_seen_ts IS NULL items may still qualify via
+            # a plausible availability date alone.
+            conn.execute(
+                "CREATE TEMP TABLE item_availability (item_id TEXT PRIMARY KEY, avail_ts INTEGER)"
+            )
+            conn.executemany(
+                "INSERT INTO item_availability VALUES (?, ?)",
+                ((iid, int(ts)) for iid, ts in availability.items()),
+            )
+            conn.execute(
+                "CREATE INDEX idx_item_availability_ts ON item_availability(avail_ts)"
+            )
+            avail_join = (
+                " LEFT JOIN temp.item_availability AS av ON av.item_id = i.item_id"
+            )
+            avail_where = (
+                " OR (av.avail_ts IS NOT NULL AND av.avail_ts >= 788918400000 "
+                f"AND av.avail_ts <= {as_of} "
+                "AND (i.first_seen_ts IS NULL OR av.avail_ts <= i.first_seen_ts))"
+            )
+            item_alias = "i."
+            rowid_expr = "i.rowid"
+        visibility_where = (
+            f"(i.first_seen_ts IS NOT NULL AND i.first_seen_ts <= {as_of}{avail_where})"
+        )
+        projection = ", ".join(
+            f'NULL AS "{column}"' if column in masked else f'{item_alias}"{column}"'
+            for column in columns
+        )
         if popularity:
             conn.execute(
                 "CREATE TEMP TABLE item_popularity (item_id TEXT PRIMARY KEY, cnt INTEGER)"
@@ -169,10 +222,9 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
             # popularity index without silently dropping zero-fit items.
             conn.execute(
                 "INSERT INTO item_popularity(item_id, cnt) "
-                "SELECT i.item_id, 0 FROM main.items AS i "
-                "WHERE i.first_seen_ts IS NOT NULL AND i.first_seen_ts <= ? "
-                "AND i.item_id NOT IN (SELECT item_id FROM item_popularity)",
-                (int(as_of_timestamp),),
+                f"SELECT i.item_id, 0 FROM main.items AS i{avail_join} "
+                f"WHERE {visibility_where} "
+                "AND i.item_id NOT IN (SELECT item_id FROM item_popularity)"
             )
             conn.execute(
                 "CREATE INDEX idx_item_popularity_cnt_desc "
@@ -194,10 +246,9 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
             # NULL so they sort last and fail min_rating thresholds honestly.
             conn.execute(
                 "INSERT INTO item_rating(item_id, avg_rating) "
-                "SELECT i.item_id, NULL FROM main.items AS i "
-                "WHERE i.first_seen_ts IS NOT NULL AND i.first_seen_ts <= ? "
-                "AND i.item_id NOT IN (SELECT item_id FROM item_rating)",
-                (int(as_of_timestamp),),
+                f"SELECT i.item_id, NULL FROM main.items AS i{avail_join} "
+                f"WHERE {visibility_where} "
+                "AND i.item_id NOT IN (SELECT item_id FROM item_rating)"
             )
             # Expression index keeps NULL ratings last in BOTH directions.
             conn.execute(
@@ -208,11 +259,18 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
                 "CREATE INDEX idx_item_rating_asc "
                 "ON item_rating(avg_rating IS NULL, avg_rating ASC, item_id)"
             )
-        conn.execute(
-            "CREATE TEMP VIEW items AS "
-            f"SELECT rowid AS rowid, {projection} FROM main.items "
-            f"WHERE first_seen_ts IS NOT NULL AND first_seen_ts <= {int(as_of_timestamp)}"
-        )
+        if availability:
+            conn.execute(
+                "CREATE TEMP VIEW items AS "
+                f"SELECT {rowid_expr} AS rowid, {projection} FROM main.items AS i{avail_join} "
+                f"WHERE {visibility_where}"
+            )
+        else:
+            conn.execute(
+                "CREATE TEMP VIEW items AS "
+                f"SELECT rowid AS rowid, {projection} FROM main.items "
+                f"WHERE first_seen_ts IS NOT NULL AND first_seen_ts <= {as_of}"
+            )
         conn.execute(
             "CREATE TEMP TABLE item_categories AS "
             "SELECT c.rowid AS rowid, c.item_id, c.category FROM main.item_categories AS c "
@@ -254,7 +312,7 @@ def apply_metadata_policy(corpus, policy: str, *, as_of_timestamp: int,
         conn.execute("PRAGMA query_only = OFF")
         for kind, name in (("table", "items_fts"), ("table", "item_categories"),
                            ("table", "item_popularity"), ("table", "item_rating"),
-                           ("view", "items")):
+                           ("table", "item_availability"), ("view", "items")):
             try:
                 conn.execute(f"DROP {kind.upper()} IF EXISTS temp.{name}")
             except sqlite3.Error:

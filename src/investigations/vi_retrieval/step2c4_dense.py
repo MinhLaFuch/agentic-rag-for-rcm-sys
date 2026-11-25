@@ -65,9 +65,10 @@ def topk_ranks(q: np.ndarray, docs: np.ndarray, doc_item_pos: dict[str, int],
     return ranks
 
 
-def metrics_from_ranks(df: pd.DataFrame, rank_col="rank") -> dict:
+def metrics_from_ranks(df: pd.DataFrame, rank_col="rank",
+                       group_keys=("model", "universe", "arm")) -> dict:
     out = {}
-    for keys, g in df.groupby(list(keys)):
+    for keys, g in df.groupby(list(group_keys)):
         s = g[rank_col]
         n = len(s)
         out["/".join(str(k) for k in keys)] = {
@@ -89,6 +90,11 @@ def main() -> None:
 
     for mdir in sorted(OUT.glob("emb_*")):
         model = mdir.name[4:]
+        required = [mdir / "doc_vectors.npy", mdir / "q_vi.npy", mdir / "q_en.npy",
+                    mdir / "query_items.parquet", mdir / "item_ids.json"]
+        if not all(p.exists() for p in required):
+            print(f"{model}: incomplete artifacts, skipping", flush=True)
+            continue
         dv = np.load(mdir / "doc_vectors.npy")  # fp16
         meta = json.loads((mdir / "meta.json").read_text()) if (mdir / "meta.json").exists() else {}
         qids = pd.read_parquet(mdir / "query_items.parquet")["item_id"].tolist()

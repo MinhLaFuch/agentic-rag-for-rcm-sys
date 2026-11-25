@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from typing import Literal, overload
 
 import pandas as pd
 
@@ -21,6 +22,39 @@ from ._sql import (
     ITEMS_INDEXES,
     ITEMS_TABLE_SCHEMA,
 )
+
+
+@overload
+def build_corpus(
+    meta_files: list[tuple[str, str]],
+    item2id: dict[str, int],
+    min_coverage: float,
+    timing: Literal[True],
+    first_seen_ts: dict[str, int] | None = None,
+    min_coverage_by_domain: dict[str, float] | None = None,
+) -> tuple[ItemCorpus, pd.DataFrame, float, dict[str, float]]: ...
+
+
+@overload
+def build_corpus(
+    meta_files: list[tuple[str, str]],
+    item2id: dict[str, int],
+    min_coverage: float,
+    timing: Literal[False] = False,
+    first_seen_ts: dict[str, int] | None = None,
+    min_coverage_by_domain: dict[str, float] | None = None,
+) -> tuple[ItemCorpus, pd.DataFrame, float]: ...
+
+
+@overload
+def build_corpus(
+    meta_files: list[tuple[str, str]],
+    item2id: dict[str, int],
+    min_coverage: float,
+    timing: bool = False,
+    first_seen_ts: dict[str, int] | None = None,
+    min_coverage_by_domain: dict[str, float] | None = None,
+) -> tuple[ItemCorpus, pd.DataFrame, float] | tuple[ItemCorpus, pd.DataFrame, float, dict[str, float]]: ...
 
 
 def build_corpus(

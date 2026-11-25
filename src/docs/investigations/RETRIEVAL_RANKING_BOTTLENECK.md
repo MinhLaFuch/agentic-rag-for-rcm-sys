@@ -1,6 +1,6 @@
 # Retrieval → Ranking Bottleneck Analysis
 
-**Date:** 2026-11-19 · **Bundle:** `multi_domain` (`temporal_train_core` protocol) · **Status:** investigation complete — dominant loss is **candidate retrieval**, ranking/score issues are secondary but real
+**Date:** 2026-11-19 · **Bundle:** `multi_domain` (`temporal_train_core` protocol) · **Status:** investigation complete — see **UPDATE 2026-11-23** below: the dominant loss is an **eval/task-design gap** (category-level requests vs item-level targets); retrieval mechanics and ranking are secondary and mostly exhausted
 
 **Audience:** discussion doc for another agent. Everything needed to reproduce or extend the analysis is referenced by path.
 
@@ -54,6 +54,130 @@ interventions tested to date do not survive live A/B. Remaining levers:
 retrieval enrichment (query formulation, multilingual embeddings — user's
 eval pending), temporal `first_seen` proxy caveat, eval protocol (Q23
 sample-size decisions).
+
+---
+
+## UPDATE 2026-11-23 — Vietnamese retrieval audit + hybrid scorer A/B: the bottleneck is REQUEST CONTENT, not mechanics
+
+Two workstreams closed the remaining hypotheses. Full evidence:
+`docs/investigations/vi_retrieval/REPORT.md`, `experiments/agent_eval/hybrid_scorer/exp_6`.
+
+### A. Vietnamese retrieval audit (510-item probe, 196 targets, restricted 433k universe)
+
+- **Planner queries are already English** — 95.8% (template) / 80–100% (llm)
+  of SearchTool queries are EN category phrases ("baby floats"). The
+  VI→EN mismatch is a *demo-path* problem, not a campaign-eval problem.
+- **Language-fair probe arms** (source-item retrieval, restricted universe;
+  inflated absolute, valid relative): raw VI→BM25 r@10≈2.5%, raw VI→MiniLM
+  dense r@10=**0.0%**, translated→BM25 r@10=36%, translated→MiniLM 32%,
+  raw VI→bge-m3 22% / e5base 20%, **best: e5base+translated r@10=42%**,
+  spec'd RRF hybrid 37.5% (no gain over best single arm).
+- **Step 3 kills the language hypothesis for targets**: even with faithful
+  EN translation, request∩target-title token overlap is only **13.3%**
+  (was 11.7%); BM25 rank of target among category peers ~1% r@200;
+  multilingual dense peer rank ~0.5–1% r@10.
+
+### B. Hybrid scorer live A/B (exp_6 vs exp_2, same 152 requests)
+
+`HybridScorer(popularity_weight=4.0)` — the scorer the "big" commit's replay
+work validated (+151% NDCG on fixed pools): live result is **mixed, not a
+win** — task_success up (cold_text 0.65→0.70, exclusion 0.475→0.55) but
+target_reachable *down* (cold_text 0.50→0.333, personalized 0.15→0.125).
+Third scorer variant where offline/replay evidence diverges from live eval.
+**`mode: baseline` stays.**
+
+### C. THE bottleneck, finally decomposed
+
+Reading the actual request objects (`requests.jsonl`) closes the loop: even
+`cold_text` requests are **"find 10 products in group '<Category>'"** — the
+`text` field contains zero item-descriptive content; the `category` field is
+the only signal, and it names a category containing hundreds of thousands of
+items. The held-out target is ONE specific mid/long-tail item.
+
+**Final bottleneck stack (measured):**
+
+| rank | layer | loss | fixable? |
+|---|---|---|---|
+| 1 | **Request specification** | requests name a category, targets are items — information-theoretic gap; token overlap 13%, peer-rank ~1% under EVERY arm incl. best possible | **No retrieval/ranking fix exists** — needs richer request content upstream (real user descriptions) or acceptance that this metric measures something the input cannot specify |
+| 2 | **Intrinsic next-item unpredictability** | popularity recall@10 = 0.0077 on 50k validation users (F10) — even perfect history CF barely predicts the exact next purchase | Research-level; no quick fix |
+| 3 | **Catalog eligibility** | `first_seen` proxy hides ~17–24% of targets at pool stage | Data ceiling (no true launch dates upstream) |
+| 4 | **Retrieval mechanics** | given the weak query, current EN-BM25+dense is near what's achievable; VI stack only matters for demo | Mostly exhausted — multilingual/translation is demo-path value |
+| 5 | **Ranking/scoring** | all 3 learned variants fail live A/B; baseline is best measured | Closed pending new evidence |
+
+**Bottom line:** the ~90% target loss at `retrieve` stage is dominated by an
+**evaluation/task-design gap** — the campaign generates category-level
+requests but scores item-level hits. Every mechanical intervention (CF,
+learned scorers, inferred categories, union pools, translations, multilingual
+embeddings) attacks layers 4–5 and cannot move layer 1. The two honest paths
+forward: (a) regenerate requests with item-descriptive text if the eval is
+meant to measure retrieval quality, or (b) accept the ceiling and optimize
+`task_success`/answer quality, which is what the system can actually control.
+
+**Request-generator root cause confirmed** (`docs/investigations/request_content_analysis.md`):
+`build_requests.py` + `_schema.py` TEMPLATES never include the held-out item's
+title — `cold_text` = user_id+k+category only, `similar` = raw ASIN seed,
+`personalized` = history only. cold_text categories hold 547–18,873 items
+with exactly 1 target each → structurally a "guess 1 of N" task. Requests
+are simulated (no real query log offline).
+
+### D. Direct retrieval benchmark — the information-gap claim, now measured end-to-end
+
+`investigations/retrieval_benchmark/` ran the decisive experiment: same 196
+targets, two query sets — (a) the **actual campaign request text** and
+(b) **LLM-generated descriptive VI queries** paraphrasing each target
+(human-like "user describes what they want"). Full method + caveats:
+`docs/investigations/retrieval_benchmark/REPORT.md`.
+
+| query source | best arm | r@10 | r@1000 |
+|---|---|---:|---:|
+| campaign request text (`req_*`) | bm25-en, **full catalog** | **0.000–0.005** | ≤0.138 |
+| descriptive (`desc_*`) | e5base-en, restricted* | **0.367** | 0.959 |
+| descriptive | bm25-en, **full catalog** | **0.184** | 0.806 |
+| descriptive raw VI | bge-m3, restricted* | 0.321 | 0.878 |
+
+*restricted = 433k universe (inflated absolute, valid relative).
+
+**Conclusion hardened:** with descriptive queries the *same* retrieval stack
+already achieves 18–37% r@10 and ~80–96% r@1000 — retrieval is NOT the
+bottleneck. Campaign request text scores ~0 under every retriever including
+the best possible, confirming layer-1 (request specification) as the entire
+explanation for the agent-eval recall numbers. Also measured: raw VI
+descriptive queries retrieve nearly as well as EN under multilingual dense
+(bge-m3 32% vs 34% r@10) — the VI problem is a BM25/lexical problem only.
+
+**But — what this benchmark does NOT prove (honest caveats):**
+
+1. **Search ≠ recommendation.** A query LLM-generated *from* the target is
+   oracle-flavored: it describes the answer. It measures "can the retriever
+   find a described item" — legitimate for search quality, but the campaign's
+   `similar`/`personalized` kinds measure *recommendation* (user gives
+   context, system infers the item). Descriptive requests would raise the
+   metric while answering a different question.
+2. **Restricted-universe dense numbers are inflated** (433k vs 2.6M catalog);
+   only BM25/MiniLM full-catalog arms are absolute. A full-catalog
+   e5base/bge-m3 build is needed for apples-to-apples dense numbers.
+3. **LLM queries are richer than real user queries** — well-formed
+   descriptions, not typical terse/typo'd input. This is a ceiling for good
+   queries, not a typical-case estimate.
+4. **The recommendation information gap is intrinsic** — for `personalized`,
+   the user genuinely doesn't know what they want next; no request rewrite
+   fixes that (F10: popularity r@10 = 0.0077). Low exact-target metrics on
+   recommendation kinds may be *correct*, not a bug.
+
+**Product framing this forces:** the stack is a good *search* engine when
+queries are informative, and a weak *next-item predictor* when they aren't —
+because next-item prediction is intrinsically hard, not because retrieval is
+broken. Which product is being built determines which metric matters:
+descriptive-request eval for search quality; `task_success`/answer quality
+for recommendation quality. Do not mix them.
+
+**Eval infrastructure added (2026-11-23):** new request kind `descriptive`
+(ORACLE) in `build_requests` — text comes from a precomputed
+`{item_idx, query}` JSONL (`descriptive_queries_path` in agent_eval.yaml,
+default off). First set: 196 LLM VI descriptions of the campaign targets
+(`investigations/retrieval_benchmark/descriptive_queries.jsonl`). Agent-eval
+run pending — will measure retrieval-through-the-agent-loop on
+human-like queries alongside the unchanged 152-request set.
 
 ---
 
@@ -198,7 +322,7 @@ score(item) = pop_norm[item] * 1e-6  +  cf_score(user,item)        # cf = user_i
 - `pop_norm` = popularity / max popularity (tiny 1e-6 weight — pure tiebreak)
 - CF term is the **raw** ItemKNN similarity sum (no per-user peak normalization — unlike HybridScorer's `/peak`)
 - **No retrieval/BM25/dense score is an input** — query relevance never reaches the ranker
-- Measured on trajectories (`scripts/evaluation/ranktool_score_audit.py`, `ranktool_score_audit.json`):
+- Measured on trajectories (`scripts/evaluation/ranktool_score_audit.py`, `investigations/ranktool_score_audit.json`):
   - exp_5: 92 RankTool steps / 19,921 candidates → **97.0% have cf == 0**; **58.7% of rank-1 picks have cf == 0** (decided by popularity tiebreak, not personalization); 79.6% of all candidate scores are exactly 0.0
   - union run: 93 steps / 16,424 candidates → 96.3% cf_zero, 59.1% top1_cf_zero — identical profile
 - `HybridScorer` (pop_norm×4.0 + cf/per_user_peak, `hybrid_scorer.py`) exists for `mode: hybrid` comparisons but was NOT what produced these numbers
@@ -235,7 +359,7 @@ Also observed: `retrieved_count` mean 567 for personalized (FilterTool returning
 
 ### 6.1 Planner query replay — measured 2026-11-20 (`scripts/evaluation/planner_query_replay.py`)
 
-Re-executed every recorded SearchTool/FilterTool/SimilarTool call offline (same corpus, `historical_static_catalog`, as_of=1617737606549, same dense artifacts + ItemKNN core model), then re-ran with budgets 200/500. Report: `planner_replay_report.json`.
+Re-executed every recorded SearchTool/FilterTool/SimilarTool call offline (same corpus, `historical_static_catalog`, as_of=1617737606549, same dense artifacts + ItemKNN core model), then re-ran with budgets 200/500. Report: `investigations/planner_replay_report.json`.
 
 | run | requests w/ targets | retrieval steps | fidelity ok/mismatch | hits in recorded cands | hits @ budget 500 |
 |---|---|---|---|---|---|
@@ -279,7 +403,7 @@ Re-executed every recorded SearchTool/FilterTool/SimilarTool call offline (same 
 
 ### 6.4 Target × ItemKNN-core coverage (measured 2026-11-20)
 
-`scripts/evaluation/target_core_coverage.py` (`target_core_coverage.json`) cross-tabs each target's `best_stage` against core membership (nonzero column in the ItemKNN similarity matrix; 485,803/2,637,776 items ≈ 18% are core):
+`scripts/evaluation/target_core_coverage.py` (`investigations/target_core_coverage.json`) cross-tabs each target's `best_stage` against core membership (nonzero column in the ItemKNN similarity matrix; 485,803/2,637,776 items ≈ 18% are core):
 
 **exp_5 (163 stage-resolved targets):**
 
@@ -297,7 +421,7 @@ Union A/B run shows the same shape (102 core / 11 non_core at `retrieve`; 45 non
 
 ### 6.5 User-level CF top-N ceiling — measured ~0 (2026-11-20)
 
-`scripts/evaluation/cf_topn_recall.py` (`cf_topn_recall.json`) computed the hypothetical "top-N items for this user by full-history CF" (`user_items[user] @ similarity`, seen items excluded — the ranking that exists inside `BaselineScorer` but is exposed by NO tool):
+`scripts/evaluation/cf_topn_recall.py` (`investigations/cf_topn_recall.json`) computed the hypothetical "top-N items for this user by full-history CF" (`user_items[user] @ similarity`, seen items excluded — the ranking that exists inside `BaselineScorer` but is exposed by NO tool):
 
 - **0 / 163 targets have any nonzero CF score** for their user — recall@10/20/50/100/500 = 0.000 across every `best_stage` and every `kind` (similar, personalized, cold_text, exclusion)
 - Root cause is sparsity, not tooling: e.g. user_idx 2865112 has only **4 history items** in `user_items` → cf vector has ~80 nonzero entries. ItemKNN k=20 means each history item contributes ≤20 neighbors → the entire CF candidate space per user is a few hundred items out of 486k core — held-out targets essentially never land in it
@@ -327,7 +451,7 @@ Union A/B run shows the same shape (102 core / 11 non_core at `retrieve`; 45 non
 
 ### 6.7 Stage-isolation injection — would ranking have saved the targets? (2026-11-20)
 
-`scripts/evaluation/ranktool_injection_probe.py` (`ranktool_injection_exp5.json`, `ranktool_injection_union.json`) answers the counterfactual the funnel cannot: each request's held-out targets were **appended to the real union of recorded retrieval candidates** (targets last, so input-order tiebreaks don't favor them) and passed through the **real RankTool.execute** — same BaselineScorer, same `historical_static_catalog` policy, `exclude_seen=True`, full ranking.
+`scripts/evaluation/ranktool_injection_probe.py` (`investigations/ranktool_injection_exp5.json`, `investigations/ranktool_injection_union.json`) answers the counterfactual the funnel cannot: each request's held-out targets were **appended to the real union of recorded retrieval candidates** (targets last, so input-order tiebreaks don't favor them) and passed through the **real RankTool.execute** — same BaselineScorer, same `historical_static_catalog` policy, `exclude_seen=True`, full ranking.
 
 exp_5 results (116 requests with targets, 196 targets):
 
@@ -347,7 +471,7 @@ exp_5 results (116 requests with targets, 196 targets):
 
 ### 6.8 ItemKNN structural ceiling — exact co-occurrence probe (2026-11-20)
 
-`scripts/evaluation/itemknn_cooccurrence_probe.py` (`itemknn_cooc_exp5.json`) computed the **exact** binary-cosine `sim(h,t) = |U_h ∩ U_t| / √(|U_h|·|U_t|)` over `train_core` for every (history item h, held-out target t) pair, and compared each sim against h's stored top-20 similarity threshold. This measures whether *any* ItemKNN parameterization could surface the targets — not just the current k=20.
+`scripts/evaluation/itemknn_cooccurrence_probe.py` (`investigations/itemknn_cooc_exp5.json`) computed the **exact** binary-cosine `sim(h,t) = |U_h ∩ U_t| / √(|U_h|·|U_t|)` over `train_core` for every (history item h, held-out target t) pair, and compared each sim against h's stored top-20 similarity threshold. This measures whether *any* ItemKNN parameterization could surface the targets — not just the current k=20.
 
 exp_5 results (175 mapped targets):
 

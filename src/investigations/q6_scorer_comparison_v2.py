@@ -25,7 +25,7 @@ import pandas as pd
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parents[1]
 FEAT = Path(__file__).parent / "q6_scorer_comparison.features.parquet"
-INJ = ROOT / "ranktool_injection_exp5.json"
+INJ = ROOT / "investigations" / "ranktool_injection_exp5.json"
 OUT = Path(__file__).parent / "q6_scorer_comparison_v2.json"
 
 

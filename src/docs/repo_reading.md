@@ -6,6 +6,8 @@ branch: tools-building
 commit: d85c9a0
 ---
 > **NOTE (2026-11-15):** This is a dated snapshot. The current central document is `src/reading.md` — it supersedes this file and includes the evaluation-integrity fixes (R1–R3, items 23–25).
+>
+> **NOTE (2026-11-24):** All bottleneck-investigation markdown moved to `src/docs/` — entry point is **`docs/BOTTLENECK.md`** (merged context: diagnosis, experiment ledger, Q&A digest, spec/distill arc phases 0.5–5, open decisions). Detailed reports under `docs/investigations/`; raw probe JSONs/scripts remain in `investigations/`. New code since this snapshot: `package/evaluation/spec/` (Spec v1 + gold converter + spec_* metrics), `package/agents/distill.py` (LLM spec extractor), `PlanExecutor(spec_extractor=)` + `distilled_spec_block` prompt + `agent_eval.distill_spec` flag, `scripts/evaluation/backfill_spec_metrics.py`, `investigations/spec_benchmark/` + `distill_phase*/` artifacts. Live A/B result: distill_spec improves cold_text task_success 0.65→1.00 (see `docs/BOTTLENECK.md` §5).
 
 ## 0.0. Update 2026-11-19 — new data bundle, dense retrieval, metrics fixes
 
@@ -18,7 +20,7 @@ Snapshot below (§0.1–§0.17) reflects 2026-11-14. Since then:
 | **Dense retrieval implemented + opt-in** | Full GPU embedding build done: 2,637,776 × 384-dim (`all-MiniLM-L6-v2@1110a243`, `title_store_main_category_categories_sorted_v2`), format-B artifacts `experiments/embedding_builds/multi_domain_full/` + converted format-A `multi_domain_semantic/` + `encoder.lock.json`. `SearchTool` supports dense leg via RRF (`configs/eval/dense_retrieval.yaml`, `enabled` flag — currently `true` for ablation). `candidate_recall` exp_002: dense/hybrid **did not beat BM25** (recall@100 warm: bm25 0.010 vs hybrid 0.008) → kept opt-in | `scripts/data_pipeline/convert_full_to_semantic_artifacts.py`, `package/embeddings/build_dense_retrieval.py`, `experiments/candidate_recall/exp_002/` |
 | **Scale bug fixes** | `apply_metadata_policy`: TEMP view→table+index (query 101s→ms); `run_agent_eval` ItemKNN→`build_core_model` train_core cache; `VectorStore` chunked norm (no 3.77GB copy); `mapping_hash` still MemoryErrors on 23.3M-user mapping at save time (known, unfixed) | `package/corpus/apply_metadata_policy.py`, `scripts/evaluation/run_agent_eval.py`, `package/embeddings/vector_store.py` |
 | **Metrics additions/fixes** | `cost_per_request` now = planner + inference token cost via `pricing` in `configs/agent/llm.yaml` (was dead placeholder ≡0 — steps never record cost); unpriced+tokens→`None`. New `task_success_relevant` column (= task_success AND ≥1 rec ∈ targets; `task_success` unchanged for comparability). `_tool_call_match_rate` empty→`None` (was free 1.0) | `package/evaluation/layer5_deployment/`, `layer2_interaction/`, `trajectory/score_trajectory.py`, `multi_turn/multi_turn_evaluator.py`, `package/config/_schemas.py` (`LLMPricing`) |
-| **Retrieval→ranking bottleneck found** | RankTool/HybridScorer ignores retrieval scores entirely (popularity×4 + ItemKNN CF only); ~82% of catalog (outside 487k train_core) scores 0.0 → long-tail unreachable via RankTool path. Full analysis + fix direction: **`src/RETRIEVAL_RANKING_BOTTLENECK.md`** | `package/tools/scoring/hybrid_scorer.py`, `package/evaluation/recommender/analysis/build_core_model.py` |
+| **Retrieval→ranking bottleneck found** | RankTool/HybridScorer ignores retrieval scores entirely (popularity×4 + ItemKNN CF only); ~82% of catalog (outside 487k train_core) scores 0.0 → long-tail unreachable via RankTool path. Full analysis + fix direction: **`docs/BOTTLENECK.md`** | `package/tools/scoring/hybrid_scorer.py`, `package/evaluation/recommender/analysis/build_core_model.py` |
 | **Campaign** | `campaign_002` ran on OLD bundle; `campaign_003` auto-versioned, running on new bundle (requires `.venv` python — subprocess inherits `sys.executable`) | `experiments/agent_eval/campaigns/` |
 
 **Env setup note:** `.venv` = eval runtime (now incl. torch 2.6.0+cu124 + sentence-transformers for dense); `.venv-semantic` = embedding build env. Run eval scripts with `.venv\Scripts\python.exe` from `src/` — no env vars needed for `multi_domain` (auto-derive).
@@ -295,7 +297,7 @@ The end-to-end pipeline consists of a **data pipeline** (4 stages), a **componen
 
 **BaselineScorer** combines popularity (tiny weight 1e-6 for tie-breaking) + ItemKNN CF signal. Users with no CF signal get popularity only.
 
-**HybridScorer** (`package/tools/scoring/hybrid_scorer.py`, `scorer_mode: hybrid` in run_agent_eval) = `pop_norm × popularity_weight(4.0) + ItemKNN CF / per-user max`. **Known bottleneck (2026-11-19): it ignores retrieval/BM25/dense scores entirely, and items outside the 487k train_core score 0.0** — see `src/RETRIEVAL_RANKING_BOTTLENECK.md` for the full analysis and proposed retrieval-score blending fix.
+**HybridScorer** (`package/tools/scoring/hybrid_scorer.py`, `scorer_mode: hybrid` in run_agent_eval) = `pop_norm × popularity_weight(4.0) + ItemKNN CF / per-user max`. **Known bottleneck (2026-11-19): it ignores retrieval/BM25/dense scores entirely, and items outside the 487k train_core score 0.0** — see `docs/BOTTLENECK.md` for the full analysis and proposed retrieval-score blending fix.
 
 **RankTool output**: `ranked` (rank, item_id, score, domain), `model` name, `cold_start` flag, `excluded_seen`, `unscored_item_ids`, `has_personal_signal`, `note` (explanation if empty).
 
@@ -1427,7 +1429,7 @@ Confirmed by code review + offline dry-run (`agents=[baseline,type1]`, `inferenc
 
 | Field | Value |
 |-------|-------|
-| **Document** | `src/Project repository reading 29.10.md` (updated in place) |
+| **Document** | `docs/repo_reading.md` |
 | **Update date** | 2026-11-16 (added §0.17 Evaluation System Complete Reference, backlog item 26, §0.8/§0.18 fixes) |
 | **Branch** | `tools-building` (evidence: `git rev-parse --abbrev-ref HEAD`) |
 | **Commit** | `880bf5c` ("0749_1110") (evidence: `git log --oneline -1`) |

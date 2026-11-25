@@ -41,7 +41,9 @@ _HEADLINE_METRICS = (
 )
 
 # Ranking metrics embed k in the column name (precision@10, ndcg@10, ...).
-_DYNAMIC_PREFIXES = ("precision@", "recall@", "hit_rate@", "ndcg@", "mrr@", "map@")
+# "spec_" covers spec_* metrics (spec_recall@10, spec_precision@10, ...) from
+# package/evaluation/spec/ — Phase 2 backfill metrics.
+_DYNAMIC_PREFIXES = ("precision@", "recall@", "hit_rate@", "ndcg@", "mrr@", "map@", "spec_")
 
 _FUNNEL_COLUMNS = (
     "candidate_generation_count",

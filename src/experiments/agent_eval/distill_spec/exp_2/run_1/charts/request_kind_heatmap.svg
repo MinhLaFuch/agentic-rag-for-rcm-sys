@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="436" font-family="sans-serif" font-size="12">
+<rect width="100%" height="100%" fill="white"/>
+<text x="360" y="24" text-anchor="middle" font-size="15" font-weight="bold">Request Kind Performance</text>
+
+<text x="178" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 178 42)">answer_status_ok</text>
+<text x="234" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 234 42)">asked_clarification</text>
+<text x="290" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 290 42)">first_attempt_ok</text>
+<text x="346" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 346 42)">invented_ids</text>
+<text x="402" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 402 42)">n_steps</text>
+<text x="458" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 458 42)">reflections</text>
+<text x="514" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 514 42)">task_success</text>
+<text x="570" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 570 42)">tool_selection_ok</text>
+<text x="626" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 626 42)">answer_fallback</text>
+<text x="682" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 682 42)">answer_grounded</text>
+<text x="738" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 738 42)">constraint_satisfaction</text>
+<text x="794" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 794 42)">hit_rate@10</text>
+<text x="850" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 850 42)">map@10</text>
+<text x="906" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 906 42)">mrr@10</text>
+<text x="962" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 962 42)">ndcg@10</text>
+<text x="1018" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 1018 42)">precision@10</text>
+<text x="1074" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 1074 42)">recall@10</text>
+<text x="1130" y="42" text-anchor="middle" font-size="10" transform="rotate(-30 1130 42)">exclusion_compliance</text>
+<text x="142" y="82" text-anchor="end" font-size="10">planner/ambiguous</text>
+<rect x="150" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>planner/ambiguous / answer_status_ok: 0.000</title></rect>
+<text x="178" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="206" y="50" width="54" height="54" fill="rgb(192,210,228)"><title>planner/ambiguous / asked_clarification: 1.000</title></rect>
+<text x="234" y="82" text-anchor="middle" font-size="10">1.00</text>
+<rect x="262" y="50" width="54" height="54" fill="rgb(192,210,228)"><title>planner/ambiguous / first_attempt_ok: 1.000</title></rect>
+<text x="290" y="82" text-anchor="middle" font-size="10">1.00</text>
+<rect x="318" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>planner/ambiguous / invented_ids: 0.000</title></rect>
+<text x="346" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>planner/ambiguous / n_steps: 0.000</title></rect>
+<text x="402" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="430" y="50" width="54" height="54" fill="rgb(238,238,238)"><title>planner/ambiguous / reflections: 0.000</title></rect>
+<text x="458" y="82" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="50" width="54" height="54" fill="rgb(192,210,228)"><title>planner/ambiguous / task_success: 1.000</title></rect>
+<text x="514" y="82" text-anchor="middle" font-size="10">1.00</text>
+<rect x="542" y="50" width="54" height="54" fill="rgb(192,210,228)"><title>planner/ambiguous / tool_selection_ok: 1.000</title></rect>
+<text x="570" y="82" text-anchor="middle" font-size="10">1.00</text>
+<rect x="598" y="50" width="54" height="54" fill="#eee"/>
+<rect x="654" y="50" width="54" height="54" fill="#eee"/>
+<rect x="710" y="50" width="54" height="54" fill="#eee"/>
+<rect x="766" y="50" width="54" height="54" fill="#eee"/>
+<rect x="822" y="50" width="54" height="54" fill="#eee"/>
+<rect x="878" y="50" width="54" height="54" fill="#eee"/>
+<rect x="934" y="50" width="54" height="54" fill="#eee"/>
+<rect x="990" y="50" width="54" height="54" fill="#eee"/>
+<rect x="1046" y="50" width="54" height="54" fill="#eee"/>
+<rect x="1102" y="50" width="54" height="54" fill="#eee"/>
+<text x="142" y="138" text-anchor="end" font-size="10">planner/cold_text</text>
+<rect x="150" y="106" width="54" height="54" fill="rgb(197,213,229)"><title>planner/cold_text / answer_status_ok: 0.900</title></rect>
+<text x="178" y="138" text-anchor="middle" font-size="10">0.90</text>
+<rect x="206" y="106" width="54" height="54" fill="rgb(235,236,237)"><title>planner/cold_text / asked_clarification: 0.050</title></rect>
+<text x="234" y="138" text-anchor="middle" font-size="10">0.05</text>
+<rect x="262" y="106" width="54" height="54" fill="rgb(195,212,229)"><title>planner/cold_text / first_attempt_ok: 0.950</title></rect>
+<text x="290" y="138" text-anchor="middle" font-size="10">0.95</text>
+<rect x="318" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>planner/cold_text / invented_ids: 0.000</title></rect>
+<text x="346" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="106" width="54" height="54" fill="rgb(109,160,212)"><title>planner/cold_text / n_steps: 2.850</title></rect>
+<text x="402" y="138" text-anchor="middle" font-size="10">2.85</text>
+<rect x="430" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>planner/cold_text / reflections: 0.000</title></rect>
+<text x="458" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="106" width="54" height="54" fill="rgb(197,213,229)"><title>planner/cold_text / task_success: 0.900</title></rect>
+<text x="514" y="138" text-anchor="middle" font-size="10">0.90</text>
+<rect x="542" y="106" width="54" height="54" fill="rgb(195,212,229)"><title>planner/cold_text / tool_selection_ok: 0.950</title></rect>
+<text x="570" y="138" text-anchor="middle" font-size="10">0.95</text>
+<rect x="598" y="106" width="54" height="54" fill="rgb(238,238,238)"><title>planner/cold_text / answer_fallback: 0.000</title></rect>
+<text x="626" y="138" text-anchor="middle" font-size="10">0.00</text>
+<rect x="654" y="106" width="54" height="54" fill="rgb(192,210,228)"><title>planner/cold_text / answer_grounded: 1.000</title></rect>
+<text x="682" y="138" text-anchor="middle" font-size="10">1.00</text>
+<rect x="710" y="106" width="54" height="54" fill="rgb(197,213,229)"><title>planner/cold_text / constraint_satisfaction: 0.900</title></rect>
+<text x="738" y="138" text-anchor="middle" font-size="10">0.90</text>
+<rect x="766" y="106" width="54" height="54" fill="rgb(233,235,237)"><title>planner/cold_text / hit_rate@10: 0.100</title></rect>
+<text x="794" y="138" text-anchor="middle" font-size="10">0.10</text>
+<rect x="822" y="106" width="54" height="54" fill="rgb(236,237,237)"><title>planner/cold_text / map@10: 0.022</title></rect>
+<text x="850" y="138" text-anchor="middle" font-size="10">0.02</text>
+<rect x="878" y="106" width="54" height="54" fill="rgb(236,237,237)"><title>planner/cold_text / mrr@10: 0.022</title></rect>
+<text x="906" y="138" text-anchor="middle" font-size="10">0.02</text>
+<rect x="934" y="106" width="54" height="54" fill="rgb(236,236,237)"><title>planner/cold_text / ndcg@10: 0.041</title></rect>
+<text x="962" y="138" text-anchor="middle" font-size="10">0.04</text>
+<rect x="990" y="106" width="54" height="54" fill="rgb(237,237,237)"><title>planner/cold_text / precision@10: 0.010</title></rect>
+<text x="1018" y="138" text-anchor="middle" font-size="10">0.01</text>
+<rect x="1046" y="106" width="54" height="54" fill="rgb(233,235,237)"><title>planner/cold_text / recall@10: 0.100</title></rect>
+<text x="1074" y="138" text-anchor="middle" font-size="10">0.10</text>
+<rect x="1102" y="106" width="54" height="54" fill="#eee"/>
+<text x="142" y="194" text-anchor="end" font-size="10">planner/exclusion</text>
+<rect x="150" y="162" width="54" height="54" fill="rgb(214,223,233)"><title>planner/exclusion / answer_status_ok: 0.525</title></rect>
+<text x="178" y="194" text-anchor="middle" font-size="10">0.53</text>
+<rect x="206" y="162" width="54" height="54" fill="rgb(224,229,235)"><title>planner/exclusion / asked_clarification: 0.300</title></rect>
+<text x="234" y="194" text-anchor="middle" font-size="10">0.30</text>
+<rect x="262" y="162" width="54" height="54" fill="rgb(201,216,230)"><title>planner/exclusion / first_attempt_ok: 0.800</title></rect>
+<text x="290" y="194" text-anchor="middle" font-size="10">0.80</text>
+<rect x="318" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / invented_ids: 0.000</title></rect>
+<text x="346" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="162" width="54" height="54" fill="rgb(140,179,218)"><title>planner/exclusion / n_steps: 2.150</title></rect>
+<text x="402" y="194" text-anchor="middle" font-size="10">2.15</text>
+<rect x="430" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / reflections: 0.000</title></rect>
+<text x="458" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="162" width="54" height="54" fill="rgb(215,224,233)"><title>planner/exclusion / task_success: 0.500</title></rect>
+<text x="514" y="194" text-anchor="middle" font-size="10">0.50</text>
+<rect x="542" y="162" width="54" height="54" fill="rgb(213,223,233)"><title>planner/exclusion / tool_selection_ok: 0.550</title></rect>
+<text x="570" y="194" text-anchor="middle" font-size="10">0.55</text>
+<rect x="598" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / answer_fallback: 0.000</title></rect>
+<text x="626" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="654" y="162" width="54" height="54" fill="rgb(192,210,228)"><title>planner/exclusion / answer_grounded: 1.000</title></rect>
+<text x="682" y="194" text-anchor="middle" font-size="10">1.00</text>
+<rect x="710" y="162" width="54" height="54" fill="#eee"/>
+<rect x="766" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / hit_rate@10: 0.000</title></rect>
+<text x="794" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="822" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / map@10: 0.000</title></rect>
+<text x="850" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="878" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / mrr@10: 0.000</title></rect>
+<text x="906" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="934" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / ndcg@10: 0.000</title></rect>
+<text x="962" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="990" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / precision@10: 0.000</title></rect>
+<text x="1018" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1046" y="162" width="54" height="54" fill="rgb(238,238,238)"><title>planner/exclusion / recall@10: 0.000</title></rect>
+<text x="1074" y="194" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1102" y="162" width="54" height="54" fill="rgb(192,210,228)"><title>planner/exclusion / exclusion_compliance: 1.000</title></rect>
+<text x="1130" y="194" text-anchor="middle" font-size="10">1.00</text>
+<text x="142" y="250" text-anchor="end" font-size="10">planner/personalized</text>
+<rect x="150" y="218" width="54" height="54" fill="rgb(232,234,236)"><title>planner/personalized / answer_status_ok: 0.125</title></rect>
+<text x="178" y="250" text-anchor="middle" font-size="10">0.12</text>
+<rect x="206" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / asked_clarification: 0.000</title></rect>
+<text x="234" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="262" y="218" width="54" height="54" fill="rgb(232,234,236)"><title>planner/personalized / first_attempt_ok: 0.125</title></rect>
+<text x="290" y="250" text-anchor="middle" font-size="10">0.12</text>
+<rect x="318" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / invented_ids: 0.000</title></rect>
+<text x="346" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="218" width="54" height="54" fill="rgb(38,118,198)"><title>planner/personalized / n_steps: 4.425</title></rect>
+<text x="402" y="250" text-anchor="middle" font-size="10">4.42</text>
+<rect x="430" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / reflections: 0.000</title></rect>
+<text x="458" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="218" width="54" height="54" fill="#eee"/>
+<rect x="542" y="218" width="54" height="54" fill="#eee"/>
+<rect x="598" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / answer_fallback: 0.000</title></rect>
+<text x="626" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="654" y="218" width="54" height="54" fill="rgb(192,210,228)"><title>planner/personalized / answer_grounded: 1.000</title></rect>
+<text x="682" y="250" text-anchor="middle" font-size="10">1.00</text>
+<rect x="710" y="218" width="54" height="54" fill="#eee"/>
+<rect x="766" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / hit_rate@10: 0.000</title></rect>
+<text x="794" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="822" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / map@10: 0.000</title></rect>
+<text x="850" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="878" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / mrr@10: 0.000</title></rect>
+<text x="906" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="934" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / ndcg@10: 0.000</title></rect>
+<text x="962" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="990" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / precision@10: 0.000</title></rect>
+<text x="1018" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1046" y="218" width="54" height="54" fill="rgb(238,238,238)"><title>planner/personalized / recall@10: 0.000</title></rect>
+<text x="1074" y="250" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1102" y="218" width="54" height="54" fill="#eee"/>
+<text x="142" y="306" text-anchor="end" font-size="10">planner/similar</text>
+<rect x="150" y="274" width="54" height="54" fill="rgb(195,212,229)"><title>planner/similar / answer_status_ok: 0.950</title></rect>
+<text x="178" y="306" text-anchor="middle" font-size="10">0.95</text>
+<rect x="206" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / asked_clarification: 0.000</title></rect>
+<text x="234" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="262" y="274" width="54" height="54" fill="rgb(195,212,229)"><title>planner/similar / first_attempt_ok: 0.950</title></rect>
+<text x="290" y="306" text-anchor="middle" font-size="10">0.95</text>
+<rect x="318" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / invented_ids: 0.000</title></rect>
+<text x="346" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="274" width="54" height="54" fill="rgb(102,156,210)"><title>planner/similar / n_steps: 3.000</title></rect>
+<text x="402" y="306" text-anchor="middle" font-size="10">3.00</text>
+<rect x="430" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / reflections: 0.000</title></rect>
+<text x="458" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="274" width="54" height="54" fill="rgb(195,212,229)"><title>planner/similar / task_success: 0.950</title></rect>
+<text x="514" y="306" text-anchor="middle" font-size="10">0.95</text>
+<rect x="542" y="274" width="54" height="54" fill="rgb(192,210,228)"><title>planner/similar / tool_selection_ok: 1.000</title></rect>
+<text x="570" y="306" text-anchor="middle" font-size="10">1.00</text>
+<rect x="598" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / answer_fallback: 0.000</title></rect>
+<text x="626" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="654" y="274" width="54" height="54" fill="rgb(192,210,228)"><title>planner/similar / answer_grounded: 1.000</title></rect>
+<text x="682" y="306" text-anchor="middle" font-size="10">1.00</text>
+<rect x="710" y="274" width="54" height="54" fill="#eee"/>
+<rect x="766" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / hit_rate@10: 0.000</title></rect>
+<text x="794" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="822" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / map@10: 0.000</title></rect>
+<text x="850" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="878" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / mrr@10: 0.000</title></rect>
+<text x="906" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="934" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / ndcg@10: 0.000</title></rect>
+<text x="962" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="990" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / precision@10: 0.000</title></rect>
+<text x="1018" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1046" y="274" width="54" height="54" fill="rgb(238,238,238)"><title>planner/similar / recall@10: 0.000</title></rect>
+<text x="1074" y="306" text-anchor="middle" font-size="10">0.00</text>
+<rect x="1102" y="274" width="54" height="54" fill="#eee"/>
+<text x="142" y="362" text-anchor="end" font-size="10">planner/unanswerable</text>
+<rect x="150" y="330" width="54" height="54" fill="rgb(238,238,238)"><title>planner/unanswerable / answer_status_ok: 0.000</title></rect>
+<text x="178" y="362" text-anchor="middle" font-size="10">0.00</text>
+<rect x="206" y="330" width="54" height="54" fill="rgb(222,228,234)"><title>planner/unanswerable / asked_clarification: 0.333</title></rect>
+<text x="234" y="362" text-anchor="middle" font-size="10">0.33</text>
+<rect x="262" y="330" width="54" height="54" fill="rgb(222,228,234)"><title>planner/unanswerable / first_attempt_ok: 0.333</title></rect>
+<text x="290" y="362" text-anchor="middle" font-size="10">0.33</text>
+<rect x="318" y="330" width="54" height="54" fill="rgb(238,238,238)"><title>planner/unanswerable / invented_ids: 0.000</title></rect>
+<text x="346" y="362" text-anchor="middle" font-size="10">0.00</text>
+<rect x="374" y="330" width="54" height="54" fill="rgb(147,183,219)"><title>planner/unanswerable / n_steps: 2.000</title></rect>
+<text x="402" y="362" text-anchor="middle" font-size="10">2.00</text>
+<rect x="430" y="330" width="54" height="54" fill="rgb(238,238,238)"><title>planner/unanswerable / reflections: 0.000</title></rect>
+<text x="458" y="362" text-anchor="middle" font-size="10">0.00</text>
+<rect x="486" y="330" width="54" height="54" fill="rgb(222,228,234)"><title>planner/unanswerable / task_success: 0.333</title></rect>
+<text x="514" y="362" text-anchor="middle" font-size="10">0.33</text>
+<rect x="542" y="330" width="54" height="54" fill="rgb(192,210,228)"><title>planner/unanswerable / tool_selection_ok: 1.000</title></rect>
+<text x="570" y="362" text-anchor="middle" font-size="10">1.00</text>
+<rect x="598" y="330" width="54" height="54" fill="#eee"/>
+<rect x="654" y="330" width="54" height="54" fill="#eee"/>
+<rect x="710" y="330" width="54" height="54" fill="#eee"/>
+<rect x="766" y="330" width="54" height="54" fill="#eee"/>
+<rect x="822" y="330" width="54" height="54" fill="#eee"/>
+<rect x="878" y="330" width="54" height="54" fill="#eee"/>
+<rect x="934" y="330" width="54" height="54" fill="#eee"/>
+<rect x="990" y="330" width="54" height="54" fill="#eee"/>
+<rect x="1046" y="330" width="54" height="54" fill="#eee"/>
+<rect x="1102" y="330" width="54" height="54" fill="#eee"/>
+</svg>

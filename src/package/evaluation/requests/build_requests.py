@@ -30,6 +30,7 @@ def build_requests(
     price_slack: float,  # budget = held-out price * price_slack, rounded UP to a multiple of price_round_to
     price_round_to: float,
     rng: np.random.Generator,
+    descriptive_queries: Mapping[int, str] | None = None,  # item_idx -> request text for kind "descriptive"
 ) -> list[AgentRequest]:
     if language not in TEMPLATES:
         raise ValueError(f"language must be one of {sorted(TEMPLATES)}, got {language!r}")
@@ -136,5 +137,20 @@ def build_requests(
         for i in range(min(per_segment, n_ambiguous)):  # reuse n_ambiguous as count
             add("unanswerable", "none",
                 text=templates["unanswerable"].format(user_id=f"user_{i}", k=k))
+
+    # descriptive: LLM-written item descriptions (ORACLE — text derived from held-out targets).
+    # Query text comes from a precomputed file; it defines the request set (per_segment does
+    # not apply). User/segment are resolved from the held-out target's owner.
+    if descriptive_queries:
+        item2user: dict[int, int] = {}
+        for u, items in target_by_user.items():
+            for i in items:
+                item2user.setdefault(int(i), int(u))
+        for item_idx, query in descriptive_queries.items():
+            u = item2user.get(int(item_idx))
+            if u is None or u not in seg_of or not str(query).strip():
+                continue
+            add("descriptive", seg_of[u], user_id=id2user[u], user_idx=u,
+                targets=[int(item_idx)], text=str(query).strip())
 
     return requests

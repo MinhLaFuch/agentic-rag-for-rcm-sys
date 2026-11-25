@@ -128,6 +128,14 @@ class AgentEvalConfig(BaseModel):
     max_consecutive_llm_errors: int = Field(gt=0, description="Max consecutive LLM errors before aborting")
     trajectory_file: str = Field(description="Trajectory file name")
     request_scope: str = Field(default="realistic", description="realistic | oracle | all request scope")
+    descriptive_queries_path: str | None = Field(
+        default=None,
+        description="JSONL {item_idx, query} adding kind 'descriptive' (oracle) requests; null disables",
+    )
+    requests_file: str | None = Field(
+        default=None,
+        description="JSONL of AgentRequest dicts overriding build_requests entirely; null = normal generation",
+    )
     enable_session: bool = Field(default=False, description="Create a fresh Session per request")
     metadata_policy: str = Field(default="historical_static_catalog", description="Metadata masking policy")
     use_prebuilt_corpus: bool = Field(default=True, description="Load prebuilt corpus instead of building in RAM")
@@ -136,6 +144,14 @@ class AgentEvalConfig(BaseModel):
     exclude_tools: list[str] = Field(
         default_factory=list,
         description="Tool class names excluded from planner/planner_memory toolsets (ablation); empty = full toolset",
+    )
+    distill_spec: bool = Field(
+        default=False,
+        description="Pre-planner query distillation: one extractor LLM call per request, spec JSON injected into the planner system prompt",
+    )
+    availability_dates: bool = Field(
+        default=False,
+        description="Use details['Date First Available'] (item_availability.parquet cạnh corpus) as an additional causal visibility source alongside first_seen_ts",
     )
     experiment_dir: str | None = Field(
         default=None,
@@ -769,6 +785,14 @@ class PlannerPromptsConfig(BaseModel):
     system_prompt: str = Field(description="Planner system prompt template")
     retry_notice: str = Field(description="User message appended when the plan reply is not valid JSON")
     reflect_notice: str = Field(description="User message sent with the step report when plan-reflect triggers")
+    distilled_spec_block: str = Field(
+        default="",
+        description="Optional block appended to the planner system prompt when agent_eval.distill_spec injects a spec; {spec_json} placeholder",
+    )
+    memory_guidance: str = Field(
+        default="",
+        description="MemoryTool-specific rules + few-shot examples; injected via {memory_guidance} only when the toolkit actually contains MemoryTool",
+    )
 
 
 class InferencePromptsConfig(BaseModel):

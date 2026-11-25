@@ -1,10 +1,10 @@
 # Open Questions — Retrieval/Reranking Bottleneck Investigation
 
-Companion to `RETRIEVAL_RANKING_BOTTLENECK.md`. Each question lists the measured
+Companion to `docs/investigations/RETRIEVAL_RANKING_BOTTLENECK.md` (entry point: `docs/BOTTLENECK.md`). Each question lists the measured
 evidence behind it and the decision it gates.
 
 **STATUS 2026-11-20: the read-only investigation pass is COMPLETE.** Results are
-in `investigations/INVESTIGATION_REPORT.md` (consolidated table) + per-item JSONs.
+in `docs/investigations/INVESTIGATION_REPORT.md` (consolidated table) + per-item JSONs.
 Questions marked **[ANSWERED]** now have measured numbers — they remain listed
 because the *decision* they gate is still yours. Questions marked **[OPEN]** were
 not resolved by data and still need your call.
@@ -112,7 +112,7 @@ signal and degrades whole-list quality — a cost injection cannot see.
 future weight refits — do not enable without a new live A/B. Lesson:
 offline rescue metrics do not capture ranking-side quality costs.
 
-### Q6. Retrieval-score blending 🔶 (probe run — result is nuanced)
+### Q6. Retrieval-score blending 🔶 → live-tested 2026-11-23 via HybridScorer
 Ran the offline comparison (`investigations/q6_scorer_comparison{,_v2}`).
 Verdict: **cannot be validated by injection** — any variant weighting retrieval
 scores is structurally biased because injected targets have retr=0. What IS
@@ -120,12 +120,29 @@ measurable offline: popularity+cat_match learning gives 71.4%. Recommendation:
 test retrieval blending in a live A/B (union candidates already carry
 `retrieved_by` provenance), not offline.
 
-### Q7. Popularity's role in ranking 🔶 (evidence in, decision yours)
+**LIVE A/B 2026-11-23 (`hybrid_scorer/exp_6` vs `exp_2_baseline`, same 152
+requests, `mode: hybrid`, popularity_weight=4.0 — the weight the "big"
+commit's fixed-pool replay validated at +151% NDCG): MIXED, not a win** —
+task_success up (cold_text 0.65→0.70, exclusion 0.475→0.55, exclusion/warm
+0.30→0.60 best-of-three) but target_reachable DOWN (cold_text 0.50→0.333,
+personalized 0.15→0.125, personalized/sparse 0.15→0.10). Popularity
+elevation improves perceived answer quality while burying the specific
+held-out target — third scorer variant where offline/replay evidence
+diverges from live eval. **`mode: baseline` stays**; `hybrid` remains a
+supported mode for future A/Bs.
+
+### Q7. Popularity's role in ranking 🔶 → tested via exp_6, decision: baseline
 Popularity tiebreak decides most rank-1s AND pure popularity beats the CF
 baseline 60.3% vs 31.75%. Targets are ~16× more popular than retrieved
 candidates (`feature_target_means` in q6 JSON). Evidence says: **keep popularity,
 elevate it** — possibly as the primary signal for cold users. Your call on
 exact weighting.
+
+**2026-11-23:** the elevation was tested live (HybridScorer w=4.0, exp_6).
+Result: task_success improves, target_reachable degrades — popularity helps
+"good answers" more than "exact target hits". Baseline (moderate popularity
+tiebreak) remains default; revisit only with a multi-objective fit or larger
+eval (Q23).
 
 ---
 
@@ -413,3 +430,25 @@ batching whenever ready.
    visibility) — bounds all absolute numbers.
 5. **Data pipeline is largely exonerated**: splits clean, no leakage, k-core
    fine, catalog clean, categories lossless, cross-domain merge deliberate.
+6. **2026-11-23 — the deepest bottleneck is request content, not mechanics**
+   (vi_retrieval audit + hybrid scorer A/B, see
+   `RETRIEVAL_RANKING_BOTTLENECK.md` UPDATE 2026-11-23): campaign requests are
+   category-level ("find 10 products in '<Category>'"), targets are item-level;
+   token overlap 13.3% even after faithful translation, peer-rank ~1% under the
+   best measured arm (e5base+EN r@10=42% restricted on rich probe queries).
+   Planner queries are already English — the VI problem is demo-path only.
+   HybridScorer w=4.0 live A/B: task_success up, target_reachable down →
+   baseline stays. Implication: target_reachable/recall@10 on this campaign
+   measures an information gap the input cannot specify; either regenerate
+   requests with item-descriptive text or optimize task_success instead.
+7. **2026-11-24 — query-distill groundwork landed; request-spec remains the
+   bottleneck** (`docs/investigations/distill_phase05_1/SUMMARY.md`): planner prompt
+   fixed (`categories_exclude` bogus example removed, `hate_categories` clarified)
+   and one prompt-fix baseline completed — invented-key rate was already 0,
+   task_success unchanged on main kinds; exclusion/unanswerable deltas are
+   single-run noise pending a replicate (blocked: LLM key 401). Spec v1 schema
+   + gold converter shipped (`package/evaluation/spec/`) enabling Phase-2
+   offline `spec_*` metrics. Taxonomy: `category_coarse` = deepest label ≥1k
+   items + `main_category` fallback. Masking kept (price is snapshot-only).
+   F3's deficit is NOT explained by uncategorized recommendations (29.2% vs
+   29.7%).
