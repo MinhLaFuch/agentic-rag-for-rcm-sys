@@ -1,0 +1,989 @@
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+Zongwei Wang
+zongwei@cqu.edu.cn Chongqing University
+China
+
+Min Gao
+gaomin@cqu.edu.cn Chongqing University
+China
+
+Junliang Yu
+jl.yu@uq.edu.au The University of Queensland
+Australia
+
+arXiv:2503.23374v1 [cs.IR] 30 Mar 2025
+
+Yupeng Hou
+yphou@ucsd.edu University of California San Diego
+United States
+
+Shazia Sadiq
+shazia@eecs.uq.edu.au The University of Queensland
+Australia
+
+Hongzhi Yin
+h.yin1@uq.edu.au The University of Queensland
+Australia
+
+Abstract
+The implicit feedback (e.g., clicks) in real-world recommender systems is often prone to severe noise caused by unintentional interactions, such as misclicks or curiosity-driven behavior. A common approach to denoising this feedback is manually crafting rules based on observations of training loss patterns. However, this approach is labor-intensive and the resulting rules often lack generalization across diverse scenarios. To overcome these limitations, we introduce RuleAgent, a language agent-based framework which mimics real-world data experts to autonomously discover rules for recommendation denoising. Unlike the high-cost process of manual rule mining, RuleAgent offers rapid and dynamic rule discovery, ensuring adaptability to evolving data and varying scenarios. To achieve this, RuleAgent is equipped with tailored profile, memory, planning, and action modules and leverages reflection mechanisms to enhance its reasoning capabilities for rule discovery. Furthermore, to avoid the frequent retraining in rule discovery, we propose LossEraser--an unlearning strategy that streamlines training without compromising denoising performance. Experiments on benchmark datasets demonstrate that, compared with existing denoising methods, RuleAgent not only derives the optimal recommendation performance but also produces generalizable denoising rules, assisting researchers in efficient data cleaning.
+CCS Concepts
+· Information systems  Recommender systems.
+Keywords
+Recommendation, Agent, Denoising, Large Language Models
+1 Introduction
+Recommender systems [26, 37] have proven highly effective in domains like E-commerce [39], where they leverage historical user behavior data to uncover latent preferences and improve user experience. While explicit user feedback (e.g., ratings) is the most reliable choice for these system inputs, obtaining such feedback often requires active user engagement. As a result, implicit feedback (e.g., clicks) generated during user browsing is commonly used as an alternative [9]. However, implicit feedback is often noisy [36], as users may click on items out of curiosity or due to accidental
+ Corresponding author
+
+Raw Data RecModel
+
+Iterative Rule Discovery
+
+Train Model Train Model
+
+Loss
+
+Expert
+
+Clean Data
+
+Apply Fixed Rules
+
+(a) Expert-Guided Rule Discovery
+
+Raw Data RecModel
+
+Train Model
+
+Loss
+
+Agent
+
+Iterative Rule Discovery
+
+Train Model
+
+Candidate Clean Data
+
+Reasoning Apply
+Updated Rules
+
+(b) Agent-Driven Rule Discovery
+
+Figure 1: Expert-Guided vs. Agent-Driven Rule Discovery for Recommendation Denoising.
+
+misclicks [2, 20]. This noise exacerbates inaccuracies in estimating user preferences, underscoring the critical need for noise reduction strategies to improve recommendation accuracy [34].
+A common way to mitigate noise in implicit feedback involves utilizing auxiliary information, such as attribute features [42] or external data (e.g., social networks) [39]. Unfortunately, such information is often limited, and the use of external data may raise privacy concerns [29], which complicates its practical application. In the absence of auxiliary information, numerous denoising approaches have emerged, including probabilistic-based frameworks [32], adversarial training strategies [13], and causal inference-driven methods [3], etc. Among these, rule-based approaches have become the most widely adopted, relying on expert-defined criteria inferred from the dynamic patterns of loss values during training to estimate the noisiness of individual samples [29, 32]. For example, Wang et al. [29] found that a sample with high loss is likely to be noisy, while another study [32] demonstrated that noisy samples show large variations in loss across different models. As shown in Figure 1 (a), these observations can be formulated into denoising rules that enable the identification and removal of noisy samples, allowing for model retraining to enhance both accuracy and robustness.
+
+While rule-based methods have demonstrated notable effectiveness, they are inherently limited by several key limitations. Primarily, the formulation of denoising rules requires substantial input from domain experts, often relying on an iterative trial-and-error process. This not only demands considerable time and resources but also necessitates a deep understanding of the specific data context [9, 14]. Furthermore, once a denoising rule is established, its applicability to new contexts is far from guaranteed. When faced with new scenarios, the rule's effectiveness must be re-evaluated, and if it proves ineffective, entirely new rules must be devised. This dependence on labor-intensive, expert-driven rule development, coupled with the limited transferability of these rules, severely limits their scalability and practical applicability.
+To address the limitations inherent in current methods, we shift our focus to the recent rise of large language models (LLM) and LLM-powered agent-based applications [27, 43]. These studies leverage the powerful reasoning capabilities of LLM to create agents that can perform a variety of human-like tasks, such as daily activities [21], debates [5], and gaming [7]. Inspired by these innovations, we naturally consider whether LLM-powered agents could take on the role of data experts in uncovering denoising rules. As shown in Figure 1 (b), if an agent can autonomously interact with data and models, iteratively evaluating hypotheses derived from data observations and model feedback, it could potentially discover denoising rules independently. In contrast to the labor-intensive and time-consuming process of manually identifying these rules, such an autonomous agent-based approach promises efficiency improvements. Additionally, the denoising rules discovered by the agent are dynamically aligned with the current training data and model, ensuring greater adaptability in handling diverse scenarios.
+In this paper, we introduce RuleAgent, an autonomous language agent-based framework developed to discover rules for denoising recommendations. To suit the task of uncovering denoising rules, we have customized RuleAgent with four key modules: the Profile Module, which defines the agent's role and the denoising task; the Memory Module, which stores relevant information throughout the rule discovery process, such as historical behavior states, summaries of denoising rules, and the confidence scores of individual samples; the Planning Module, which determines the next action of the agent from multiple perspectives; and the Action Module, which defines the agent's available action space, including assessing sample noise, refining denoising rules, and manipulating the model.
+To further enhance its autonomous analysis capabilities, these modules are integrated with two reflection mechanisms: one for refining denoising rules within a hierarchical structure based on ongoing discoveries, and another for adjusting confidence levels regarding noisy samples. Additionally, recognizing that the agent's continuous actions require frequent re-training of the recommendation model, which consumes significant time, we adopt the concept of unlearning [6, 18] and propose a tailored strategy named LossEraser. This strategy reclassifies agent-identified noisy samples as negative examples instead of unobserved ones, enabling the model to effectively "erase" the influence of these samples that were previously optimized as positive examples during earlier training. Consequently, the need for full re-training of RuleAgent is elegantly mitigated, maintaining efficiency without compromising performance. Our contributions are summarized as follows:
+
+Zongwei Wang et al.
+
+· We investigate the potential of language agents for rule discovery to denoise implicit feedback, marking the first application of language agents for data denoising in recommender systems.
+· We propose RuleAgent, equipped with specialized modules and mechanisms to enhance its reasoning capabilities for rule discovery and a tailored unlearning strategy to enhance its efficiency.
+· Experimental results on three datasets demonstrate that our proposed approach outperforms current state-of-the-art denoising recommendation models.
+
+2 Preliminary 2.1 Implicit Feedback Based Recommendation
+
+General Recommendation. Given user-item interaction data
+
+D = {, , , |  U,   I}, where , = {0, 1} indicates
+whether user  has interacted with item . Here, U  R| U | denotes the set of users, I  R| I | denotes the set of items. Generally, rec-
+
+ommendation algorithms process the interaction data D to derive latent representations for users and items, ZU  R| U |× ( is the dimension of representations) and ZI  R| I |× , and a model 
+with parameters   to make predictions. The training of the recom-
+
+mendation model is formally defined by the optimization problem:
+
+  = arg min L (D),  (1)
+
+where
+
+
+
+
+is
+
+the
+
+optimal
+
+parameters
+
+of
+
+,
+
+and
+
+L 
+
+is
+
+the
+
+recom-
+
+mendation loss herein instantiated with the BPR loss [20]:
+
+L = E - ( ( (z, z ) -  (z, z ))),
+
+(2)
+
+(,, )  D
+
+where the tuple (, , ) consists of a user , a positive sample item  that  has interacted with, and a negative sample item  that  has not interacted with.  is the sigmoid function.
+
+Recommendation Denoising. In the absence of auxiliary information, a prevalent approach to denoising implicit feedback involves analyzing the corresponding loss values to identify and eliminate noisy samples, thereby constructing a cleaner dataset [22, 29]. Existing denoising methods typically rely on manually crafted denoising rules, developed through labor-intensive processes, to filter out noisy samples and derive a model trained with a cleaner dataset. This process can be formulated as follows:
+
+arg min L (D ), . ., D = R (L (D)),
+
+(3)
+
+
+
+where D represents the rule-refined clean interaction dataset, and R refers to a rule function derived from the analysis of loss value, which guides the construction of D .
+From Equation 3, it is evident that the effectiveness of the process heavily depends on the R function. However, this R is not always straightforward due to the labor-intensive process of rule discovery and its limited transferability. To overcome these challenges, we explore the use of autonomous LLM-powered agents in addressing the recommendation denoising problem.
+
+2.2 LLM-Powered Autonomous Agents
+LLMs have recently exhibited significant potential for achieving human-level intelligence, sparking a growing interest in the development of autonomous agents. The architecture of these agents is
+
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+generally organized into four primary modules: the profile module [15], the memory module [24], the planning module [19, 35], and the action module [25]. These modules are inherently interconnected, working together to enable the agent's functionality. The profile module defines the agent's role and task, serving as the foundation for the memory module, which operates in a dynamic environment by storing past behaviors and providing context for future planning. The planning module acts as the decision maker, analyzing stored information and determining the next action. The action module executes these planning actions, carrying out tasks aligned with the agent's objectives. A key aspect of this architecture is the use of reflection mechanism [4, 44], which enhances the agent's autonomy by refining the profile and memory modules, facilitating memory updates, and improving the planning-making process for future actions.
+In our approach, we treat the LLM-powered autonomous agent as a denoising expert. The agent autonomously interacts with the recommendation model, using reflection and corresponding actions to update its memory. Through this iterative process, the agent continuously refines the denoising rules, identifying noisy samples and constructing cleaner datasets. This process is defined as:
+
+arg min L (D ), . ., D = Agent( , D),
+
+(4)
+
+
+
+where Agent represents the autonomous agent's multi-round interactions with the recommendation model  and data D. Ultimately, this iterative process enables the agent to identify a cleaner interaction dataset D through continuous operations. Compared with the original R function, the Agent eliminates the need for complex rule mining and design prior to recommendation model training. Furthermore, it ensures that the function is no longer fixed but instead dynamically adapts to the patterns within the current dataset.
+
+3 Module Design of RuleAgent
+In this section, we introduce RuleAgent, an autonomous language agent-based framework developed to discover rules for recommendation denoising. The primary motivation behind RuleAgent is to mimic a real-world data expert, who explores and experiments iteratively to uncover denoising rules, applies these rules to identify noisy samples, and ultimately improves recommendation performance. The overall framework of RuleAgent is illustrated in Figure 2, which is designed around several key components: a profile module that defines the denoising task and establishes the agent's role as a denoising expert; three updatable memory modules that store past states and learned denoising contexts; a planning module that dynamically makes a multi-path planning for determining the next action; and four action modules that specify the types of actions the agent can execute.
+
+3.1 Profile Module
+To enable the agent to understand the context of the recommendation denoising scenario, we explicitly define its role, primary objectives, and the fundamental process of the task through the profile module. To demonstrate this approach, an example prompt serves as the content of the profile module, as shown below:
+
+You are an expert in data denoising. Your goal is to enhance the recommendation model by filtering out noisy interaction data, ensuring the model performs optimally. Your task involves assigning confidence scores to the interactions and deriving the appropriate denoising rules. Interactions with higher confidence will be kept for model training, while those with lower confidence will be discarded.
+3.2 Memory Module
+3.2.1 Confidence Memory. To enable the agent to retain its evaluations of the confidence score for each sample, we design a unified sample-level memory to store the noise confidence scores. With the support of this confidence memory, the agent can directly retrieve and access each sample's noise confidence without requiring additional LLM inference. An example of a noise confidence score and its corresponding explanation for a single sample in the confidence memory is shown below:
+The noise confidence level for the interaction between <UserIndex> and <ItemIndex> is evaluated as <Score>. The reason is <Reason>.
+3.2.2 Rule Memory. The agent is expected to continuously summarize and refine the insights gained from the data and model training. To achieve this, we design the rule memory to store the denoising rules discovered and refined by the agent. The rule memory acts as the foundational principle guiding the agent in evaluating the noise confidence level of each sample. Furthermore, all stored rules are organized hierarchically, which promotes efficient management and analysis, enabling the seamless addition, removal, and merging of rules. The examples of rules are presented in Figure 2.
+3.2.3 Action Memory. Additionally, we also design an action memory to record the agent's previous actions along with the corresponding observed feedback. This memory serves as a key resource for guiding the agent's planning-making in subsequent actions. An example of the action memory is presented below:
+The <i-th> action is chosen as <Action>, and the reason is <Reason>.
+3.3 Planning Module
+The planning module serves as a crucial bridge between preceding and subsequent modules. Its primary function is to analyze information from both the profile module and the memory module to determine the next appropriate action. In RuleAgent, we have developed a multi-path planning method to ensure that the agent makes suitable decisions by considering confidence scores, denoising rules, and historical actions. More details are provided in Section 4.2.
+3.4 Action Module
+To ensure alignment with real-world rule discovery workflows, the action modules have been designed as simplified adaptations that handle four key tasks: confidence reflection, rule reflection, model training, and model evaluation. In the confidence reflection process, the agent employs a sample-level confidence reflection mechanism, enabling it to autonomously update the confidence scores of individual samples. During the rule reflection process, we design a hierarchical rule reflection mechanism for the agent to facilitate more refined and easily scalable rule discovery. The training and evaluating model steps involve the agent utilizing the memory to
+
+Zongwei Wang et al.
+
+Profile Module
+You are an expert in data denoising for recommendation. Your goal is to enhance the model by identifying noisy interaction data, ensuring the model optimally. Your task is to assign confidence scores to the interaction and deriving the denoising rule.
+Planning Module
+You have three ways to decide your next step: 1.Reviewing confidence levels and their reasons; 2.Checking current denoising rules; 3.Analyzing historical actions and their outcomes.
+Compare the decisions derived from these perspectives, then choose the most suitable path and explain your reasoning.
+Planning Response
+The next action is: Rule Reflection. The reason for this decision is: Given the latest confidence scores, I trained the model and evaluated its performance. The results confirm that the updated confidence scores more effectively distinguish noisy from clean interactions. During training, certain samples consistently showed high loss values, while others exhibited significant fluctuations over time. These patterns suggest potential malicious intent or unstable data behavior that existing rules fail to address. As a result, refining the current rules is the next priority.
+
+Memory Module
+· The confidence score of User_10 and Item_396 is 0.125, and the reason is due to its substantial negative impact on the model's performance, and its loss is always high... · The confidence score of User_5 and Item_10 is 0.98, and the reason is the loss of this interaction is always in a stable downward state... · The confidence score of User_111 and Item_27 is 0.56, and the reason is its fluctuating predictions during multiple training... · ......
+
+Rule-1 (Value-Related): The confidence of the interaction data is related to the loss value, and the one with larger loss is likely to be a noisy sample. - Rule-1.1 (Value Threshold): Loss value that exceeds 95th percentile of the loss distribution is a noisy sample. -- Rule-1.1.1 (Multiple Exceedances)  Loss value exceeds the threshold 3 times in multiple trainings, it is a noise sample. ...... Rule-3 (Fluctuation-Related): Loss value of a noisy sample is more likely to show a pattern of significant fluctuations over time.
+
+1. Initialization: perform the initial training of the model and carry out a preliminary confidence evaluation. 2. Model Training: train the model based on that judgment to observe its subsequent performance. 3. Model Evaluation: assess any changes in its performance after training, and the model performance is ... 4. Confidence Reflection: observed some performance shifts, and need adjust the confidence levels for certain samples. 5. Rule Reflection: based on observations so far, the existing rule is somewhat coarse, and we need to further refine it.
+
+Confidence Memory
+
+Rule Memory
+
+Action Memory
+
+Action Module
+
+Confidence Reflection Rule Reflection Model Training Model Evaluation
+
+1. Analyze the current confidence scores and reasons to identify noisy and interactions and think over the rationale for each classification. 2. Update the current denoising rules and organize them hierarchically with descriptive classification labels. 3. Merge similar denoising rules, ensuring free of redundancy
+
+Update Memory
+Reflection Response
+Some samples consistently exhibit high loss values across multiple training sessions. To accurately identify and mitigate these persistent noisy samples, Rule-1.1.1 was introduced. This rule ensures that only those samples whose loss values surpass the threshold 3 times are classified as noise. Additionally, patterns of significant fluctuations in loss values over time were observed among certain samples. Such variability may indicate malicious intent or unstable behavior within the data. To address this, Rule-3 was incorporated to monitor and flag samples that demonstrate erratic loss patterns.
+
+Figure 2: The Workflow of RuleAgent. It integrates Profile, Memory, Planning, and Action modules, with reflection mechanisms for updating Rule and Action Memories. Note that the descriptive text within each module in this figure is abbreviated.
+
+filter samples and form a new candidate clean dataset, which is then used to update the parameters of the recommendation model and monitor its performance. These steps serve to assess whether the current confidence scores and rules are reasonable and effective.
+4 Autonomous Workflow of RuleAgent
+In this section, we will thoroughly discuss the process of the agent's autonomous operation to elucidate how modules of RuleAgent interact with one another.
+4.1 Initialization
+Before agent autonomously operating, it is essential to initialize each memory module. The rule memory is initialized with the "Rule1" shown in Figure 2. For the confidence memory, we first perform a complete training cycle of the recommendation model, using the initial denoising rule and the loss values observed during training to assign noise confidence scores to each sample. Furthermore, the action memory records the first action as "Initialization".
+4.2 Multi-Path Planning
+Building on the initialized profile and memory modules, the agent autonomously adopts a multi-path planning approach, leveraging the information contained in these modules. Drawing on the principles of self-consistency [30], the planning module enables the agent to separately consider information from three distinct memory sources to gain situational awareness. By analyzing each memory source, the agent subsequently selects the most appropriate action from the defined action space. This multi-path planning approach can reduce potential biases and improve decision-making accuracy,
+
+and the process can be formulated as follows:
+
+  (, , ),
+
+(5)
+
+where  represents the multi-path planning process. It receives the current confidence memory  , rule memory , and existing action memory  as inputs.  processes these
+inputs to generate a new action along with its corresponding reasoning, which are then stored in . Below, we illustrate a simplified
+version of the multi-path planning system prompt:
+System Prompt: You have three potential planning paths for deciding the next step: 1. Current Confidence-Based Planning: Examine the confidence levels and their associated reasons stored in < >. Determine the most suitable next step and explain your reasoning; 2. Current Rule-Based Planning: Refer to the rules stored in < >. Decide on the most appropriate next step and provide the rationale; 3. Historical Action-Based Planning: Analyze <>. Use these insights to determine the most suitable next action; Compare the decisions with three planning paths, then decide on the most suitable next step and explain your reasoning.
+
+4.3 Action-Execution
+Once the planning module determines the next action, the agent performs the task within the action module. In the following, we provide a detailed explanation of the task for each action.
+4.3.1 Confidence Reflection. The agent refines the sample confidence scores through the confidence reflection mechanism, denoted as    , when it identifies that the current scores assigned to the sampled data are inaccurate or insufficient. Specifically, the
+
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+agent reviews the existing scores and their corresponding explanations stored in the confidence memory  . It then updates these
+values for each user-item interaction by utilizing the denoising rules from the rule memory , alongside the historical loss values
+L, obtained during the model training process. The process of
+updating a single sample's confidence can be formulated as follows:
+
+
+,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(
+
+
+,
+
+,
+
+
+
+
+
+,
+
+L
+
+,
+
+)
+
+,
+
+(6)
+
+where
+
+
+,
+
+denotes
+
+the
+
+content
+
+in
+
+the
+
+confidence
+
+memory
+
+
+
+cor-
+
+responding to the interaction between user  and item , and L,
+
+represents the historical loss values associated with this interaction. The brief system prompt of    is presented below:
+
+System Prompt: According to the rule < >, analyze the historical loss
+
+<
+
+L,
+
+>
+
+and
+
+confidence
+
+score
+
+<
+,
+
+>
+
+of
+
+<UserIndex>
+
+and
+
+<ItemIndex>,
+
+and
+
+then update the <Score> and explain the <Reason>.
+
+4.3.2 Rule Reflection. The agent refines denoising rules using the rule reflection mechanism, denoted as   , whenever the
+
+current rule is identified as incorrect or suboptimal. During this
+
+process, the agent rethinks the existing denoising rules stored in
+
+the rule memory and incorporates information from the confidence
+
+memory. To address input token limitations, 1,000 interactions are
+
+randomly sampled for each rule reflection process. If not stressed,
+
+this sampling method is consistently applied to retrieve confidence
+
+memory throughout the entire RuleAgent workflow. The process is
+
+formulated as follows:
+
+     (, ).
+
+(7)
+
+The brief system prompt of    is presented below:
+
+System Prompt: Analyze and update denoising rules following these steps: 1. Analyze current confidence scores and reasons in < >, and summarize
+why certain interactions are considered noisy and which are malicious. 2. Compare the current denoising rule in < >. Then, organize the rules
+hierarchically with descriptive classification labels to ensure they are clear,
+concise, and actionable, such as "Rule-1(Value-Related)", "Rule-1.1(Label)",
+"Rule-1.1.1(Label)", ..., "Rule-N(Label)", "Rule-N.1(Label)", etc..
+3. Merge similar rules, ensuring the rules are free of redundancy.
+4. Output the updated denoising rules as <New Rules>.
+
+4.3.3 Model Training. When the agent believes that the memory has been sufficiently updated, it attempts to leverage the knowledge within the memory to construct a new clean dataset for retraining the recommendation model, aiming to achieve improved model parameters. However, retraining the recommendation model from scratch can be time-consuming. To overcome this issue, we introduce an efficient training method inspired by unlearning [6], called LossEraser. The core idea of LossEraser is to enable the model to efficiently "forget" the influence of noisy data. Specifically, we treat discarded samples as negative samples during optimization, thereby reversing the previously generated gradients when these samples were treated as positive during training. The LossEraser loss function is defined as follows:
+L = E - log( ( (z, z ) -  (z, z))), (8)
+(,,)  D
+where the tuple (, , ) consists of a user , a positive sample item  that  has interacted with, and an item  that  has also interacted with but is considered a noisy sample.
+
+To achieve a stable and fine-grained unlearning process, we incorporate two key enhancements into the LossEraser method: (1) Progressive Reversal: We adopt a time-dependent scaling factor, denoted as  , which controls the extent of gradient reversal throughout the training process. Initially,  is set to a small value to avoid drastic changes to the model parameters. As training progresses,  gradually increases, enabling the model to progressively "forget" the influence of noisy data in a controlled manner. (2) Adaptive Reversal: Recognizing that not all noisy samples equally degrade model performance, we define a dynamic weight factor ,  [0, 1] based on the confidence scores stored in memory. This weight factor modulates the strength of gradient reversal based on the severity of the sample's impact. Noisy samples with higher weights exert a stronger influence on the unlearning process, effectively "forgetting" more detrimental samples, while those with lower weights contribute less. Consequently, the updated loss function is defined as follows:
+
+L = E - log( ( (z, z ) -  · , ·  (z, z))),
+(,,)  D
+
+(9)
+
+where 
+
+=
+
+ 
+
+.
+
+The
+
+weight
+
+factor ,
+
+is
+
+defined
+
+as ,
+
+=
+
+1 - ,,
+
+where , represents the normalized confidence score, calculated
+
+by scaling all confidence scores stored in the confidence memory
+
+to the range [0,1]. Notably, a higher value of , indicates that the
+
+corresponding sample possesses a lower degree of noise.
+
+By incorporating LossEraser with enhancements such as pro-
+
+gressive reversal and adaptive reversal, we achieve the goal of
+
+eliminating the need for re-training. The final recommendation loss
+
+is formulated as:
+
+L = L +  L ,
+
+(10)
+
+where  is the weight control the influence of L .
+
+After completing the LossEraser training process, the agent ob-
+
+tains
+
+an
+
+updated
+
+recommendation
+
+model
+
+
+
+
+and
+
+the
+
+corresponding
+
+new recommendation losses L for each interaction, which serve
+
+as the basis for subsequent reasoning. It is also important to note
+
+that, even with the inclusion of L , we still record L as
+
+the observation loss metric for the agent to determine whether a
+
+sample is considered noisy.
+
+4.3.4 Model Evaluation. After multiple LossEraser training cycles, the agent may focus on changes in the performance of the recommendation model. These performance shifts serve as critical metrics, reflecting how well the model adapts to the evolving denoising rules and adjustments. By tracking these shifts, the agent can identify patterns in model behavior and decide whether to update confidence scores, refine denoising rules, or proceed with further model training in the next planning step. To facilitate this, the agent invokes the evaluator to assess the current model performance. The evaluation process can be formulated as follows:
+
+  Evaluator(  ),
+
+(11)
+
+where Evaluator represents the evaluation of the model with pa-
+
+rameters
+
+
+
+
+on
+
+the
+
+validation
+
+set.
+
+The
+
+evaluation
+
+outcome
+
+is
+
+subse-
+
+quently appended as the additional textual description associated
+
+with the current action.
+
+Zongwei Wang et al.
+
+After completing each action, RuleAgent employs the  module again to determine its subsequent action. The agent will automatically terminate and signal the conclusion of the process either after executing a predetermined number of actions or if the model evaluation exhibits a decline over five consecutive iterations.
+4.4 Output
+Apart from initializing the memory modules, we do not intervene in any part of the process--everything is handled autonomously by the agent through reflection. Compared to traditional methods, where data experts repeatedly evaluate and retrain models to explore denoising rules, our RuleAgent framework is more efficient and convenient. As a result, we can obtain three valuable outcomes: · Hierarchical denoising rules extracted from the rule memory,
+which provide useful insights for human experts; · An optimal recommendation model trained on the clean inter-
+action data generated by the agent, ready for deployment in recommendation tasks; · Confidence scores with explanations for each sample, which assists researchers in data cleaning tasks. Additionally, the detailed system prompts and corresponding outputs of the  process and two reflection processes,    and   , can be seen in the Appendix A.1.
+5 Experiments
+This section tests the effectiveness of RuleAgent. Specifically, we aim to answer the following questions.(Q1): How does the performance of RuleAgent compare to state-of-the-art denoising methods? (Q2): Are the rules discovered by RuleAgent generalizable? (Q3): What impact does the proposed LossEraser have on RuleAgent? (Q4): How do different LLMs impact the performance of RuleAgent? (Q5): How does RuleAgent discover the rule?
+
+Table 1: Statistics of datasets.
+
+Datasets
+Beauty (full) - small
+Yelp2018 (full) - small
+Gowalla (full) - small
+
+#Users
+22,363 100
+31,668 100
+18,737 100
+
+#Items
+12,099 2,776
+38,048 2,882
+32,495 2,498
+
+#Interactions
+198,503 8,604
+1,561,406 4,662
+741,906 4,096
+
+Density
+0.073% 3.099%
+0.130% 1.617%
+0.1218% 1.639%
+
+5.1 Experimental Settings
+Datasets. We use three commonly used public benchmark datasets in our experiments: Beauty1 , Gowalla2, and Yelp20183. Due to the high cost of API calls, we follow existing studies [28, 41] to sample dense subsets from these datasets. Each subset includes 100 users with the most interactions, offering more data for analysis. The dataset statistics are presented in Table 1.
+Evaluation Metrics. We divide the datasets into three parts: training set, validation set, and test set, following a 7:1:2 ratio. Two commonly used evaluation metrics, Recall@ and NDCG@, are
+1 https://jmcauley.ucsd.edu/data/amazon/links.html 2 http://snap.stanford.edu/data/loc-gowalla.html 3 https://www.yelp.com/dataset
+
+employed with  set to 10 and 20. Each metric is calculated 10 times, and the average results are reported.
+Baselines. The primary goal of this paper is to denoise feedback to enhance the performance of existing base recommendation models. To achieve this, we select three commonly used implicit feedbackbased recommendation models as the base models for denoising: · GMF [11]: A generalized matrix factorization-based model. · LightGCN [12]: A graph-based model that simplifies GCN design
+for recommendation by removing nonlinear transformations. · XSimGCL [38]: A fast contrastive learning recommendation
+method that streamlines contrastive view construction and optimizes representation uniformity.
+To evaluate the denoising effect, we select five existing denoising methods to compare their performance with the aforementioned recommendation models: · T-CE (2021) [29]: Removes samples with loss values exceeding
+a predefined threshold. · DeCA (2022) [32]: Combines predictions from two different
+models to identify noisy samples based on their disagreement. · BOD (2023) [33]: Automatically learns sample weights through
+bi-level optimization. · DCF (2024) [14]: Introduces a double correction mechanism to
+iteratively relabel samples, addressing both noise issues and data sparsity simultaneously.
+Parameter Settings. We implement RuleAgent using PyTorch, and the reflection and inference of RuleAgent are implemented using GPT-4o mini4. For all methods, we follow the recommended parameter settings unless stated otherwise. Specifically, we set the batch size to 512, the learning rate to 0.001, the embedding size to 64, and the number of LightGCN and XSimGCL layers to 2. The models are optimized using the Adam optimizer [17], and the Xavier initializer [10] is used for parameter initialization.
+5.2 Performance Comparison (Q1)
+We first compare RuleAgent with existing denoising methods on three small datasets. The results, shown in Table 2, allow us to draw the following conclusions. The proposed RuleAgent significantly enhances the performance of the three base models, achieving the best or second-best results in all cases. We attribute these improvements to RuleAgent's ability to continuously update denoising rules, tailoring them to each dataset. Unlike existing denoising methods, which rely on fixed rules that constrain their performance to specific datasets, RuleAgent extracts dataset-specific denoising rules, providing a notable advantage. Furthermore, we observe that the second-best method varies across different datasets and base models, underscoring the limitations of fixed rules in adapting to diverse scenarios. Additionally, all denoising approaches outperform normal training, reinforcing the importance of denoising in recommender systems. These findings align with prior studies [9, 32].
+5.3 Effectiveness of Discovered Rules (Q2)
+To validate the generalizability of RuleAgent, we further evaluate the effectiveness of the denoising rules extracted by the framework.
+4 https://openai.com/index/gpt-4o-mini-advancing-cost-efficient-intelligence/
+
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+Table 2: Comparison of different denoising methods on recommendation tasks, using Recall (R) and NDCG (N) as the metrics. Best results are in bold, and runner-ups are underlined.
+
+Dataset
+
+Base Model Method
+
+GMF
+
+Normal T-CE DeCA BOD DCF
+
+RuleAgent
+
+LightGCN
+
+Normal T-CE DeCA BOD DCF
+
+RuleAgent
+
+XSimGCL
+
+Normal T-CE DeCA BOD DCF
+
+RuleAgent
+
+R@10
+0.05960 0.07074 0.06981 0.06812 0.06919
+0.07744
+0.07753 0.07815 0.07915 0.07832 0.07845
+0.08368
+0.08101 0.08192 0.08332 0.08273 0.08214
+0.08502
+
+Beauty-small
+
+R@20 N@10
+
+0.12109 0.12603 0.13782 0.13906 0.13496
+
+0.14301 0.16938 0.16836 0.16758 0.16695
+
+0.14296 0.17246
+
+0.14056 0.14333 0.14632 0.14402 0.13902
+
+0.17422 0.17726 0.18323 0.18732 0.17464
+
+0.15113 0.18914
+
+0.15184 0.15227 0.15341 0.15508 0.15461
+
+0.19458 0.19967 0.19816 0.19693 0.19511
+
+0.15635 0.20832
+
+N@20
+0.15338 0.15841 0.15987 0.16665 0.16707
+0.16779
+0.16844 0.17022 0.17321 0.17812 0.16705
+0.18264
+0.18733 0.18862 0.18815 0.18955 0.18823
+0.19419
+
+R@10
+0.00849 0.01066 0.00965 0.00858 0.00946
+0.02808
+0.04307 0.04432 0.04607 0.05041 0.04507
+0.06888
+0.05075 0.05847 0.05788 0.05767 0.05375
+0.06296
+
+Yelp2018-small
+
+R@20 N@10
+
+0.01666 0.03305 0.02861 0.02152 0.01982
+
+0.00956 0.01247 0.01686 0.01595 0.01327
+
+0.04643 0.02683
+
+0.05524 0.05729 0.05879 0.05681 0.05952
+
+0.03257 0.03472 0.04225 0.03725 0.03601
+
+0.08782 0.04897
+
+0.06464 0.06843 0.06544 0.06855 0.06739
+
+0.04171 0.04342 0.04881 0.04715 0.04688
+
+0.06951 0.05361
+
+N@20
+0.01265 0.01867 0.02364 0.01462 0.01683
+0.03335
+0.03851 0.04022 0.04782 0.04802 0.04171
+0.05958
+0.04653 0.04884 0.04910 0.04939 0.05091
+0.05692
+
+R@10
+0.04330 0.04823 0.05133 0.04597 0.04387
+0.05583
+0.05898 0.06244 0.07374 0.06192 0.06754
+0.08634
+0.06193 0.06887 0.07398 0.07767 0.06902
+0.08798
+
+Gowalla-small
+
+R@20 N@10
+
+0.04472 0.04831 0.04862 0.04692 0.04952
+
+0.03332 0.03557 0.03978 0.03837 0.03347
+
+0.08912 0.04505
+
+0.09652 0.10608 0.09808 0.09913 0.10152
+
+0.04501 0.04639 0.05984 0.05366 0.05287
+
+0.10938 0.06092
+
+0.10155 0.10711 0.10645 0.10368 0.10908
+
+0.04871 0.05303 0.06250 0.05603 0.05642
+
+0.11645 0.06502
+
+N@20
+0.03411 0.03526 0.03737 0.03614 0.03533
+0.05364
+0.05872 0.05955 0.05903 0.06132 0.06502
+0.06921
+0.06234 0.06610 0.06421 0.06983 0.06770
+0.07421
+
+Table 3: Comparison of RuleAgent-extracted rules and existing denoising methods on recommendation tasks, using Recall (R) and NDCG (N) as the metrics. Best results are in bold, and runner-ups are underlined.
+
+Dataset
+
+Base Model Method
+
+GMF
+
+Normal T-CE DeCA BOD DCF
+
+RuleAgent
+
+LightGCN
+
+Normal T-CE DeCA BOD DCF
+
+RuleAgent
+
+R@10
+0.06915 0.07094 0.07087 0.07146 0.06936
+0.07351
+0.09203 0.09373 0.09345 0.09388 0.09336
+0.09416
+
+Beauty
+
+R@20 N@10
+
+0.09968 0.10163 0.10016 0.09980 0.09989
+
+0.04593 0.04749 0.04732 0.04759 0.04692
+
+0.10579 0.0484
+
+0.12982 0.13268 0.13211 0.13341 0.13353
+
+0.06255 0.06298 0.06248 0.06313 0.06262
+
+0.13358 0.06378
+
+N@20
+0.05554 0.05719 0.05775 0.05812 0.05649
+0.05845
+0.07435 0.07515 0.07534 0.07584 0.07511
+0.07651
+
+R@10
+0.02421 0.02454 0.02482 0.02513 0.02462
+0.02497
+0.03414 0.03478 0.03444 0.03462 0.03454
+0.03510
+
+Yelp2018
+
+R@20 N@10
+
+0.04272 0.04322 0.04439 0.04501 0.04319
+
+0.02667 0.02725 0.02813 0.02802 0.02783
+
+0.04488 0.02976
+
+0.05842 0.05882 0.05872 0.05893 0.05913
+
+0.03934 0.03952 0.03962 0.03958 0.03964
+
+0.06012 0.04012
+
+N@20
+0.03379 0.03392 0.03488 0.03502 0.03479
+0.03678
+0.04809 0.04892 0.04874 0.04821 0.04862
+0.04918
+
+R@10
+0.05303 0.05319 0.05564 0.05424 0.05643
+0.05828
+0.07096 0.07121 0.07142 0.07168 0.07178
+0.07223
+
+Gowalla
+
+R@20 N@10
+
+0.08473 0.08507 0.08722 0.08532 0.09184
+
+0.05456 0.05471 0.06193 0.05958 0.05888
+
+0.09045 0.06562
+
+0.10892 0.10895 0.10942 0.10941 0.11043
+
+0.07809 0.07892 0.07888 0.07884 0.07904
+
+0.11342 0.08052
+
+N@20
+0.06660 0.06746 0.07432 0.07382 0.07182
+0.07688
+0.09141 0.09206 0.09196 0.09213 0.09249
+0.09288
+
+5HFDOO# 5XQQLQJ7LPHV
+
+      
+%HDXW\VPDOO
+
+<HOSVPDOO
+
+1RUPDO 5HWUDLQLQJ /RVV(UDVHU
+*RZDOODVPDOO
+
+     
+%HDXW\VPDOO
+
+<HOSVPDOO
+
+1RUPDO 5HWUDLQLQJ /RVV(UDVHU
+*RZDOODVPDOO
+
+Figure 3: The Comparison of Different Training Strategies.
+
+Specifically, we utilize ChatGPT-4o-with-Canvas5 to summarize the contents of the denoising rule memory and translate the summarized rules into implementation code for the recommendation model. We apply these new denoising rules to various open-source
+
+5 https://openai.com/index/chatgpt/
+
+datasets and compare their performance with the latest denoising methods. Specifically, we use the discovered rules to filter the samples, and during the loss calculation, we zero out the loss corresponding to the filtered samples, while other denoising methods process the samples using the techniques described in their respective papers. From the results in Table 3, we observe that the denoising methods derived from the rules discovered by RuleAgent consistently achieved the best or second-best performance in all cases, which demonstrates that the denoising rules discovered by RuleAgent are effective. Therefore, although the cost remains a current limitation of RuleAgent, a feasible approach could be to allow RuleAgent to reason over a small set of domain-specific data and extract effective denoising rules that can then be applied to the entire dataset. It is worth noting that the results of XSimGCL across all datasets also align with the above conclusions; however, due to space limitations, they are not presented in Table 3.
+
+5.4 Analysis of LossEraser (Q3)
+We use GMF as the base model and report the recommendation performance and real running time for different training strategies over a complete training cycle. We set the parameter  to 0.01 (due to space constraints, we do not present the sensitivity analysis of , but based on the experimental results,  should lie between 0.01 and 0.1; values outside this range lead to obviously degraded performance). The results shown in Figure 3 were collected on an Intel(R) Core(TM) i9-10900X CPU and a GeForce RTX 3090Ti GPU. As seen in Figure 3, RuleAgent outperforms normal training in terms of recommendation performance, whether using re-training or the LossEraser strategy. Since RuleAgent drops some data, the re-training dataset is smaller than that of normal training, resulting in reduced training time. Furthermore, LossEraser reduces the training time by approximately four times compared to re-training, while achieving nearly the same recommendation performance, demonstrating the effectiveness of the LossEraser strategy.
+5.5 Comparison of Different Backbones (Q4)
+In addition to GPT-4o mini, we evaluate the performance of other LLMs as the core reasoning backbones for RuleAgent, including Gemma-2B6, Llama3-8B7, Qwen-Turbo8, and GLM-4-Flash9. The experimental results in Table 4, reveal that RuleAgent achieves the strongest performance when powered by GPT-4o mini, although its advantage over Qwen-Turbo and GLM-4-Flash is marginal. Conversely, smaller LLMs, such as Gemma-2B, exhibit a substantial performance degradation. This discrepancy highlights the critical role of reasoning capabilities in our task, where larger LLMs demonstrate a pronounced advantage over their smaller counterparts. Based on these findings, we recommend employing large-scale models as the backbone to ensure optimal performance.
+
+Table 4: Performance comparison of different backbones.
+
+LLM
+Gemma-2B Llama3-8B Qwen-Turbo GLM-4-Flash GPT-4o mini
+
+Beauty-small
+
+R@20 N@20
+
+0.12551 0.13350 0.14084 0.13945 0.14196
+
+0.15481 0.16015 0.16636 0.16451 0.16779
+
+Yelp-small
+
+R@20 N@20
+
+0.02136 0.03215 0.04582 0.04445 0.04643
+
+0.01466 0.01948 0.03126 0.03248 0.03335
+
+Gowalla-small
+
+R@20 N@20
+
+0.04615 0.05218 0.08248 0.08465 0.08910
+
+0.03711 0.04815 0.05215 0.05162 0.05362
+
+5.6 Analysis of Rule Discovery Process (Q5)
+We record the process by which RuleAgent discovers denoising rules. Figure 4 illustrates part of this process using the base model GMF on the Beauty dataset. In the first round of rule reflection, RuleAgent autonomously determines the need for a 95% threshold in the initial Rule-1, revealing a human-like line of reasoning. After multiple iterations, during the fifth rule reflection, RuleAgent recognizes that the existing rules are inadequate for characterizing noisy samples and thus introduces a new rule. Due to space constraints, we do not present all rule-reflection outcomes; however,
+6 https://huggingface.co/google/gemma-1.1-2b-it 7 https://huggingface.co/meta-llama/Meta-Llama-3-8B 8 https://tongyi.aliyun.com/qianwen/ 9 https://open.bigmodel.cn/dev/api/normal-model/glm-4
+
+Zongwei Wang et al.
+
+in additional rounds, RuleAgent refines or merges existing rules, demonstrating powerful autonomous reasoning ability.
+
+Initialization
+
+Rule-1(Value-Related): The confidence of the interaction data is related to the loss value of the interaction data, and the one with a large loss is more likely to be noisy.
+
+1st Rule Reflection
+
+It is not enough to just know that "high loss value" means "noise". We need a quantitative reference standard to determine when "high" constitutes "noise". Introducing statistical quantiles.
+
+Rule-1.1 (Value Threshold): The noisy sample's loss is above the 95th percentile of the loss distribution.
+
+5th Rule Reflection
+
+Although the loss values of some samples do not necessarily exceed the threshold at a single point, their fluctuations over time are very abnormal, which may also indicate noise. This is not similar to Rule-1, so it is need to add a new rule.
+
+Rule-2 (Fluctuation-Related): An interaction is considered noisy if the loss value shows a pattern of fluctuations over time.
+
+10th Rule Reflection
+
+Some interactions had loss values significantly different from their peers, even though they didn't consistently exceed the predefined thresholds. This behavior wasn't captured by Rule-1 or Rule-2, which focus on high loss values and fluctuations over time.
+
+Rule-3 (Outlier-Related): An interaction is considered noisy if the loss value is an outlier compared to the surrounding loss values in the dataset.
+
+Figure 4: Rule Discovery Process.
+6 Related Work
+6.1 Recommendation Denoising
+A common approach to denoising implicit feedback is to identify clean and informative samples and use them to train a recommendation model. Following this idea, WBPR [8] treats popular items without interactions as true negatives and samples them more frequently. Recent studies have revealed that the noise level of samples often correlates with training loss. T-CE [29], one of the earliest works in this area, identifies samples with high loss as more likely to be noisy. Similarly, DeCA [32] suggests that clean samples produce similar predictions across different models. By jointly training two recommendation models, it differentiates clean samples from noisy ones based on prediction disagreements. SGDL [9] argues that clean samples are often identified during the initial training stages and proposes adaptively weighting samples based on their similarity. BOD [33] further posits that samples yielding consistent losses across different loss functions are likely to be clean. Additionally, DCF [14] addresses both denoising and data sparsity issues through a double correction strategy that relabels observed and unobserved samples to achieve denoising.
+6.2 Language Agents in Recommendation
+LLM-powered agents have recently gained significant attention due to their strong reasoning and planning capabilities, making them promising tools for developing artificial general intelligence (AGI) [1, 23]. A key advancement has been the introduction of agents into recommendation systems, aimed at either enhancing recommendation performance or transforming the recommendation paradigm. For example, InteRecAgent [16] employs an LLM as its core engine and integrates recommendation models as tools, creating a conversational recommendation system with a natural language interface. Similarly, RecMind [31] is an autonomous recommendation agent powered by an LLM that utilizes external knowledge and well-designed tools to provide zero-shot personalized recommendations. AgentCF [41] proposes an agent-based
+
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+collaborative filtering approach, where user and item agents model their bilateral relationships, replacing traditional collaborative filtering techniques and introducing a novel recommendation paradigm.
+Some studies have gone beyond improving recommendations by leveraging agents to simulate user behavior. RecAgent [28] and Agent4Rec [40] adopt multiple agents as user simulators in recommendation systems. These generative agents, powered by LLM, are specifically designed for recommendation scenarios with tailored components such as user profiles, memory, and operation modules. They excel at reproducing intricate behaviors, including users' dayto-day interactions, item engagements, and even social dynamics between users in realistic settings.
+7 Conclusion
+In this paper, we explore the potential of autonomous LLM-powered agents to discover rules for recommendation denoising. The proposed RuleAgent is equipped with several modules, effectively simulating the role of a data denoising expert and uncovering rules. Extensive experiments on three real-world datasets demonstrate the superior performance of RuleAgent.
+In light of RuleAgent's demonstrated capabilities in leveraging the agent-based rule discovery paradigm to address data denoising challenges, it holds significant potential as a valuable tool for improving data quality across a wide range of applications, extending beyond recommender systems. In future work, we aim to incorporate multi-agent collaborative reasoning to further enhance its effectiveness, while also broadening its validation to encompass a wider variety of data scenarios.
+References
+[1] Lisa P Argyle, Ethan C Busby, Nancy Fulda, Joshua R Gubler, Christopher Rytting, and David Wingate. 2023. Out of one, many: Using language models to simulate human samples. Political Analysis 31, 3 (2023), 337-351.
+[2] Zhi Bian, Shaojun Zhou, Hao Fu, Qihong Yang, Zhenqi Sun, Junjie Tang, Guiquan Liu, Kaikui Liu, and Xiaolong Li. 2021. Denoising user-aware memory network for recommendation. In Proceedings of ACM Conference on Recommender Systems 2021. 400-410.
+[3] Stephen Bonner and Flavian Vasile. 2018. Causal embeddings for recommendation. In Proceedings of the 12th ACM conference on recommender systems. 104-112.
+[4] Anthony Brohan, Yevgen Chebotar, Chelsea Finn, Karol Hausman, Alexander Herzog, Daniel Ho, Julian Ibarz, Alex Irpan, Eric Jang, Ryan Julian, et al. 2023. Do as i can, not as i say: Grounding language in robotic affordances. In Conference on robot learning. PMLR, 287-318.
+[5] Chi-Min Chan, Weize Chen, Yusheng Su, Jianxuan Yu, Wei Xue, Shanghang Zhang, Jie Fu, and Zhiyuan Liu. 2023. Chateval: Towards better llm-based evaluators through multi-agent debate. arXiv preprint arXiv:2308.07201 (2023).
+[6] Chong Chen, Fei Sun, Min Zhang, and Bolin Ding. 2022. Recommendation unlearning. In Proceedings of the ACM Web Conference 2022. 2768-2777.
+[7] Weize Chen, Yusheng Su, Jingwei Zuo, Cheng Yang, Chenfei Yuan, Chi-Min Chan, Heyang Yu, Yaxi Lu, Yi-Hsin Hung, Chen Qian, et al. 2023. Agentverse: Facilitating multi-agent collaboration and exploring emergent behaviors. In The Twelfth International Conference on Learning Representations.
+[8] Zeno Gantner, Lucas Drumond, Christoph Freudenthaler, and Lars SchmidtThieme. 2012. Personalized ranking for non-uniformly sampled items. In Proceedings of KDD Cup 2011. PMLR, 231-247.
+[9] Yunjun Gao, Yuntao Du, Yujia Hu, Lu Chen, Xinjun Zhu, Ziquan Fang, and Baihua Zheng. 2022. Self-Guided Learning to Denoise for Robust Recommendation. In Proceedings of the International ACM SIGIR Conference on Research and Development in Information Retrieval 2022. ACM, 1412-1422.
+[10] Xavier Glorot and Yoshua Bengio. 2010. Understanding the difficulty of training deep feedforward neural networks. In Proceedings of the thirteenth international conference on artificial intelligence and statistics 2010. JMLR, 249-256.
+[11] Xiangnan He and Tat-Seng Chua. 2017. Neural factorization machines for sparse predictive analytics. In Proceedings of the International ACM SIGIR Conference on Research and Development in Information Retrieval 2017. 355-364.
+
+[12] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang. 2020. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the International ACM SIGIR Conference on Research and Development in Information Retrieval 2020. 639-648.
+[13] Xiangnan He, Zhankui He, Xiaoyu Du, and Tat-Seng Chua. 2018. Adversarial personalized ranking for recommendation. In Proceedings of the International ACM SIGIR Conference on Research and Development in Information Retrieval 2018. 355-364.
+[14] Zhuangzhuang He, Yifan Wang, Yonghui Yang, Peijie Sun, Le Wu, Haoyue Bai, Jinqi Gong, Richang Hong, and Min Zhang. 2024. Double Correction Framework for Denoising Recommendation. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 1062-1072.
+[15] Sirui Hong, Xiawu Zheng, Jonathan Chen, Yuheng Cheng, Jinlin Wang, Ceyao Zhang, Zili Wang, Steven Ka Shing Yau, Zijuan Lin, Liyang Zhou, et al. 2023. Metagpt: Meta programming for multi-agent collaborative framework. arXiv preprint arXiv:2308.00352 (2023).
+[16] Xu Huang, Jianxun Lian, Yuxuan Lei, Jing Yao, Defu Lian, and Xing Xie. 2023. Recommender ai agent: Integrating large language models for interactive recommendations. arXiv preprint arXiv:2308.16505 (2023).
+[17] Diederik P Kingma and Jimmy Ba. 2014. Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 (2014).
+[18] Yuyuan Li, Chaochao Chen, Yizhao Zhang, Weiming Liu, Lingjuan Lyu, Xiaolin Zheng, Dan Meng, and Jun Wang. 2024. Ultrare: Enhancing receraser for recommendation unlearning via error decomposition. Advances in Neural Information Processing Systems 36 (2024).
+[19] Ning Miao, Yee Whye Teh, and Tom Rainforth. 2023. Selfcheck: Using llms to zero-shot check their own step-by-step reasoning. arXiv preprint arXiv:2308.00436 (2023).
+[20] Weike Pan and Li Chen. 2013. Gbpr: Group preference based bayesian personalized ranking for one-class collaborative filtering. In Proceedings of International Joint Conference on Artificial Intelligence 2013.
+[21] Joon Sung Park, Joseph O'Brien, Carrie Jun Cai, Meredith Ringel Morris, Percy Liang, and Michael S Bernstein. 2023. Generative agents: Interactive simulacra of human behavior. In Proceedings of the 36th annual acm symposium on user interface software and technology. 1-22.
+[22] Yuqi Qin, Pengfei Wang, and Chenliang Li. 2021. The world is binary: Contrastive learning for denoising next basket recommendation. In Proceedings of the 44th international ACM SIGIR conference on research and development in information retrieval. 859-868.
+[23] Krishan Rana, Jesse Haviland, Sourav Garg, Jad Abou-Chakra, Ian Reid, and Niko Suenderhauf. 2023. Sayplan: Grounding large language models using 3d scene graphs for scalable robot task planning. In 7th Annual Conference on Robot Learning.
+[24] Shangqing Tu, Chunyang Li, Jifan Yu, Xiaozhi Wang, Lei Hou, and Juanzi Li. 2023. Chatlog: Recording and analyzing chatgpt across time. arXiv preprint arXiv:2304.14106 (2023).
+[25] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar. 2023. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291 (2023).
+[26] J Wang, L Yu, W Zhang, Y Gong, Y Xu, B Wang, P Zhang, and D Zhang. 2018. A minimax game for unifying generative and discriminative information retrieval models. Proceedings of the International ACM SIGIR Conference on Research and Development in Information Retrieval 2018 (2018).
+[27] Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, et al. 2024. A survey on large language model based autonomous agents. Frontiers of Computer Science 18, 6 (2024), 186345.
+[28] Lei Wang, Jingsen Zhang, Hao Yang, Zhiyuan Chen, Jiakai Tang, Zeyu Zhang, Xu Chen, Yankai Lin, Ruihua Song, Wayne Xin Zhao, et al. 2023. User behavior simulation with large language model based agents. arXiv preprint arXiv:2306.02552 (2023).
+[29] Wenjie Wang, Fuli Feng, Xiangnan He, Liqiang Nie, and Tat-Seng Chua. 2021. Denoising implicit feedback for recommendation. In Proceedings of the ACM International Conference on Web Search and Data Mining 2021. 373-381.
+[30] Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, and Denny Zhou. 2022. Self-consistency improves chain of thought reasoning in language models. arXiv preprint arXiv:2203.11171 (2022).
+[31] Yancheng Wang, Ziyan Jiang, Zheng Chen, Fan Yang, Yingxue Zhou, Eunah Cho, Xing Fan, Xiaojiang Huang, Yanbin Lu, and Yingzhen Yang. 2023. Recmind: Large language model powered agent for recommendation. arXiv preprint arXiv:2308.14296 (2023).
+[32] Yu Wang, Xin Xin, Zaiqiao Meng, Joemon M Jose, Fuli Feng, and Xiangnan He. 2022. Learning Robust Recommenders through Cross-Model Agreement. In Proceedings of the ACM Web Conference 2022. 2015-2025.
+[33] Zongwei Wang, Min Gao, Wentao Li, Junliang Yu, Linxin Guo, and Hongzhi Yin. 2023. Efficient bi-level optimization for recommendation denoising. In Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining.
+
+[34] Zitai Wang, Qianqian Xu, Zhiyong Yang, Xiaochun Cao, and Qingming Huang. 2021. Implicit Feedbacks are Not Always Favorable: Iterative Relabeled OneClass Collaborative Filtering against Noisy Interactions. In Proceedings of the 29th ACM International Conference on Multimedia 2021. 3070-3078.
+[35] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems 35 (2022), 24824-24837.
+[36] Fan Wu, Min Gao, Junliang Yu, Zongwei Wang, Kecheng Liu, and Xu Wang. 2021. Ready for emerging threats to recommender systems? A graph convolution-based generative shilling attack. Information Sciences 2021 578 (2021), 683-701.
+[37] Hongzhi Yin, Qinyong Wang, Kai Zheng, Zhixu Li, Jiali Yang, and Xiaofang Zhou. 2019. Social influence-based group representation learning for group recommendation. In IEEE 35th International Conference on Data Engineering 2019. 566-577.
+[38] Junliang Yu, Xin Xia, Tong Chen, Lizhen Cui, Nguyen Quoc Viet Hung, and Hongzhi Yin. 2023. XSimGCL: Towards extremely simple graph contrastive learning for recommendation. IEEE Transactions on Knowledge and Data Engineering (2023).
+[39] Junliang Yu, Hongzhi Yin, Jundong Li, Qinyong Wang, Nguyen Quoc Viet Hung, and Xiangliang Zhang. 2021. Self-supervised multi-channel hypergraph convolutional network for social recommendation. In Proceedings of the Web Conference
+
+Zongwei Wang et al.
+2021. 413-424. [40] An Zhang, Yuxin Chen, Leheng Sheng, Xiang Wang, and Tat-Seng Chua. 2024.
+On generative agents in recommendation. In Proceedings of the 47th international ACM SIGIR conference on research and development in Information Retrieval. 1807- 1817. [41] Junjie Zhang, Yupeng Hou, Ruobing Xie, Wenqi Sun, Julian McAuley, Wayne Xin Zhao, Leyu Lin, and Ji-Rong Wen. 2024. Agentcf: Collaborative learning with autonomous language agents for recommender systems. In Proceedings of the ACM on Web Conference 2024. 3679-3689. [42] Wei Zhang, Junbing Yan, Zhuo Wang, and Jianyong Wang. 2022. Neuro-Symbolic Interpretable Collaborative Filtering for Attribute-based Recommendation. In Proceedings of the ACM Web Conference 2022. 3229-3238. [43] Wayne Xin Zhao, Kun Zhou, Junyi Li, Tianyi Tang, Xiaolei Wang, Yupeng Hou, Yingqian Min, Beichen Zhang, Junjie Zhang, Zican Dong, et al. 2023. A survey of large language models. arXiv preprint arXiv:2303.18223 (2023). [44] Xizhou Zhu, Yuntao Chen, Hao Tian, Chenxin Tao, Weijie Su, Chenyu Yang, Gao Huang, Bin Li, Lewei Lu, Xiaogang Wang, et al. 2023. Ghost in the minecraft: Generally capable agents for open-world environments via large language models with text-based knowledge and memory. arXiv preprint arXiv:2305.17144 (2023).
+
+RuleAgent: Discovering Rules for Recommendation Denoising with Autonomous Language Agents
+
+A APPENDIX
+A.1 System Prompt Examples
+System Prompt of .
+You have three potential planning paths for deciding the next step: 1. Current Confidence-Based Planning: Current confidence scores are < >. Examine the confidence levels and their associated reasons stored in your confidence data. Compare these confidence levels with the model's training results. Determine the most suitable next step and explain your reasoning. 2. Current Rule-Based Planning: Current rule < >. Refer to the rules stored in your current rule set. Compare the model training results against these rules. Decide on the most appropriate next step and provide the rationale. 3. Historical Action-Based Planning: The historical actions taken are <>. Analyze past actions and their outcomes. Use these insights to determine the most suitable next step and explain why. The available actions are: a. Confidence Reflection. This action is to update the confidence score and corresponding explanation of samplings. You will choose this action when the current confidence scores assigned to the sampled data are found to be inaccurate or insufficient. b. Rule Reflection. This action is to update denoising rule. You will choose this action when the existing denoising rule is either incorrect or can be further refined. c. LossEraser Training. Use the confidence memory to filter data for the next recommendation training phase, then you can get new recommendation model parameters. d. Model Evaluation. Evaluate current performance of recommendation model to show whether it has improved or worsened. Compare the decisions with these three planning path, then decide on the most suitable next step and explain your reasoning. Please provide a response that strictly follows the response format: The next action is: <a/b/c/d>. The reason for this decision is: <Your Explanation>.
+Output Example of .
+The next action is: a, the reason for this decision is: The historical actions taken so far have focused on initializing the model with the latest user-item interactions (Action c) and evaluating the model's performance post-initialization (Action d). With the model's performance having improved after the initialization, the next step should be to update the confidence scores (Action a). This action is suitable because it addresses the need to refine and possibly correct the initial confidence scores assigned to the sampled data based on the performance outcomes. It also ensures a solid foundation for further adjustments and refinements in the denoising rule (Action b), if needed.
+System Prompt of    .
+Please provide the updated confidence score (0-2, 0-1 means noisy sample, 1-2 means clean sample) and explain why you assigned this updated score. The denoising rule is: < >, and User Index is <UserIndex>, Item Index is <ItemIndex>, Historical Loss is <L>. You previously provided: The confidence score is < >. The explanation was: < >. Please analyze the reason and update your confidence score and explanation accordingly. The response format should be: The confidence score is <0-2>. The explanation: <Your Explanation>.
+
+Output Example of    .
+The confidence score is 0.125. The explanation: The updated confidence score has been significantly reduced from 0.25 to 0.125 due to the persistent and substantial negative impact on the model's performance that the interaction between User Index 10 and Item Index 396 has been causing. The historical loss data initially indicated that the interaction was noisy, which was reflected in the initial confidence score of 0.916. However, subsequent actions to update the confidence scores and re-evaluate the model's performance have consistently resulted in worsened performance, suggesting that the interaction is not only noisy but also potentially malicious.
+System Prompt of   .
+The current denoising rule is: < >. The current confidence scores and reasons are <>, and the reason for the agent's update denoising rule was: <>. Based on this information, follow these steps: 1. Analyze current confidence scores and reasons, and identify which interactions are considered noisy and which are malicious, and summarize the reasoning for categorizing these interactions as noisy or malicious. 2. Based on this analysis, compare the current denoising rule and update the denoising rule. Organize the rules hierarchically with descriptive classification labels to ensure they are clear, concise, and actionable, such as "Rule-1(Value-Related)", "Rule-1.1(Label)", "Rule-1.1.1(Label)", ..., "RuleN(Label)", "Rule-N.1(Label)", etc., to organize different levels of rules. 3. Merge similar rules, ensuring the rules are free of redundancy. 4. Finally, output the updated denoising rules, and the response format should be strictly as follows: The updated denoising rules are: <New Rules>.
+Output Example of   .
+The updated denoising rules are: Rule-1(Value-Related): The confidence of the interaction data is related to the loss value oft he interaction data, and the one with a large loss is more likely to be a noisy sample.
+- Rule-1.1(Value Threshold): The noisy sample's loss value exceeds the 95th percentile threshold.
+- Rule-1.1.1(Multiple Exceedances): If the loss of a sample exceeds the threshold three times across multiple trainings, it is classified as a noisy sample. Rule-2(Fluctuation-Related): An interaction is considered noisy if the loss value shows a pattern of significant fluctuations over time.
+- Rule-2.1(High Variance): The loss value demonstrates high variance over consecutive time periods.
+- Rule-2.1.1(Variance Threshold): If the variance exceeds a threshold 0.5 within a specific number of time intervals, the sample is flagged as noisy.
+- Rule-2.2(Oscillation): The loss value alternates between extreme highs and lows without a consistent trend.
+- Rule-2.2.1(Oscillation Threshold): If the loss value oscillates beyond set upper bound (0.8) and lower bound (0.06) 4 times, it is marked as a noisy sample. Rule-3(Outlier-Related): An interaction is considered noisy if the loss value is an outlier compared to the surrounding loss values in the dataset.
+- Rule-3.1(Median Comparison): The loss value is significantly higher or lower than the median loss of similar interactions.
+
+

@@ -1,0 +1,35 @@
+{
+  "note": "pop_gap = median rank(negatives) - rank(target), rank 0 = most popular; negative => negatives more popular than target (harder pool)",
+  "n_cases": 196,
+  "pool_n": 100,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "per_variant": {
+    "uniform": {
+      "category_overlap_mean": 0.004597826086956522,
+      "category_overlap_median": 0.002,
+      "popularity_gap_mean": 475891.42091836734,
+      "popularity_gap_median": 889157.4,
+      "popularity_gap_std": 756369.4629402941
+    },
+    "popneg": {
+      "category_overlap_mean": 0.00508695652173913,
+      "category_overlap_median": 0.002,
+      "popularity_gap_mean": -496447.30816326535,
+      "popularity_gap_median": -65708.2,
+      "popularity_gap_std": 758779.7541331842
+    },
+    "catneg": {
+      "category_overlap_mean": 0.9917934782608696,
+      "category_overlap_median": 1.0,
+      "popularity_gap_mean": 354331.89897959185,
+      "popularity_gap_median": 660408.05,
+      "popularity_gap_std": 765951.9912723146
+    }
+  }
+}

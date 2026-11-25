@@ -1,0 +1,207 @@
+Singapore Management University
+Institutional Knowledge at Singapore Management University
+Research Collection School Of Computing and School of Computing and Information Systems Information Systems
+9-2025
+VibeMus: Proactive agentic system for music personalization
+Zhiliang GUO Teng TU Yunshan MA Singapore Management University, ysma@smu.edu.sg Xun YANG
+Follow this and additional works at: https://ink.library.smu.edu.sg/sis_research Part of the Artificial Intelligence and Robotics Commons, and the Graphics and Human Computer
+Interfaces Commons
+Citation GUO, Zhiliang; TU, Teng; MA, Yunshan; and YANG, Xun. VibeMus: Proactive agentic system for music personalization. (2025). MMAsia '25: Proceedings of the 7th ACM International Conference on Multimedia in Asia, Kuala Lumpur, Malaysia, December 9-12. 1-3. Available at: https://ink.library.smu.edu.sg/sis_research/10915
+This Conference Proceeding Article is brought to you for free and open access by the School of Computing and Information Systems at Institutional Knowledge at Singapore Management University. It has been accepted for inclusion in Research Collection School Of Computing and Information Systems by an authorized administrator of Institutional Knowledge at Singapore Management University. For more information, please email cherylds@smu.edu.sg.
+
+. .
+Latest updates: hps://dl.acm.org/doi/10.1145/3743093.3771663
+. .
+DEMONSTRATION
+VibeMus: Proactive Agentic System for Music Personalization
+ZHILIANG GUO, University of Science and Technology of China, Hefei, Anhui, China
+.
+TENG TU, National University of Singapore, Singapore City, Singapore
+.
+YUNSHAN MA, Singapore Management University, Singapore City, Singapore
+.
+XUN YANG, University of Science and Technology of China, Hefei, Anhui, China
+. . .
+Open Access Support provided by:
+.
+University of Science and Technology of China
+.
+National University of Singapore
+.
+Singapore Management University
+.
+
+PDF Download 3743093.3771663.pdf 26 January 2026 Total Citations: 0 Total Downloads: 336
+.
+.
+Published: 09 December 2025
+.
+.
+Citation in BibTeX format
+.
+.
+MMAsia '25: ACM Multimedia Asia December 9 - 12, 2025 Kuala Lumpur, Malaysia
+.
+.
+Conference Sponsors: SIGMM
+
+MMAsia '25: Proceedings of the 7th ACM International Conference on Multimedia in Asia (December 2025) hps://doi.org/10.1145/3743093.3771663 ISBN: 9798400720055
+.
+
+VibeMus: Proactive Agentic System for Music Personalization
+
+Zhiliang Guo
+University of Science and Technology of China Hefei, Anhui, China
+RedstoneGuo@outlook.com
+
+Teng Tu
+National University of Singapore Singapore, Singapore teng.tu@u.nus.edu
+
+Yunshan Ma
+Singapore Management University Singapore, Singapore ysma@smu.edu.sg
+
+Xun Yang
+University of Science and Technology of China Hefei, Anhui, China xyang21@ustc.edu.cn
+
+Abstract
+Large language models (LLMs) enable diverse forms of AI-assisted creation, yet they often struggle to bridge the preference-articulation gap: users may provide incomplete or vague intentions or lack the vocabulary to specify what they want, yielding outputs misaligned with true preferences. To address this gap and facilitate music creation in a vibe-centric environment, we introduce VibeMus, a proactive agentic system built on open-source components. The system engages in multi-turn dialogue to progressively determine the music's emotion, genre, lyrics, and other aspects before generation. Simulated evaluations show that proactive clarification improves alignment with users' intended nuances. Our approach is training-free, leveraging an open-source music model, an opensource agentic framework, and publicly available LLM APIs. We release our code, showcase several demos, and provide additional details at https://github.com/tuteng0915/VibeMus.
+CCS Concepts
+· Information systems  Multimedia information systems; · Applied computing  Sound and music computing.
+Keywords
+Music Generation, Lyric Generation, Proactive Agentic System, Sound and Music Computing.
+ACM Reference Format: Zhiliang Guo, Teng Tu, Yunshan Ma, and Xun Yang. 2025. VibeMus: Proactive Agentic System for Music Personalization. In ACM Multimedia Asia (MMAsia '25), December 09-12, 2025, Kuala Lumpur, Malaysia. ACM, New York, NY, USA, 3 pages. https://doi.org/10.1145/3743093.3771663
+1 Introduction
+The rapid advancement of large language models (LLMs) has expanded creative human-AI collaboration, from article [19-21] and poetry [17] to music [6, 10, 15, 16] and visual art [22]. A persistent obstacle is the preference articulation gap: users struggle to express nuanced, experiential intents in an LLM-comprehensible way [3]. Limited vocabulary for abstract feelings, vague inspiration, and difficulty translating lived experience into actionable instructions often lead LLMs to proceed without sufficient clarification, yielding fabricated details and misalignment with the user's intent [8, 18].
+Prior work on AI-assisted creative writing largely optimizes generation quality (e.g., style consistency, thematic relevance) under detailed, explicit prompts [10, 13, 17]. Personalization remains
+
+challenging: lyric-generation work typically targets style transfer [2], melody consistency [11, 25], and emotion alignment [14] under static, fully specified prompts, often producing over-generic outputs. Meanwhile, proactive dialogue agents that ask clarifying questions before acting [7-9] have focused on structured, objective domains (planning, programming, embodied tasks) with clear goals and constraints [4, 24, 26]. In creative settings, tools often surface predefined options rather than eliciting open-ended preferences via agent-led dialogue--an underexplored direction.
+To bridge this gap and enable AI-assisted music creation in a vibe-centric environment, we introduce VibeMus, a proactive agentic system for music personalization. The agent conducts multi-turn dialogue to surface latent preferences (e.g. emotional tone, narrative perspective, cultural references) before generation, and it supports natural-language, span-targeted editing. For evaluation, we leverage the ToT [1] dataset and simulate user-agent interactions to assess personalization fidelity via rubric-based scoring.
+Our contributions are threefold: 1) We formalize proactive, openended preference elicitation for creative music generation as an iterative, dialog-driven process with a lightweight stopping rule and question-selection heuristic; 2) We provide a training-free, reproducible evaluation protocol on ToT-derived requests, including simulated users and rubric prompts for LLM-based assessment; 3) We empirically show that proactive dialog improves alignment over one-shot generation given the same initial prompt and approaches an oracle that receives the full requirement.
+2 System Design
+The overall system is a proactive agentic system, as shown in Figure 1. At the core of the system are two agents: 1) an interface chatbot agent, which elicits user intentions into lyrics, music tags, and atomic edits, implemented as a prompting strategy based on the Qwen Agent [5]; 2) a music generation agent, built on the opensource ACE-Step [12] for lyrics-to-music synthesis. We implement our system as a website, where the front end uses a Gradio interface for user-system interaction, while calling Qwen LLM via web API and running ACE-Step model at the backend. Interface Chatbot Agent follows a clarify-then-generate workflow. (1) Proactive Clarification: After receiving the initial instruction, the agent identifies unresolved aspects necessary for song generation, such as emotional tone, narrative perspective, cultural references, or specific words and phrases in the target lyrics. The agent then formulates targeted follow-up questions based on the
+
+missing aspects and asks the user for clarification. (2) Creative Generation & Editing: When the agent gathers enough information, it generates a draft of the lyrics and tags for the user and asks for confirmation. The user may request for further polishing. Once the user confirms, the agent activates song generation using the ACEStep model. After that, if the user wants the generated result to be further revised, the agent can interpret granular editing requests and translate them into tool calls, including extending, clipping, repainting, or editing the song at specific lines or time segments.
+
+according to how well they align with the request in the 5 aspects.
+
+2 10 9
+
+Our Approach Without Clarification Full Intention
+
+8
+
+7
+
+6
+
+Nuanced Intention
+
+... ...
+Gap of Expression
+
+Vague Instruction
+1 1
+2 2
+Editing Requests
+
+Clarified Instruction
+
+Lyric Tags
+
+{Repaint, Extend, Clip, Edit}
+
+Music Generation
+Model
+
+User
+
+Proactive Agentic System
+
+Figure 1: The overview of the system, where the user and system can have multiple-round interactions during the music generation.  and  represent the agent's clarifying question and the user's answer of the -th round.
+Music Generation Agent is based on ACE-Step model [12]. This open-source model is capable of generating high-quality songs given the tags and lyrics, and can also accomplish the task of retaking, editing, or extending the generated music. We simplify the interface of this model, which originally requires domain knowledge to use, by integrating the proactive agent, so that music generation becomes simpler and more user-friendly.
+3 Demonstration and Evaluation
+To evaluate our system, we use a subset of the dataset  [1], a dataset of tip-of-the-tongue song finding requests, which covers different aspects of the required music. To make it suitable for our task, we transform the song finding requests into song generating requests via LLM, which aims to simulate a real user prompt. Each request is defined as a set of atomic elements:  = {1, 2, . . . }, and for every user message, it covers some newly mentioned items    ( = 0 represents the initial request). Each element is categorized in one of the following 5 aspects: "Genre", "Time Period / Recency", "Story/Lyric Description", "Vocals", "Composition", which are picked from the original dataset for being related to music generation, and are able to cover different aspects of information required in song generation. We feed the song requests to an LLM simulating user behavior and make it communicate with the models. Along with our proposed strategy, we conduct the experiment on an agent without proactive mechanism. In addition to the user simulator, as comparison, we also test the system with the input of full intentions. We then assess each set of generated lyrics and tags with a judge LLM 1, which scores each generated lyrics and tags 0  10 points
+
+1All the LLMs involved are Qwen-3-Max [23] unless otherwise indicated.
+
+5 Genre / Recency escription
+Time PeriodStory/Lyric D
+
+Vocals mposition Average Co
+
+Figure 2: Overall performance comparison.
+As Figure 2 shows, our approach with proactive dialog mechanism obtains a higher score than directly generating the tags and lyrics after the initial instruction, and close to the generation after receiving the full intent. Specifically, we observe much higher performance improvements on story/lyric description and composition, implying that these aspects prone to being overlooked in the initial real user instructions. We also count the number of occurred elements (defined in the five aspects above) in the requests, as the user-agent interaction progresses. As shown in Table 1, Genre has been captured quite well since the very initial instruction. Meanwhile, Vocals, Composition and Story/Lyric Description tend to keep increasing during the clarifying process, showing that the proactive multi-round design can progressively clarify user's intents.
+
+Aspect
+
+0 1 2 3+ Total Target Cov
+
+Genre
+
+160 57 21 10 248 287 86.4%
+
+TP or Recency 42 18 10 4 74 118 62.7%
+
+Story or Lyric Desc. 147 98 81 34 360 453 79.5%
+
+Vocals
+
+47 30 35 10 122 179 68.2%
+
+Composition
+
+53 30 27 9 119 159 74.8%
+
+Total
+
+449 233 174 67 923 1196 77.1%
+
+Questions
+
+- 203 151 89 443
+
+-
+
+-
+
+Table 1: Element occurrence count by dialog round and el-
+ement aspect. 3+ represents the sum of round 3 and later. Cov stands for the coverage rate.
+
+4 Conclusion
+We present a proactive agentic system for music personalization that interacts with the user to surface latent intentions, clarify under-specified instructions, and then generate lyrics and song tags as inputs to downstream music-generation models; the agent also supports natural-language, span-targeted editing. For future work, we will add human evaluation, extend to other creative modalities. In addition, a limitation concerns ethical and safety considerations: creative generation entails risks of style imitation (potential appropriation), cultural insensitivity, and inappropriate lyrical content. In this prototype, we rely on provider-side LLM safety filters for refusal, redaction, and toxicity moderation.
+2For direct assessing the quality of the generate music, please refer to the demo video. Please note, we use an open-source music generation model, the evaluation of which is not within the scope of this paper.
+
+2
+
+References
+[1] Samarth Bhargav, Anne Schuth, and Claudia Hauff. 2023. When the Music Stops: Tip-of-the-Tongue Retrieval for Music. In SIGIR. ACM, 2506-2510.
+[2] Jia-Wei Chang, Jason C. Hung, and Kuan-Cheng Lin. 2021. Singability-enhanced lyric generator with music style transfer. Computer Communications 168 (2021), 33-53. doi:10.1016/j.comcom.2021.01.002
+[3] Zongyu Chang, Feihong Lu, Ziqin Zhu, Qian Li, Cheng Ji, Zhuo Chen, Yang Liu, Ruifeng Xu, Yangqiu Song, Shangguang Wang, and Jianxin Li. 2025. Bridging the Gap Between LLMs and Human Intentions: Progresses and Challenges in Instruction Understanding, Intention Reasoning, and Reliable Generation. CoRR abs/2502.09101 (2025).
+[4] Valerie Chen, Alan Zhu, Sebastian Zhao, Hussein Mozannar, David A. Sontag, and Ameet Talwalkar. 2025. Need Help? Designing Proactive AI Assistants for Programming. In CHI. ACM, 881:1-881:18.
+[5] QwenLM Contributors. 2025. Qwen-Agent: Agent framework and applications built upon Qwen. https://github.com/QwenLM/Qwen-Agent. Accessed: September 14, 2025.
+[6] Jade Copet, Felix Kreuk, Itai Gat, Tal Remez, David Kant, Gabriel Synnaeve, Yossi Adi, and Alexandre Défossez. 2023. Simple and Controllable Music Generation. In NeurIPS.
+[7] Yang Deng, Wenqiang Lei, Wai Lam, and Tat-Seng Chua. 2023. A Survey on Proactive Dialogue Systems: Problems, Methods, and Prospects. In IJCAI. ijcai.org, 6583-6591.
+[8] Yang Deng, Lizi Liao, Liang Chen, Hongru Wang, Wenqiang Lei, and Tat-Seng Chua. 2023. Prompting and Evaluating Large Language Models for Proactive Dialogues: Clarification, Target-guided, and Non-collaboration. In EMNLP (Findings). Association for Computational Linguistics, 10602-10621.
+[9] Yang Deng, Lizi Liao, Zhonghua Zheng, Grace Hui Yang, and Tat-Seng Chua. 2024. Towards Human-centered Proactive Conversational Agents. In SIGIR. ACM, 807-818.
+[10] Shuangrui Ding, Zihan Liu, Xiaoyi Dong, Pan Zhang, Rui Qian, Junhao Huang, Conghui He, Dahua Lin, and Jiaqi Wang. 2025. SongComposer: A Large Language Model for Lyric and Melody Generation in Song Composition. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), ACL 2025, Vienna, Austria, July 27 - August 1, 2025, Wanxiang Che, Joyce Nabende, Ekaterina Shutova, and Mohammad Taher Pilehvar (Eds.). Association for Computational Linguistics, 7108-7127. https://aclanthology.org/ 2025.acl- long.352/
+[11] Wei Duan, Yi Yu, and Keizo Oyama. 2024. Semantic dependency network for lyrics generation from melody. Neural Comput. Appl. 36, 8 (2024), 4059-4069.
+[12] Junmin Gong, Sean Zhao, Sen Wang, Shengyuan Xu, and Joe Guo. 2025. ACEStep: A Step Towards Music Generation Foundation Model. CoRR abs/2506.00045 (2025).
+[13] Kuntong Han, Keyang Tang, and Meng Wang. 2025. Stage Wizard: Enhancing Tangible Storytelling with Multimodal LLMs. In Proceedings of the Nineteenth International Conference on Tangible, Embedded, and Embodied Interaction, TEI 2025, Bordeaux/Talence, France, March 4-7, 2025. ACM, 37:1-37:13. doi:10.1145/ 3689050.3704429
+
+[14] Yin-Fu Huang and Kai-Cheng You. 2021. Automated Generation of Chinese Lyrics Based on Melody Emotions. IEEE Access 9 (2021), 98060-98071.
+[15] Atin Sakkeer Hussain, Shansong Liu, Chenshuo Sun, and Ying Shan. 2023. M2UGen: Multi-modal Music Understanding and Generation with the Power of Large Language Models. CoRR abs/2311.11255 (2023).
+[16] Xiaohao Liu, Teng Tu, Yunshan Ma, and Tat-Seng Chua. 2025. Extending Visual Dynamics for Video-to-Music Generation. arXiv:2504.07594 [cs.MM] https: //arxiv.org/abs/2504.07594
+[17] Brian Porter and Edouard Machery. 2024. AI-generated poetry is indistinguishable from human-written poetry and is rated more favorably. Scientific Reports 14, 1 (14 Nov 2024), 26133. doi:10.1038/s41598-024-76900-1
+[18] Cheng Qian, Bingxiang He, Zhong Zhuang, Jia Deng, Yujia Qin, Xin Cong, Zhong Zhang, Jie Zhou, Yankai Lin, Zhiyuan Liu, and Maosong Sun. 2024. Tell Me More! Towards Implicit User Intention Understanding of Language Model Driven Agents. In ACL (1). Association for Computational Linguistics, 1088-1113.
+[19] Yilun Qiu, Tianhao Shi, Xiaoyan Zhao, Fengbin Zhu, Yang Zhang, and Fuli Feng. 2025. Latent Inter-User Difference Modeling for LLM Personalization. CoRR abs/2507.20849 (2025).
+[20] Yilun Qiu, Xiaoyan Zhao, Yang Zhang, Yimeng Bai, Wenjie Wang, Hong Cheng, Fuli Feng, and Tat-Seng Chua. 2025. Measuring What Makes You Unique: Difference-Aware User Modeling for Enhancing LLM Personalization. In ACL (Findings). Association for Computational Linguistics, 21258-21277.
+[21] Momin Naushad Siddiqui, Roy D. Pea, and Hari Subramonyam. 2025. Script&Shift: A Layered Interface Paradigm for Integrating Content Development and Rhetorical Strategy with LLM Writing Assistants. In CHI. ACM, 532:1-532:19.
+[22] Shengyuan Xie, Eduardo Benítez Sandoval, Khaja Ahmed Shaik, and Francisco Cruz. 2025. Embodied Generative AI Art for Enhanced Human-Robot Interaction Through a Human-Centric LLM-Guided Robotic Arm Drawing System. In HRI. IEEE, 1727-1730.
+[23] An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, Chujie Zheng, Dayiheng Liu, Fan Zhou, Fei Huang, Feng Hu, Hao Ge, Haoran Wei, Huan Lin, Jialong Tang, Jian Yang, Jianhong Tu, Jianwei Zhang, Jian Yang, Jiaxi Yang, Jingren Zhou, Junyang Lin, Kai Dang, Keqin Bao, Kexin Yang, Le Yu, Lianghao Deng, Mei Li, Mingfeng Xue, Mingze Li, Pei Zhang, Peng Wang, Qin Zhu, Rui Men, Ruize Gao, Shixuan Liu, Shuang Luo, Tianhao Li, Tianyi Tang, Wenbiao Yin, Xingzhang Ren, Xinyu Wang, Xinyu Zhang, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yinger Zhang, Yu Wan, Yuqiong Liu, Zekun Wang, Zeyu Cui, Zhenru Zhang, Zhipeng Zhou, and Zihan Qiu. 2025. Qwen3 Technical Report. CoRR abs/2505.09388 (2025).
+[24] Xuan Zhang, Yang Deng, Zifeng Ren, See-Kiong Ng, and Tat-Seng Chua. 2024. Ask-before-Plan: Proactive Language Agents for Real-World Planning. In EMNLP (Findings). Association for Computational Linguistics, 10836-10863.
+[25] Zhe Zhang, Yi Yu, and Atsuhiro Takasu. 2024. Controllable Syllable-Level Lyrics Generation From Melody With Prior Attention. IEEE Trans. Multim. 26 (2024), 11083-11094.
+[26] Xinzhe Zheng, Sijie Ji, Jiawei Sun, Renqi Chen, Wei Gao, and Mani Srivastava. 2025. ProMind-LLM: Proactive Mental Health Care via Causal Reasoning with Sensor Data. In ACL (Findings). Association for Computational Linguistics, 20150- 20171.
+
+3
+
+

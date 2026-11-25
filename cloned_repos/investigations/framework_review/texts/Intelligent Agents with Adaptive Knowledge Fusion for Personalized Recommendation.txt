@@ -1,0 +1,290 @@
+Intelligent Agents with Adaptive Knowledge Fusion for Personalized Recommendation
+
+Yuanqing Yu
+DCST, Tsinghua University Quan Cheng Laboratory Beijing 100084, China
+yyq23@mails.tsinghua.edu.cn
+
+Zhefan Wang
+DCST, Tsinghua University Beijing 100084, China
+wzf23@mails.tsinghua.edu.cn
+
+Chumeng Jiang
+DCST, Tsinghua University Beijing 100084, China
+jcm24@mails.tsinghua.edu.cn
+
+Xinyi Li
+DCST, Tsinghua University Beijing 100084, China
+lixinyi22@mails.tsinghua.edu.cn
+
+Jiayin Wang
+DCST, Tsinghua University Beijing 100084, China
+jiayinwangthu@gmail.com
+
+Min Zhang
+DCST, Tsinghua University Quan Cheng Laboratory Beijing 100084, China z-m@tsinghua.edu.cn
+
+Abstract
+With powerful semantic understanding, planning, and decisionmaking capabilities, LLM-based agents have been applied to solve recommendation tasks. However, challenges remain in effectively evolving user preferences within agent modules and in leveraging external knowledge to improve recommendation accuracy. In this paper, we propose an innovative agent-based framework for personalized recommendation systems that integrates adaptive knowledge fusion to address these challenges. Our framework consists of two primary components: an intelligent agent and the fusion of external knowledge. The intelligent agent includes a memory module that simulates human-like retention of user-item interactions and a reasoning module that applies Chain-of-Thought (CoT) techniques to mimic human thought processes. Furthermore, we introduce two main strategies for knowledge fusion: (1) a preranking approach using external knowledge to reorder candidates and reduce bias, and (2) an ensemble method that combines multiple ranking signals for more accurate recommendations. Evaluations on three public datasets and the AgentSociety Challenge1 demonstrate the framework's effectiveness in enhancing recommendation quality and adaptability. The code is open-sourced2.
+CCS Concepts
+· Information systems  Recommender systems.
+Keywords
+Agent; Recommendation; Knowledge Fusion
+Corresponding author. This work is supported by the Natural Science Foundation of China (Grant No. U21B2026, 62372260), Quan Cheng Laboratory (Grant No.QCLZD202301). 1 https://tsinghua-fib-lab.github.io/AgentSocietyChallenge/ 2 https://github.com/wzf2000/DummyAgent
+This work is licensed under a Creative Commons Attribution International 4.0 License.
+WWW Companion '25, Sydney, NSW, Australia © 2025 Copyright held by the owner/author(s). ACM ISBN 979-8-4007-1331-6/2025/04 https://doi.org/10.1145/3701716.3719230
+
+ACM Reference Format: Yuanqing Yu, Zhefan Wang, Chumeng Jiang, Xinyi Li, Jiayin Wang, and Min Zhang. 2025. Intelligent Agents with Adaptive Knowledge Fusion for Personalized Recommendation. In Companion Proceedings of the ACM Web Conference 2025 (WWW Companion '25), April 28-May 2, 2025, Sydney, NSW, Australia. ACM, New York, NY, USA, 5 pages. https://doi.org/10.1145/3701716. 3719230
+1 Introduction
+Recommender systems (RSs) play a vital role in improving user experience and item dissemination, which have become an essential part of various domains, such as e-commerce, social media, and so on [5, 17]. Currently, the advancement of Large Language Models (LLMs) [3, 14, 16] has introduced LLM-based agents [13, 15, 23] capable of completing complex tasks. These agents' semantic understanding, planning, and decision-making skills unlock new potentials for context-aware personalized recommendations.
+Researchers have started to utilize the capabilities of agents to solve recommendation tasks. Existing work [19, 24, 25] primarily focuses on employing agents for simulating user or item behaviors, providing insights into user preferences but falling short of integration into RSs. On the other hand, some studies [9, 20, 21] attempt to leverage the capabilities of agents to directly build a recommender, primarily building an agent with profile, planning, memory, and action modules. However, these methods might not align with realworld user preferences as LLMs suffer inherent bias such as input position bias and popularity bias without the calibration of external knowledge [11].
+To overcome these limitations, we propose a novel agent framework that incorporates adaptive knowledge fusion for personalized recommendation. This framework is designed to fully leverage the potential of LLMs, enabling intelligent, context-aware recommendations through the dynamic integration of diverse information sources. The framework is composed of two primary modules: Agent and Knowledge Fusion. For the Agent, we design two key components: memory and reasoning. The memory module simulates human-like memory retention by storing relevant user-item interaction data and user-generated reviews. The reasoning module employs Chain-of-Thought (CoT) [22] techniques, mimicking human thought processes to analyze the information of the target user
+
+2983
+
+WWW Companion '25, April 28-May 2, 2025, Sydney, NSW, Australia
+and candidate items and generate personalized recommendations. Additionally, we propose two methods for Knowledge Fusion. The first method is a preranking phase that adjusts the initial candidate list based on external knowledge, such as item quality and popularity. This phase mitigates positional bias by ensuring that more relevant items are prioritized before the agent ranks them. The second method involves an ensemble process, where multiple ranking signals--such as quality rank, popularity rank, affinity rank, and agent rank--are weighted and combined to generate the final recommendation list. Our approach was evaluated on both public real-world datasets (Amazon [7], Yelp [2] and GoodReads[18]) and on the recommendation track of WWW'25 AgentSociety Challenge, a competition focused on advancing web experiences using LLM agents for personalized recommendations, and both showed superior performance.
+In summary, our contributions are three-fold:
+· We propose a novel agent-based framework that incorporates adaptive knowledge fusion for personalized recommendation. We design an intelligent agent with a memory and reasoning module, enabling the agent to effectively simulate human-like retention of user-item interactions and decision-making processes.
+· We innovatively propose two knowledge fusion strategies for agent-based systems: one that uses external knowledge to prerank candidates, and another that combines multiple ranking signals through an ensemble method to improve accuracy.
+· Our method demonstrates effectiveness on three public datasets and achieves a top-3 ranking in the AgentSociety Challenge at WWW'25, with a hit rate@5 of 0.6250.
+2 Methodology
+2.1 Overall Framework
+To achieve more effective personalized recommendations, we present an agent-based framework that integrates adaptive knowledge fusion. Figure 1 illustrates the overall structure of our framework. Our framework consists of two main components: an intelligent agent and knowledge fusion. The agent includes a memory module (Sec. 2.2) to store key information from candidate items and user interactions, and a reasoning module (Sec.2.3) using a CoT technique. Knowledge fusion is performed in two ways: prerank the candidate list based on external knowledge (Sec.2.4), and ensemble the agent's ranked list with externally rank signals (Sec.2.5).
+2.2 Intelligent Agent: Memory
+The memory module serves as the core "brain" of the agent, simulating the human memory process. In actual interactions between a person and an item, individuals observe various features of the item, forming short-term memory. Afterward, only the most relevant information and impressions from the interaction are retained in long-term memory.
+In our agent implementation, the memory module records key information from candidate items, user reviews, and historical interactions, while "forgetting" unimportant details. It stores data on interacted items, including their features and metadata, as well as user reviews that reveal sentiment and preferences. The module also retains the user's interaction history, including ratings and
+
+Yuanqing Yu, Zhefan Wang, Chumeng Jiang, Xinyi Li, Jiayin Wang & Min Zhang
+Figure 1: Framework Overview. The framework consists of an intelligent agent with memory and reasoning modules, integrated with external knowledge sources for pre-ranking and ensemble ranking, resulting in a personalized recommendation list. feedback, allowing the agent to personalize future recommendations. As new interactions occur, the memory is updated, keeping only the most relevant data to generate accurate and personalized recommendations.
+2.3 Intelligent Agent: Reasoning
+To enhance the LLM's reasoning and problem-solving abilities, we employ the Chain-of-Thought (CoT) [22] method to prompt the agent and guide it to perform a "step-by-step" reasoning process. By applying the CoT reasoning approach, the agent is encouraged to decompose the recommendation task into a series of sequential steps, simulating a human-like reasoning process that draws on both user history and item information. To ensure the LLM fully grasps the CoT prompt, an example of CoT reasoning can be provided to guide the agent through the process.
+The prompt for CoT and an example of CoT is illustrated in the Figure 2, which is created with insights of domain expertise from SOTA LLMs (e.g., GPT-4o [10] and DeepSeek-R1 [6]), known for their strong CoT capabilities. In the CoT prompt, the agent is guided through a four-step process. First, the agent analyzes the user's historical interactions and reviews to infer user preferences for different item categories. Second, it reviews the attributes of the candidate items, ensuring a comprehensive understanding of their
+
+2984
+
+Intelligent Agents with Adaptive Knowledge Fusion for Personalized Recommendation
+
+WWW Companion '25, April 28-May 2, 2025, Sydney, NSW, Australia
+
+features. Third, the agent evaluates user-item compatibility by correlating item attributes with inferred user preferences. Finally, the agent ranks the items based on compatibility scores, ensuring the final list reflects a precise alignment between the user's preferences and the candidate items.
+Figure 2: Prompt for CoT and an example of CoT reasoning.
+2.4 Knowledge Fusion: Prerank
+To incorporate external prior knowledge, we implement a preranking phase for items in the candidate list before deploying the agent for personalized recommendation. Existing studies [8] indicate that LLMs exhibit positional bias when performing recommendation tasks, where the initial ordering of candidate items may implicitly influence their final ranking decisions.
+To mitigate this bias, we incorporate external prior knowledge to prerank the candidate items. The generation process of prerank is shown as follows, where  stands for the target user, I = {1, 2, · · · ,  } stands for candidate items set, and Rank(1, · · · , ) stands for a function that returns the ranking order of I based on their corresponding scores (1, · · · ).
+Prerank(, I) = Rank( (, 1),  (, 2), · · · ,  (, )) The function  maps the target user with candidate items to prerank scores, which can be tailored to specific task requirements, such as incorporating outputs from traditional recommendation algorithms or leveraging dataset-specific features as ranking weights. This preranked list is then used as a bias-corrected input for the agent, which adjusts its attention mechanism to prioritize the toppreranked items during the preference-item alignment process. Constrained by the competition rules, we primarily employ strategies based on the popularity of candidate items and their average ratings. This approach assumes that higher popularity and ratings are often indicative of broader appeal.
+
+2.5 Knowledge Fusion: Ensemble
+To generate the final ranking list, we propose using ensemble methods that integrate external knowledge sources into the rankings produced by the LLM. Compared to the prerank method, this approach offers a more direct fusion of knowledge and demonstrates strong extensibility.
+Specifically, the final ranked list is produced via an ensemble strategy that adaptively integrates a total of  ranking signals for the target user  with all candidate items set I. The process can be presented as the following formula.
+
+
+
+
+
+FinalRank(, I) = Rank
+
+1
+
+
+·
+
+
+
+(,
+
+1),
+
+2
+
+
+·
+
+
+
+(,
+
+2),
+
+ =1
+
+ =1
+
+ · · · ,  ·  (, )
+ =1
+
+In this formula, diverse ranking components  (, I) derived
+
+from external knowledge, like quality rank, popularity rank, affinity
+
+rank, and agent rank, are assigned a weight that is denoted as  in the formula, which is dynamically adjusted based on contextual
+
+factors. For the ensemble process, we primarily employ the Borda
+
+method [4], which calculates the average ranks from all methods
+
+for each item to produce the final ranking.
+
+3 Experiments
+3.1 Experimental Settings
+Datasets. We evaluate our framework on three scenarios provided by the organizing committee: Amazon [7], Yelp [2], and GoodReads [18], each with 200 tasks consisting of 40% simulation data and 60% real data. Due to the lack of disclosed real data, we randomly sampled 120 user interactions per scenario, selecting users with at least one positive interaction ( 4 stars), and used their last interacted item based on chronological order as the ground truth. For Amazon and Goodreads, we randomly sampled 19 uninteracted items per user to form the candidate list. For Yelp, we ensured the sampled items shared at least one category with the ground truth item.
+
+Table 1: Statistics of raw data for the three scenarios, from which simulation and real data are generated.
+
+Scenarios #Users #Items #Inters
+
+Amazon Yelp Goodreads
+
+194,216 558,111 137,371
+
+76,047 32,869 250,007
+
+1,913,036 1,827,321 1,431,533
+
+Metrics. Following previous studies[12, 20] and the requirements of the challenge committee, we performed evaluations using standard recommendation metrics: Hit Rate at top-1 (HR@1), top-3 (HR@3), and top-5 (HR@5), which measure how often the ground truth item appears in the top-N ( = 1, 3, 5) of the ranked list of candidate items.
+Methods. To assess the effectiveness of the four main components of our framework, we implemented and evaluated several strategies for each module, with the details introduced in each subsection.
+
+2985
+
+WWW Companion '25, April 28-May 2, 2025, Sydney, NSW, Australia
+
+Yuanqing Yu, Zhefan Wang, Chumeng Jiang, Xinyi Li, Jiayin Wang & Min Zhang
+
+Table 2: Performance on three scenarios. Tasks are comprised of 40% simulation data and 60% real data. Bold numbers indicate the best performance of each module. All results are conducted with Qwen-72B-Instruct as the base LLM.
+
+Module
+
+Method
+
+Amazon (200 tasks)
+
+Yelp (200 tasks)
+
+GoodReads (200 tasks)
+
+HR@1 HR@3 HR@5 HR@1 HR@3 HR@5 HR@1 HR@3 HR@5
+
+Naive
+
+/
+
+0.1000 0.2800 0.4000 0.0750 0.1950 0.3600 0.0700 0.1600 0.3200
+
+Agent: Memory
+
++ Item Info + History Review + History Item Info
+
+0.1700 0.3450 0.3550
+
+0.3200 0.5350 0.5500
+
+0.4250 0.6350 0.6450
+
+0.2600 0.2500 0.2700
+
+0.4400 0.4300 0.4350
+
+0.5350 0.5550 0.5800
+
+0.1850 0.3350 0.3300
+
+0.3800 0.5500 0.5050
+
+0.5100 0.6450 0.6000
+
+Agent: Reasoning + CoT + CoT w/ example
+
+0.3550 0.5550 0.6550 0.2700 0.4850 0.5950 0.3650 0.5550 0.6300 0.3700 0.5750 0.6750 0.2650 0.4800 0.6000 0.3550 0.5550 0.6300
+
+Fusion: Prerank
+
+Popularity Item Quality
+
+0.3300 0.2950
+
+0.5550 0.7050 0.2150 0.4850 0.6050 0.2900 0.5900 0.6950 0.2800 0.4800 0.6000 0.2400
+
+0.4950 0.4700
+
+0.6100 0.5700
+
+Fusion: Ensemble
+
+Agent n=3 Agent n=3 + Pop Agent n=3 + Quality
+
+0.3500 0.2950 0.2950
+
+0.5750 0.6300 0.5600
+
+0.7050 0.7050 0.6900
+
+0.2700 0.2450 0.2450
+
+0.4800 0.5450 0.5150
+
+0.6250 0.6350 0.6200
+
+0.3600 0.3100 0.2650
+
+0.5400 0.5100 0.5450
+
+0.6200 0.6200 0.6250
+
+Additionally, we implemented a naive baseline for comparison, which ranks the candidate lists solely based on item ID information.
+Challenge Requirements. The AgentSociety challenge employs Qwen-72b-instruct [1] as the base large language model for agents. The use of external models, the training of such models, or the integration of external tools are explicitly prohibited. It imposes a time limit of 120 minutes for a total of 600 tasks. Our framework achieves an average of 5 seconds per task (5 tasks in parallel) which is significantly lower than the prescribed time limits, demonstrating improved efficiency.
+3.2 Performance of Agent: Memory
+We analyze the performance of each module in detail. The primary function of the Agent: Memory module is to determine which information should be retained by the agent to inform future reasoning steps. This information is crucial for generating personalized recommendations and can be categorized into three key areas: the features of current candidate items (+Item Info), user historical reviews (+History Review), and the detailed information of previously interacted items (+History Item Info).
+As shown in Table 2, all three types of information effectively enhance the agent's performance in the Amazon scenario. In the Yelp scenario, the agent particularly requires information about candidate items and users' historically interacted items. As for the Goodreads scenario, the reviews of users' historically interacted items are sufficient to characterize user preferences.
+Observation 1. The information about candidate items and users' interaction history is crucial for the agent's predictive performance. However, different scenarios require emphasis on different aspects of the interaction history.
+3.3 Performance of Agent: Reasoning
+The Agent: Reasoning component introduces the CoT [22] mechanism to prompt the agent and guide it to perform a "step-by-step" reasoning process. We experimented with two different configurations:
+
+· CoT: In this configuration, reasoning is performed using the CoT strategy, guided by the prompt shown in Figure 2.
+· CoT w/ example: In this version, the CoT process is further enhanced by providing an example of CoT reasoning, as illustrated in Figure 2.
+The experimental results demonstrate that the CoT with Example method performs better in the Amazon scenario, while vanilla CoT is more suitable for other scenarios.
+Observation 2. Breaking down the recommendation task into a multi-step reasoning process through CoT proves to be effective in improving the agent's prediction accuracy.
+3.4 Performance of Fusion: Prerank
+The Fusion: PreRank module leverages external knowledge to provide initial rankings for candidate items before the agent memory and reasoning processes. Although our framework supports various strategies, we conducted experiments on two simple external knowledge fusion methods:
+· Popularity: This method ranks items based on their overall popularity.
+· Item Quality: Here, items are ranked based on quality metrics provided by item meta information (e.g., the average stars rated by users).
+Overall, most prerank-based knowledge fusion methods lead to a decline in the agent's HR@1 performance, with the exception of the Item Quality prerank method in the Yelp scenario. The Item Quality prerank method shows some improvement in the agent's HR@3 and HR@5 performance in the Amazon scenario. However, the introduction of any prerank method results in decreased agent performance in the Goodreads scenario.
+Observation 3. Integrating external knowledge through prerank can improve the model's HR@3 and HR@5 performance in some scenarios, though this typically comes at the cost of decreased HR@1 performance.
+
+2986
+
+Intelligent Agents with Adaptive Knowledge Fusion for Personalized Recommendation
+
+WWW Companion '25, April 28-May 2, 2025, Sydney, NSW, Australia
+
+3.5 Performance of Fusion: Ensemble
+For the Fusion: Ensemble module, we applied the Borda method [4] to integrate external knowledge and refine the rankings generated by the LLM. We experimented with varying numbers of LLM agent "voters" and two types of external ranking components: · Pop: This ranking is generated based on candidate items' overall
+popularity. · Quality: This ranking is generated based on quality metrics pro-
+vided by item information. Similar to the results of the Fusion: Prerank module, the introduction of external ranking leads to decreased agent performance in terms of HR@1. However, pop ranking shows some improvements in the agent's HR@3 and HR@5 performance in both Amazon and Yelp scenarios. In the Goodreads scenario, incorporating various external knowledge sources degrades agent performance, suggesting that user behavior is less correlated with these external knowledge sources in this scenario.
+Observation 4. Incorporating external knowledge through ranking ensemble achieves better agent performance improvement in some scenarios compared to prerank, although HR@1 performance still experiences some degradation.
+3.6 Challenge Results
+Our results on the challenge leaderboard are reported in Table 3. In the recommendation track of the AgentSociety Challenge @ WWW 25, we achieved an overall top-3 ranking.
+Table 3: Challenge Leaderboard Results.
+Team Name HR@1 HR@3 HR@5 DummyAgent 0.2983 0.4783 0.6250
+4 Conclusion
+In this paper, we introduce a novel agent-based framework that incorporates adaptive knowledge fusion for personalized recommendation. The intelligent agent's memory and reasoning modules, alongside the two proposed knowledge fusion techniques, enable more personalized and accurate recommendations. Experiments on public datasets and performance in the AgentSociety Challenge validate the framework's robustness and adaptability.
+We believe this work offers a fresh perspective on knowledge fusion for agent-based systems, emphasizing dynamic, contextaware integration of external knowledge to enhance personalized recommendation accuracy. Due to competition constraints, the integration of traditional recommendation algorithms was limited; future work could optimize knowledge fusion methods and explore their scalability in real-world applications.
+References
+[1] 2024. Qwen2 Technical Report. (2024). [2] Nabiha Asghar. 2016. Yelp dataset challenge: Review rating prediction. arXiv
+preprint arXiv:1605.05362 (2016). [3] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan,
+Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. 2020. Language models are few-shot learners. Advances in neural information processing systems 33 (2020), 1877-1901.
+
+[4] Jean-Charles de Borda. 1784. ,,Mémoire sur les Élections au scrutin."S. 657-665 in. Mémoires de L'Académie Royale des Sciences, Année 1781 (1784).
+[5] Agostino Forestiero. 2017. Multi-agent recommendation system in Internet of Things. In 2017 17th IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing (CCGRID). IEEE, 772-775.
+[6] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 (2025).
+[7] Yupeng Hou, Jiacheng Li, Zhankui He, An Yan, Xiusi Chen, and Julian McAuley. 2024. Bridging language and items for retrieval and recommendation. arXiv preprint arXiv:2403.03952 (2024).
+[8] Yupeng Hou, Junjie Zhang, Zihan Lin, Hongyu Lu, Ruobing Xie, Julian McAuley, and Wayne Xin Zhao. 2024. Large Language Models are Zero-Shot Rankers for Recommender Systems. In Advances in Information Retrieval, Nazli Goharian, Nicola Tonellotto, Yulan He, Aldo Lipani, Graham McDonald, Craig Macdonald, and Iadh Ounis (Eds.). Springer Nature Switzerland, Cham, 364-381. doi:10.1007/ 978- 3- 031- 56060- 6_24
+[9] Xu Huang, Jianxun Lian, Yuxuan Lei, Jing Yao, Defu Lian, and Xing Xie. 2023. Recommender ai agent: Integrating large language models for interactive recommendations. arXiv preprint arXiv:2308.16505 (2023).
+[10] Aaron Hurst, Adam Lerer, Adam P Goucher, Adam Perelman, Aditya Ramesh, Aidan Clark, AJ Ostrow, Akila Welihinda, Alan Hayes, Alec Radford, et al. 2024. Gpt-4o system card. arXiv preprint arXiv:2410.21276 (2024).
+[11] Chumeng Jiang, Jiayin Wang, Weizhi Ma, Charles LA Clarke, Shuai Wang, Chuhan Wu, and Min Zhang. 2024. Beyond Utility: Evaluating LLM as Recommender. arXiv preprint arXiv:2411.00331 (2024).
+[12] Sein Kim, Hongseok Kang, Seungyoon Choi, Donghyun Kim, Minchul Yang, and Chanyoung Park. 2024. Large language models meet collaborative filtering: An efficient all-round llm-based recommender system. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 1395-1406.
+[13] Reiichiro Nakano, Jacob Hilton, Suchir Balaji, Jeff Wu, Long Ouyang, Christina Kim, Christopher Hesse, Shantanu Jain, Vineet Kosaraju, William Saunders, et al. 2021. Webgpt: Browser-assisted question-answering with human feedback. arXiv preprint arXiv:2112.09332 (2021).
+[14] OpenAI. 2023. GPT-4 Technical Report. arXiv preprint arXiv:2303.08774 (2023). [15] Yongliang Shen, Kaitao Song, Xu Tan, Dongsheng Li, Weiming Lu, and Yueting
+Zhuang. 2023. Hugginggpt: Solving ai tasks with chatgpt and its friends in huggingface. arXiv preprint arXiv:2303.17580 (2023). [16] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. 2023. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 (2023). [17] Nagagopiraju Vullam, Sai Srinivas Vellela, Venkateswara Reddy, M Venkateswara Rao, Khader Basha SK, and D Roja. 2023. Multi-agent personalized recommendation system in e-commerce based on user. In 2023 2nd International Conference on Applied Artificial Intelligence and Computing (ICAAIC). IEEE, 1194-1199. [18] Mengting Wan and Julian McAuley. 2018. Item recommendation on monotonic behavior chains. In Proceedings of the 12th ACM conference on recommender systems. 86-94. [19] Lei Wang, Jingsen Zhang, Hao Yang, Zhiyuan Chen, Jiakai Tang, Zeyu Zhang, Xu Chen, Yankai Lin, Ruihua Song, Wayne Xin Zhao, et al. 2023. When Large Language Model based Agent Meets User Behavior Analysis: A Novel User Simulation Paradigm. arXiv preprint ArXiv:2306.02552 (2023). [20] Yancheng Wang, Ziyan Jiang, Zheng Chen, Fan Yang, Yingxue Zhou, Eunah Cho, Xing Fan, Yanbin Lu, Xiaojiang Huang, and Yingzhen Yang. 2024. RecMind: Large Language Model Powered Agent For Recommendation. In Findings of the Association for Computational Linguistics: NAACL 2024. 4351-4364. [21] Zhefan Wang, Yuanqing Yu, Wendi Zheng, Weizhi Ma, and Min Zhang. 2024. Macrec: A multi-agent collaboration framework for recommendation. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval. 2760-2764. [22] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems 35 (2022), 24824-24837. [23] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. 2022. React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629 (2022). [24] An Zhang, Leheng Sheng, Yuxin Chen, Hao Li, Yang Deng, Xiang Wang, and Tat-Seng Chua. 2023. On generative agents in recommendation. arXiv preprint arXiv:2310.10108 (2023). [25] Junjie Zhang, Yupeng Hou, Ruobing Xie, Wenqi Sun, Julian McAuley, Wayne Xin Zhao, Leyu Lin, and Ji-Rong Wen. 2023. Agentcf: Collaborative learning with autonomous language agents for recommender systems. arXiv preprint arXiv:2310.09233 (2023).
+
+2987
+
+

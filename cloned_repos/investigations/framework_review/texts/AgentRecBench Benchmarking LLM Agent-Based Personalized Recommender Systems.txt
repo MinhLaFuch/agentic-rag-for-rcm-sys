@@ -1,0 +1,1080 @@
+arXiv:2505.19623v2 [cs.IR] 28 May 2025
+
+AgentRecBench: Benchmarking LLM Agent-based Personalized Recommender Systems
+Yu Shang1 Peijie Liu1 Yuwei Yan2 Zijing Wu3 Leheng Sheng4 Yuanqing Yu1 Chumeng Jiang1 An Zhang3 Fengli Xu1 Yu Wang1 Min Zhang1 Yong Li1
+1Tsinghua University 2The Hong Kong University of Science and Technology (Guangzhou)
+3University of Science and Technology of China 4National University of Singapore
+Abstract
+The emergence of agentic recommender systems powered by Large Language Models (LLMs) represents a paradigm shift in personalized recommendations, leveraging LLMs' advanced reasoning and role-playing capabilities to enable autonomous, adaptive decision-making. Unlike traditional recommendation approaches, agentic recommender systems can dynamically gather and interpret user-item interactions from complex environments, generating robust recommendation strategies that generalize across diverse scenarios. However, the field currently lacks standardized evaluation protocols to systematically assess these methods. To address this critical gap, we propose: (1) an interactive textual recommendation simulator incorporating rich user and item metadata and three typical evaluation scenarios (classic, evolving-interest, and cold-start recommendation tasks); (2) a unified modular framework for developing and studying agentic recommender systems; and (3) the first comprehensive benchmark comparing 10 classical and agentic recommendation methods. Our findings demonstrate the superiority of agentic systems and establish actionable design guidelines for their core components. The benchmark environment has been rigorously validated through an open challenge and remains publicly available with a continuously maintained leaderboard , fostering ongoing community engagement and reproducible research. The benchmark is available at: https://huggingface.co/datasets/SGJQovo/AgentRecBench.
+1 Introduction
+Recommender systems have become indispensable for addressing information overload on web platforms by modeling user preferences [1-4]. Over the decades, the field has evolved from rulebased recommendation [5, 6] to data-driven deep learning approaches [7, 8], achieving remarkable gains in accuracy and efficiency. Despite these advances, there still remains some critical challenges, including (1) the black-box nature of recommendations limits interpretability of recommendation results [9, 10]; (2) most methods rely predominantly on historical interaction data, failing to fully leverage rich contextual information in real-world applications [11]; and (3) existing methods often depend on handcrafted features with fixed recommendation strategies [12], which constrain their adaptability to different scenarios.
+Recent advancements in LLM-based agents present a transformative opportunity to revolutionize the paradigm of recommender systems [13-17]. Equipped with complex reasoning and role-playing
+*Equal contribution. https://tsinghua-fib-lab.github.io/AgentSocietyChallenge/pages/overview.html
+Preprint.
+
+capabilities brought by LLMs, LLM-based agents can automatically tackle complex tasks through human-like planning [18, 19], reflective reasoning [20, 21], and iterative action [22, 23]. Compared to traditional recommender systems, agentic recommender systems offer several key advantages. Firstly, by leveraging natural language as a medium, these systems can explicitly articulate their recommendation logic, enhancing transparency and fostering user trust. Secondly, with advanced perception and reasoning abilities, agentic recommender systems can autonomously gather and integrate rich, personalized contextual information from the environment, beyond ID-based interactions to enrich user modeling. Thirdly, these systems exhibit continuous self-improvement through environmental interactions, dynamically refining their recommendation strategies by incorporating external feedback and internal memory to achieve unprecedented adaptability across various scenarios.
+Despite this promising paradigm shift, the field currently lacks standardized benchmarks to systematically evaluate agentic recommendation approaches, hindering our understanding of their effectiveness and practical deployment. To bridge this gap, we introduce AgentRecBench, the first comprehensive benchmark for agentic recommender systems. Our benchmark makes four key contributions to advance agentic recommender systems. First, we construct a unified textual interaction environment by processing Yelp, GoodReads, and Amazon datasets. This environment provides standardized function interfaces that enable agents to perform flexible information retrieval under various conditions, while maintaining a comprehensive multi-domain database. Second, we establish three carefully designed evaluation scenarios: classic recommendation tasks for general performance assessment, evolving-interest tasks to evaluate dynamic adaptation capabilities, and cold-start tasks to measure generalization ability. These scenarios collectively reflect the core challenges in real-world recommendation systems. Third, we propose a modular agent framework with essential cognitive components [24, 25] for rapidly building agentic recommender systems. The framework includes four core modules: dynamic planning for task decomposition, complex reasoning for decision-making, tool utilization for environment interaction, and memory management for experience retention and utilization. Finally, through extensive evaluation of 10 existing recommendation agents and traditional methods, we establish the first comprehensive benchmark for agentic recommenders. Our analysis reveals critical insights into current capabilities and limitations, from which we derive practical design guidelines to facilitate future development in this emerging field.
+The benchmark's practical utility has been demonstrated through the AgentSociety Challenge [13], which attracted 295 competing teams worldwide and received over 1,400 submissions during the 37-day competition. Participants achieved 20.3% performance improvement in Recommendation Track during the Development Phase, with a further 15.9% gain in the Final Phase, validating the practical utility of our evaluation framework. The complete benchmark environment remains publicly available with continuously maintained leaderboards to support ongoing research.
+In summary, this work has the following main contributions:
+· We propose AgentRecBench, the first large-scale and comprehensive benchmark that systematically evaluates both emerging agentic recommender systems and traditional recommendation methods across diverse scenarios.
+· We provide a textual environment simulator equipped with multi-domain recommendation datasets and a standardized agent development framework, establishing a closed-loop developmentevaluation pipeline. This toolkit helps facilitate rapid prototyping and systematic testing of recommendation agents.
+· Through in-depth analysis of 10 approaches, we distill key insights into the superior designs of current approaches. Our findings provide actionable design guidelines to inspire more powerful agentic recommender systems.
+
+2 Definition of Agentic Recommender System
+
+We formalize an agentic recommender system as a system where an LLM-based agent interacts with
+
+an environment E = (U, I, H) to produce recommendations. Here, U and I denote the user and item
+
+feature spaces respectively, while H = {(u, i, c,  )} represents user-item historical interactions with
+
+contextual metadata c (e.g., ratings, comments) and timestamp  . At each step t, the agent observes a
+
+state st  S (encoding user and item profile, interactions, and other environmental feedback) and
+
+selects an action at  A via policy :
+
+at  (a|st),  : S  p(A),
+
+(1)
+
+2
+
+Recommending Agents Scenario #1
+Agents Tasks
+Scenario #2 Agents Tasks
+
+Standard Query Type U/R/I
+Sort Method Return Formation
+User Query
+Review Query Item Query
+
+Textual Experiment Environment
+
+U-R-I Network
+
+Datasets
+
+U
+R
+
+Network Building
+User
+Review
+
+I
+
+Item
+
+Figure 1: The overall framework of our interactive textual environment simulator.
+
+where p(A) is a probability distribution over the action space A = I  Aseek including item recommendations and information-seeking actions, and  parameterizes the agent's internal functional modules such as reasoning and memory.
+The agentic recommender system exhibits three distinguishing characteristics that differentiate it from traditional approaches. First, it can adaptively collect personalized contextual information from the environment while maintaining generalized, zero-shot adaptable recommendation policies across diverse scenarios. Second, the system demonstrates self-improving capability by continuously refining its internal representations and decision strategies through accumulated experience and external feedback, enabling ongoing performance enhancement. Third, the system is promising to enhance proactive engagement by strategically initiating targeted interactions beyond passive response paradigms.
+
+3 Textual Environment Simulator
+The textual experiment environment simulates the information retrieval logic and functionalities typically found in social and web platforms. It provides a standardized interaction space, enabling recommendation agents to query and receive feedback systematically. This environment addresses two primary concerns: defining a clear interaction space and ensuring controlled data accessibility. The overall framework is shown in Figure 1.
+
+3.1 Data and Interaction Space
+
+A clearly defined interaction space is crucial for the reliable evaluation of recommending agents. It enables consistent comparisons across various recommendation methods by providing uniform conditions. To facilitate this, we merge diverse data sources into a coherent network structure, forming a unified User-Review-Item (U-R-I) network with standardized query capabilities.
+Building the U-R-I network involves aggregating data from multiple sources, such as user profiles, item characteristics, and user-generated content (e.g., reviews and ratings). User nodes represent individuals interacting with the platform, item nodes represent recommendable entities, and review nodes encapsulate user feedback and ratings. Edges between these nodes illustrate interactions, forming a structured and navigable data space for agent exploration.
+The standardized query functionality is defined as:
+
+Query(T ype, SortM ethod, F ormation)  StructuredData | T extualData
+
+(2)
+
+In this function, T ype specifies the retrieval data type (e.g., user, item, review). SortM ethod defines how the query results are ordered, such as by date, relevance, or popularity. The boolean F ormation indicates the format of the returned data (structured or textual); structured queries yield clearly defined attributes suitable for algorithmic processing(key-values), while textual queries return natural-language content for interpretive tasks.
+
+3
+
+Agent Loading Agents
+
+Recommending Scenario #1
+Scenario Context Time Filter
+
+Item Filter
+
+Tasks
+
+Task User
+
+Task Groundtruth
+
+Before Benchmarking: Scenario Filtering
+
+U
+
+U
+
+Time Window
+
+R
+
+R
+
+Item Lists
+
+I
+
+I
+
+User Query Review Query
+
+Item Query
+
+Runtime: Task Filtering
+
+U R
+
+Ix
+
+Figure 2: Illustration of the dynamic data visibility control workflow of our textual environment simulator.
+
+However, different recommendation scenarios may necessitate various data control mechanisms, such as temporal filtering (e.g., restricting data to a specific time frame), item-based filtering (e.g., selecting items with minimum review thresholds), or user attribute-based constraints.
+
+3.2 Dynamic Data Visibility Control
+
+Dynamic data visibility control aims to address the scenario-specific data requirements outlined above. As shown in Figure 2, the core concept is a two-layer control system composed of scenarios and tasks. Scenarios define broad filtering criteria, shaping the environment for a collection of related tasks, while each task focuses on a clearly defined recommendation objective with explicit targets and contexts.
+A scenario is formally structured as follows:
+
+Scenario = {T imeF ilter, ItemF ilter},
+
+(3)
+
+where T imeF ilter manages the temporal scope of accessible data, such as selecting reviews posted within a designated period. ItemF ilter sets criteria for item inclusion, like enforcing a minimum review threshold to ensure sufficient data quality. Within each scenario, a task specifies a precise recommendation problem:
+
+T ask = {T argetU ser, GroundT ruth},
+
+(4)
+
+where T argetU ser identifies the individual for whom recommendations are generated, and GroundT ruth provides benchmark data (e.g., known user preferences or past interactions) essential for evaluating recommendation accuracy. The proposed dynamic data visibility control ensures flexible, scenario-driven management of data accessibility, facilitating comprehensive and systematic evaluation of agentic recommender systems across diverse experimental conditions.
+
+4 Experimental Setting
+Our experimental evaluation leverages three large-scale publicly available datasets (Yelp*, GoodReads, and Amazon), which collectively provide extensive user interaction records and rich user/item profiles that enable comprehensive retrieval and personalization analysis. Below, we provide a detailed description of datasets, defined task scenarios, baselines, and evaluation metrics.
+*https://www.yelp.com/dataset https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home https://amazon-reviews-2023.github.io/
+
+4
+
+Table 1: Structure of aggregated data including user-side, item-side profiles and review information. Data Type Description and Key Fields
+
+· User ID
+
+User
+
+· Review count
+
+· Social connections (friendship)
+
+· Average rating
+
+· Item ID
+
+· Item name
+
+Item
+
+· Type (product/business/book)
+
+· Metadata (price, title, descriptions, location etc.)
+
+· Average rating
+
+· Review count
+
+Review
+
+· Review ID · User ID · Item ID · Rating (1-5) · Textual review content · Timestamp of interaction · Helpfulness votes (funny/useful/cool)
+
+4.1 Dataset
+The three used datasets are introduced as follows:
+Amazon. The Amazon dataset captures user purchase behavior, product reviews, and ratings across multiple categories on an e-commerce platform. It comprises large-scale user-item interaction records along with detailed textual reviews, providing a rich source for modeling consumer preferences.
+GoodReads. The Goodreads dataset consists of user ratings and reviews of books, reflecting diverse reading interests and preferences. This dataset is particularly valuable for studying recommendation models in the context of literary content.
+Yelp. The Yelp dataset contains extensive user reviews and ratings of local businesses, including restaurants and retail stores. It effectively captures real-world consumer experiences and preferences across a variety of service domains.
+We organize these datasets into three structured sub-datasets (items, users, and reviews) to facilitate effective agent interaction and enhance the extraction of user and item features. This structured partitioning enables efficient information retrieval for personalized recommendations. Table 1 summarizes the key fields of the structured dataset. As evidenced in Figure 3 (a), the dataset exhibits complementary domain coverage, with Yelp contributing the majority of users and Goodreads providing the most extensive items. The power-law distributions in user/item interactions shown in Figure 3 (b) and (c) faithfully reflect real-world recommendation scenarios where most users engage moderately while only a few exhibit extremely high activity levels.
+4.2 Task Scenarios
+To systematically evaluate agentic recommender systems, we design three representative evaluation scenarios that mirror real-world recommendation challenges. We provide detailed descriptions of each scenario below.
+Classic recommendation. This serves as our foundational benchmark, evaluating general performance under standard conditions where agents can access complete user profiles and interactions from the environment.
+Evolving-interest recommendation. To rigorously evaluate the temporal adaptation capabilities of agentic recommender systems, we design a multi-scale evaluation framework that captures both
+5
+
+(a)
+
+(b)
+
+(c)
+
+Figure 3: Statistical distributions of our aggregated multi-platform dataset showing (a) user/item distribution (b) user interaction distribution (c) item interaction distribution.
+
+gradual and immediate preference dynamics. The long-term recommendation task uses a threemonth user interaction window. We sample active users (5 interactions), testing the system's ability to identify stable user preference. This task allows assessment of the agent's capacity for longitudinal user modeling. Complementing this, the short-term recommendation task focuses on immediate adaptation through a compressed one-week interaction window. This task mainly measures agents' ability to model emerging interaction patterns.
+Cold-start recommendation. To systematically assess the capability of agentic recommender systems in addressing real-world data sparsity challenges, we design comprehensive evaluations for both user-side and item-side cold-start scenarios. In the user cold-start recommendation, we construct test sets comprising users with fewer than m historical interactions (where m is dataset-dependent). This setting rigorously examines the system's ability to generate accurate recommendations from sparse interaction signals and effectively utilize available contextual user data. For the item cold-start recommendation, we evaluate on items with fewer than n recorded interactions, testing the system's proficiency in reasoning about item attributes and detecting similarity patterns with existing items. This evaluation specifically measures how agentic systems transcend the limitations of conventional ID-based recommendation approaches through item information mining capabilities.
+4.3 Baselines
+We conduct a comprehensive evaluation across three paradigms of recommender systems:
+Traditional Recommender Systems. We select Matrix Factorization (MF) [5] as a representative traditional recommendation method, which decomposes the user-item interaction matrix into lowdimensional latent factors to capture implicit user preferences and item characteristics.
+Deep Learning-based Recommender Systems. LightGCN [8] represents an effective modern graph learning-based recommendation approach, employing simplified graph convolution operations to effectively propagate and aggregate neighborhood information in user-item interaction graphs.
+Agentic Recommender Systems. Our evaluation includes eight different available agentic recommender systems, which are detailed as follows:
+· BaseAgent. A handcrafted base agent that performs direct recommendation generation through standard LLM inference without additional reasoning components.
+· CoTAgent. Extends BaseAgent with zero-shot chain-of-thought (CoT) [26] prompting to enable explicit recommendation rationale generation and step-by-step decision making.
+· MemoryAgent. Augments BaseAgent with a memory mechanism [19] that maintains and retrieves relevant interaction history to inform recommendations.
+· CoTMemAgent. Combines the reasoning capabilities of CoTAgent with the contextual retention of MemoryAgent through integrated chain-of-thought reasoning with memory augmentation.
+· Baseline666. The winning solution from the AgentSociety Challenge Recommendation Track [13], distinguished by its platform-aware feature extraction that dynamically adapts feature representation based on data source characteristics.
+6
+
+Table 2: Performance comparison on classic recommendation tasks with the average HR@N metric (N=1,3,5).
+
+Category
+
+Method
+
+Amazon
+
+Goodreads
+
+Yelp
+
+Traditional RS
+
+MF
+
+15.0
+
+15.0
+
+15.0
+
+DL-based RS LightGCN
+
+15.0
+
+15.0
+
+15.0
+
+Model
+
+Qwen Deepseek GPT Qwen Deepseek GPT Qwen Deepseek GPT
+
+BaseAgent
+
+39.0 44.0 27.0 15.7 20.3 13.7 3.7 4.0 4.7
+
+CoTAgent
+
+39.0 39.7 26.7 16.0 23.0 15.0 5.0 4.3 5.0
+
+MemoryAgent 37.3 43.7
+
+0.0 17.3 18.0 0.0 5.3 3.7 0.0
+
+Agentic RS CoTMemAgent 37.0 33.3
+
+0.0 16.7 17.3 0.0 3.7 4.3 0.0
+
+Baseline666 69.0 60.0 44.7 45.0 54.7 33.0 7.0 7.3 6.0
+
+DummyAgent 44.0 54.0 31.0 46.0 56.3 23.7 5.3 6.3 5.7
+
+RecHackers 54.0 63.0 50.7 45.3 55.0 29.3 7.7 7.0 6.7
+
+Agent4Rec
+
+23.3 28.3 17.7 9.3 9.3 9.3 5.7 7.6 5.3
+
+· RecHackers. The second-place solution from the AgentSociety Challenge Recommendation Track [13], which achieves robust content-based recommendations through the comprehensive integration of user historical comments with detailed item attributes.
+· DummyAgent. The third-place solution from the AgentSociety Challenge Recommendation Track [13], which employs advanced comment feature engineering to identify and leverage highinformation content for enhanced user/item modeling.
+· Agent4Rec [15]. An advanced framework that implements multi-step reasoning through orchestrated LLM-agent interactions for complex recommendation scenarios.
+
+4.4 Envaluation Metric
+
+We evaluate recommendation performance using ranking-based metrics with emphasis on Top-N
+accuracy. Following standard evaluation protocols [5, 7], each test instance consists of 20 candidate
+items: one ground-truth positive item sampled from the user's interaction history and 19 negative items sampled from unobserved interactions. The primary metric is Hit Rate@N (HR@N ), measuring the probability that the ground-truth item appears in the top-N ranked positions (N  {1, 3, 5}). Formally:
+HR@N = 1 I(pt  RtN ), (5) |T | tT
+
+where T
+
+is
+
+the
+
+test
+
+set,
+
+pt
+
+is
+
+the
+
+ground-truth
+
+positive
+
+item
+
+for
+
+test
+
+case
+
+t,
+
+RN
+t
+
+denotes the top-N
+
+recommendations, I(·) is the indicator function.
+
+5 Experimental Results
+In this section, we present the performance of several representative baseline methods evaluated on the AgentRecBench benchmark. Our analysis is structured into three key parts: (1) Overall Performance, (2) Performance in Cold-start Scenarios, and (3) Performance under Evolving User Interests.
+
+5.1 Main Performance
+We begin by evaluating model performance in the classic recommendation scenario. Experiments are conducted on three datasets using three proprietary model families: Qwen-72 B-Instruct, DeepSeekv3, and GPT-4o-mini. The detailed results are summarized in Table 2.
+We train both traditional and deep learning-based baseline models on a subset of the available data. However, due to the high sparsity of the dataset, these models are unable to effectively learn meaningful patterns. As a result, we report the mean prediction as a reference point for comparison. The experimental results reveal a gradual decline in prediction accuracy across the Amazon, Goodreads,
+
+7
+
+Table 3: Performance comparison on cold-start recommendation tasks with the average HR@N metric (N=1,3,5).
+
+Category
+
+Method
+
+Amazon User Item
+
+Goodreads User Item
+
+Yelp User Item
+
+Traditional RS
+
+MF
+
+15.0 15.0 15.0 15.0 15.0 15.0
+
+DL-based RS
+
+LightGCN
+
+15.0 15.0 15.0 15.0 15.0 15.0
+
+BaseAgent
+
+16.6 15.0 16.0 21.2
+
+2.0
+
+3.3
+
+CoTAgent
+
+15.7 17.3 18.0 18.5
+
+2.3
+
+2.3
+
+MemoryAgent
+
+16.3 12.0 18.3 17.8
+
+3.3
+
+4.3
+
+CoTMemAgent 16.7 14.3 17.7 20.2
+
+2.3
+
+3.3
+
+Agentic RS
+
+Baseline666
+
+48.7 48.3 36.7 44.1
+
+1.3
+
+2.3
+
+DummyAgent
+
+44.7 45.6 39.3 47.8
+
+1.7
+
+0.3
+
+RecHackers
+
+44.7 49.3 38.3 42.1
+
+1.0
+
+2.3
+
+Agent4Rec
+
+25.7 48.3 40.7
+
+9.1
+
+2.3
+
+0.7
+
+Table 4: Performance comparison on evolving-interest recommendation tasks with the average HR@N metric (N=1,3,5).
+
+Category
+
+Method
+
+Amazon
+
+Goodreads
+
+Yelp
+
+Long Term Short Term Long Term Short Term Long Term Short Term
+
+Traditional RS
+
+MF
+
+38.4
+
+49.5
+
+17.7
+
+21.3
+
+42.0
+
+65.9
+
+DL-based RS LightGCN
+
+32.3
+
+59.1
+
+18.0
+
+22.3
+
+31.6
+
+68.9
+
+BaseAgent
+
+16.0
+
+13.3
+
+21.3
+
+25.0
+
+5.7
+
+6.0
+
+CoTAgent
+
+14.0
+
+15.0
+
+22.3
+
+23.7
+
+3.3
+
+4.3
+
+MemoryAgent 10.3
+
+14.0
+
+21.7
+
+22.7
+
+4.0
+
+3.7
+
+CoTMemAgent 12.3
+
+15.0
+
+23.3
+
+22.0
+
+3.3
+
+4.6
+
+Agentic RS Baseline666
+
+50.6
+
+55.3
+
+63.0
+
+55.7
+
+0.0
+
+0.0
+
+DummyAgent 53.0
+
+56.7
+
+59.7
+
+54.0
+
+10.6
+
+6.3
+
+RecHackers
+
+52.7
+
+57.3
+
+62.0
+
+54.0
+
+11.3
+
+5.3
+
+Agent4Rec
+
+26.3
+
+37.7
+
+36.7
+
+43.9
+
+8.6
+
+9.0
+
+and Yelp datasets, reflecting an increasing level of recommendation difficulty. Baseline666 consistently outperforms other methods across nearly all settings, demonstrating strong robustness. Furthermore, Baseline666, DummyAgent, and RecHackers substantially outperform simpler designs, highlighting that a well-structured agent workflow can significantly enhance recommendation performance. These findings underscore the critical role of agent design in improving predictive accuracy within agent-based recommendation systems.
+5.2 Performance on Cold-start Scenarios
+In cold-start scenarios, we focus on users and items with limited historical interactions. Table 3 reports the performance of various methods based on Qwen-72B-Instruct. A comparison between Table 4 and Table 3 reveals a notable performance drop across nearly all baselines, highlighting the inherent uncertainty and challenge of cold-start settings. These results suggest that our proposed task can serve as a foundation for more comprehensive evaluations of recommendation efficiency under data-sparse conditions.
+5.3 Performance on Evolving Interests
+To assess models' adaptability to changing user preferences, we construct a scenario in which user interests evolve. This setting captures the temporal dynamics commonly observed in real-world recommendation tasks. The corresponding results are presented in Table 4. While most methods experience a performance decline under this setting, agent-based approaches such as Baseline666 and RecHackers demonstrate relatively stable performance, suggesting their enhanced ability to model and respond to evolving user behavior. We present a case study of Baseline666 in Figure 4.
+8
+
+Baseline666's core workflow
+You are a real user on an online platform. Your historical item review text and stars are as follows: ['user_id', 'review_count', 'friends', 'stars'...] Now you need to rank the following 20 items: [candidate item list] 'according to their match degree to your preference'. Please rank the more interested items more front in your rank list. The information of the above 20 candidate items is as follows: ['item_id', 'name', 'stars', 'review_count', 'attributes', 'title','average_rating', 'rating_number', 'description'...] Your final output should be ONLY a ranked item list of [Candidate List] with the following format! DO NOT introduce any other item ids! DO NOT output your analysis process! The correct output format: [Sorted Candidate Item List]
+Figure 4: Illustration of the agentic workflow of a superior recommendation agent (Baseline666), which conducts domain-adaptive item-side feature engineering to enhance personalization.
+6 Related Works
+6.1 Agentic Recommender Systems
+Recent advances in LLM-based agents have introduced transformative paradigms for recommender systems, with agentic recommender systems demonstrating autonomous capabilities to collect and process user-item interactions while leveraging sophisticated reasoning for personalized recommendations. Existing approaches can be categorized into three main branches: (1) ranking-oriented agents [27-29] that infer user preferences from historical behavior to generate recommendations, exemplified by RecMind [27], a unified LLM agent for direct recommendation generation; (2) simulation-oriented agents [15, 17, 30] that simulate human-like behavior through agents' roleplaying capabilities, such as Agent4Rec [15] which exploits agents to simulate users for authentic interaction modeling and (3) interactive conversational agents [16, 31, 32] that frame recommendation as dialogue-based intent understanding, as demonstrated by RAH which establishes a humanrecommender system interaction framework for iterative user preference refinement. However, currently there's no comprehensive benchmark to systematically evaluate such emerging agentic recommendation methods.
+6.2 LLM-based Agents
+Recent advances in LLMs have enabled the development of autonomous agents capable of sophisticated reasoning [26, 21, 33] and human-like behavioral simulation [19, 34], leading to diverse applications across multiple domains. In decision-making contexts, LLM-powered agents have demonstrated success in sandbox game environments [35], robotic control systems [36], and web navigation [37] tasks. Moving beyond single-agent applications, contemporary research has demonstrated that multi-agent systems [38-40] exhibit emergent collaborative intelligence. These systems achieve two significant milestones: first, they faithfully replicate human-like organizational dynamics through sophisticated interaction protocols; second, they surpass single-agent approaches in complex problem-solving scenarios by leveraging distributed cognition and specialized role allocation.
+7 Conclusions
+In this work, we present AgentRecBench, the first comprehensive benchmark for evaluating the emerging LLM-powered agentic recommender systems. The benchmark establishes rigorous evaluation protocols across multiple domains and scenarios, su1pported by our novel textual interaction environment that integrates three rich recommendation datasets. Through extensive empirical analysis of 10+ classical and agentic methods, we not only demonstrate the superior performance of LLM-based approaches but also identify their critical designs. The proposed modular agent design framework and standardized evaluation platform provide researchers with essential tools to advance the development of agentic recommender systems. We believe this work offers a fundamental platform for advancing the next-generation recommender systems.
+9
+
+References
+[1] Qi Wang, Jindong Li, Shiqi Wang, Qianli Xing, Runliang Niu, He Kong, Rui Li, Guodong Long, Yi Chang, and Chengqi Zhang. Towards next-generation llm-based recommender systems: A survey and beyond. arXiv preprint arXiv:2410.19744, 2024.
+[2] Yu Shang, Chen Gao, Nian Li, and Yong Li. A large-scale dataset with behavior, attributes, and content of mobile short-video platform. arXiv preprint arXiv:2502.05922, 2025.
+[3] Chen Gao, Yu Zheng, Nian Li, Yinfeng Li, Yingrong Qin, Jinghua Piao, Yuhan Quan, Jianxin Chang, Depeng Jin, Xiangnan He, et al. A survey of graph neural networks for recommender systems: Challenges, methods, and directions. ACM Transactions on Recommender Systems, 1(1):1-51, 2023.
+[4] Yu Shang, Chen Gao, Jiansheng Chen, Depeng Jin, Meng Wang, and Yong Li. Learning finegrained user interests for micro-video recommendation. In Proceedings of the 46th international ACM SIGIR conference on research and development in information retrieval, pages 433-442, 2023.
+[5] Yehuda Koren, Robert Bell, and Chris Volinsky. Matrix factorization techniques for recommender systems. Computer, 42(8):30-37, 2009.
+[6] J Ben Schafer, Dan Frankowski, Jon Herlocker, and Shilad Sen. Collaborative filtering recommender systems. In The adaptive web: methods and strategies of web personalization, pages 291-324. Springer, 2007.
+[7] Xiangnan He, Lizi Liao, Hanwang Zhang, Liqiang Nie, Xia Hu, and Tat-Seng Chua. Neural collaborative filtering. In Proceedings of the 26th international conference on world wide web, pages 173-182, 2017.
+[8] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the 43rd International ACM SIGIR conference on research and development in Information Retrieval, pages 639-648, 2020.
+[9] Yunfan Gao, Tao Sheng, Youlin Xiang, Yun Xiong, Haofen Wang, and Jiawei Zhang. Chat-rec: Towards interactive and explainable llms-augmented recommender system. arXiv preprint arXiv:2303.14524, 2023.
+[10] Likang Wu, Zhi Zheng, Zhaopeng Qiu, Hao Wang, Hongchao Gu, Tingjia Shen, Chuan Qin, Chen Zhu, Hengshu Zhu, Qi Liu, et al. A survey on large language models for recommendation. World Wide Web, 27(5):60, 2024.
+[11] Qiyao Peng, Hongtao Liu, Hua Huang, Qing Yang, and Minglai Shao. A survey on llm-powered agents for recommender systems. arXiv preprint arXiv:2502.10050, 2025.
+[12] Eui-Hong Han and George Karypis. Feature-based recommendation system. In Proceedings of the 14th ACM international conference on Information and knowledge management, pages 446-452, 2005.
+[13] Yuwei Yan, Yu Shang, Qingbin Zeng, Yu Li, Keyu Zhao, Zhiheng Zheng, Xuefei Ning, Tianji Wu, Shengen Yan, Yu Wang, et al. Agentsociety challenge: Designing llm agents for user modeling and recommendation on web platforms. arXiv preprint arXiv:2502.18754, 2025.
+[14] Chengkai Huang, Junda Wu, Yu Xia, Zixu Yu, Ruhan Wang, Tong Yu, Ruiyi Zhang, Ryan A Rossi, Branislav Kveton, Dongruo Zhou, et al. Towards agentic recommender systems in the era of multimodal large language models. arXiv preprint arXiv:2503.16734, 2025.
+[15] An Zhang, Yuxin Chen, Leheng Sheng, Xiang Wang, and Tat-Seng Chua. On generative agents in recommendation. In Proceedings of the 47th international ACM SIGIR conference on research and development in Information Retrieval, pages 1807-1817, 2024.
+[16] Yubo Shu, Haonan Zhang, Hansu Gu, Peng Zhang, Tun Lu, Dongsheng Li, and Ning Gu. Rah! recsys-assistant-human: A human-centered recommendation framework with llm agents. IEEE Transactions on Computational Social Systems, 2024.
+10
+
+[17] Junjie Zhang, Yupeng Hou, Ruobing Xie, Wenqi Sun, Julian McAuley, Wayne Xin Zhao, Leyu Lin, and Ji-Rong Wen. Agentcf: Collaborative learning with autonomous language agents for recommender systems. In Proceedings of the ACM Web Conference 2024, pages 3679-3689, 2024.
+[18] Xu Huang, Weiwen Liu, Xiaolong Chen, Xingmei Wang, Hao Wang, Defu Lian, Yasheng Wang, Ruiming Tang, and Enhong Chen. Understanding the planning of llm agents: A survey. arXiv preprint arXiv:2402.02716, 2024.
+[19] Joon Sung Park, Joseph O'Brien, Carrie Jun Cai, Meredith Ringel Morris, Percy Liang, and Michael S Bernstein. Generative agents: Interactive simulacra of human behavior. In Proceedings of the 36th annual acm symposium on user interface software and technology, pages 1-22, 2023.
+[20] Fengli Xu, Qianyue Hao, Zefang Zong, Jingwei Wang, Yunke Zhang, Jingyi Wang, Xiaochong Lan, Jiahui Gong, Tianjian Ouyang, Fanjin Meng, et al. Towards large reasoning models: A survey of reinforced reasoning with large language models. arXiv preprint arXiv:2501.09686, 2025.
+[21] Yu Shang, Yu Li, Fengli Xu, and Yong Li. Synergy-of-thoughts: Eliciting efficient reasoning in hybrid language models. arXiv preprint arXiv:2402.02563, 2024.
+[22] Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, et al. A survey on large language model based autonomous agents. Frontiers of Computer Science, 18(6):186345, 2024.
+[23] Zhiheng Xi, Wenxiang Chen, Xin Guo, Wei He, Yiwen Ding, Boyang Hong, Ming Zhang, Junzhe Wang, Senjie Jin, Enyu Zhou, et al. The rise and potential of large language model based agents: A survey. Science China Information Sciences, 68(2):121101, 2025.
+[24] Yu Shang, Yu Li, Keyu Zhao, Likai Ma, Jiahe Liu, Fengli Xu, and Yong Li. Agentsquare: Automatic llm agent search in modular design space. arXiv preprint arXiv:2410.06153, 2024.
+[25] Theodore Sumers, Shunyu Yao, Karthik Narasimhan, and Thomas Griffiths. Cognitive architectures for language agents. Transactions on Machine Learning Research, 2023.
+[26] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems, 35:24824-24837, 2022.
+[27] Yancheng Wang, Ziyan Jiang, Zheng Chen, Fan Yang, Yingxue Zhou, Eunah Cho, Xing Fan, Xiaojiang Huang, Yanbin Lu, and Yingzhen Yang. Recmind: Large language model powered agent for recommendation. arXiv preprint arXiv:2308.14296, 2023.
+[28] Zhefan Wang, Yuanqing Yu, Wendi Zheng, Weizhi Ma, and Min Zhang. Macrec: A multi-agent collaboration framework for recommendation. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, pages 2760-2764, 2024.
+[29] Yuyue Zhao, Jiancan Wu, Xiang Wang, Wei Tang, Dingxian Wang, and Maarten De Rijke. Let me do it for you: Towards llm empowered recommendation via tool learning. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, pages 1796-1806, 2024.
+[30] Shihao Cai, Jizhi Zhang, Keqin Bao, Chongming Gao, and Fuli Feng. Flow: A feedback loop framework for simultaneously enhancing recommendation and user agents. arXiv preprint arXiv:2410.20027, 2024.
+[31] Xu Huang, Jianxun Lian, Yuxuan Lei, Jing Yao, Defu Lian, and Xing Xie. Recommender ai agent: Integrating large language models for interactive recommendations. arXiv preprint arXiv:2308.16505, 2023.
+11
+
+[32] Luke Friedman, Sameer Ahuja, David Allen, Zhenning Tan, Hakim Sidahmed, Changbo Long, Jun Xie, Gabriel Schubiner, Ajay Patel, Harsh Lara, et al. Leveraging large language models in conversational recommender systems. arXiv preprint arXiv:2305.07961, 2023.
+[33] Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Tom Griffiths, Yuan Cao, and Karthik Narasimhan. Tree of thoughts: Deliberate problem solving with large language models. Advances in Neural Information Processing Systems, 36, 2024.
+[34] Yuan Li, Yixuan Zhang, and Lichao Sun. Metaagents: Simulating interactions of human behaviors for llm-based task-oriented coordination via collaborative generative agents. arXiv preprint arXiv:2310.06500, 2023.
+[35] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291, 2023.
+[36] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. React: Synergizing reasoning and acting in language models. In International Conference on Learning Representations (ICLR), 2023.
+[37] Xiang Deng, Yu Gu, Boyuan Zheng, Shijie Chen, Sam Stevens, Boshi Wang, Huan Sun, and Yu Su. Mind2web: Towards a generalist agent for the web. Advances in Neural Information Processing Systems, 36:28091-28114, 2023.
+[38] Taicheng Guo, Xiuying Chen, Yaqi Wang, Ruidi Chang, Shichao Pei, Nitesh V Chawla, Olaf Wiest, and Xiangliang Zhang. Large language model based multi-agents: A survey of progress and challenges. arXiv preprint arXiv:2402.01680, 2024.
+[39] Sirui Hong, Xiawu Zheng, Jonathan Chen, Yuheng Cheng, Jinlin Wang, Ceyao Zhang, Zili Wang, Steven Ka Shing Yau, Zijuan Lin, Liyang Zhou, et al. Metagpt: Meta programming for multi-agent collaborative framework. arXiv preprint arXiv:2308.00352, 3(4):6, 2023.
+[40] Weize Chen, Yusheng Su, Jingwei Zuo, Cheng Yang, Chenfei Yuan, Chen Qian, Chi-Min Chan, Yujia Qin, Yaxi Lu, Ruobing Xie, et al. Agentverse: Facilitating multi-agent collaboration and exploring emergent behaviors in agents. arXiv preprint arXiv:2308.10848, 2(4):6, 2023.
+12
+
+A Appendix
+A.1 Broader Impacts
+The benchmark and toolkit presented in this work are expected to advance the development of agentic recommender systems and bring significant positive societal implications. The improved contextual understanding of agentic recommender systems enables higher-quality personalized recommendations that can benefit diverse domains, including e-commerce, short-video platforms, etc. Furthermore, the standardized evaluation framework facilitates the development of more robust and adaptable recommendation systems that can better serve evolving user needs. Our platform can also provide a flexible foundation for incorporating ethical AI principles, such as fairness and privacy preservation, into future recommendation systems. These advancements collectively contribute to building more user-centric, explainable, and socially beneficial recommendation technologies.
+A.2 Limitations
+While AgentRecBench provides a comprehensive evaluation framework for agentic recommender systems, several limitations point to valuable directions for future work. First, the current benchmark primarily focuses on evaluating emerging agentic recommender systems, and we plan to incorporate more traditional and deep learning-based baselines for more thorough comparative analysis. Second, our environment currently operates on textual information, and we aim to extend it to incorporate multimodal data (e.g., images, videos) to better reflect real-world recommendation scenarios where agents need to process diverse content types. Finally, while the current framework evaluates singleagent systems, we plan to extend it to support the evaluation of multi-agent recommendation systems where collaborative or competitive agents interact to improve recommendation outcomes.
+A.3 Supplemented experimental results of the cold-start recommendation tasks and evolving-interest recommendation tasks
+Tables 5 and 6 show the complementary experimental results of our task on DeepSeek V3 and GPT-4o-mini. Overall, our evaluation results on other mainstream models, such as DeepSeek V3 and GPT-4o-mini, demonstrate that the agent's performance is consistent with the findings presented in the main text. Baseline666, DummyAgent, and RecHackers all exhibit strong performance, further validating the robustness and reliability of our evaluation method in accurately reflecting agent capabilities.
+A.4 Case Study
+We present the core workflows of the two agents, DummyAgent, and RecHackers in Figure 5, and 6, respectively. Overall, these agents rely on similar types of information for the ranking process, although their specific implementations differ. The ranking decisions are primarily based on three key components: (1) historical user reviews, which reflect past preferences; (2) a list of candidate items to be ranked; and (3) detailed item information, which helps evaluate the relevance of each item to the user's preferences.
+A major innovation among these agents lies in item-side feature engineering. Notably, the Baseline666 team employed platform-specific feature extraction methods, enabling a robust and adaptable ranking strategy across different data sources. For instance, on the Amazon platform, features such as item ID, name, star rating, number of reviews, and item description were extracted. On Yelp, they focused on core attributes like item ID, name, star rating, and review count. In contrast, the Goodreads platform required more diverse features, including author, publication year, and similar books.
+Review-side feature engineering represents another critical component, aimed at identifying and extracting the most informative reviews to enrich the understanding of both user preferences and item characteristics. For example, the DummyAgent team implemented a platform-tailored strategy: on Yelp, they extracted not only the review text but also interactive attributes such as "useful," "cool," and "funny"; on Amazon, they incorporated publication dates and purchase verification indicators; and on Goodreads, in addition to the review text and ratings, they utilized metadata such as review date, number of votes, number of comments, and reading status.
+13
+
+Table 5: Performance comparison on cold-start recommendation tasks with the average HR@N
+metric (N=1,3,5). DeepSeek-V3
+
+Category
+
+Method
+
+Amazon User Item
+
+Goodreads User Item
+
+Yelp User Item
+
+BaseAgent
+
+16.3 14.0 22.3 16.2
+
+4.0
+
+4.0
+
+CoTAgent
+
+19.3
+
+9.0
+
+20.3 14.5
+
+4.3
+
+4.3
+
+MemoryAgent
+
+15.3 11.0 16.7 15.5
+
+4.3
+
+4.3
+
+CoTMemAgent 16.7 12.0 16.7 15.5
+
+3.7
+
+4.3
+
+Agentic RS
+
+Baseline666
+
+50.3 48.7 38.7 49.5
+
+1.3
+
+2.7
+
+DummyAgent
+
+59.0 45.0 37.7 49.5
+
+1.3
+
+2.7
+
+RecHackers
+
+59.7 47.0 49.3 46.1
+
+3.0
+
+3.3
+
+Agent4Rec
+
+45.6 28.0 37.3 11.1
+
+2.7
+
+0.7
+
+GPT-4o-mini
+
+Category Agentic RS
+
+Method
+BaseAgent CoTAgent MemoryAgent CoTMemAgent Baseline666 DummyAgent RecHackers Agent4Rec
+
+Amazon
+
+User Item
+
+15.3
+
+9.0
+
+17.0
+
+9.3
+
+15.0
+
+7.3
+
+14.7
+
+7.7
+
+46.0 32.0
+
+36.7 30.7
+
+39.0 36.3
+
+36.0 20.3
+
+Goodreads
+
+User Item
+
+18.7 15.2
+
+20.0 15.5
+
+16.0 18.2
+
+15.3 16.0
+
+33.0 21.5
+
+32.7 24.6
+
+37.7 33.3
+
+39.3
+
+7.1
+
+Yelp
+
+User Item
+
+3.0
+
+4.0
+
+2.7
+
+4.3
+
+3.0
+
+4.3
+
+3.7
+
+4.0
+
+0.3
+
+2.3
+
+0.3
+
+3.3
+
+1.3
+
+3.3
+
+0.7
+
+1.3
+
+Table 6: Performance comparison on evolving-interest recommendation tasks with the average
+HR@N metric (N=1,3,5). DeepSeek-V3
+
+Category
+
+Method
+
+Amazon
+
+Goodreads
+
+Yelp
+
+Long Term Short Term Long Term Short Term Long Term Short Term
+
+BaseAgent
+
+17.3
+
+19.7
+
+32.0
+
+29.7
+
+5.7
+
+4.3
+
+CoTAgent
+
+17.7
+
+16.0
+
+24.0
+
+16.3
+
+3.3
+
+3.0
+
+MemoryAgent 18.3
+
+17.7
+
+29.3
+
+29.7
+
+5.0
+
+4.0
+
+CoTMemAgent 13.3
+
+18.7
+
+23.3
+
+21.3
+
+4.3
+
+4.0
+
+Agentic RS Baseline666
+
+50.7
+
+71.3
+
+66.0
+
+63.3
+
+0.0
+
+0.0
+
+DummyAgent 65.0
+
+65.7
+
+66.7
+
+60.7
+
+10.3
+
+6.3
+
+RecHackers
+
+64.3
+
+68.0
+
+68.7
+
+66.3
+
+9.3
+
+7.7
+
+Agent4Rec
+
+34.0
+
+46.3
+
+41.3
+
+42.7
+
+10.0
+
+6.0
+
+GPT-4o-mini
+
+Category Agentic RS
+
+Method
+BaseAgent CoTAgent MemoryAgent CoTMemAgent Baseline666 DummyAgent RecHackers Agent4Rec
+
+Amazon
+
+Long Term Short Term
+
+13.3
+
+12.0
+
+13.3
+
+11.7
+
+12.0
+
+10.7
+
+11.3
+
+12.3
+
+35.0
+
+49.0
+
+34.7
+
+48.0
+
+39.7
+
+46.3
+
+24.0
+
+34.7
+
+Goodreads
+
+Long Term Short Term
+
+12.7
+
+14.0
+
+12.7
+
+13.0
+
+16.3
+
+15.7
+
+17.7
+
+16.3
+
+35.0
+
+38.7
+
+42.7
+
+31.3
+
+53.7
+
+44.3
+
+32.7
+
+35.3
+
+Yelp
+
+Long Term Short Term
+
+5.3
+
+4.7
+
+5.3
+
+4.7
+
+5.3
+
+4.3
+
+5.3
+
+4.7
+
+0.0
+
+0.0
+
+4.0
+
+2.3
+
+5.7
+
+2.0
+
+7.0
+
+4.3
+
+14
+
+In summary, the key design elements across these agents can be distilled into three core principles: (1) effective workflows are built on a combination of user history, candidate items, item details, and platform-specific features, all integrated through large language models (LLMs) to produce rankings; (2) extracting representative, platform-specific item attributes is essential for enhancing model performance; and (3) prioritizing reviews that are both highly relevant and information-rich is crucial for improving ranking quality.
+DummyAgent's core workflow
+You are a real user on an online platform. Your historical item review text and stars are as follows: ['item_id', 'text', 'timestamp', 'source', 'type', 'sub_item_id', 'stars', 'helpful_vote', 'verified_purchase', 'title'...]. Now you need to rank the following {final_item_list_len} items: {final_item_list} according to their match degree to your preference. Please rank the more interested items more front in your rank list. The information of the above {final_item_list_len} candidate items is as follows: ['item_id', 'name', 'stars', 'review_count', 'attributes', 'title', 'average_rating', 'rating_number', 'description', 'ratings_count', 'title_without_series ']. Your final output should be ONLY a ranked item list of {final_item_list} with the following format , DO NOT introduce any other item ids! DO NOT output your analysis process! The correct output format: [Sorted Candidate Item List]
+Figure 5: Illustration of the agentic workflow of a superior recommendation agent (DummyAgent), which conducts domain-adaptive item-side feature engineering to enhance personalization.
+RecHacker's core workflow
+'You are a real human user on {task_type}, a platform for crowd -sourced {task_item} reviews'. Here is your {task_type} profile and review history: {user}. Your historical {task_item} reviews show your preference as follows: ['user_id', 'review_count', 'friends', 'stars'...]. Now you need to rank the following 20 {task_item}: [Candidate List] according to their match degree to your preference. The information of the above 20 candidate {task_item} is as follows: ['item_id', 'name', 'stars', 'review_count', 'attributes', 'title', 'average_rating', 'rating_number', 'description', 'ratings_count'...]. Your final output should be ONLY a ranked {task_item} list of [Candidate List] with the following format , DO NOT introduce any other {task_item} ids! You only need to select the top 5 {task_item} from the candidate list. 'Please rank the more interested {task_item} more front in your rank list.' You should think step by step before your final answer. DO NOT output your analysis process! Follow the correct final answer output format strictly , remember to output {task_item} ids instead of {task_item} names: [Sorted Candidate Item List]
+Figure 6: Illustration of the agentic workflow of a superior recommendation agent (RecHacker), which conducts domain-adaptive item-side feature engineering to enhance personalization.
+15 1
+
+

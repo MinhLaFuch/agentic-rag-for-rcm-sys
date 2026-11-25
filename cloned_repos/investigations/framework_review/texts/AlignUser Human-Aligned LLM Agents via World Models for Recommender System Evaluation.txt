@@ -1,0 +1,742 @@
+AlignUSER: Human-Aligned LLM Agents via World Models for Recommender System Evaluation
+Nicolas Bougie1, Gian Marconi Marconi1, Tony Yip1, Narimasa Watanabe1 {nicolas.bougie,gianmaria.marconi,tony.yip,narimasa.watanabe}@woven.toyota
+1Woven by Toyota
+
+arXiv:2601.00930v1 [cs.IR] 2 Jan 2026
+
+Abstract
+Evaluating recommender systems remains challenging due to the gap between offline metrics and real user behavior, as well as the scarcity of interaction data. Recent work explores large language model (LLM) agents as synthetic users, yet they typically rely on few-shot prompting, which yields a shallow understanding of the environment and limits their ability to faithfully reproduce user actions. We introduce ALIGNUSER, a framework that learns world-model-driven agents from human interactions. Given rollout sequences of actions and states, we formalize world modeling as a next state prediction task that helps the agent internalize the environment. To align actions with human personas, we generate counterfactual trajectories around demonstrations and prompt the LLM to compare its decisions with human choices, identify suboptimal actions, and extract lessons. The learned policy is then used to drive agent interactions with the recommender system. We evaluate ALIGNUSER across multiple datasets and demonstrate closer alignment with genuine humans than prior work, both at the micro and macro levels.
+1 Introduction
+Recommender systems (RS) are central to many online services, from e-commerce to media platforms, where they personalize content and drive user engagement (Li et al., 2024). Despite significant progress in user preference modeling, evaluation remains a bottleneck (Yoon et al., 2024). Offline metrics (e.g., nDCG, Recall) computed on static datasets dominate current evaluation practices, yet are often misaligned with online behavior once a model is deployed (Zhang et al., 2019; Jannach and Jugovac, 2019). Besides, these metrics do not translate to business values such as sales or satisfaction (Jannach and Jugovac, 2019). On the other hand, online A/B tests offer more faithful feedback but are expensive, slow to iterate, and constrained
+
+Figure 1: The ALIGNUSER framework for evaluating a recommender system by implicitly modeling a world model and exploring alternative scenarios.
+by ethical and privacy considerations. A promising alternative is to leverage LLM-based agents as synthetic users that interact with recommender systems in a simulation (Bougie and Watanabe, 2025c). These agents can express rich preferences and feedback in natural language, potentially approximating user-level metrics such as satisfaction or perceived relevance (Hou et al., 2024; Zhang et al., 2023; Huang et al., 2023; Wang et al., 2023c; Yoon et al., 2024). However, most existing approaches rely on few-shot prompting to mimic human behavior. The agent is typically asked to "act like a typical user" given a handful of examples (Wang et al., 2025; Bougie and Watanabe, 2025c), but has no explicit grasp of how the environment evolves in response to its actions. Thus, the agent gains only a superficial understanding of the world and struggles to faithfully reproduce human trajectories, especially when reasoning about long-term consequences (e.g., when to add to cart or exit). Moreover, without explicit alignment, the agent primarily projects its own intrinsic biases, rather than letting the persona realistically guide its decisions (Salecha et al., 2024; Kaiser et al., 2025; Bisbee et al., 2024).
+In this paper, we postulate that agents should
+
+1
+
+understand how the world works in order to faithfully replicate human actions. In light of this, given rollout trajectories (e.g., browsing, searching, adding items to the cart,...), we first pretrain the agent policy on a world-model task that predicts the next state from a state-action pair. This task helps the agent internalize environment dynamics: what happens if it clicks on this item, goes to the next page, or decides to leave. To align agents with their human counterparts, we further generate counterfactual trajectories around demonstrations. For each state, we consider alternative actions, roll out their consequences, and prompt the LLM to compare them with the human action, identify suboptimal decisions, and extract insights to guide future choices. This reflection process yields a policy that is explicitly trained to align with human decisions while being aware of environment dynamics. At test time, the learned policy drives the agent's interactions with recommender systems. We evaluate ALIGNUSER on several datasets and show that it achieves closer alignment with humans than prior LLM-based user agents, both at the micro level, while providing more reliable guidance for RS selection than traditional offline metrics.
+2 Related Work
+Evaluation of recommender systems. Traditional recommender system evaluation predominantly relies on offline metrics such as nDCG, Recall, or RMSE computed on historical logs (Zhang et al., 2019; Jannach and Jugovac, 2019). Although useful for model selection, these metrics do not directly capture user experience or business values, and their correlation with online A/B tests is often weak (Jannach and Jugovac, 2019; Bougie and Watanabe, 2025c). Recent work thus explores interactive and counterfactual evaluation, including bandit simulators, user models, and causal inference techniques (Li et al., 2024).
+LLM-based Agents. Recently, LLMs have opened new possibilities for simulating humanlike agents in virtual worlds (Park et al., 2023; Li et al., 2023; Wei et al., 2022). LLM-powered agents can reason, plan, and interact through natural language (Wei et al., 2022; Bougie and Watanabe, 2025b; Park et al., 2023; Bougie and Watanabe, 2025a). Several studies harness LLMs as user simulators or conversational agents in recommendation settings. RecMind (Wang et al., 2023c) and InteRecAgent (Huang et al., 2023) propose planning
+
+and reflection mechanisms over tool-augmented agents. Agent4Rec (Zhang et al., 2023) and related work (Hou et al., 2024; Yoon et al., 2024) investigate generative user agents that interact with recommender models and provide ratings or textual feedback. Recently, (Bougie and Watanabe, 2025c) consider image-driven sensing and advanced reasoning modules to align agents with their human counterparts. Although these systems exhibit positive correlations with online a/b tests (Bougie and Watanabe, 2025c), they typically treat the agent policy as a black box mapping from a textual state to an action in a single step, without an explicit model of how actions shape future states. Moreover, the agent is usually instructed to act given its persona, examples, and demographic attributes, which produces behavior reflecting the model's priors rather than genuine user patterns.
+World models and self-reflection. World models have a long history in reinforcement learning as predictors of future states and rewards (Ha and Schmidhuber, 2018). Recent work extends these ideas to language agents by treating states and actions as text and learning next-state predictors (Kim et al., 2022). Self-reflection strategies such as STaR (Zelikman et al., 2022) and more recent approaches (Wang et al., 2023b) leverage chain-of-thought explanations to improve reasoning and robustness. Most closely related to our work, recent "early experience" method (Zhang et al., 2025) trains LLM agents by generating alternative trajectories and comparing expert actions to alternatives using environment feedback. We present a similar philosophy but target the alignment of user agents with human RS behavior, introduce persona-driven reflection to align persona with actions, and couple world-model-guided counterfactuals with explicit supervision from human trajectories.
+3 Problem Formulation
+We model the environment as a Markov decision process M = (S, A, T ), where states s  S are textual representations of pages (e.g., search results, product details, cart), and a  A are actions such as [SEARCH], [CLICK], [ADD_TO_CART], [PURCHASE], [RATE], or [EXIT]. We assume a dataset of n human trajectories:
+(n) (n) (n) (n) n
+Dhuman = {(st , at , s^t+1, p )}t , (1)
+
+2
+
+collected from real user sessions, where at(n) de-
+(n)
+notes the human action at time t, and s^t+1 the subsequent state. Each demonstrator is also associated with a persona p. Our goal is to learn a policy (a  s, p) parametrized by , such that the trajectories it induces when interacting with the envi-
+ronment resemble human trajectories at both micro
+(step-wise action) and macro (session outcome) levels. We further assume a dataset Drollout of experience collected either via random interactions or
+following a curiosity-driven strategy (Bougie and
+(n) (n) (n)
+Ichise, 2020), {(st , at , s^t+1), . . .}.
+
+4 Method
+At its core, ALIGNUSER gains an understanding of the world by predicting next states from state-action pairs and aligns with human behaviors by comparing human actions with counterfactual examples. Following this pre-training step, the agent interacts with the recommender system. Figure 1 illustrates the overall architecture.
+
+4.1 World Modeling
+We first train our LLM-based policy  to approximate the environment transition dynamics. In our study, states are represented entirely in natural language, allowing us to model next-state prediction as a standard next-token prediction objective. Inspired by prior studies on training LLMs as world models, we use next states from the rollout set Drollout as direct training signals for the language agent's policy . Given a state-action pair (st, at) from Drollout, the model predicts the next state st+1 as a sequence of tokens: s^t+1  (  st, at), and train  to maximize the likelihood of the human next state st+1  :
+
+Lwm() = -
+
+
+
+log p(s^t+1  st, at).
+
+(st ,at ,s^t+1 Drollout
+(2)
+
+For example, when browsing an e-commerce site,
+
+the model may learn to predict that clicking on a
+
+product leads to a detailed product page, whereas
+
+submitting an empty search query results in a "no
+
+results" state. These natural-language page de-
+
+scriptions act as next-state supervision, enabling
+
+the model to internalize how different user actions
+
+transform the shopping session without requiring
+
+any handcrafted supervision.
+
+Figure 2: Counterfactual reflection from counterfactual trajectories.
+4.2 Human Alignment via Counterfactual Reasoning
+To align the policy with human decisions, we compare human trajectories with counterfactuals (Figure 2). For each human transition (st, at, s^t+1, p)  Dhuman, we sample alternative actions {at(1), . . . , at(K)} that the current policy  considers plausible yet deviate from the demonstrated action. Given the state st, we first draw a pool of K candidate actions {at(1), . . . , at(K)} from (  st, p) such that the generated action differs from the ground truth:
+at(k)  (  st, p) s.t. at(k)  at (3)
+This ensures the exploration of actions that the model currently believes to be plausible, and therefore most likely to cause misalignment if left uncorrected. We then let the agent reason on the counterfactual states, by comparing them with human state-action pairs. Given next states, we prompt the LLM to explain (1) why the human choice is better in the current context, (2) why the human choice is more aligned with its persona and preferences, (3) how the human action improves future outcomes compared to the alternatives. These explanations provide richer, transferable supervision than expert actions alone, leveraging the LLM's strength in processing language to internalize decision principles that generalize across tasks. In practice, we
+j
+prompt the model to generate a chain-of-thought ct explaining why the human action at is preferable to
+j
+the alternative at based on the differences between
+j
+their resulting states s^t+1 and st . The prompt is designed to elicit natural language reasoning that highlights potential limitations or inefficiencies in
+j
+at , grounded in the actual state transitions observed.
+
+3
+
+This reflection is used for both environment-driven actions (e.g., click, search) and item-centric actions (e.g., like, rate). The lessons are stored in DCR. We then train the agent to jointly predict the chain-ofthought and the expert action conditioned on the state st , using a next-token prediction loss over the target sequence (ctj, at):
+LCR = -  log p(ctj, at  st, p),
+(st,at,ctj ,p)DCR
+(4) where p denotes the language model's output distribution, aligned with the agent's policy . The overall optimization problem that is solved for learning the language agent can be expressed as:
+L() = wmLwm() + CRLCR(), (5)
+where wm and CR are scalars that balance worldmodel and counterfactual terms.
+4.3 Interacting with Recommender Systems
+Once pre-trained, ALIGNUSER uses the learned policy  to act as a synthetic user. Given its persona p, the agent interacts with the recommender system until it either purchases items or decides to terminate the session. Each agent is equipped with an episodic memory that stores its interactions with the RS. The memory is initially populated with the user's viewing and rating history. When the agent executes a new action or rates an item, the corresponding interaction is added to the episodic memory. At each step, the policy  receives a naturallanguage description of the current state st (e.g., a page of recommended items), and we prompt  to internally reason about the situation and output an action, as shown in the pseudo-prompt below:
+Action Selection Prompt Structure
+[STATE] st [PERSONA] p [RECENT_HISTORY] H [POSSIBLE_ACTIONS] a1, a2, . . . , aM Instruction: Think step by step about what a careful user with this persona would do next, considering their goals, preferences, and the future consequences of each action. End with a single line of the form: BEST-ACTION: <action_token> RATIONALE: <rationale>
+
+The selected action is then executed in the environment (e.g., clicking an item, going to the next page, or exiting), and the process repeats until a terminal action is selected. To further enhance the ability of the agent to reason on items, we compare our vanilla ALIGNUSER with ALIGNUSER+, which integrates a graph memory, path-driven retrieval, and causal reasoning, as done in (Bougie and Watanabe, 2025c). Namely, the agent stores its preferences in a graph-based memory and retrieves evidence to decide whether it likes or dislikes an item. Following the initial action selection atent, we introduce a causal reasoning step where agents generate questions (Q = (atent, H, p, Pcausal)) to validate tentative actions given recent history H and prompt Pcausal. For each counterfactual scenario (e.g., "What would happen if you exited now?"), the agent estimates outcomes and adjusts its final action based on cause-effect consistency.
+5 Experiments
+Baselines We compare ALIGNUSER against RecAgent (Wang et al., 2023a), Agent4Rec (Zhang et al., 2023), and SimUSER (Bougie and Watanabe, 2025c) which represent the closest comparable methods. Some experiments involve two versions of AlignUSER: ALIGNUSER and ALIGNUSER+, in order to isolate the effects of pretraining and few-shot prompting. When possible, we also report the results of RecMind (Wang et al., 2023c), an agent-based RS.
+5.1 Implementation Details
+We employ Qwen3-8B as the backbone LLM of our framework. During policy training, we generate K = 3 counterfactual actions per state and obtain their predicted next states from the environment. The policy is trained using a weighted combination of world-model and reflection loss, following Sec. 4.2. When persona is not available, we estimate persona attributes via personamatching, as done in SimUSER (Bougie and Watanabe, 2025c). We investigate four real-world datasets: MovieLens-1M (Harper and Konstan, 2015), Steam (Kang and McAuley, 2018), and AmazonBook (McAuley et al., 2015), OPeRA (Wang et al., 2025).
+5.2 Preference Alignment
+In order to appropriately respond to recommendations, synthetic users must possess a clear understanding of their own preferences. Thereby, we
+
+4
+
+Method(1:m)
+RecAgent (1:1) RecAgent (1:3) RecAgent (1:9)
+Agent4Rec (1:1) Agent4Rec (1:3) Agent4Rec (1:9)
+SimUSER (1:1) SimUSER (1:3) SimUSER (1:9)
+AlignUSER (1:1) AlignUSER (1:3) AlignUSER (1:9)
+AlignUSER+ (1:1) AlignUSER+ (1:3) AlignUSER+ (1:9)
+
+Accuracy
+0.5807 0.5077 0.4800
+0.6912 0.6675 0.6175
+0.7912 0.7737 0.6791
+0.8203 0.7994 0.7061
+0.8317 0.8119 0.7195
+
+MovieLens
+
+Precision Recall
+
+0.6391 0.7396 0.7491
+
+0.6035 0.3987 0.2168
+
+0.7460 0.7623 0.7753
+
+0.6914 0.4210 0.2139
+
+0.7976 0.8173 0.8382
+
+0.7576 0.5223 0.3534
+
+0.8372 0.8423 0.8438
+
+0.7969 0.5987 0.4273
+
+0.8483 0.8532 0.8524
+
+0.8075 0.6113 0.4451
+
+F1 Score
+0.6205 0.5181 0.3362
+0.6982 0.5433 0.3232
+0.7771 0.6373 0.4972
+0.8166 0.6999 0.5663
+0.8274 0.7121 0.5848
+
+Accuracy
+0.6035 0.6144 0.6222
+0.7190 0.6707 0.6617
+0.8221 0.6629 0.6497
+0.8432 0.6843 0.6648
+0.8546 0.6985 0.6787
+
+AmazonBook
+
+Precision Recall
+
+0.6539 0.6676 0.6641
+
+0.6636 0.4001 0.1652
+
+0.7276 0.6909 0.6939
+
+0.7335 0.4423 0.2369
+
+0.7969 0.7547 0.7588
+
+0.7841 0.5657 0.3229
+
+0.8427 0.7784 0.7827
+
+0.8179 0.6380 0.3892
+
+0.8533 0.7915 0.7935
+
+0.8292 0.6511 0.4042
+
+F1 Score
+0.6587 0.5003 0.2647
+0.7002 0.5098 0.3183
+0.7904 0.6467 0.4530
+0.8301 0.7014 0.5198
+0.8416 0.7145 0.5356
+
+Accuracy
+0.6267 0.5873 0.5995
+0.6892 0.6505 0.6021
+0.7905 0.7425 0.7119
+0.8138 0.7641 0.7284
+0.8269 0.7781 0.7413
+
+Steam
+
+Precision Recall
+
+0.6514 0.6674 0.6732
+
+0.6490 0.3488 0.1744
+
+0.7059 0.7381 0.7213
+
+0.7031 0.4446 0.1901
+
+0.8033 0.8048 0.7823
+
+0.7848 0.5376 0.2675
+
+0.8421 0.8339 0.7964
+
+0.8263 0.6118 0.3379
+
+0.8549 0.8461 0.8079
+
+0.8376 0.6254 0.3528
+
+F1 Score
+0.6499 0.4576 0.2772
+0.6786 0.5194 0.2822
+0.7939 0.6446 0.3987
+0.8340 0.7058 0.4745
+0.8462 0.7190 0.4922
+
+Table 1: User preference alignment across MovieLens, AmazonBook, and Steam datasets. All improvements are statistically significant (p < 0.05). Bold: best results for each type (1:1), (1:3) (1:9).
+
+Methods
+MF AFM RecAgent RecMind-SI (few-shot) Agent4Rec SimUSER
+ALIGNUSER ALIGNUSER+
+
+MovieLens RMSE MAE
+
+1.2142 1.1762 1.1021 1.0651 0.7612 0.5020
+
+0.9971 0.8723 0.7632 0.6731 0.7143 0.4460
+
+0.4693 0.4151 0.4292 0.3871
+
+AmazonBook RMSE MAE
+
+1.2928 1.3006 1.2587 1.2139 0.8788 0.5676
+
+0.9879 1.1018 1.1191 0.9434 0.6712 0.4210
+
+0.5130 0.3992 0.4649 0.3741
+
+Steam RMSE MAE
+
+1.3148 1.2763 1.0766 0.9291 0.7577 0.5866
+
+1.0066 0.9724 0.9598 0.6981 0.6880 0.5323
+
+0.5344 0.5006 0.4970 0.4829
+
+Table 2: Rating prediction performance. Bold: best results; underlined: second-best. ALIGNUSER's improvements are statistically significant (p < 0.05).
+
+query the agents to classify items based on whether their human counterparts have interacted with them or not. We randomly assigned 20 items to each of 1,000 agents, with varying ratios (1:m where m  {1, 3, 9}) of items users had interacted with to non-interacted items. We treat this as a binary classification task. Table 1 shows ALIGNUSER agents accurately identified items aligned with their tastes, significantly outperforming baselines across all distractor levels (paired t-tests, 95% confidence, p < 0.05). These improvements can be directly attributed to the reflection step, which allows the LLM to understand how personas relate to the agent's actions and preferences. Further gains stem from the knowledge-graph memory, as observed by comparing ALIGNUSER with ALIGNUSER+.
+5.3 Rating Items
+A central component of recommender-system interactions is the ability to judge whether a user would like or dislike an item. We evaluate our method on this task by comparing several LLM-based agents with standard baselines, including matrix factor-
+
+RecAgent Agent4Rec SimUSER(persona) ALIGNUSER ALIGNUSER+
+
+MovieLens
+3.01 ± 0.14 3.04 ± 0.12 4.41±0.16 4.53±0.15* 4.58±0.14*
+
+AmazonBook
+3.14 ± 0.13 3.21 ± 0.14 3.99±0.18 4.19±0.17* 4.25±0.16*
+
+Steam
+2.96 ± 0.17 3.09 ± 0.16 4.02±0.23 4.17±0.21* 4.22±0.20*
+
+OPeRA
+3.05 ± 0.15 3.15 ± 0.17 4.05±0.20 4.31±0.19* 4.34±0.18*
+
+Table 3: Human-likeness score evaluated by GPT-4o across recommendation domains (higher is better). *Significant improvements over best baseline (p < 0.05).
+
+ization (MF) (Koren et al., 2009) and Attentional Factorization Machines (AFM) (Xiao et al., 2017). Results are reported in Table 2. Across datasets, our agent consistently achieves lower error than other baselines. Other LLM approaches tend to produce larger deviations, especially on long-tail or sparsely observed items, reflecting their tendency to hallucinate plausible but incorrect ratings. In contrast, ALIGNUSER explicitly aligns the agent's behavior with its persona during the world-model pretraining phase. This provides auxiliary signals about preference consistency and item relationships, enabling the agent to form a more coherent internal preference state before issuing a rating.
+5.4 Human Likeliness
+To assess how closely agent trajectories resemble real user behavior, we adopt GPT-4o as an automatic evaluator, following prior evidence that LLM judges provide reliability comparable to human annotators (Chiang and Lee, 2023). For each interaction sequence, the evaluator assigns a score on a 5-point Likert scale, where higher values indicate stronger alignment with human-like reasoning and behavioral patterns. As shown in Table 3, our method achieves substantially higher human-
+
+5
+
+Method
+Human (OPeRA)
+Random RecAgent Agent4Rec SimUSER ALIGNUSER ALIGNUSER+
+
+Thought-Action Consistency (%) 
+-
+38.7 49.5 55.8 64.3 86.7 89.3
+
+Persona-Behavior Consistency (%) 
+-
+36.1 46.7 52.4 61.5 82.4 85.6
+
+Pages/ Session  human
+5.3
+2.4 3.5 4.0 4.6 5.1 5.1
+
+Purchase Rate Gap (abs., %) 
+-
+22.8 16.3 12.1 9.9 2.5 2.1
+
+Table 4: Thought and persona consistency on OPeRAtest, together with session-level statistics. Bold: best result; underlined: second best among synthetic agents.
+
+likeness scores across all datasets. Our world modeling task reduces inconsistent behaviors and encourages the agent to evaluate how a human would behave under alternative situations. In contrast, baseline LLM agents, such as Agent4Rec, exhibit patterns that the evaluator reliably flags as nonhuman, including premature [EXIT] actions and erratic rating behavior for similar items.
+5.5 Reasoning and Persona Consistency
+We further measure how agents reproduce humanlike reasoning and session dynamics on the OPeRA dataset (Wang et al., 2025), which features stateaction pairs, and rationales. First, we report thought-action consistency, where GPT-4o compares LLM-generated and genuine rationales as coherent, partially coherent, or contradictory. The consistency score is the proportion of steps labeled coherent. Second, we measure persona-behavior consistency, whether the actions are consistent with the stated shopping style and preferences. This targets whether the agent maintains a stable, individualized behavior pattern rather than drifting toward a generic shopper. Finally, analyze sessionlevel metrics: number of pages visited, and the purchase rate gap, defined as the absolute difference (%) between human and agent purchase frequencies.
+As shown in Table 4, counterfactual reflection substantially improves internal coherence. ALIGNUSER raises thought, action consistency compared to baselines. A similar trend appears for persona, behavior consistency, indicating that the policy not only reproduces local decisions but also preserves a stable shopping style over entire sessions. Session statistics also move closer to human behavior. While RecAgent and Agent4Rec tend to under-explore the site (fewer pages than humans) and either over-purchase or under-purchase relative to human shoppers, our method produces more faithful browsing sessions.
+
+Figure 3: Spearman correlation between estimated and actual engagement metrics. Higher values indicate better alignment with ground-truth metrics.
+5.6 Action Alignment
+Next, we measure action alignment. We adopt an exact-match criterion: a prediction is counted as correct only if all action parameters match the ground-truth. For click actions, this requires matching the clicked target (e.g., the correct product or button). For input actions, the model must identify both the appropriate input field and the exact text entered by the user. We also assess how well each approach classifies action types. We report F1 scores for the high-level action categories click, input, and terminate. To assess finegrained behavior, we further compute weighted F1 over click subtypes, capturing whether the model can distinguish between different click intents (e.g., review, product_link, purchase). Finally, because online shopping is inherently goal-driven, we evaluate the prediction of session outcomes. We measure performance on these terminal actions using accuracy and weighted F1, which reflects how well the model captures users' eventual decisions and long-term goals over the course of a session. As shown in Table 5, ALIGNUSER surpasses prior LLM-based simulators, and ALIGNUSER+ yields the strongest results, with particularly large gains in action generation accuracy and session-outcome prediction.
+5.7 Offline A/B Testing
+We further examine whether ALIGNUSER can serve as a reliable proxy for online A/B tests. We use a proprietary dataset of 55 historical A/B experiments on a large-scale food recommendation platform, each involving thousands of recommended
+
+6
+
+Model
+GPT-4.1 w/o persona w/o rationale
+Claude-3.7 w/o persona w/o rationale
+Llama-3.3 w/o persona w/o rationale
+RecAgent Agent4Rec SimUSER
+AlignUSER AlignUSER+
+
+Action Gen. (Accuracy)
+21.51 22.06 21.28
+10.75 10.75 10.08
+8.31 8.31 8.76
+22.71 23.09 24.21
+51.47 52.92
+
+Action Type (Macro F1)
+48.78 45.55 34.93
+31.58 25.33 26.06
+24.29 23.69 23.60
+49.18 50.05 52.44
+69.81 71.94
+
+Click Type (Weighted F1)
+44.47 43.45 42.63
+27.27 22.76 20.29
+19.99 18.59 19.22
+45.25 46.37 48.68
+66.29 66.88
+
+Session Outcome (Weighted F1)
+47.54 58.47 51.17
+43.52 43.10 43.10
+36.64 33.21 34.19
+54.12 56.70 59.63
+78.07 80.52
+
+Table 5: Evaluation of next-action prediction. We report four metrics: Action Generation Accuracy, Action Type Macro F1, Click Type Weighted F1, and Session Outcome Weighted F1. "Claude-3.7" denotes Claude-3.7-Sonnet; "Llama-3.3" denotes Llama-3.3-70B-Instruct. All metrics are percentages (%).
+
+P view N like P like N exit Ssat
+
+Random 0.295 3.05 0.247 2.80 2.60
+
+Pop
+
+0.388 4.15 0.365 2.95 3.28
+
+MF
+
+0.468 5.72 0.439 3.08 3.70
+
+MultVAE 0.521 5.31 0.452 3.22 3.82
+
+LightGCN 0.552 5.49 0.446 3.26 3.88
+
+Table 6: Evaluation of recommendation strategies on a recommendation task from the MovieLens dataset.
+
+items. Every test compares multiple recommendation strategies, with the average number of visited pages used as the primary business metric. For each strategy, we run the corresponding simulator and estimate the same engagement metric, then compute the Spearman correlation between simulated and real-world outcomes across the 55 tests. As shown in Figure 3, AlignUSER+ achieves the highest correlation with ground truth, outperforming all other baselines. Statistical tests confirm that the improvements over all baselines are significant (p < 0.05), with AlignUSER also clearly outperforming SimUSER.
+5.8 Recommender System Evaluation
+Understanding the efficacy of various recommendation algorithms is crucial for enhancing user satisfaction. By simulating human proxies, we
+
+can better predict how users will engage with recommender systems, providing valuable interactive metrics. We compare various recommendation strategies, including most popular (Pop), matrix factorization (MF) (Koren et al., 2009), LightGCN (He et al., 2020), and MultVAE (Liang et al., 2018), using the MovieLens dataset. Upon exiting, agents rated their satisfaction on a scale from 1 to 10. Ratings above 3 were considered indicative of a like. Metrics include average viewing ratio (P view), average number of likes (N like), average ratio of likes (P like), average exit page number (N exit), and average user satisfaction score (Ssat). Here, rather than evaluating the proposed framework itself, we use simulated users to examine whether their interactions with recommender systems are coherent with well-established trends in the literature. Table 6 demonstrates that agents exhibit higher satisfaction with advanced recommendations versus random and Pop methods, consistent with real-life trends.
+6 Discussion and Limitations
+Our study demonstrates that incorporating an explicit world-modeling task and counterfactual selfreflection yields user agents that more faithfully reproduce human interaction patterns and produce more reliable evaluation signals for recommender systems. Despite these gains, several limitations
+
+7
+
+remain. The current implementation relies solely on naturallanguage page descriptions. Although this abstraction enables uniform modeling across domains, it omits fine-grained visual, layout, and interaction cues present in real e-commerce interfaces. Extending the framework to multimodal representations (e.g., screenshots, product images, or structured DOM states) could improve the fidelity of both the world model and the downstream policy. Training relies on human trajectories, which provide only partial coverage of the action space. While world-model-guided counterfactual rollouts mitigate this limitation by exposing the agent to alternative transitions, the policy may still extrapolate poorly in states that are rarely visited by humans or in sequences that diverge significantly from typical browsing paths. Our experiments focus on interaction settings with moderate temporal depth (e.g., shopping, books), where sessions typically span a few dozen steps. Deploying ser agents in long-horizon settings such as news reading, continuous mobile app use, or social media feeds may require additional components, such as persistent memory, hierarchical planning, or explicit long-term goal modeling. Finally, the behavior of the agent inevitably inherits biases and idiosyncrasies of the underlying LLM. Although the reflection mechanism constrains deviations from human demonstrations, residual biases in preference modeling, sentiment, or perception may still surface and influence evaluation outcomes.
+7 Conclusion
+We introduced ALIGNUSER, a world-modelguided framework for learning user agents from human trajectories. By modeling environment dynamics through next-state prediction and generating counterfactuals to align actions with human decisions and personas, ALIGNUSER brings LLMbased agents closer to real user behavior. Our experiments in shopping and recommender system evaluation scenarios demonstrate improvements in action prediction, rating, and preference alignment. Our method also exhibits a positive correlation between simulated and online A/B test outcomes. We believe that synthetic users offer a promising foundation for scalable and privacy-preserving evaluation of recommender systems, and pave the way to more realistic, controllable, and interpretable
+
+agent-based simulation frameworks.
+8 Limitations
+Although ALIGNUSER achieves the highest alignment with human trajectories among the evaluated baselines, several limitations must be acknowledged. First, reproducibility is constrained by the availability of human interaction logs. A few datasets used for evaluating alignment are proprietary, limiting full transparency and replication. Second, our approach inherits the cultural, demographic, and socioeconomic biases present in large language models. Since ALIGNUSER relies on LLM-generated reflections and counterfactual reasoning, any underlying biases in the base model may manifest as skewed interpretations of user motives or preferences. Related to this, we occasionally observe hallucinations in world-model rollouts, for example, predicting implausible next states or misinterpreting page semantics, which can propagate into the reflective policy and yield suboptimal decisions. Third, the effectiveness of ALIGNUSER is tightly coupled to the strengths and weaknesses of the underlying LLMs. Inconsistencies in reasoning quality, brittleness under distribution shift, and occasional unfounded judgments may degrade the fidelity of simulated users, particularly in sparsely covered regions of the state-action space. Finally, the framework integrates several interacting components, world modeling, counterfactual generation, and reflection, which can make it difficult to isolate the contribution of each module. While we provide ablation studies to partially disentangle these effects, future work is needed to better understand how different training signals and architectural choices influence alignment outcomes.
+9 Ethics Statement
+This work introduces a framework for training synthetic users to support the evaluation of recommender systems. While such agents provide clear advantages in terms of scalability, costeffectiveness, and privacy preservation, the approach raises several ethical considerations. Synthetic user agents trained on human logs may inadvertently reproduce or amplify demographic, cultural, or socioeconomic biases present in the underlying LLMs or in the behavioral data used for world-model learning. These biases can manifest
+
+8
+
+in the agent's simulated preferences or interaction patterns, potentially leading to misleading evaluation signals. In particular, biased reflections or hallucinated counterfactuals may privilege certain user groups or product categories, reinforcing unfairness in downstream recommender systems. A broader concern lies around the use of realistic synthetic users as proxies for actual individuals. When such agents are used to assess or optimize RS behavior, there is a risk that system designers may over-rely on simulated outcomes, reducing the involvement of real users, domain experts, or impacted stakeholders. This is especially sensitive in domains such as e-commerce, job recommendations, or content consumption, where algorithmic decisions can influence user autonomy and exposure to information. Finally, the generation of counterfactual trajectories, while valuable for alignment, relies on models that may produce plausible, sounding but factually incorrect predictions. Such inaccuracies could misguide evaluation or optimization if not interpreted with caution. We emphasize that synthetic users should complement, rather than replace, real human feedback. Responsible deployment requires transparency regarding model limitations, continuous monitoring for bias, and safeguards to prevent misuse or misinterpretation of simulation outcomes.
+References
+James Bisbee, Joshua D. Clinton, Cassy Dorff, Brenton Kenkel, and Jennifer M. Larson. 2024. Synthetic replacements for human survey data? the perils of large language models. Political Analysis, 32(4):401-416.
+Nicolas Bougie and Ryutaro Ichise. 2020. Skill-based curiosity for intrinsically motivated reinforcement learning. Machine Learning, 109:493-512.
+Nicolas Bougie and Narimawa Watanabe. 2025a. Citysim: Modeling urban behaviors and city dynamics with large-scale llm-driven agent simulation. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: Industry Track, pages 215-229.
+Nicolas Bougie and Narimawa Watanabe. 2025b. Generative reviewer agents: Scalable simulacra of peer review. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: Industry Track, pages 98-116.
+Nicolas Bougie and Narimawa Watanabe. 2025c. Simuser: Simulating user behavior with large language models for recommender system evaluation.
+
+In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 6: Industry Track), pages 43-60.
+Cheng-Han Chiang and Hung-yi Lee. 2023. Can large language models be an alternative to human evaluations? arXiv preprint arXiv:2305.01937.
+David Ha and Jürgen Schmidhuber. 2018. Recurrent world models facilitate policy evolution. In Advances in Neural Information Processing Systems, volume 31.
+F Maxwell Harper and Joseph A Konstan. 2015. The movielens datasets: History and context. Acm transactions on interactive intelligent systems (tiis), 5(4):1- 19.
+Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang. 2020. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the 43rd International ACM SIGIR conference on research and development in Information Retrieval, pages 639-648.
+Yupeng Hou, Junjie Zhang, Zihan Lin, Hongyu Lu, Ruobing Xie, Julian McAuley, and Wayne Xin Zhao. 2024. Large language models are zero-shot rankers for recommender systems. In European Conference on Information Retrieval, pages 364-381. Springer.
+Xu Huang, Jianxun Lian, Yuxuan Lei, Jing Yao, Defu Lian, and Xing Xie. 2023. Recommender ai agent: Integrating large language models for interactive recommendations. arXiv preprint arXiv:2308.16505.
+Dietmar Jannach and Michael Jugovac. 2019. Measuring the business value of recommender systems. ACM Transactions on Management Information Systems (TMIS), 10(4):1-23.
+Carolin Kaiser, Jakob Kaiser, Vladimir Manewitsch, Lea Rau, and Rene Schallner. 2025. Simulating human opinions with large language models: Opportunities and challenges for personalized survey data modeling. In Adjunct Proceedings of the 33rd ACM Conference on User Modeling, Adaptation and Personalization, page 82-86. Association for Computing Machinery.
+Wang-Cheng Kang and Julian McAuley. 2018. Selfattentive sequential recommendation. In 2018 IEEE international conference on data mining (ICDM), pages 197-206. IEEE.
+Minsoo Kim, YeonJoon Jung, Dohyeon Lee, and Seungwon Hwang. 2022. Plm-based world models for text-based games. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pages 1324-1341. Association for Computational Linguistics.
+Yehuda Koren, Robert Bell, and Chris Volinsky. 2009. Matrix factorization techniques for recommender systems. Computer, 42(8):30-37.
+
+9
+
+Guohao Li, Hasan Hammoud, Hani Itani, Dmitrii Khizbullin, and Bernard Ghanem. 2023. Camel: Communicative agents for" mind" exploration of large language model society. Advances in Neural Information Processing Systems, 36:51991-52008.
+Yang Li, Kangbo Liu, Ranjan Satapathy, Suhang Wang, and Erik Cambria. 2024. Recent developments in recommender systems: A survey. IEEE Computational Intelligence Magazine, 19(2):78-95.
+Dawen Liang, Rahul G Krishnan, Matthew D Hoffman, and Tony Jebara. 2018. Variational autoencoders for collaborative filtering. In Proceedings of the 2018 world wide web conference, pages 689-698.
+Julian McAuley, Christopher Targett, Qinfeng Shi, and Anton Van Den Hengel. 2015. Image-based recommendations on styles and substitutes. In Proceedings of the 38th international ACM SIGIR conference on research and development in information retrieval, pages 43-52.
+Joon Sung Park, Joseph C O'Brien, Carrie J Cai, Meredith Ringel Morris, Percy Liang, and Michael S Bernstein. 2023. Generative agents: Interactive simulacra of human behavior. arXiv preprint arXiv:2304.03442.
+Aadesh Salecha, Molly E Ireland, Shashanka Subrahmanya, João Sedoc, Lyle H Ungar, and Johannes C Eichstaedt. 2024. Large language models show human-like social desirability biases in survey responses. arXiv preprint arXiv:2405.06058.
+Lei Wang, Jingsen Zhang, Xu Chen, Yankai Lin, Ruihua Song, Wayne Xin Zhao, and Ji-Rong Wen. 2023a. Recagent: A novel simulation paradigm for recommender systems. arXiv preprint arXiv:2306.02552.
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc V. Le, Ed H. Chi, Sharan Narang, Aakanksha Chowdhery, and Denny Zhou. 2023b. Self-consistency improves chain of thought reasoning in language models. In Proceedings of the International Conference on Learning Representations.
+Yancheng Wang, Ziyan Jiang, Zheng Chen, Fan Yang, Yingxue Zhou, Eunah Cho, Xing Fan, Xiaojiang Huang, Yanbin Lu, and Yingzhen Yang. 2023c. Recmind: Large language model powered agent for recommendation. arXiv preprint arXiv:2308.14296.
+Ziyi Wang, Yuxuan Lu, Wenbo Li, Amirali Amini, Bo Sun, Yakov Bart, Weimin Lyu, Jiri Gesi, Tian Wang, Jing Huang, and 1 others. 2025. Opera: A dataset of observation, persona, rationale, and action for evaluating llms on human online shopping behavior simulation. arXiv preprint arXiv:2506.05606.
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, and 1 others. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems, 35:24824- 24837.
+
+Jun Xiao, Hao Ye, Xiangnan He, Hanwang Zhang, Fei Wu, and Tat-Seng Chua. 2017. Attentional factorization machines: Learning the weight of feature interactions via attention networks. arXiv preprint arXiv:1708.04617.
+Se-eun Yoon, Zhankui He, Jessica Maria Echterhoff, and Julian McAuley. 2024. Evaluating large language models as generative user simulators for conversational recommendation. arXiv preprint arXiv:2403.09738.
+Eric Zelikman, Yuhuai Wu, Jesse Mu, and Noah D. Goodman. 2022. STaR: Bootstrapping reasoning with reasoning. In Advances in Neural Information Processing Systems, volume 35.
+An Zhang, Leheng Sheng, Yuxin Chen, Hao Li, Yang Deng, Xiang Wang, and Tat-Seng Chua. 2023. On generative agents in recommendation. arXiv preprint arXiv:2310.10108.
+Kai Zhang, Xiangchao Chen, Bo Liu, Tianci Xue, Zeyi Liao, Zhihan Liu, Xiyao Wang, Yuting Ning, Zhaorun Chen, Xiaohan Fu, and 1 others. 2025. Agent learning via early experience. arXiv preprint arXiv:2510.08558.
+Shuai Zhang, Lina Yao, Aixin Sun, and Yi Tay. 2019. Deep learning based recommender system: A survey and new perspectives. ACM computing surveys (CSUR), 52(1):1-38.
+
+10
+
+A Experimental Setup
+Experimental Settings. We separate the dataset into training, validation, and test sets (80/10/10%), using a time-based split. This ensures to reflect the temporal distribution shift that may be observed in the real world. To address privacy concerns, the name and gender are omitted. Moreover, for the sake of generality, we do not utilize userspecific information available in these datasets, relying instead on the personas identified via personamatching (Bougie and Watanabe, 2025c). To obtain rollouts Drollout that cover a large space of the environment, we collect rollouts using a decaying -greedy exploration policy. At episode t, the behavior policy selects a random action with probability t and otherwise follows the greedy action of the current policy. We linearly anneal t from 0.3 to 0.05 over 100,000 episodes. Drollout was augmented with human transitions and their counterfactual transitions. This ensures that the world model covers regions not visited by humans. Matrix factorization (MF) is utilized as the recommender model unless specified otherwise. In our simulator, agents are presented with four items n = 4 per page and allowed to interact by viewing and rating items based on their preferences. When the output of the LLM deviated from the desired format, resulting in errors, the LLM was reprompted with the following instruction: You have one more chance to provide the correct answer.
+Counterfactuals. We generate K = 3 counterfactual actions (excluding a) per state and obtain their next states from the environment. During training, we use a batch size of 16 and a learning rate of 1e-5, and train for 8 epochs. We set the loss weights to wm = 1.0 and CR = 0.5. In datasets such as MovieLens that do not include actions (e.g., [CLICK], we only let the agent reflect at the item level by sampling alternative rating actions([1], [2],...), treating different rating values as distinct choices in the action space. In contrast, for datasets that provide interaction actions, we also generate counterfactuals at the trajectory level, enabling reflection over alternative sequences of actions and states rather than solely on isolated item-level decisions. For instance, when the supervised signal is a rating decision (e.g., MovieLens/AmazonBook), we additionally treat each discrete rating value in {1, 2, 3, 4, 5} as a distinct action and sample alternative rating values as counterfactuals. Actions are
+
+executed in the simulation to collect st+1, which is
+
+then used for counterfactual reflection.
+
+Preferences. The preferences of each agent are
+
+stored in a memory, being initialized from the his-
+
+tory of its human counterpart. When a review score
+
+for an item is greater than 4, the agent stores a
+
+memory entry in the form I liked {item_name}
+
+based on my review score of {score}. For
+
+a score of 2 or below, the following format is uti-
+
+lized I disliked {item_name} based on my
+
+review score of {score}. Neutral scores result
+
+in the entry I felt neutral about {item_name}
+
+based on my review score of {score}. In all
+
+the experiments, items rated  4 are considered as
+
+liked by the user, while items  2 are considered as
+
+disliked. These interactions are stored both as plain
+
+text in the episodic memory and as relationships
+
+in the knowledge graph memory. The knowledge-
+
+graph memory utilizes the same retrieval imple-
+
+mentation and parameters as done in SimUSER
+
+(Bougie and Watanabe, 2025c). The top-k2 items,
+
+their attributes, and paths are returned to condition
+
+decision making (see page prompt). Namely, the ti-
+
+tles and ratings of retrieved items are concatenated
+
+to the prompt.
+
+Persona. To lay a reliable foundation for the gen-
+
+erative agent's subsequent interactions and evalua-
+
+tions, each agent has its own persona p. A persona
+
+p encompasses a set of features that characterize the
+
+user: age, personality, and occupation. Person-
+
+ality traits are defined by the Big Five personality
+
+traits: Openness, Conscientiousness, Extraversion,
+
+Agreeableness, and Neuroticism, each measured on
+
+a scale from 1 to 3. Along with attributes extracted
+
+from its historical data: p  {pickiness, habits}.
+
+pickiness level is sampled in {not picky, moderately
+
+picky, extremely picky} based on the user's aver-
+
+age rating. Habits account for user tendencies in
+
+engagement, conformity, and variety (Zhang et al.,
+
+2023). Namemly, given the average rating R¯ of a
+
+user:
+
+R¯
+
+=
+
+1 N
+
+i=1 N rui,
+
+the
+
+pickiness
+
+level
+
+P (R¯)
+
+of a user was determined based on the following
+
+thresholds:
+
+P1 ¯  P (R) = P2
+ P3
+
+if R¯  4.5 if 3.5  R¯ < 4.5 if R¯ < 3.5
+
+where P1 corresponds to not picky, P2 corresponds to moderately picky, and P3 corresponds to extremely picky. Engagement measures the frequency
+and breadth of a user's interactions with recom-
+
+11
+
+mended items, distinguishing highly active users from those interacting with only a few items. Engagement can be mathematically expressed as: Tact u = iI yui, where given a user u  U and an item i  I, the quality of the item is denoted by Ri = uU y 1 ui uU yui  rui. yui = 0 indicates that the user u has not rated the item i and inversely yui = 1 indicates that the user has rated the item with rui  {1, 2, 3, 4, 5}. Conformity captures how closely a user's ratings align with average item ratings, drawing a distinction between users with unique tastes and those whose opinions closely mirror popular sentiments. For user u, the conformity trait is defined as: Tconf u = iI y 1 ui iI yui  rui - Ri2. Variety reflects the user's proclivity toward a diverse range of item genres or their inclination toward specific genres. The variety trait for user u is formulated as: Tdiv u = Ui{yui=1}gi.
+Interactions with Recommender Systems. Once pre-trained, ALIGNUSER uses the learned policy  to act as a synthetic user. Given a persona p, the agent interacts with the recommender simulator in a page-by-page manner until it selects a terminal action. Each step consists of an internal [WATCH]/[SKIP] screening over items on the current page to identify candidates consistent with the persona and memory, and selecting one environment action (e.g., navigate, click for details, or exit). The [WATCH]/[SKIP] screening is not an environment action; it is an internal decision routine to reduce the mental workload on users. During action selection, we prompt  to internally reason about the situation and output an action. The selected action is executed in the environment (e.g., clicking an item to reveal a more detailed description, moving to the next page, or exiting), and the loop repeats until termination. In recommendation domains (MovieLens, Steam, AmazonBook), sessions terminate via [EXIT]; while in the web-shopping domain (OPeRA), it may include purchase-related decisions before [TERMINATE]. ALIGNUSER+ integrates a graph memory, path-driven retrieval, and causal validation as in SimUSER(Bougie and Watanabe, 2025c). The agent stores preference evidence in a graph-based memory and retrieves supporting paths to decide whether it likes or dislikes an item. Following action seelction, we introduce a causal reasoning step where agents generate questions (Q = (atent, H, p, Pcausal)) to validate
+
+tentative actions. For each counterfactual scenario (e.g., "What would happen if you exited now?"), the agent estimates outcomes and revises its final action based on cause-effect consistency.
+B Datasets
+MovieLens-1M. The MovieLens-1M dataset is a widely used dataset for recommender-system research. It contains approximately 1 million movie ratings on a 1-5 star scale, provided by 6,040 users over 3,706 movies. In addition to user-item rating interactions, the dataset includes movie metadata such as titles and genre labels, as well as basic user demographic attributes, including age, gender, and occupation. Steam. The Steam dataset consists of user-game interaction data collected from the Steam platform. The dataset includes user identifiers, game identifiers, and associated English-language user reviews. Game-level metadata such as titles is also provided. AmazonBook. The AmazonBook dataset corresponds to a subset of the Amazon product reviews corpus restricted to the Books category. It contains user-item interactions in the form of ratings and textual reviews, along with book-level metadata such as titles and category information. OPeRA. OPeRA is a dataset designed to study and evaluate large language models for simulating human online shopping behavior. It contains real-world shopping session logs that combine user persona information collected via surveys, observations of webpage content, fine-grained user actions (e.g., clicks and navigation events), and selfreported rationales explaining users' decisions.
+C Simulation Environment
+Our simulator mirrors real-world recommendation platforms like Netflix, or Steam, functioning in a page-by-page manner. Users are initially presented with a list of item recommendations on each page: (i) recommendations for MovieLens, Steam, and AmazonBook, and (ii) a web-shopping pages for OPeRA. The recommendation algorithm is structured as a standalone module, allowing including any algorithm. This design features preimplemented collaborative filtering-based strategies, including random, most popular, Matrix Factorization, LightGCN, and MultVAE. In recommendation domains, the environment displays a page of M recommended items as a single text state st. For each item, the state includes
+
+12
+
+its title and an item description. The short description is either taken from available domain metadata (when present) or retrieved from the title. If the agent clicks an item, the simulator reveals a more detailed description for that item in the next state.
+We format each page as:
+
+Page Format (Recommendation Domains)
+PAGE {page_number} <- {item_title} -> <- History ratings: {item_rating} -> <- Summary: {item_description} -> <- Similar items: {similar_items} -> <- {item_title} -> <- History ratings: {item_rating} -> <- Summary: {item_description} -> <- Similar items: {similar_items} -> ...
+Here, {item_rating} is the agent's own historical rating when available, otherwise a dataset-derived statistic (i.e,, global mean rating). {similar_items} lists retrieved neighbors from the agent's memory graph in the form **title (rating/5)**, and is only displayed for SimUSER and our ALIGNUSER+. The environment supports the following explicit actions: [NEXT_PAGE]: advance to page (page_number + 1). [PREVIOUS_PAGE]: go back to page (page_number - 1) when page_number > 1.[CLICK_ITEM:<item_id>]: reveal the detailed description for the selected item in the next state. [EXIT]: terminate the session. In web-shopping domains like OPeRA, each state includes (i) page context, (ii) a product list with attributes that appear in the observation, and (iii) a list of interactive elements identified by semantic IDs.
+State / page format (OPeRA). Page Format (OPeRA)
+PAGE {page_number} CONTEXT: {page_context} PRODUCTS: <- {product_title} -> <- Price: {price} -> <- Availability: {availability} -> <- Details: {short_description} -> <- {product_title} -> <- Price: {price} -> <- Availability: {availability} -> <- Details: {short_description} -> ...
+
+Figure 4: Comparison of RMSE values for original (dark colors) and hallucination-affected (light colors) models for the rating task on MovieLens.
+INTERACTIVE ELEMENTS (semantic IDs): {semantic_id_1}, {semantic_id_2}, . . . , {semantic_id_L}
+Actions follow the same action space as described in OPeRA dataset (Wang et al., 2025), extended with the navigation actions described above.
+D Additional Experiments
+D.1 Rating Items under Hallucination
+In this experiment, we specifically target items that are unfamiliar to the LLM, seeking to evaluate the ability of our trained agents to mitigate hallucination through their memory and alignment modules. Similarly to Section 5.3, users are asked to rate movies (MovieLens), but we exclusively include items that are detected as unknown to the LLM. These items i are identified by querying the LLM to classify each movie into one of 18 genres. If the LLM's genre classification matches the actual category gi, it indicates that the LLM is familiar with the item, and such movies are excluded from the experiment. From Figure 4, it is evident that while the RMSE values for all methods increase under hallucination, ALIGNUSER and ALIGNUSER+ are the most robust overall. This relative robustness can be attributed to the combination of reflection and KG memory: by leveraging relationships between users, movies, and ratings from previous interactions, the agents can compare an unfamiliar movie with similar, well-known ones and anchor their predictions in familiar contexts.
+D.2 Rating Distribution
+Beyond individual rating alignment, human proxies must replicate real-world behavior at the macro
+
+13
+
+Backbone
+ALIGNUSER+ (Llama-3.2-3B) ALIGNUSER+ (Qwen-2.5-7B) ALIGNUSER+ (Llama-3.1-8B) ALIGNUSER+ (Qwen3-8B)
+
+MovieLens
+4.32 ± 0.18 4.44 ± 0.16 4.52 ± 0.15 4.58 ± 0.14
+
+AmazonBook
+4.05 ± 0.19 4.13 ± 0.18 4.21 ± 0.17 4.25 ± 0.16
+
+Steam
+4.07 ± 0.21 4.14 ± 0.20 4.20 ± 0.20 4.22 ± 0.20
+
+OPeRA
+4.01 ± 0.20 4.08 ± 0.19 4.15 ± 0.18 4.31 ± 0.18
+
+Table 8: Human-likeness scores of ALIGNUSER+ with different backbone LLMs, evaluated by GPT-4o across four recommendation domains.
+
+Figure 5: Comparison of rating distributions between ground-truth and human proxies.
+
+Model Variant
+RecAgent Agent4Rec SimUSER(persona)
+ALIGNUSER-WM ALIGNUSER-CR ALIGNUSER-Persona
+ALIGNUSER ALIGNUSER+
+
+MovieLens
+3.01 ± 0.14 3.04 ± 0.12 4.41±0.16
+4.27±0.17 4.12±0.18 4.21±0.15
+4.53±0.15* 4.58±0.14*
+
+AmazonBook
+3.14 ± 0.13 3.21 ± 0.14 3.99±0.18
+4.03±0.16 3.91±0.17 3.95±0.16
+4.19±0.17* 4.25±0.16*
+
+Steam
+2.96 ± 0.17 3.09 ± 0.16 4.02±0.23
+4.06±0.22 3.87±0.21 3.92±0.20
+4.17±0.21* 4.22±0.20*
+
+OPeRA
+3.05 ± 0.15 3.15 ± 0.17 4.05±0.20
+4.11±0.18 3.98±0.19 4.02±0.18
+4.31±0.19* 4.31±0.18*
+
+Table 7: Ablation study on human-likeness task. *Significant improvements over best baseline (p < 0.05).
+
+level. This implies ensuring that the distribution of ratings generated by the agents aligns closely with the distributions observed in the original dataset. Figure 5 presents the rating distribution from the MovieLens-1M dataset and the ratings generated by different simulators. These results reveal a high degree of alignment between the simulated and actual rating distributions, with a predominant number of ratings at 4 and a small number of low ratings (1-2). While RecAgent and Agent4Rec assign fewer low ratings than real users, SimUSER reduces this mismatch, and ALIGNUSER and ALIGNUSER+ come closest to the true distribution.
+D.3 Ablation Studies
+To understand the contribution of each component in our method, we perform ablations on the human-likeness evaluation across four datasets. Specifically, we remove: (1) the world-model objective (-WM), which prevents the agent from learning environment dynamics; (2) counterfactual reasoning (-CR), disabling contrastive alignment with human decisions; and (3) persona grounding (-Persona), which removes persona information from the policy input. Results are reported in Table 7. Removing the world-model objective leads to
+
+a consistent drop in human-likeness, indicating that understanding environment dynamics is crucial for generating coherent interaction patterns. Eliminating counterfactual reasoning produces the sharpest decline, confirming that reflection on human-counterfactual gaps is essential for behavior alignment. Finally, ablating persona grounding reduces variability and expressiveness in simulated behavior, particularly on MovieLens and Steam, where personal preferences strongly influence item choices. The full models, ALIGNUSER and ALIGNUSER+, outperform all ablations, highlighting the importance of jointly training on worldmodel dynamics, persona grounding, and counterfactual reflection.
+D.4 LLM Backbone Choice
+We further study the impact of the backbone LLM by swapping the base model while keeping the rest of ALIGNUSER+ unchanged. As shown in Table 8, all backbones achieve high human-likeness scores, indicating that the proposed world-model learning and counterfactual alignment are robust to the choice of underlying model. Qwen3-8B yields the strongest results overall, but the performance gaps to Llama-3.1-8B and Qwen-2.5-7B remain modest, suggesting that most of the alignment gains stem from the ALIGNUSER architecture rather than raw backbone scale.
+D.5 Running Time Analysis
+We compare the running time of AlignUSER, SimUSER, and Agent4Rec for 1,000 user interactions. While Agent4Rec and SimUSER perform API calls to GPT-4o, AlignUSER primarily performs inference with a locally served Qwen2.5 policy (vLLM). Without parallelization, Agent4Rec and SimUSER require 9.3h and 10.1h, respectively, whereas AlignUSER requires 0.6h using 4 GPUs. In addition, using GPT-4o pricing, 1,000 interactions costs around $16-$21, whereas AlignUSER costs about $6-$8 in GPU time (excluding onetime training).
+
+14
+
+tional counterfactual supervision, likely because it explores implausible actions.
+
+Figure 6: Next-state prediction performance of ALIGNUSER. Error bars indicate variation across 10 runs.
+D.6 Next-State Prediction
+This ablation evaluates whether the next-state prediction task captures basic environment dynamics. For each held-out transition (st, at, st+1), we compare the predicted next state with the real one. Since next states differ in both page structure and textual content, we use three complementary metrics. (i) Page Type F1 (): F1 score over coarse page categories (e.g., browse, cart), (ii) page agreement rate (): a judge model assesses whether the predicted and ground-truth states describe the same page; and (iii text edit similarity. Similarity between canonicalized text representations of the two page states, based on normalized edit distance. As shown in Figure 6, AlignUSER predicts the next page state reliably. The Judge Agreement Rate is slightly lower, which is expected because two states can be "coherent" even when some optional details differ (e.g., small differences in shown items). Besides, the small drop in OPeRA can be explained by the increasing state diversity and noisier content inherent in web-shopping websites.
+D.7 Sensitivity to the number of counterfactuals.
+We now study the sensitivity of ALIGNUSER to the number of counterfactual actions sampled per human step during reflection. All settings are identical to Sec. 4.2 except that we vary K  {0, 1, 2, 3, 5}, where K=0 disables counterfactual reflection (world-model pretraining only). We report next-action prediction metrics on OPeRA-test using the same protocol as Table 5. Results indicate that increasing K consistently improves nextaction prediction, with the largest gains occurring from K=0 to K=2. Performance saturates beyond K=3, suggesting diminishing returns from addi-
+
+D.8 Persona Matching Accuracy
+As personas are a central component to simulate diverse and heterogeneous users, we evaluate the effectiveness of the self-consistent persona-matching technique, being utilized in this study. Utilizing the MovieLens1 dataset, we predict the agent and occupation of users based on their interaction history. Experimental results are summarized in Table 10. Overall, persona matching turns out to be reasonably robust for enriching simulated agents with detailed backgrounds, including domains where explicit demographic data is not readily provided.
+D.9 Sensitivity to Loss Weights
+We analyze the impact of balancing world modeling and counterfactual reflection by varying the loss weights in Eq 5. When CR=0, counterfactual reflection is disabled and the training objective reduces to world-model pretraining only. We report next-action prediction metrics on OPeRA-test using the same protocol as Table 5. As shown in Table 11, introducing counterfactual reflection (CR>0) yields substantial gains over world-modelonly training. Performance is relatively stable around the default setting (1.0, 0.5).
+E Prompts
+E.1 Post-Interview Prompt
+The prompt presented to each agent for postinterview is as follows:
+Post-Interview Prompt
+How satisfied are you with the recommender system you recently interacted with?
+### Instructions: 1. Rating: Provide a rating from 1 to 10. 2. Explanation: Explain the reason for your rating.
+### Response Format: - RATING: [integer between 1 and 10] - REASON: [detailed explanation]
+
+15
+
+Model
+AlignUSER (K=0) AlignUSER (K=1) AlignUSER (K=2) AlignUSER (K=3) AlignUSER (K=5)
+AlignUSER+ (K=0) AlignUSER+ (K=1) AlignUSER+ (K=2) AlignUSER+ (K=3) AlignUSER+ (K=5)
+
+Action Gen. (Accuracy)
+37.26 44.53 48.98 51.47 52.08
+39.41 46.00 50.41 52.92 53.31
+
+Action Type (Macro F1)
+58.41 63.72 67.10 69.81 70.12
+60.07 65.31 69.02 71.94 72.10
+
+Click Type (Weighted F1)
+54.66 60.11 63.89 66.29 66.10
+56.20 61.35 64.92 66.88 67.05
+
+Session Outcome (Weighted F1)
+69.92 74.35 76.84 78.07 78.66
+71.58 75.32 78.11 80.52 80.87
+
+Table 9: Sensitivity to the number of counterfactual actions K used for reflection training on OPeRA. All metrics are percentages (%). K=0 disables reflection.
+
+Metric
+Accuracy Precision Recall F1 Score
+
+Age
+0.7184 0.7512 0.7863 0.7683
+
+Occupation
+0.6691 0.6875 0.7386 0.7120
+
+Table 10: Performance of persona matching in predicting age and occupation utilizing MovieLens-1M.
+
+human: {interaction logs}
+Please rate on a scale of 1 to 5, with 1 being most like an AI and 5 being most like a human.
+
+E.2 Believability of Synthetic User Prompt In Section 5.2, the rating prompt is modified with the following instructions:
+Believably of Synthetic User Prompt
+### Instructions 1. Review each {item_type} in the ## Recommended List ##. 2. For each {item_type}, classify if you have already interacted with it ("Interacted") or if you have not ("Not Interacted").
+E.3 LLM Evaluator Prompt The prompt below was employed to distinguish between humans and AI-generated interactions:
+LLM Evaluator Prompt
+Please evaluate the following interactions of an agent with a recommender system, and determine whether it is generated by a Large Language Model (LLM) AI or a real
+
+16
+
+Model
+AlignUSER (wm=1.0, CR=0) AlignUSER (wm=1.0, CR=0.25) AlignUSER (wm=1.0, CR=0.5) AlignUSER (wm=1.0, CR=1.0) AlignUSER (wm=2.0, CR=0.5)
+AlignUSER+ (wm=1.0, CR=0) AlignUSER+ (wm=1.0, CR=0.25) AlignUSER+ (wm=1.0, CR=0.5) AlignUSER+ (wm=1.0, CR=1.0) AlignUSER+ (wm=2.0, CR=0.5)
+
+Action Gen. (Accuracy)
+37.26 49.92 51.47 51.88 51.21
+39.41 51.02 52.92 53.12 52.81
+
+Action Type (Macro F1)
+58.41 67.92 69.81 70.03 69.55
+60.07 69.64 71.94 72.01 71.76
+
+Click Type (Weighted F1)
+54.66 64.98 66.29 66.14 66.33
+56.20 65.37 66.88 66.74 66.92
+
+Session Outcome (Weighted F1)
+69.92 77.41 78.07 78.29 78.01
+71.58 79.04 80.52 80.61 80.50
+
+Table 11: Sensitivity to loss weights (wm, CR) on OPeRA. All metrics are percentages (%).
+
+17
+
+

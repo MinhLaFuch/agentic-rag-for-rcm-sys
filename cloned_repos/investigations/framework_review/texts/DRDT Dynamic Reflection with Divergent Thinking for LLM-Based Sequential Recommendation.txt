@@ -1,0 +1,711 @@
+Under review
+
+arXiv:2312.11336v1 [cs.IR] 18 Dec 2023
+
+DRDT: DYNAMIC REFLECTION WITH DIVERGENT THINKING FOR LLM-BASED SEQUENTIAL RECOMMEN-
+DATION
+
+Yu Wang University of Illinois Chicago ywang617@uic.edu
+
+Zhiwei Liu Salesforce AI Research zhiweiliu@salesforce.com
+
+Jianguo Zhang, Weiran Yao, Shelby Heinecke Salesforce AI Research {jianguozhang, weiran.yao, shelby.heinecke}@salesforce.com
+
+Philip S. Yu University of Illinois Chicago psyu@uic.edu
+
+ABSTRACT
+The rise of Large Language Models (LLMs) has sparked interest in their application to sequential recommendation tasks as they can provide supportive item information. However, due to the inherent complexities of sequential recommendation, such as sequential patterns across datasets, noise within sequences, and the temporal evolution of user preferences, existing LLM reasoning strategies, such as in-context learning and chain-of-thought are not fully effective. To address these challenges, we introduce a novel reasoning principle: Dynamic Reflection with Divergent Thinking within a retriever-reranker framework. Our approach starts with a collaborative in-context demonstration retriever, which collects sequences exhibiting collaborative behaviors as in-context examples. Following this, we abstract high-level user preferences across multiple aspects, providing a more nuanced understanding of user interests and circumventing the noise within the raw sequences. The cornerstone of our methodology is dynamic reflection, a process that emulates human learning through probing, critiquing, and reflecting, using user feedback to tailor the analysis more effectively to the target user in a temporal manner. We evaluate our approach on three datasets using six pre-trained LLMs. The superior performance observed across these models demonstrates the efficacy of our reasoning strategy, notably achieved without the need to fine-tune the LLMs. With our principle, we managed to outperform GPT-Turbo-3.5 on three datasets using 7b models e.g., Vicuna-7b and Openchat-7b on NDCG@10. This research not only highlights the potential of LLMs in enhancing sequential recommendation systems but also underscores the importance of developing tailored reasoning strategies to fully harness their capabilities.
+1 INTRODUCTION
+The remarkable advancements in Large Language Models (LLMs) also inspire the exploration of LLM-based recommender systems. The effectiveness of LLM-based recommender systems stems from vast pre-trained knowledge in LLMs, such as the understanding of item information and explanations of user behaviors Gao et al. (2023); Liu et al. (2023a); Hou et al. (2023b); Wang and Lim (2023). One approach involves fine-tuning existing LLMs to tailor them to recommendation
+Corresponding Author: zhiweiliu@salesforce.com
+1
+
+Under review
+scenarios Bao et al. (2023b); Chen (2023); Lin et al. (2023); Cui et al. (2022); Wu et al. (2023), with methods like TALLRec Bao et al. (2023b) using LORA Hu et al. (2021) technology for this adaptation with minimal training examples. Another strategy is fine-tuning LLMs specifically for recommendation tasks Geng et al. (2022); Hou et al. (2023a; 2022); Li et al. (2023a). Additionally, some research regards LLMs as zero-shot rankers Liu et al. (2023b); Gao et al. (2023); Liu et al. (2023a); Wang and Lim (2023), where they directly rank candidate items based on contextual information, e.g. past user interactions. However, the strategies for prompting LLMs are not yet fully explored, particularly in more complex areas like sequential recommendation, which consider the evolving nature of user interactions. Specifically, current methods involve using historical interactions to formulate prompts about possible future engagements in the form of: The user has such historical interactions: <history>, what is the possible next engagement among the candidate set <candidates>? In the realm of zero-shot LLM ranking, further investigations Hou et al. (2023b) have delved into in-context-learning (ICL) and chain-of-thought (COT) Wei et al. (2022) approaches for prompt construction. An example includes using historical interactions, ending with the penultimate item as a query, and the second-last item as an answer, coupled with a "step-by-step" thought process to facilitate LLM's recommendation process. These varied approaches highlight the ongoing exploration and potential of LLMs in enhancing the effectiveness of recommendation systems.
+The significant impact of prompt strategy on the reasoning capabilities of Large Language Models (LLMs) is the primary motivation for this paper. Recognizing the under-explored area of reasoning principles in sequential recommendation, this study aims to introduce and evaluate various prompting strategies to fully harness the reasoning potential of LLMs for sequential recommendation tasks without fine-tuning process, thereby aiming to bridge existing gaps in the field. To establish an effective reasoning framework for sequential recommendation using LLMs, it is essential to address these three challenges:
+1. The first challenge lies in capturing the collaborative signal for recommendations. Conventional recommender systems make recommendations by referring other collaborative users with similar behaviors. In sequential recommendation, these signals are learned through similar sequence representations. However, existing prompting strategies, including ICL and COT, are predominantly informed by current sequences, lacking a view across the broader dataset that includes inter-item correlations. Moreover, the context length limitations of LLMs make it impractical to feed entire datasets into the LLM during inference.
+2. The second challenge is handling the personalized aspects and ubiquitous noise. Different users may care about different aspects when consuming the same item. Furthermore, user interactions with items can often include a certain amount of noise, which does not accurately reflect their true preferences.
+3. The third and perhaps most intricate challenge is accurately capturing the temporal evolution of user interests. Unlike general NLP tasks like question-answering, sequential recommendation requires understanding how a user's preferences change over time, a nuance that current prompting strategies like plain-text prompting, ICL, and COT are not inherently designed to handle.
+Addressing the identified challenges, our paper introduces a novel reasoning principle called Dynamic Reflection with Divergent Thinking (DRDT) within a retriever-reranker framework. This approach is designed to effectively incorporate collaborative signals, manage personalized aspects and noise, enable temporal reasoning and omit error accumulating caused by hallucinations.
+Collaborative In-Context Demonstration Retriever: The ICL within LLM-based recommender systems Hou et al. (2023b) primarily uses a portion of the target sequence to create an in-context example. However, this approach mainly aids the LLM in understanding the task and output format without offering additional supportive information. To enhance this process, we introduce a collaborative in-context demonstration retriever. This component is designed to gather sequences that end with the same item as the target user's collaborative in-context demonstrations. The in-context example informs LLM about the choice made by this collaborative user next. By employing this method, we not only assist the LLM in grasping the nature of the task but also provide it with reference information about the choices made by other users in similar situations.
+Divergent Thinking for Various Aspects and Noise Management: Existing COT implementations predominantly follow a convergent thinking paradigm. In zero-shot COT, the phrase "Let's think
+2
+
+Under review
+step-by-step" is often added to prompt the LLM to autonomously develop a reasoning path. Typically, the LLM tends to use the similarity between a candidate and a historical item as one of the reasoning paths. In few-shot COT, specific examples of reasoning paths are provided. Once a path is established, results are generated along it. Variants like COT-SC and TOT construct multiple reasoning paths, determining results through a consensus among these paths. However, in the context of sequential recommender systems, constructing predefined reasoning paths before inference presents challenges. Users consider multiple aspects - such as price, color, reviews, quality, etc. - and different users may prioritize these aspects differently for the same target items. Additionally, noise within sequences is ubiquitous. If this noise is not accurately identified and filtered out, the recommender system might misinterpret it as evidence of diverse interests, rather than discerning clear patterns in a user's true preferences. To address these challenges, we propose a shift from the traditional convergent thinking paradigm to a divergent thinking paradigm. Instead of seeking a universal reasoning path or allowing the LLM to independently construct a path, our approach involves considering user engagement from multiple aspects. Recommendations are then made based on this multi-faceted analysis, rather than solely relying on similarity comparisons between candidate and historical items. This method aims to provide a more nuanced and accurate reflection of individual user preferences and interests.
+Dynamic Reflection for Temporal Reasoning: Existing prompting strategies often fall short of capturing the temporal evolutions inherent within a sequence. Specifically, ICL primarily assists LLMs in understanding the task's nature and in formulating the output. While COT encourages the LLM to reason through a certain path step-by-step, it often faces difficulty in identifying the most relevant factors leading to current user engagements. This uncertainty can lead to hallucination Yao et al. (2023); Martino et al. (2023); Zhang et al. (2023), where the LLM makes assumptions that deviate from the actual influencing factors, resulting in unreliable recommendations and potential error accumulation along the reasoning path. Instead of generating answers along an unreliable path, we propose a dynamic reflection scheme inspired by human learning processes, which includes probing, critiquing, and reflecting. Dynamic reflection begins with using a segment of the target sequence to prompt the LLM to probe the next possible item via divergent thinking. This process involves a two-step approach: firstly, the LLM generates a multi-aspect analysis to understand the various dimensions of user preferences. Following this, it utilizes this analysis to predict a specific item, based on the information available in the preceding subsequence. We then use this item to prompt LLM to critique its prediction and the associated analysis. This step allows the LLM to adjust and correct its analysis, thereby preventing the accumulation of errors. Following this, the process moves to the next item in the temporal order, with repeated rounds of probing, critiquing, and reflecting. Through this iterative process, the LLM can dynamically uncover the true preferences of the users.
+The effectiveness of the DRDT principle was evaluated using three datasets and six existing LLMs. The numerical results demonstrate the effectiveness of this approach. We hope this paper can inspire further research in designing effective prompts for sequential recommendation systems. Our contributions can be summarized as follows:
+· To the best of our knowledge, this paper is the first to comprehensively explore the impact of various prompt designs on sequential recommendation tasks. Our research extends across six LLMs and three distinct datasets, marking a significant advancement in understanding how prompt strategies influence LLM performance in this field.
+· We introduce the Dynamic Reflection with Divergent Thinking (DRDT) in a retriever-reranker framework, a novel approach that effectively integrates collaborative signals and the temporal evolution of user preferences into sequential recommendation tasks using LLMs. This framework is specifically designed to be robust against the noise commonly found in datasets, thereby enhancing the reliability of recommendations.
+· The implementation of our DRDT principle has led to notable improvements in the performance of six different LLMs across three datasets. These significant results underscore the efficacy of our design and highlight the importance of further research in this direction to refine and optimize prompt strategies for sequential recommendation systems.
+3
+
+Under review
+2 RELATED WORK
+2.1 LLM FOR FEW-SHOT SEQUENTIAL RECOMMENDATION
+The work of Wang et al. (2023a) utilizes the LLM to generate the reasoning graph along the user attribute and interacted items, and use LLM to guess the next possible item to enrich the original useritem interaction graph. Then, they utilize the conventional GNN to learn the user/item embedding on such an enriched graph for recommendation. For the prompt design, they feed the user history interactions and attributes together to guide the LLM to generate possible reasoning chains among such factors. They also prompt masked user histories, and let the LLM fill in the mask with possible items. They compute the plausible scores measuring the similarity score between the filled-in items and the original items. RecMind Wang et al. (2023b) introduces the autonomous agents for multiple recommendation tasks by integrating SQL and database to incorporate item-related information for decision-making. The prompt they adopt for sequential recommendation is the combination of historical interactions and candidate items. They also introduce the self-inspiring reasoning that enables the LLM to reason through multiple paths. Liu et al. (2023a) conduct preliminary case studies on GPT for multiple recommendation tasks. For sequential recommendation, they conduct the zero-shot prompt that is similar to Wang et al. (2023b), a few-shot prompt that uses the previous interactions with the second last one as the example, and update the records for the final recommendation. Liu et al. (2023b) also conduct inference on LLM resembling the zero-shot prompt construction. Wang and Lim (2023) introduces a 3-step prompting strategy. They first use LLM to analyze the preference according to the user historical interactions (Step-1), then, they let LLM to pick movies according to the preference analysis (Step-2), and finally, they ask the LLM to rank movies given in the candidate sets (Step-3). The candidate sets are collected according to the cosine-smiliaries between item k-hot encoders constructed from the interacted users. Sanner et al. (2023) utilize completion, zero-shot, and few-shot prompt methods for LLM inference. Hou et al. (2023b) also adopt the zero-shot and few-shot prompting methods. The candidate sets are constructed via random selection or embedding-based model similarity prediction.
+Another direction is to fine-tune the existing LLM for recommendation task. Gao et al. (2023) also utilize the zero-shot prompt including the user profiles, movie rating, and categories for LLM to select top-k items from candidates. Harte et al. (2023) finetune an LLM by completing the input corpus. The corpus the formalized in a zero-shot prompt manner, that forces the LLM to fill in the last item based on the historical interactions. TALLRec Bao et al. (2023b) constructs the recommendation task as the CTR task, they construct the task corpus using historical interaction as well as the user's ratings, the task is to predict whether the user likes the last item. PALR Chen (2023) also fine-tunes LLM using historical interactions. The input corpus are generated in a two-step manner. They first let the LLM summarize the user preferences according to the historical interactions, then, they let the LLM select the next item from candidates. BIGRec Bao et al. (2023a) first fine-tunes the LLM using the training corpus that are generated in zero-shot prompt format, i.e., input is the historical interactions, and the output is the last item. Then, they compare the L2 distance between the LLM output and item representations for a top-k recommendation. They also incorporate the popularity factor to rescale the L2 distance, such that the more popular item will obtain a smaller distance and, thus, a higher ranking. ReLLa Lin et al. (2023) further improves TALLRec by introducing the semantic-related sequences, which are the top-1 closed sequences measured in the space of LLM. They also adopt a zero-shot prompt similar method to construct the prompt.
+2.2 COT REASONING IN LARGE LANGUAGE MODELS
+Chain-of-Thought is one principle for prompt design, that facilitates the LLM to generate the answer along with the provided reasoning path Wei et al. (2022). Kojima et al. (2022) introduce the Zero-ShotCOT with a naive initialization adding "please think step-by-step" to the prompt. It is a very coarse level design and may lead significant error rate even with the most powerful LLM e.g., ChatGPT. Especially for the recommendation task, where the hidden reasoning varies across different users and different items. Zhang et al. (2022) introduce the Auto-COT inspired by Wei et al. (2022), they first cluster the questions into k-clusters, and sample typical questions in each cluster to generate the reasoning chains using the Zero-Shot-COT. Then, they sample such demonstrations into the prompt template in the Manual-COT manner. COT-SC Wang et al. (2022a) is proposed to sample multiple COT reasoning paths and choose the major voted answers as the final answer. Wang et al. (2022b)
+4
+
+Under review
+proposes the prompt order ensemble and input-rationale ensemble COT methods to improve the LLM inference performance from the ensemble perspective. Li et al. (2023b) further improves the COT by introducing the diversified prompt for each question and training an additional path voter to assign the probability of the rationality of each generated reasoning path. They also introduce the strategy to assign the pseudo label of each step, which is included during the optimization procedure of path voters. COT-RR He et al. (2022) first sample diverse set of reasoning paths for a given question. Given such reasoning paths and corresponding predictions, they design a post-processing mechanism that checks the faithfulness of reasoning paths according to the retrieved fact from the common knowledge base. IRCOT Trivedi et al. (2022) interleaves the retrieval and COT in an alternative manner. They first extend the reasoning step of COT, and use the intermediate reasoning step as the query to retrieve the intermediate knowledge.
+2.3 SELF-VERIFICATION IN LARGE LANGUAGE MODELS
+COT is vulnerable to intermediate mistakes and results in error accumulations. Instead of fine-tuning an additional LLM as the verifier, recent works tend to design prompts to allow LLMs to self-verify. Ling et al. (2023) introduce the natural program to generate the in-context verification step-by-step. Madaan et al. (2023) utilize the very LLM serving feedback for their output and refine their output iteratively. Shinn et al. (2023) adopt one LLM as the evaluator, and another LLM as the feedback giver, and both of them are stored in the memory module. Weng et al. (2022) use the LLM to generate multiple candidate answers, then they rewrite such answers or mask the conditions, which is fed into another LLM for inference with COT. They rank the second LLM's output with the ground truth or masked conditions to give the corresponding ranking score of the original candidates. However, the above methods rely on feedback generated by LLM, which still exists hallucinations within the feedback. Huang et al. (2023) evaluate the intrinsic self-evaluation methods, and point out that such paradigms are not always beneficial to the task. On the contrary, utilizing external tools or human feedback instead of LLM provides strict supervision of the LLM generation. However, in the recommendation task, the sequence is already the human feedback, we can directly utilize such human feedback to correct the LLM generation process. Valmeekam et al. (2023) also evaluate the effectiveness of the self-critic strategy using LLM as the verifier. They conducted empirical studies on the plan generation task, and the results indicate that the self-criticism from LLM degrades the performance compared to that using external feedback as the critic source.
+In summary, both of these two directions do not dig deep into the prompt design for the sequential recommendation. They simply concate the history and the candidates together in a prompt. Current methods have pointed out that the prompt format can vary the performance in a substantial range. In this paper, we focus on the discussion of the effect of prompt design for recommendation performance. And we propose the prompt design principle for the sequential recommendation that dynamically reflects the belief of user preference that deep dive into the user feedback.
+3 PROBLEM DEFINITION
+Given the sequence of item title s = {i1, i2, . . . , is} of user u, and a pretrained large language model LLM , we design a prompt method p(s) that maximize the ranking performance of LLM over a pre-selected candidate item set {c1, c2, . . . , cn}.
+4 METHODOLOGY
+In this section, we first describe the retriever-reranker framework, specifically designed for recommender systems. Then, we discuss the details of each component, including the collaborative in-context demonstration retriever, the divergent thinking, and the dynamic reflection of user preferences with their feedback.
+4.1 RETRIEVER-RERANKER FRAMEWORK
+One challenge in leveraging LLMs for recommendation tasks is the inability to process the entire dataset during inference. Firstly, excessive noise is a concern. For instance, when recommending movies to a user i who primarily consumes fantasy films, it's crucial to focus on movies relevant
+5
+
+Under review
+
+CIC Retriever
+
+DRDT Reranker
+
+   
+  
+...
+  
+Dataset
+
+Collaborative In-Context Retriever
+
+Preference
+
+
+Preference
+
+Preference
+
+Predict
+
+Predict
+
+Predict
+
+  Reflection  Reflection 
+
+
+
+Critic
+
+Critic
+
+
+
+   
+
+   
+
+   
+
+Divergent Thinking
+
+Dynamic Reflection
+
+a) Framework
+
+User: There is another user watched movies <!, ", #>, given the candidates <$, %>, the answer is <%, $>. I have watched the following movies in the past in order: <, >, Could you please analysis the user preference according to the movies' category, actor?
+AI: Based on the list of movies you've watched, I can analyze your preferences in terms of movie categories, actors Movie Categories: Your preferences seem to lean towards science fiction, action, and mystery/thriller genres. Actors: You might have a preference for actors who can deliver strong performances in action and sci-fi roles.
+User: What is the next possible movie I would like to watch next?
+AI: Based on your movie watching history, the next possible movie is < >.
+User: The answer is <>, is that consistence with the previous preferences? From what aspect will you recommend this movie to user? Update your preference analysis on this user.
+
+(1) Collaborative
+In-Context Demonstration
+
+(2) Divergent Thinking
+
+3) Probe
+
+5) Dynamic Reflection
+
+4) Critique
+
+b) DRDT Reasoning
+
+Figure 1: Illustration of DRDT within retriever-reranker framework in a) and the reasoning process of DRDT in b).
+
+to their viewing history. Irrelevant data in the dataset can act as noise, potentially misleading the LLM and impairing its performance. Secondly, the token length limitation of LLMs necessitates the selection of the most informative examples for effective processing. Recently, the use of retrievers in retrieval-augmented generation has gained increasing attention. These retrievers typically leverage semantic distances within the embedding space to identify sentences most similar to a given context as in-context examples. However, in the realm of recommender systems, collaborative information, which focuses on extracting similar purchase behavior patterns from the dataset, is vital. This means that there may be item co-occurrence patterns and noise in two sequences, where the noise results in the dissimilarity between these two sequences, a factor not typically accounted for in standard retrieval models. These considerations highlight the need for a retriever specifically designed for recommendation tasks, one that can effectively identify and utilize relevant collaborative information.
+Another significant challenge arises from the mismatch between the typical generation tasks for which LLMs are optimized and the specific needs of recommender systems. In a recommender system, the objective is to have the system identify the top-k items that align with a user's potential interests. This requires the LLM's output to reference existing items rather than generating new pseudo items. Furthermore, users often exhibit a broad spectrum of interests that evolve over time. However, LLMs, being trained primarily for generating the next token based on input queries, lack the explicit capability to analyze and track the temporal evolution of user preferences. This limitation underscores the necessity for a reranker capable of dynamically analyzing user preferences in a temporal manner. Additionally, the vast item set typical in recommender systems makes it impractical to include all items for reranking by an LLM. Many effective methods exist for pre-selecting a subset of candidate items for further reranking. Therefore, our focus shifts to enhancing the reranking capabilities of LLMs over these pre-selected sets of candidate items, ensuring a more targeted and efficient recommendation process.
+Formally, our framework comprises a retriever component and a reranker as shown in Figure 1. The retriever's primary function is to identify the most relevant purchase behaviors within the dataset, which serve as in-context references for the subsequent reranking process. The reranker, on the other hand, focuses on two key tasks. Firstly, it extracts collaborative information from the in-context examples provided by the retriever. Secondly, it analyzes user preferences dynamically based on their historical records. The reranker ensures that the recommendations are both relevant to the user's past behavior and reflective of emerging trends or changes in their preferences.
+4.2 COLLABORATIVE IN-CONTEXT DEMONSTRATION RETRIEVER
+In-context learning (ICL) has demonstrated effectiveness in improving the inference capabilities of LLMs, as it offers a thinking strategy and a template for answering queries. However, the application of ICL in recommendation tasks presents unique challenges compared to traditional NLP tasks like question answering (QA). In QA, the temporal pattern of the content is not typically critical, whereas, in sequential recommendations, it's essential to consider both the global temporal patterns and the content of the items to make informed decisions. Current implementations of ICL in recommender systems tend to focus solely on extracting purchase behaviors from a given sequence. For example, given a historical sequence s = {i1, i2, i3, i4}, the in-context example might be framed as: the
+6
+
+Under review
+
+historical records are {i1, i2} and user purchased i3. This approach highlights the sequential pattern within the last two interactions, but it does not provide the LLM with sufficient context or collaborative information to effectively recommend the next likely engagement.
+
+To effectively utilize information for the LLM reranker's reference procedure, it is crucial to discern
+
+and choose the most relevant data while avoiding noise or distractions. Intuitively, incorporating
+
+collaborative information into the LLM helps it understand the likely actions of other users in similar
+
+circumstances. We achieve this by using the last item in the user's historical sequence, as an anchor
+
+to identify other users who have also interacted with this item as shown in Figure 1. Formally,
+
+given the user history s = {i1, i2, . . . , is}, we random sample historical records that also end at
+
+{i
+
+ 1
+
+,
+
+i
+2
+
+. . . , is},
+
+as
+
+well
+
+as
+
+their
+
+next
+
+purchase
+
+it
+
+to
+
+construct
+
+the
+
+in-context
+
+example
+
+as
+
+There
+
+is
+
+another
+
+user
+
+that
+
+has
+
+history:
+
+{i1
+
+,
+
+i
+2
+
+.
+
+.
+
+.
+
+,
+
+is
+
+},
+
+given
+
+the
+
+candidate
+
+set
+
+C
+
+=
+
+{c1, it, . . . , cn},
+
+the
+
+possible answer is {it, ci, . . . , cj}, where the possible answer is the pseudo answer that gives the next
+
+possible engagement it the higher rank. This approach not only provides the LLM with insights about
+
+potential next engagements based on collaborative user behavior but also indicates which candidates
+
+should be ranked higher.
+
+4.3 DIVERGENT THINKING (DT)
+Chain-of-Thought (COT) reasoning has gained prominence in enhancing LLM inference for complex tasks where a direct, one-step answer generation is insufficient. The recommendation task, particularly concerning predicting the next user engagement, presents a similarly intricate scenario that demands a nuanced application of COT. In this context, there are several key challenges to consider in order to effectively guide the LLM in understanding the behavior of users: 1) Multi-aspect Interests: User records often encode a variety of interest aspects. A user's interaction with different items can represent diverse facets of their preferences, ranging from genre preferences in media consumption to specific features in product choices. 2) Ubiquity of Noise Interactions: Not all interactions in a user's history are equally indicative of their true preferences. Some may be outliers or noise, such as accidental clicks or one-time exploratory actions, which can skew the understanding of their interests. Given these challenges, the conventional application of COT, which might involve providing a specific reasoning example or simply appending a "Let's think step by step" prompt, falls short for recommendation tasks.
+To tackle the identified challenges in recommendation tasks, we introduce a Divergent Thinking approach as shown in Figure 1 blue arrows. This method involves initially extracting a high-level abstraction of user preferences across multiple aspects, and then utilizing this abstraction as a guidance for predicting the next engagements. The process begins by querying the LLM (e.g., GPT) to identify the critical aspects users might consider when engaging with a specific item. For instance, in the context of movie watching, aspects such as actors, directors, or genres could be pivotal in a user's decision-making process. By identifying these aspects, we can analyze user preferences from a multifaceted perspective, effectively sidestepping the noise presented in raw input sequences. Formally, for each dataset, we prompt the LLM to generate a list of aspects that users may consider: {a1, a2, . . . , ak}. We then derive a list of user preference analyses based on these aspects respectively: {p1, p2, . . . , pk}. These high-level preference analyses are subsequently incorporated into the reranking process during LLM inference.
+
+4.4 DYNAMIC REFLECTION WITH USER FEEDBACK (DR)
+Addressing the temporal evolution of user interests is a crucial yet challenging aspect of sequential recommendation, especially when using LLMs. This task is more complex than standard NLP tasks like QA or sentiment analysis. In sequential recommendation, understanding user preferences goes beyond merely arranging behaviors in temporal order due to several intricacies: 1), Temporal Evolution of Interests: User interests are not static; they evolve over time. The factors driving these changes are often unobserved or hidden within the data. A failure to capture this temporal evolution leads to reducing the recommendation process to simplistic methods like majority counting, which do not truly reflect individual user preferences. 2), Alternating Short- and Long-Term Correlations: User behavior often exhibits a mix of short- and long-term interests. For instance, a user might consistently enjoy fantasy movies (long-term interest) but occasionally watch a comedy for a family
+7
+
+Under review
+
+Dataset
+ML-1M Games Luxury
+
+# Users
+6,041 50,567 2,028
+
+# Items
+3,707 16,860
+936
+
+Table 1: Dataset Statistics
+# Interactions Avg. Actions of Users
+
+1,000,209 389,718 18,005
+
+165.60 7.71 8.88
+
+Avg. Actions of Items
+269.89 23.12 19.26
+
+Sparsity
+95.53% 99.95% 99.05%
+
+event (short-term deviation). This interplay between consistent long-term interests and intermittent short-term preferences adds complexity to understanding user preferences over time.
+The Divergent Thinking (DT) approach addresses these complexities to a certain degree in understanding user preferences, yet it faces several limitations: First, Difficulty in Preference Analysis: Generating a comprehensive user preference analysis from raw sequences is challenging, especially with complex, evolving sequences. In such scenarios, the LLM may default to simply counting the majority of occurrences, which can oversimplify and misrepresent the true, nuanced preferences of the user. Second, Vulnerability to Hallucination: DT relies on the internal reasoning capabilities of the LLM. If this reasoning is flawed or invalid, it can lead to hallucination - where the LLM generates outputs based on incorrect or unfounded assumptions. As a result, the reranking based on these outputs may lead to inaccurate or misleading recommendations. Third, Decision-making Complexity with Multiple Aspects: While DT provides insights into user preferences from various aspects, it can be difficult for the LLM to prioritize these aspects effectively. Determining which aspects are most influential in predicting the user's next engagement is a complex task that DT does not inherently resolve.
+To overcome these limitations, we propose a novel dynamic reflection (DR) scheme as shown in Figure 1 orange arrows. This method enables the learning of user preferences as they evolve over time, while omitting the accumulations of errors caused by hallucinations. DR mimics the human learning process and involves probing, critiquing, and reflecting. First, Inital Subsequence Analysis with DT: We begin by scrolling back T steps in the user's item sequence, where T is a predefined hyperparameter. For the subsequence {i1, i2, . . . , is-T }, we apply the DT approach to derive a multiaspect user preference analysis {p1, p2, . . . , pk}. Second, Engagement Prediction and Reflection: The LLM is then tasked with predicting the next possible engagement between the actual target item and a randomly chosen candidate item {is-T +1, r}. We use is-T +1 as the ground truth for reflection, informing the LLM of the user's actual choice and querying whether its prediction aligns with this reality. The LLM is prompted to reflect on its multi-aspect belief and adjust accordingly. Third, Aspect-Specific Analysis Reinforcement: To enhance the focus on specific aspects of user behavior, we ask the LLM to identify which aspect might have influenced the user's choice of is-T +1 and give more weight to this factor in its analysis. Fourth, Stepwise Aspect Importance Update for Reranking: This probe-critique-reflect procedure is repeated for T steps. With each step, the LLM updates its understanding of the user's behavior pattern, correcting any earlier misjudgments and preventing the accumulation of errors that might arise from hallucinations. After each iteration, we move one step forward, until we reach the last item, and the reranker starts the reranking process for the target item.
+5 EXPERIMENTS
+Dataset. In this paper, we adopt the Movielens-1M dataset and the Games and Luxury Beauty categories from the Amazon Review dataset, following common practice in sequential recommendation scenarios. We chose these datasets for several reasons: First, information about movies, games, and beauty products is ubiquitous online, and we hope the existing pre-trained LLMs can provide useful contextual information for such items to help improve recommendation performance. Second, the Amazon dataset is known for its sparsity and cold-start issues, which necessitate research on zero/few-shot recommendations leveraging supportive information from LLMs. We report the statistics of the datasets in Table 1.
+Metrics. Following the common practice in sequential recommendation Kang and McAuley (2018); Wang et al. (2022c); Sun et al. (2019); Qiu et al. (2022), we adopt the Recall@K and NDCG@K as the metrics of ranking performance of recommender systems, where K=10, 20.
+8
+
+Under review
+Baseline Methods. The zero-shot/few-shot sequential recommendation using pre-trained LLMs is still under-explored. Here, we compare our methods with common strategies adopted in Liu et al. (2023b); Hou et al. (2023b), including Plain-text, ICL, and COT. Specifically, Plain-text uses historical interactions as sentences to construct the prompt, allowing the LLM to rank candidate items, which include the target items. ICL uses the historical interactions before the second-to-last item as the query sentence, and the second-to-last item as an answer to construct the in-context example. The query is then updated to include historical interactions, prompting the LLM to rank candidate items, including the target items. COT is the zero-shot COT that adds "Let's think step-by-step" at the end of the prompt to guide the LLM in ranking along the intermediate reasoning paths.
+Implementation Details. We use FastChat to launch pre-trained language models, including Vicuna-7b-16k, Vicuna-13b-16k, Openchat-7b, Longchat-7b-16k, Longchat-13b-16k, and YarnMistral-7b-128k, which serve as the reranker module in our framework. We also adopt the API-based GPT-Turbo-3.5 as a Reranker for comparison. We randomly sample 200 users from each dataset and use the target items along with 19 randomly sampled items to construct the candidate item set. It is worth noting that we randomly pick the position of the target item in the candidate set to prevent the LLM from recognizing a shortcut to the answer.
+5.1 OVERALL COMPARISON
+In this section, we present a performance comparison between our reasoning principle and existing methods like plain-text, ICL, and COT, using pre-trained large LLMs including Vicuna-7b, Vicuna13b, Openchat-7b, Mistral-7b, Longchat-7b, and GPT-Turbo-3.5. The experimental results are detailed in Table 2. Based on these numerical results, we observe the following:
+First, our strategy, which utilizes dynamic reflection and divergent thinking on inference to practice to predict the future, significantly outperforms plain-text, ICL, and COT across all datasets. Our approach successfully enhances the ranking performance of all LLMs on all datasets with respect to almost all metrics. These results underscore the effectiveness of our reasoning strategy. Moreover, our strategy enables a relatively smaller LLM, such as Openchat-7b, to surpass the performance of GPT-Turbo-3.5 with plain-text prompting across the ML-1M, Games, and Luxury datasets in terms of Recall@10, NDCG@10, and NDCG@20 metrics. These findings underscore the significant impact that the choice of reasoning strategy can have on an LLM's performance. With thoughtful design, even a 7-billion parameter LLM can outperform larger models like GPT-Turbo-3.5. This demonstrates the potential for more strategic reasoning design to optimize the performance of LLMs in various tasks, especially in zero/few-shot ranking or when fine-tuning LLMs for recommendation scenarios. We hope our paper will inspire further research in this area, focusing on the development of innovative reasoning strategies tailored to enhance the capabilities of LLMs in recommendation and other complex applications.
+Regarding the ICL and COT strategies, we observed that different models show a preference for different prompting strategies across various datasets. For instance, Vicuna-13b using ICL achieved the second-best performance on the ML-1M and Games datasets. However, its performance was worse than the plain-text strategy on the Luxury dataset. A similar pattern is evident with the COT strategy; Vicuna-13b-COT underperformed plain-text on the ML-1M dataset but surpassed it on the Games and Luxury datasets. For Mistral-7b and Longchat-7b, both ICL and COT generally underperformed compared to plain-text, except on the Luxury dataset. These observations suggest that ICL and COT may be more suitable for certain LLMs and specific datasets. Typically, models that already perform reasonably well with plain-text benefit more from ICL. This could be because these LLMs have better-encoded knowledge, and ICL assists in understanding the ranking task and retrieving useful information. For LLMs with better overall performance, such as Openchat and GPT-Turbo-3.5, ICL tends to outperform COT, and COT often performs worse than plain-text. This could be attributed to the highly personalized nature of recommendation tasks, where there may not be a universal reasoning path of COT suitable for all users. Additionally, the input sequences are complex and evolve dynamically, making it challenging for LLMs to analyze user preferences over time without a defined reasoning path. They tend to make recommendations based on similarity comparisons. From another perspective, models with weaker plain-text performance, such as Mistral7b and Longchat-7b, generally show that both COT and ICL underperform plain-text, except in the case of the Luxury dataset. This trend might stem from these models' challenges in comprehending
+9
+
+Under review
+
+Models
+Vicuna-7b Vicuna-7b-ICL Vicuna-7b-COT Vicuna-7b-DRDT Improvement (%)
+Vicuna-13b Vicuna-13b-ICL Vicuna-13b-COT Vicuna-13b-DRDT Improvement (%)
+Openchat-7b Openchat-7b-ICL Openchat-7b-COT Openchat-7b-DRDT Improvement (%)
+Mistral-7b Mistral-7b-ICL Mistral-7b-COT Mistral-7b-DRDT Improvement (%)
+Longchat-7b Longchat-7b-ICL longchat-7b-COT Longchat-7b-DRDT Improvement (%)
+GPT-Turbo-3.5 GPT-Turbo-3.5-ICL GPT-Turbo-3.5-COT GPT-Turbo-3.5-DRDT Improvement (%)
+
+R@10
+0.3700 0.4450 0.3700 0.5250 17.98
+0.5550 0.5450 0.4850 0.5450 -1.80
+0.4200 0.5100 0.4350 0.6350 24.51
+0.2350 0.1150 0.1950 0.3750 59.57
+0.3900 0.3250 0.3750 0.4650 19.23
+0.5450 0.6600 0.5050 0.7550 14.39
+
+Table 2: Overall Comparison.
+
+ML-1M @ R@20 N@10
+
+N@20
+
+R@10
+
+Games @ R@20 N@10
+
+0.6400 0.7800 0.6850 0.8450
+8.33
+
+0.1733 0.2183 0.1667 0.2698 23.59
+
+0.2421 0.3024 0.2461 0.3500 15.74
+
+0.3700 0.4000 0.4100 0.4300 4.88
+
+0.6150 0.5950 0.6150 0.6900 12.20
+
+0.1783 0.2102 0.1948 0.2361 12.32
+
+0.8000 0.8050 0.7600 0.8150 1.24
+
+0.2855 0.2885 0.2354 0.3153 9.29
+
+0.3475 0.3541 0.3044 0.3824 7.99
+
+0.4400 0.4150 0.4400 0.4500 2.27
+
+0.6700 0.6950 0.6600 0.7150 2.88
+
+0.2269 0.2293 0.2344 0.2731 16.51
+
+0.6650 0.8300 0.6950 0.9000
+8.43
+
+0.2075 0.2734 0.2209 0.3335 21.98
+
+0.2684 0.3542 0.2867 0.4016 13.38
+
+0.1450 0.4200 0.2200 0.4800 14.28
+
+0.3700 0.6900 0.5050 0.7150
+3.62
+
+0.0702 0.2355 0.1096 0.3069 30.32
+
+0.3350 0.2000 0.3050 0.6300 88.06
+
+0.1109 0.0497 0.0937 0.1842 66.10
+
+0.1362 0.0711 0.1220 0.2489 82.75
+
+0.2000 0.1700 0.1750 0.4450 122.50
+
+0.2000 0.1700 0.1750 0.5750 187.50
+
+0.1094 0.1072 0.0915 0.2462 125.05
+
+0.6450 0.5450 0.5950 0.8400 30.23
+
+0.1808 0.1555 0.1739 0.2063 14.10
+
+0.2448 0.2114 0.2294 0.3011 23.00
+
+0.3450 0.3150 0.2650 0.4150 20.29
+
+0.5700 0.5000 0.4950 0.6200 8.77
+
+0.1653 0.1523 0.1277 0.2050 24.02
+
+0.9200 0.9200 0.9000 0.9100 -1.09
+
+0.2688 0.3829 0.2714 0.4630 20.91
+
+0.3631 0.4483 0.3694 0.5031 12.22
+
+0.4400 0.5050 0.4400 0.5450 7.92
+
+0.7450 0.7100 0.7250 0.7300 -2.01
+
+0.2499 0.3106 0.2664 0.3435 10.59
+
+N@20
+0.2405 0.2598 0.2467 0.3023 16.36
+0.2855 0.2988 0.2895 0.3399 13.76
+0.1264 0.3038 0.1806 0.3651 20.18
+0.1094 0.1072 0.0915 0.2797 155.67
+0.2223 0.1995 0.1860 0.2566 15.43
+0.3275 0.3618 0.3371 0.3898
+7.74
+
+R@10
+0.3450 0.3200 0.3400 0.4550 31.88
+0.2800 0.2550 0.3100 0.4450 43.55
+0.2950 0.4300 0.2300 0.4550 5.81
+0.1000 0.1350 0.1450 0.4100 182.76
+0.2350 0.2400 0.2600 0.3800 46.15
+0.4350 0.5150 0.3800 0.5600 8.74
+
+Luxury @ R@20 N@10
+
+0.4800 0.4500 0.5000 0.6300 26.00
+
+0.1534 0.1589 0.1562 0.2418 52.17
+
+0.4600 0.4100 0.5000 0.6600 32.00
+
+0.1525 0.1356 0.1563 0.2608 66.86
+
+0.5300 0.5900 0.4500 0.6500 10.17
+
+0.1341 0.2229 0.1151 0.2589 16.15
+
+0.1100 0.1500 0.1600 0.4950 209.38
+
+0.0590 0.0995 0.0991 0.2512 152.46
+
+0.3350 0.3000 0.3750 0.5300 41.33
+
+0.0976 0.1129 0.1289 0.2047 58.81
+
+0.7000 0.6750 0.6250 0.6700 -4.29
+
+0.2260 0.3049 0.2030 0.3190
+4.62
+
+N@20
+0.1882 0.1927 0.1979 0.2867 44.87
+0.1995 0.1755 0.2057 0.3164 53.81
+0.1945 0.2642 0.1705 0.3091 16.99
+0.0617 0.1034 0.1030 0.2736 164.60
+0.1230 0.1286 0.1592 0.2433 52.83
+0.2924 0.3464 0.2653 0.3482
+0.52
+
+the task through in-context examples and their difficulty in autonomously generating a coherent reasoning path. These may inadvertently introduce more noise into the process, rather than providing useful insights. In contrast, our reasoning strategy combines the strengths of both ICL and COT, guiding the LLM's reasoning in a temporal manner to dynamically analyze user preferences. Even with Mistral-7b, DRDT managed to provide reasonable performance with a maximum of 209.38% improvements on the Luxury dataset. This approach consistently improves performance significantly across different models and datasets.
+5.2 ABLATION STUDY
+In this section, we carry out an ablation study to assess the effectiveness of each module within our framework. Additionally, we report empirical results for Openchat-7b, Vicuna-7b, and GPT-Turbo-3.5 on the ML-1M, Games, and Luxury datasets in Figures 2, 3, and 4 respectively. From these figures, we make several observations:
+Importance of CIC, DT, and DR: Collaborative In-Context (CIC), Divergent Thinking (DT), and Dynamic Reflection (DR) are vital for achieving optimal performance. Removing DR leads to a significant drop in performance, and a similar decline is observed when CIC/DT is excluded. This highlights the crucial role these components play in the overall effectiveness of our model.
+Impact of CIC combined with DT on Different Datasets: While combining DT with CIC consistently improves performance on the Luxury dataset, it has a lesser or even negative impact on the ML-1M and Games datasets. This suggests that CIC does not always aid LLM reasoning; in some cases, it may introduce additional noise or distract the LLM. This observation underscores the importance of Dynamic Reflection in controlling performance analysis through probing. Without such a regulatory mechanism, the combination of CIC and DT can lead to performance deterioration compared to using either CIC or DT alone.
+Effectiveness of DT Combined with DR: The integration of DT with DR consistently enhances performance on the ML-1M and Luxury datasets but has a lesser impact on the Games dataset. This may indicate that collaborative information plays a more significant role compared to the dynamic patterns of user behavior evolution in certain contexts.
+10
+
+Under review
+
+Recall@10
+
+Dataset = ML-1M
+
+Dataset = Games
+
+Dataset = Luxury
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0 Model
+
+CIC
+
+DT
+
+CIC+DT
+
+DT+DR
+
+CIC+DT+DR
+
+Figure 2: Performance of Openchat-7b with different components on three datasets.
+
+Recall@10
+
+Dataset = ML-1M 0.5
+
+Dataset = Games
+
+Dataset = Luxury
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0 Model
+
+CIC
+
+DT
+
+CIC+DT
+
+DT+DR
+
+CIC+DT+DR
+
+Figure 3: Performance of Vicuna-7b with different components on three datasets.
+
+Recall@10
+
+Dataset = ML-1M
+
+Dataset = Games
+
+Dataset = Luxury
+
+0.6
+
+0.4
+
+0.2
+
+0.0 Model
+
+CIC
+
+DT
+
+CIC+DT
+
+DT+DR
+
+CIC+DT+DR
+
+Figure 4: Performance of GPT-Turbo-3.5 with different components on three datasets.
+
+11
+
+Under review
+
+Recall@10
+
+0.8 Dataset = ML-1M
+
+Dataset = Games
+
+Dataset = Luxury
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2 0 1 DR Step 2 3 0 1 DR Step 2 3 0 1 DR Step 2 3
+
+Openchat-7b
+
+Model GPT-Turbo-3.5
+
+Vicuna-7b
+
+Figure 5: Recall@10 of three LLMs with different DR steps on three datasets.
+
+Dataset = ML-1M
+
+Dataset = Games
+
+Dataset = Luxury
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0 1 DR Step 2 3 0 1 DR Step 2 3 0 1 DR Step 2 3
+
+Openchat-7b
+
+Model GPT-Turbo-3.5
+
+Vicuna-7b
+
+Figure 6: NDCG@10 of three LLMs with different DR steps on three datasets.
+
+NDCG@10
+
+5.3 HYPERPARAMETER SENSITIVITY
+In this section, we delve into the analysis of Recall@10 and NDCG@10 metrics for Openchat-7b, GPT-Turbo-3.5, and Vicuna-7b on three datasets, focusing on the impact of varying the number of dynamic reflection steps. Here, a single step of dynamic reflection is defined as one cycle of prediction probing and analysis reflection using a ground-truth item at a specific position. The number of steps corresponds to the frequency of probing. For instance, a 3-step dynamic reflection involves using the historical sequence {i1, i2, . . . , is-4} for user preference analysis from different aspects, then using item is-3 as the answer for the LLM to reflect on their belief, and so forth.
+The numerical results are presented in Figures 5 and 6. Due to constraints such as the context length of the LLMs and the length of user sequences, we have limited our reflection steps to a maximum of 3. Observations from these figures show an increasing trend in performance metrics with the number of reflection steps. This trend underscores the effectiveness of dynamic reflection, where ground-truth items from user behaviors are utilized before making predictions on future engagements.
+5.4 CASE STUDY
+In this section, we compare the ranking lists generated by Openchat-7b using DRDT with other reasoning principles. For reference, we consider the plain-text approach, where the historical sequence is used as the query and the LLM is asked to rerank the candidates directly. In the ICL approach, the sequence before the penultimate item is used as the query, guiding the LLM to recommend the second-to-last item to construct the in-context example. The sequence is then updated to include the penultimate item for reranking the candidates. Additionally, we apply zero-shot COT for comparison, given the lack of a universal reasoning path for personalized preferences, and allow the LLM to autonomously determine the reasoning path. We report the results on Figure7. Our observations from comparing the outputs are as follows:
+1), The superiority of DRDT: The DRDT effectively improved the ranking of the ground-truth item Judge Dredd to the first position, surpassing other prompting strategies. This is achieved by posing
+
+12
+
+Under review
+
+Plain-Text
+Human: I've watched the following movies in the past in order: <'Star Wars: Episode I - The Phantom Menace', 'Mission: Impossible', 'Blade', 'Men in Black', 'Star Trek: Generations', 'GoldenEye', 'Army of Darkness', 'Star Trek: First Contact', 'Star Trek VI: The Undiscovered Country', 'Soldier', 'Firestorm', 'Batman Forever', 'Congo'>
+Please rank these candidates. 0. The Right Stuff 1. Sonic Outlaws 2. The Raven 3. Judge Dredd 4. Carrie 5. Fallen 6. Lethal Weapon 2 7. Love Bewitched, A (El Amor Brujo) 8. The Mirror Has Two Faces 9. Jeanne and the Perfect Guy 10. Bye-Bye', `11. Beverly Hills Cop' 12. William Shakespeare's Romeo and Juliet
+AI: answer: 1. Star Wars: Episode I - The Phantom Menace 2. Shine 3. Sling Blade 4. American Pie 5. Pushing Tin 6. Total Recall 7. Operation Condor 2 (Longxiong hudi) 8. Mission: Impossible 9. Blade 10. Men in Black
+
+ICL
+Human: I've watched the following movies in the past in order: <'Star Wars: Episode I - The Phantom Menace', `...'Star Trek: First Contact', 'Star Trek VI: The Undiscovered Country', ... 'Batman Forever'> Then if I ask you to recommend a new movie to me according to my watching history, you should recommend Congo and now that I've just watched Congo, Please rank these candidates. 0. The Right Stuff 1. Sonic Outlaws 2. The Raven 3. Judge Dredd 4. Carrie 5. Fallen 6. Lethal Weapon 2 7. Love Bewitched, A (El Amor Brujo) 8. The Mirror Has Two Faces 9. Jeanne and the Perfect Guy 10. Bye-Bye', `11. Beverly Hills Cop' 12. William Shakespeare's Romeo and Juliet
+AI: answer: 1. The Mirror Has Two Faces 2. Bye-Bye 3. Judge Dredd 4. Carrie 5. The Raven 6. Lethal Weapon 2 7. Jeanne and the Perfect Guy 8. Sonic Outlaws 9. El Amor Brujo 10. The Right Stuff
+
+COT
+Human: I've watched the following movies in the past in order: 'Star Wars: Episode I - The Phantom Menace', 'Mission: Impossible', 'Blade', 'Men in Black', 'Star Trek: Generations', 'GoldenEye', 'Army of Darkness', 'Star Trek: First Contact', 'Star Trek VI: The Undiscovered Country', 'Soldier', 'Firestorm', 'Batman Forever', 'Congo' Please rank candidate movies. Let's think step-by-step: 0. The Right Stuff 1. Sonic Outlaws 2. The Raven 3. Judge Dredd 4. Carrie 5. Fallen 6. Lethal Weapon 2 7. Love Bewitched, A (El Amor Brujo) 8. The Mirror Has Two Faces 9. Jeanne and the Perfect Guy 10. Bye-Bye', `11. Beverly Hills Cop' 12. William Shakespeare's Romeo and Juliet
+AI: answer: 1. Mission: Impossible 2. Star Wars: Episode I - The Phantom Menace 3. Star Trek: Generations 4. Jurassic Park 5. Star Trek: First Contact 6. Men in Black 7. Blade 8. Total Recall 9. Batman Returns 10. Clear and Present Danger
+
+DRDT
+Human: I have watched the following movies in the past in order: <....'Escape from L.A.', 'Soldier', 'Firestorm', 'Batman Forever', > Please analysis the user preference according to the movies` category, actor
+AI: Movie Categories: The user has watched a diverse range of movies, including action, sci-fi, adventure, comedy, drama, and fantasy. Top 3 Action Movies: 1. Star Trek: Generations 2. Mission: Impossible 3. Blade Top 3 Adventure Movies: 1. Jurassic Park 2. The Lost World: Jurassic Park 3. Rumble in the Bronx Top 3 Sci-Fi Movies: 1. Star Wars: Episode I - The Phantom Menace 2. Stargate 3. Twister Actors: The user has watched movies featuring a variety of actors. 1. Arnold Schwarzenegger: Appears in "Total Recall" and "True Lies" 2. Bruce Willis: Appears in "Die Hard" and "The Fifth Element" 3. Tom Cruise: Appears in "Mission: Impossible" and "Minority Report"
+Human: What is the next possible movie I would like to watch next? Congo or His Girl Frida
+AI: Based on your movie watching history, the next possible movie is "Congo".
+Human: The answer is Congo, is that consist with the previous preferences? Update your preference analysis on this user.
+AI: Yes, recommending "Congo" is consistent with the previous preferences of the user. In terms of recommending "Congo" to the user, we can highlight the following aspects: 1. Engaging storyline: The movie has a captivating storyline that keeps the audience engaged. 2. Memorable characters: "Congo" features memorable characters that add depth and intrigue to the movie. 3. Visual effects: The movie features impressive visual effects, including the use of CGI
+Human: Based on the updated user preference, please rank these candidate movies: [...]
+AI: Answer: 1. Judge Dredd 2. The Mirror Has Two Faces 3. Jeanne and the Perfect Guy 4. Beverly Hills Cop 5. William Shakespeare's Romeo and Juliet 6. The Right Stuff 7. Carrie 8. Fallen 9. Lethal Weapon 2 10. Love Bewitched, A (El Amor Brujo)
+
+Figure 7: Case Study
+
+specific questions to the LLM, enabling it to retrieve more relevant information about the items for recommendation. Additionally, the LLM incorporates more aspects into the user preference analysis through the probe predictions, aiding the final reranking process. 2), Limitations of Plain-Text and COT: Both plain text and COT strategies struggled to accurately understand the task of reranking candidate items. They tend to regenerate historical interactions, as these are the semantically most similar items. COT, in particular, failed to develop a coherent reasoning path, defaulting to retrieving items similar to those in the history, rather than effectively reranking the candidate items. 3), Effectiveness of ICL: ICL helped the LLM understand the task more effectively. The items generated are mostly from the candidate set, and the target items are ranked higher. This indicates that while ICL assists in task comprehension, it may not fully capture the nuances required for optimal reranking in personalized recommendation scenarios. These insights highlight the strengths and limitations of various prompting strategies and underscore the effectiveness of DRDT in enhancing the LLM's performance in sequential recommendation tasks.
+6 CONCLUSION
+In this paper, we explore the significant effects of different prompting strategies on the reasoning capacity of Large Language Models (LLMs) for sequential recommendation tasks. We propose a Retriever-Reranker framework and instantiate the retriever with a collaborative in-context demonstration retriever that collects collaborative sequences from the dataset to facilitate recommendations. We introduce divergent thinking, which abstracts high-level user preferences from multiple aspects, and dynamic reflection that mimics the human learning procedure, including a probing-critiquingreflecting iteration on user preference analysis to encourage the LLM to think in a temporal manner. This reasoning principle successfully improves the LLM's ranking performance substantially without the need for fine-tuning the LLM. We hope this paper could inspire the investigation of maximizing the reasoning capacity of existing LLM for sequential recommendation scenarios.
+REFERENCES
+K. Bao, J. Zhang, W. Wang, Y. Zhang, Z. Yang, Y. Luo, F. Feng, X. He, and Q. Tian. A bi-step grounding paradigm for large language models in recommendation systems. arXiv preprint arXiv:2308.08434, 2023a.
+K. Bao, J. Zhang, Y. Zhang, W. Wang, F. Feng, and X. He. Tallrec: An effective and efficient tuning framework to align large language model with recommendation. arXiv preprint arXiv:2305.00447,
+
+13
+
+Under review
+2023b.
+Z. Chen. Palr: Personalization aware llms for recommendation. arXiv preprint arXiv:2305.07622, 2023.
+Z. Cui, J. Ma, C. Zhou, J. Zhou, and H. Yang. M6-rec: Generative pretrained language models are open-ended recommender systems. arXiv preprint arXiv:2205.08084, 2022.
+Y. Gao, T. Sheng, Y. Xiang, Y. Xiong, H. Wang, and J. Zhang. Chat-rec: Towards interactive and explainable llms-augmented recommender system. arXiv preprint arXiv:2303.14524, 2023.
+S. Geng, S. Liu, Z. Fu, Y. Ge, and Y. Zhang. Recommendation as language processing (rlp): A unified pretrain, personalized prompt & predict paradigm (p5). In Proceedings of the 16th ACM Conference on Recommender Systems, pages 299-315, 2022.
+J. Harte, W. Zorgdrager, P. Louridas, A. Katsifodimos, D. Jannach, and M. Fragkoulis. Leveraging large language models for sequential recommendation. In Proceedings of the 17th ACM Conference on Recommender Systems, pages 1096-1102, 2023.
+H. He, H. Zhang, and D. Roth. Rethinking with retrieval: Faithful large language model inference. arXiv preprint arXiv:2301.00303, 2022.
+Y. Hou, S. Mu, W. X. Zhao, Y. Li, B. Ding, and J.-R. Wen. Towards universal sequence representation learning for recommender systems. In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pages 585-593, 2022.
+Y. Hou, Z. He, J. McAuley, and W. X. Zhao. Learning vector-quantized item representation for transferable sequential recommenders. In Proceedings of the ACM Web Conference 2023, pages 1162-1171, 2023a.
+Y. Hou, J. Zhang, Z. Lin, H. Lu, R. Xie, J. McAuley, and W. X. Zhao. Large language models are zero-shot rankers for recommender systems. arXiv preprint arXiv:2305.08845, 2023b.
+E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen. Lora: Low-rank adaptation of large language models. arXiv preprint arXiv:2106.09685, 2021.
+J. Huang, X. Chen, S. Mishra, H. S. Zheng, A. W. Yu, X. Song, and D. Zhou. Large language models cannot self-correct reasoning yet. arXiv preprint arXiv:2310.01798, 2023.
+W. Kang and J. J. McAuley. Self-attentive sequential recommendation. In IEEE International Conference on Data Mining, ICDM 2018, Singapore, November 17-20, 2018, pages 197-206. IEEE Computer Society, 2018.
+T. Kojima, S. S. Gu, M. Reid, Y. Matsuo, and Y. Iwasawa. Large language models are zero-shot reasoners. Advances in neural information processing systems, 35:22199-22213, 2022.
+J. Li, M. Wang, J. Li, J. Fu, X. Shen, J. Shang, and J. McAuley. Text is all you need: Learning language representations for sequential recommendation. arXiv preprint arXiv:2305.13731, 2023a.
+Y. Li, Z. Lin, S. Zhang, Q. Fu, B. Chen, J.-G. Lou, and W. Chen. Making language models better reasoners with step-aware verifier. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 5315-5333, 2023b.
+J. Lin, R. Shan, C. Zhu, K. Du, B. Chen, S. Quan, R. Tang, Y. Yu, and W. Zhang. Rella: Retrievalenhanced large language models for lifelong sequential behavior comprehension in recommendation. arXiv preprint arXiv:2308.11131, 2023.
+Z. Ling, Y. Fang, X. Li, Z. Huang, M. Lee, R. Memisevic, and H. Su. Deductive verification of chain-of-thought reasoning. arXiv preprint arXiv:2306.03872, 2023.
+J. Liu, C. Liu, R. Lv, K. Zhou, and Y. Zhang. Is chatgpt a good recommender? a preliminary study. arXiv preprint arXiv:2304.10149, 2023a.
+14
+
+Under review
+J. Liu, C. Liu, P. Zhou, Q. Ye, D. Chong, K. Zhou, Y. Xie, Y. Cao, S. Wang, C. You, et al. Llmrec: Benchmarking large language models on recommendation task. arXiv preprint arXiv:2308.12241, 2023b.
+A. Madaan, N. Tandon, P. Gupta, S. Hallinan, L. Gao, S. Wiegreffe, U. Alon, N. Dziri, S. Prabhumoye, Y. Yang, et al. Self-refine: Iterative refinement with self-feedback. arXiv preprint arXiv:2303.17651, 2023.
+A. Martino, M. Iannelli, and C. Truong. Knowledge injection to counter large language model (llm) hallucination. In European Semantic Web Conference, pages 182-185. Springer, 2023.
+R. Qiu, Z. Huang, H. Yin, and Z. Wang. Contrastive learning for representation degeneration problem in sequential recommendation. In WSDM '22: The Fifteenth ACM International Conference on Web Search and Data Mining, Virtual Event / Tempe, AZ, USA, February 21 - 25, 2022, pages 813-823. ACM, 2022.
+S. Sanner, K. Balog, F. Radlinski, B. Wedin, and L. Dixon. Large language models are competitive near cold-start recommenders for language-and item-based preferences. In Proceedings of the 17th ACM Conference on Recommender Systems, pages 890-896, 2023.
+N. Shinn, B. Labash, and A. Gopinath. Reflexion: an autonomous agent with dynamic memory and self-reflection. arXiv preprint arXiv:2303.11366, 2023.
+F. Sun, J. Liu, J. Wu, C. Pei, X. Lin, W. Ou, and P. Jiang. Bert4rec: Sequential recommendation with bidirectional encoder representations from transformer. In Proceedings of the 28th ACM International Conference on Information and Knowledge Management, CIKM 2019, Beijing, China, November 3-7, 2019, pages 1441-1450. ACM, 2019.
+H. Trivedi, N. Balasubramanian, T. Khot, and A. Sabharwal. Interleaving retrieval with chain-ofthought reasoning for knowledge-intensive multi-step questions. arXiv preprint arXiv:2212.10509, 2022.
+K. Valmeekam, M. Marquez, and S. Kambhampati. Can large language models really improve by self-critiquing their own plans? arXiv preprint arXiv:2310.08118, 2023.
+L. Wang and E.-P. Lim. Zero-shot next-item recommendation using large pretrained language models. arXiv preprint arXiv:2304.03153, 2023.
+X. Wang, J. Wei, D. Schuurmans, Q. Le, E. Chi, S. Narang, A. Chowdhery, and D. Zhou. Self-consistency improves chain of thought reasoning in language models. arXiv preprint arXiv:2203.11171, 2022a.
+X. Wang, J. Wei, D. Schuurmans, Q. Le, E. Chi, and D. Zhou. Rationale-augmented ensembles in language models. arXiv preprint arXiv:2207.00747, 2022b.
+Y. Wang, H. Zhang, Z. Liu, L. Yang, and P. S. Yu. Contrastvae: Contrastive variational autoencoder for sequential recommendation. In Proceedings of the 31st ACM International Conference on Information & Knowledge Management, pages 2056-2066, 2022c.
+Y. Wang, Z. Chu, X. Ouyang, S. Wang, H. Hao, Y. Shen, J. Gu, S. Xue, J. Y. Zhang, Q. Cui, et al. Enhancing recommender systems with large language model reasoning graphs. arXiv preprint arXiv:2308.10835, 2023a.
+Y. Wang, Z. Jiang, Z. Chen, F. Yang, Y. Zhou, E. Cho, X. Fan, X. Huang, Y. Lu, and Y. Yang. Recmind: Large language model powered agent for recommendation. arXiv preprint arXiv:2308.14296, 2023b.
+J. Wei, X. Wang, D. Schuurmans, M. Bosma, F. Xia, E. Chi, Q. V. Le, D. Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems, 35:24824-24837, 2022.
+Y. Weng, M. Zhu, S. He, K. Liu, and J. Zhao. Large language models are reasoners with selfverification. arXiv preprint arXiv:2212.09561, 2022.
+15
+
+Under review L. Wu, Z. Qiu, Z. Zheng, H. Zhu, and E. Chen. Exploring large language model for graph data
+understanding in online job recommendations. arXiv preprint arXiv:2307.05722, 2023. J.-Y. Yao, K.-P. Ning, Z.-H. Liu, M.-N. Ning, and L. Yuan. Llm lies: Hallucinations are not bugs, but
+features as adversarial examples. arXiv preprint arXiv:2310.01469, 2023. Y. Zhang, Y. Li, L. Cui, D. Cai, L. Liu, T. Fu, X. Huang, E. Zhao, Y. Zhang, Y. Chen, et al.
+Siren's song in the ai ocean: A survey on hallucination in large language models. arXiv preprint arXiv:2309.01219, 2023. Z. Zhang, A. Zhang, M. Li, and A. Smola. Automatic chain of thought prompting in large language models. arXiv preprint arXiv:2210.03493, 2022.
+16
+
+

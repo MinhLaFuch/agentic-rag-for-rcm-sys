@@ -1,0 +1,851 @@
+1
+Cloud-Device Collaborative Agents for Sequential Recommendation
+Jing Long, Sirui Huang, Huan Huo, Tong Chen, Hongzhi Yin, Guandong Xu
+
+arXiv:2509.01551v1 [cs.IR] 1 Sep 2025
+
+Abstract--Recent advances in large language models (LLMs) have enabled agent-based recommendation systems with strong semantic understanding and flexible reasoning capabilities. While LLM-based agents deployed in the cloud offer powerful personalization, they often suffer from privacy concerns, limited access to real-time signals, and scalability bottlenecks. Conversely, ondevice agents ensure privacy and responsiveness but lack the computational power for global modeling and large-scale retrieval. To bridge these complementary limitations, we propose CDA4Rec, a novel Cloud-Device collaborative framework for sequential Recommendation, powered by dual agents: a cloud-side LLM and a device-side small language model (SLM). CDA4Rec tackles the core challenge of cloud-device coordination by decomposing the recommendation task into modular sub-tasks including semantic modeling, candidate retrieval, structured user modeling, and final ranking, which are allocated to cloud or device based on computational demands and privacy sensitivity. A strategy planning mechanism leverages the cloud agent's reasoning ability to generate personalized execution plans, enabling context-aware task assignment and partial parallel execution across agents. This design ensures real-time responsiveness, improved efficiency, and fine-grained personalization, even under diverse user states and behavioral sparsity. Extensive experiments across multiple realworld datasets demonstrate that CDA4Rec consistently outperforms competitive baselines in both accuracy and efficiency, validating its effectiveness in heterogeneous and resource-constrained environments.
+Index Terms--Recommender Systems, Cloud-Device Collaboration, Multi Agents, Large Language Models
+I. INTRODUCTION
+In the modern era, sequential recommender systems have become essential tools for assisting users in discovering relevant content and making informed decisions across various domains. Traditional approaches, such as those based on recurrent neural networks (RNNs) [1], [2], [3] and graph neural networks (GNNs) [4], [5], have demonstrated effectiveness in modeling behavioral patterns from historical interactions. However, these models often rely on rigid architectures and have difficulty in handling diverse user intents or rich contextual signals. To address these limitations, recent studies have introduced Large Language Models (LLMs) into sequential recommendation [6], [7], leveraging their semantic understanding and prompt-based reasoning to offer more flexible and generalizable solutions. Building on this trend, recent
+Jing Long, Sirui Huang, and Huan Huo are affiliated with the Data Science and Machine Intelligence Lab, University of Technology Sydney, Sydney, Australia. Tong Chen, and Hongzhi Yin are with the School of Electrical Engineering and Computer Science, the University of Queensland, Brisbane, Australia. Guandong Xu is with the Facility of Data Science and Artificial Intelligence, The Education University of Hong Kong, Hong Kong, China. Corresponding author: Guandong Xu (email: gdxu@eduhk.hk)
+
+Cloud Model
+
+Local Model
+
+Desensitized Interaction Data
+
+Interaction Data
+
+Preliminary Result
+
+Final Result
+
+(a) Cloud Inference
+
+(b) On-device Inference
+
+(c) Cloud-device Collaborative Inference
+
+Fig. 1: (a) Example of Cloud Inference. (b) Example of ondevice Inference. (c) Example of Cloud-device Collaborative Inference.
+
+studies have proposed using LLM-based agents for recommendation [8], [9], where the LLM serves not just as a generator but as an autonomous decision-maker capable of reasoning over user intent, selecting relevant items, and planning recommendation strategies. This agent formulation enables more flexible and adaptive recommendation pipelines, allowing the system to dynamically incorporate user context and generate interpretable outputs. In this way, LLM-based agents offer stronger adaptability and decision-making capabilities than standard LLM models, enabling more personalized, contextaware, and goal-directed recommendations.
+While LLM-based agents have shown promising capabilities in personalized recommendation, most existing implementations are deployed in the cloud as illustrated in Figure 1 (a). In this setting, user requests and behavioral data are uploaded to centralized servers, where large models process the information and return recommendation results. Despite their effectiveness, these systems face several limitations. Due to privacy concerns and transmission constraints, they cannot directly access real-time user signals, which hampers accurate modeling of fine-grained and dynamic user intent [2], [10]. In addition, as the number of users grows, they often experience computational bottlenecks, making it difficult to allocate sufficient resources for timely and fully personalized inference at scale. To address these limitations, recent research has explored deploying Small Language Models (SLMs) directly on user devices [11], enabling on-device agents to perform local inference, as shown in Figure 1(b). This design allows direct access to user data for efficient personalization and alleviates server-side computation load. Unfortunately, these methods are inherently constrained by the limited computational and memory resources of user devices, which hinders their ability to perform large-scale retrieval with satisfactory accuracy. Consequently, the subpar recommendation perfor-
+
+2
+
+mance largely offsets the convenience and efficiency of purely on-device LLM agents.
+Given the complementary yet limited capabilities of cloudbased and on-device recommendation agents, it is essential to explore new frameworks that can integrate their advantages while mitigating their respective drawbacks. Preliminary efforts have explored the potential of edge-cloud collaboration, where a cloud-side agent and a device-side agent work cooperatively to complete complex natural language processing tasks [12]. Inspired by this direction, we propose CDA4Rec, a novel Cloud-Device collaborative framework that leverages LLM-empowered Agents for sequential Recommendation. As illustrated in Figure 1(c), CDA4Rec employs a dual-agent architecture, where the cloud agent handles computationally intensive and less privacy-sensitive tasks, while the device agent focuses on lightweight computations involving real-time and more sensitive user data. This collaborative setup aims to combine the strengths of both sides by leveraging the cloud's capacity for global reasoning and the device's access to immediate contextual signals, while mitigating their respective limitations.
+Despite this, it remains highly challenging to instantiate such a collaborative recommendation framework in practice. A key difficulty lies in determining how the cloud and device agents should cooperate to complete the recommendation task. Specifically, the system must determine how to decompose the overall recommendation task into meaningful subtasks, and further decide which of these should be executed by the cloud agent and which should be delegated to the device agent. These decisions must also consider user privacy constraints, as it is impractical to assume the cloud's access to sensitive behavioral signals and real-time contextual data generated on-device.
+This challenge becomes even more pronounced when user heterogeneity is taken into account. That is, each user exhibits distinct recommendation needs. For example, active users with rich and consistent interaction histories can benefit from finegrained personalization that leverages long-term preferences and behavioral patterns. In contrast, inactive users or cold-start users lack sufficient behavioral signals for accurate modeling and therefore require more exploratory or diversity-promoting strategies to infer their interests. Additionally, users may differ in how clearly they express their intent. Some demonstrate strong, goal-directed behavior, while others engage in more ambiguous or exploratory interactions. These variations further complicate the realization of cloud-device collaborative recommendation, as the system must operate under constraints of fragmented data access and imbalanced agent capabilities. Different from cloud-based agents which can centrally observe and process most user information, cloud-device collaborative frameworks must reason over incomplete and distributed user signals. This fragmentation makes it substantially more difficult to maintain consistent recommendation quality across diverse user states. To summarize, the core challenge lies in determining how to effectively divide and coordinate recommendation tasks between cloud and device agents, while accounting for privacy constraints and the diverse states and needs of users.
+
+To address this challenge, CDA4Rec adopts a modular execution flow guided by a strategy planning mechanism, enabling fine-grained coordination between cloud and device agents. The overall recommendation is decomposed into a series of sub-tasks including semantic modeling, candidate retrieval, structured user modeling, and final ranking. Among them, semantic modeling and candidate retrieval involve high computational cost and rely on globally available knowledge with minimal privacy concerns, and are thus assigned to the cloud agent. In contrast, structured modeling and final ranking require access to sensitive behavioral signals and realtime contextual data, which are only available on the device, making them more suitable for the device agent. Importantly, semantic modeling on the cloud and structured modeling on the device can be executed in parallel, significantly reducing end-to-end latency.
+To handle the diverse needs introduced by user heterogeneity and to support effective cloud-device collaboration, we additionally introduce a strategy planning mechanism that enables the cloud agent to dynamically generate a personalized execution plan based on a privacy-preserving user abstract provided by the device. This plan determines which sub-tasks to activate and how to execute them, depending on factors such as query specificity, behavioral sparsity, and domain context. Built upon this framework, CDA4Rec enables efficient and adaptive collaboration between agents, effectively balancing recommendation accuracy, system latency, and privacy through task-aware planning and parallel execution. Our main contributions are summarized as follows: � We propose CDA4Rec, a novel cloud-device collaborative
+recommendation framework built upon a dual-agent architecture. It empowers a cloud-based LLM and an on-device SLM to collaboratively perform personalized recommendations through modular execution and agent-driven coordination. The framework supports partial parallel execution across agents to improve efficiency. � We design a strategy planning mechanism that enables the cloud agent to dynamically generate personalized execution plans. These plans determine which sub-tasks to activate and how to assign them across cloud and device, considering factors such as query specificity, behavioral sparsity, and privacy sensitivity. � We conduct extensive experiments on multiple real-world datasets across different domains. Results show that CDA4Rec consistently outperforms strong baselines in both recommendation accuracy and computational efficiency, demonstrating its robustness under diverse user states.
+II. PRELIMINARIES
+User. Each user u  U is associated with a recommendation query qu and a historical interaction sequence Xu. The query qu is a natural language request that reflects the user's current intent. The interaction history Xu = {(i1, t1), (i2, t2), . . . , (iM , tM )} denotes a time-ordered sequence of item interactions, where im  I and tm are the item ID and the timestamp of the m-th interaction. Item. Each item i  I is associated with an embedding vector ei  Rd, which is initialized by applying the cloud-based
+
+3
+
+Device-Side Agent
+
+Query Recommend some comfortable shoes
+User-item Interactions
+
+User Abstract Generation
+
+SLM
+
+Structured User Modeling
+Adaptive Model
+
+esem
+Semantic User Emb. 
+estr Structured User Emb.
+
+User Abstract
+Query The user is looking for comfortable shoes. Behavioral Summary The user has 3 recorded interactions, all within the past 7 days. These include premium badminton-related items such as high-end equipment and official apparel, indicating a clear short-term interest in indoor racket sports with a preference for quality gear. No earlier interactions are observed, suggesting the absence of identifiable long-term preferences.
+Final Result
+0.95 0.79 0.25
+Final Ranking
+
+User Abstract
+1. Strategy Plan 2. Semantic User emb 3. Candidate Set
+
+Cloud-Side Agent
+
+Badminton Group
+
+Sematic User Modeling
+esem
+
+0.73 0.69 0.67 Footwear Group
+
+Semantic User Emb. 0.88 0.71 0.12
+LLM
+
+Recommendation Strategy Planning
+Step 1: Semantic User Modeling: Assign 40% to behavioral summary and 60% to query for semantic embedding. Step 2: Candidate Retrieval: Retrieve 400 candidates from badminton and 600 from footwear. Step 3: Structured User Modeling: Use SURGE to generate structured user embedding. Step 4: Final Ranking: Fuse structured and semantic embeddings with weights 0.7 and 0.3.
+
+Candidate Retrieval
+Candidate Set
+
+Fig. 2: The overview of our proposed CDA4Rec.
+
+large language model l to analyze the item's textual metadata text(i) (e.g., title, brand, tags):
+
+ei = PCA(AVG(l(text(i)))).
+
+(1)
+
+Here, PCA(�) denotes a dimensionality reduction step applied offline, which compresses the original high-dimensional LLM output into the target embedding space Rd. The resulting embeddings are stored as the fixed item representation matrix EI for downstream training. Sequential Recommendation. Given a recommendation query qu and a historical interaction sequence Xu, our goal is to recommend a ranked list of items that best matches the user's current intent efficiently. In addition, the system can optionally generate natural language explanations to clarify the rationale behind each suggestion.
+
+III. METHODOLOGY
+A. Framework Overview
+CDA4Rec is a cloud-device collaborative recommendation framework built upon a dual-agent architecture. Instead of following a static recommendation pipeline, CDA4Rec empowers two intelligent agents: (1) a device-side agent powered by a lightweight small language model (SLM), and (2) a cloud-side agent powered by a powerful large language model (LLM). These agents collaboratively plan and execute personalized recommendations in a modular and adaptive fashion. Each agent is capable of perceiving context, making decisions, and selectively activating modules based on task requirements, which enables CDA4Rec to dynamically adapt to diverse recommendation scenarios.
+As shown in Figure 2, the recommendation process begins when a user submits a query. The device-side agent first analyzes the query and local interaction history to generate a privacy-respecting user abstract, composed of a sanitized query and a behavioral summary. This abstract is then transmitted to the cloud-side agent, which serves as a strategy planner. Leveraging its reasoning abilities, the LLM analyzes the abstract and domain context to formulate a personalized recommendation
+
+plan, which specifies which modeling modules to activate and how to execute tasks across cloud and device. Following the strategy plan, the cloud agent performs semantic user modeling and coarse candidate retrieval based on the abstracted intent. In parallel, the device-side agent may execute structured user modeling using local interaction history. Once both representations are ready, the device completes the final ranking by integrating structured and semantic signals. Optionally, the device agent can also generate natural language explanations for the recommendation results to enhance transparency and user trust.
+By orchestrating these modules in an agent-driven and context-aware manner, CDA4Rec offers a flexible and interpretable recommendation process while significantly improving computational efficiency through concurrent cloud-device collaboration.
+B. Abstract Generation
+To facilitate semantic reasoning and personalized strategy planning on the cloud while maintaining user privacy, CDA4Rec assigns the responsibility of contextual summarization to the device-side agent. Rather than transmitting raw queries or detailed interaction logs, the agent proactively interprets the user's current state and condenses it into a structured natural language abstract. This abstract acts as a privacy-aware communication interface, allowing the cloudside agent to operate with sufficient behavioral context without directly accessing sensitive information.
+Upon receiving a recommendation query qu, the device-side agent powered by the SLM s takes initiative to generate a personalized abstract au that encapsulates key user signals in a concise form. This abstract consists of two parts including a sanitized query q^u and a behavioral summary bu. The sanitized query is a rewritten version of qu that preserves its semantic intent while removing identifiers or overly specific personal content. The behavioral summary reflects high-level user dynamics derived from Xu, including interaction sparsity, long-term preference trends, and recent short-term interests,
+
+4
+
+Given the current user's query and interaction history, generate a two-part abstract: (1) a sanitized query that preserves intent while removing sensitive or overly specific content, and (2) a behavioral summary describing interaction sparsity and preference patterns without referencing specific items:
+Query: {} Interaction History: {}
+Fig. 3: The prompt for abstract generation
+without referencing specific items. This reasoning process is executed via a prompt-driven interface, where the agent uses a structured instruction prompt shown in Figure 3 to guide the generation process, ensuring modularity and consistency in agent behavior.
+Notably, although each interaction in Xu is stored as an item ID with the interaction timestamp in the system, we retrieve the corresponding item descriptions (e.g., title, brand, tags) in advance and include them directly in the prompt, allowing the agent to access rich semantic information. The constructed abstract au is then transmitted to the cloud-side agent, serving as the basis for downstream planning and modeling.
+C. Strategy Planning
+In CDA4Rec, the recommendation process is coordinated by a cloud-side agent powered by a large language model (LLM), which assumes responsibility for global planning. Rather than executing a fixed pipeline, this agent actively reasons about the user's recommendation context and produces an adaptive strategy tailored to the user's needs.
+Upon receiving the personalized user abstract au from the device-side agent, the cloud agent analyzes key contextual signals (i.e., query specificity, interaction sparsity, and domain characteristics) to assess the complexity and intent behind the recommendation task. Based on this assessment, it generates a structured recommendation plan u that determines how each downstream module should be executed, and under what configuration. The strategy plan includes not only execution parameters, but also explicit justifications that explain why each decision is made. These justifications enhance transparency and facilitate consistent execution across agents.
+Apart from abstract generation and strategy planning, CDA4Rec defines four core modules for completing a recommendation task. While all planning decisions are made by the cloud-side agent, execution is distributed between the cloud and device agents, ensuring both personalization and efficiency. In what follows, we first discuss the planning logic of each module, and then integrate these factors into a structured prompt, enabling the LLM to generate interpretable and reliable execution plans: � Semantic User Modeling. This module constructs a se-
+mantic user embedding to support intent-aware candidate retrieval and final ranking. It takes as input the user abstract, which includes a sanitized query and a behavioral summary. The relative informativeness of these two components is critical for generating a high-quality embedding. Specifically, a clearly stated query should be assigned greater weight, while a rich and recent interaction history warrants more emphasis on the behavioral summary. To this end, the cloud-side agent
+
+first evaluates these signals during the planning stage and determines their relative importance accordingly. The output is a weighting coefficient , where  and 1 -  represent the importance of the query and the behavioral summary, respectively. � Candidate Retrieval. This module generates a relevant candidate set from the large-scale item corpus to support efficient ranking on the device side. Computing similarities between the semantic embedding across all items is prohibitively expensive, and thus, CDA4Rec adopts a two-step approach. It first leverages intent and behavioral cues to identify a set of tag groups that are relevant to the user, and then retrieves items exclusively from these selected groups. However, a uniform retrieval settings for all users, such as a fixed number of tags or candidates, may fail to reflect userspecific intent or waste resources on excessive or irrelevant items. To address this, the cloud-side agent dynamically configures the retrieval strategy considering query clarity, behavior summary and domain characteristics, which can significantly affects the candidate level. For example, when the query clearly conveys the user's intent and recent behaviors are rich, a smaller, more focused retrieval scope may suffice. Conversely, in cases of ambiguous intent or sparse history, the agent broadens retrieval to ensure sufficient coverage. Domain characteristics also influence decisions where dynamic domains like news or music favor larger, more diverse candidate sets, while static domains such as movies benefit from compact, topic-focused pools. To ensure consistency and interpretability, the cloud-based agent selects from predefined tag counts {3, 5, 10, 20} and candidate sizes {500, 1000, 2000, 5000}, and further assigns retrieval weights to each tag group to guide proportional item sampling. The final retrieval configuration can be represented as a weighted tag dictionary Nu = {tag1 : N1, tag2 : N2, . . .}, where tagi denotes a selected tag group and Ni specifies the number of items to retrieve from that group. � Structured User Modeling. This module generates a structured user embedding based on the user's sequential interaction history, which captures fine-grained behavioral patterns and enhances the final ranking of candidate items. After proceeding, the cloud-side agent first decides whether structured modeling is necessary by inspecting the user's interaction density and recency. If modeling is warranted, the cloud-side agent selects an encoder from SASRec [13] or SURGE [14]. SASRec excels at capturing clear sequential patterns via self-attention, while SURGE models complex, non-linear item transitions through graphs. The parameters of the selected encoder are optimized using the training objective defined in Equation 10. � Final Ranking. This module ranks the candidate items retrieved from the cloud-side agent, rather than scoring the entire item corpus, which significantly improves inference efficiency. It fuses the semantic and structured user embeddings to compute relevance scores for each candidate. To determine the optimal fusion strategy, the cloud-side agent evaluates the reliability of each embedding based on query clarity and interaction recency. Specifically, it
+
+5
+
+Given the user abstract containing the query and behavioral summary, generate an adaptive recommendation strategy across four modules: Semantic User Modeling, Candidate Retrieval, Structured User Modeling, and Final Ranking. For each module, return both the execution decision and a brief explanation of the rationale behind it:
+User abstract: {}
+Tips for Decision Making: For Semantic User Modeling, assess the informativeness of both the query and behavior. Assign higher weight to the more informative part.
+For Candidate Retrieval, choose from predefined tag counts \{3, 5, 10, 20\} and candidate sizes \{500, 1000, 2000, 5000\}, and assign weights to each tag group to guide retrieval allocation. The candidate scope is affected by intent clarity, behavioral signal strength, and domain characteristic. For example, A compact retrieval scope is adopted when intent clarity and focused preferences are observed, while broader coverage is warranted under ambiguous signals or diversity-sensitive domains.
+For Structured User Modeling, first assess the density and recency of the user's interaction history to decide whether structured modeling is necessary. If so, select SASRec for clear sequential patterns or SURGE for complex, non-linear transitions best captured by graph-based modeling.
+For Final Ranking, determine the fusion weights for semantic and structured embeddings based on query clarity and interaction history quality: assign higher weight to semantic embedding when the query is clear and behavior is sparse; favor structured embedding when interactions are recent and dense.
+Output Format Semantic User Modeling - {query: , behavior: 1 - } Candidate Retrieval - {tag1: N1, tag2: N2, ...} Structured User Modeling - {Model Name or None} Final Ranking - {semantic: , structured: 1 - } Explanation - {...}
+Fig. 4: The prompt for strategy planning
+outputs a weighting coefficient , where a higher  indicates greater emphasis on the semantic embedding derived from query and behavioral summaries, and 1 -  reflects the weight assigned to the structured embedding constructed from sequential user behaviors. This fused representation is then used to rank the candidate items on the device side.
+To realize this reasoning process, CDA4Rec employs a prompt-driven interface that instructs the cloud-side agent to analyze the user abstract and return a structured plan. The prompt, shown in Figure 4, includes a breakdown of each module's decision criteria and enforces a unified output format for ease of parsing and downstream execution. The final output of this step is the personalized strategy plan u, which specifies module activation, and key parameters for subsequent recommendation stages.
+D. Semantic User Modeling
+After generating the personalized plan u, the cloud-side agent then utilizes the LLM l to derive the semantic user embedding from the uploaded user abstract au which contains the sanitized query qu versus the behavioral summary bu:
+eusem =  � AV G(l(q^u)) + (1 - ) � AV G(l(bu)), (2)
+where AVG(�) denotes mean pooling over the final-layer token representations, and   [0, 1] is obtained from the personalized plan u which specifies the relative importance of qu and bu.
+
+E. Candidate Retrieval
+
+Given
+
+the
+
+semantic
+
+user
+
+embedding
+
+esem
+u
+
+from
+
+the
+
+previous
+
+stage and candidate retrieve plan Nu = {tag1 : N1, tag2 :
+
+N2, ...}, the cloud-side agent retrieve a customized candidate
+
+set from the large-scale item corpus. For each tag, we compute
+
+the similarity between the semantic user embedding with each
+
+item embedding for all items within this tag:
+
+y^i = eusem � ei.
+
+(3)
+
+Based on the similarity scores, we select the top-N items from each tag group. The final candidate Cu set is obtained by aggregating the top-scoring items across all selected tag groups.
+
+F. Structured User Modeling
+
+To capture personalized behavioral preferences, the device-
+
+side
+
+agent
+
+derives
+
+a
+
+structured
+
+user
+
+embedding
+
+estr
+u
+
+from the user's domain-specific interaction history Xu =
+
+{(i1, t1), (i2, t2), . . . , (iM , tM )}:
+
+eustr = floc(Xu),
+
+(4)
+
+where floc(�)  {SASRec, SURGE} refers to the behavioral modeling function, indicated by the personalized plan.
+
+G. Final Ranking
+
+Given
+
+the
+
+user's
+
+semantic
+
+embedding
+
+esem
+u
+
+and
+
+structured
+
+embedding
+
+estr ,
+u
+
+the
+
+device-side
+
+agent
+
+fuses
+
+these
+
+two
+
+repre-
+
+sentations to capture both intent-aware semantics and historical
+
+behavioral signals under the guidance of the personalized plan
+
+u. Specifically, the fused user embedding is obtained by:
+
+eu =  � eusem + (1 - ) � eustr,
+
+(5)
+
+where   [0, 1] is exported from the personalized plan u which controls the relative importance of semantic and behavioral signals. The fused user embedding is then compared with each item embedding ei in the candidate set Cu to compute final relevance scores:
+
+y^i = eu � ei.
+
+(6)
+
+The top-K items based on the ranking scores form the final recommendation list:
+
+Ru = TopK ({y^i | i  Cu}) .
+
+(7)
+
+H. Explanation Generation
+To enhance transparency and foster user trust, the deviceside agent supports the optional generation of natural language explanations Eu for the final recommendation results, with the choice to enable this feature left entirely to the user. The generation process is implemented by the lightweight on-device SLM s with a structured prompt as shown in Figure 5, which is constructed using the personalized plan with execution logs u, and final recommendation list with related item descriptions Ru.
+
+6
+
+Given the execution plan and the final recommended items, generate a natural language explanation that helps the user understand why these items were recommended. The explanation should reflect the user's query intent, behavioral signals, and strategy decisions. Keep the explanation concise, informative, and personalized.
+User Plan: {} Final Recommendation List: {}
+Fig. 5: The prompt for explanation generation
+
+as the positive label and randomly sample negative items from non-interacted items, to formulate a contrastive training loss:
+
+LREC =
+
+log(yi - yj),
+
+(10)
+
+jN -
+
+where (�) is the sigmoid function, while yi and yj are respectively the scores assigned to the positive and negative samples.
+
+I. Model Optimization
+Optimizing CDA4Rec focuses on fine-tuning the lightweight SLM and training item embeddings to align device-side behaviors with cloud-side reasoning. This alignment enables effective abstract generation, interpretable recommendation, and accurate item matching. Notably, the cloud-based LLM is not updated during training, as it serves as a powerful, general-purpose model whose reasoning capabilities are utilized in a zero-shot manner to ensure stability and reduce deployment costs. All training is performed on the cloud using public or non-sensitive data, after which the optimized components are deployed to the device. This design preserves user privacy by keeping sensitive data local, while benefiting from centralized training efficiency and strong generalization.
+At first, CDA4Rec introduces two trainable QLoRA [15] adapters abs and exp for abstract generation and explanation generation respectively. The abstract generation adapter abs is designed to ensure that the abstract produced by SLM leads the LLM to produce a downstream strategy plan that closely matches the one derived from full access to raw inputs. To achieve this, we simulate both processes and minimize their divergence through a cross-entropy loss:
+
+Labs = lCE(u, u ),
+
+(8)
+
+where u = l(au) is the plan generated by the LLM given
+
+the
+
+abstract
+
+au
+
+=
+
+s
+
+ abs(qu, Xu),
+
+and
+
+
+u
+
+=
+
+l(qu, Xu)
+
+is the gold-standard plan generated by the LLM using the
+
+full query and history. The explanation generation adapter
+
+exp enhances the SLM's ability to produce natural language
+
+explanations for final recommendations. It is optimized by
+
+aligning the SLM's explanation output with that of the cloud
+
+LLM using the same prompt inputs:
+
+Lexp = lCE(Eu, Eu ),
+
+(9)
+
+where
+
+Eu
+
+=
+
+s
+
+
+
+exp(u,
+
+Ru)
+
+and
+
+E
+u
+
+=
+
+l(u,
+
+Ru)
+
+are
+
+the
+
+explanations generated by the SLM and LLM respectively,
+
+based on the execution plan u and the final recommendation list Ru. It is worth noting that the LLM only generates
+
+explanations during the training phase.
+
+In addition, CDA4Rec learns item embeddings and pa-
+
+rameters from local functions (i.e., SASRec and SURGE)
+
+to support accurate item matching during candidate retrieval
+
+and final ranking. The learning objective is to align the
+
+fused user representation eu with relevant item representations.
+
+Specifically, we treat each interacted item in the user's history
+
+IV. EXPERIMENTS
+In this section, we conduct experiments to verify the effectiveness and efficiency of CDA4Rec in sequential recommendation. Specifically, we aim to answer the following research questions (RQs): RQ1: Does CDA4Rec outperform existing baselines? RQ2: How effective are the key components of CDA4Rec? RQ3: How does CDA4Rec perform under different history lengths? RQ4: Can CDA4Rec support few-shot recommendation for new users? RQ5: Can CDA4Rec generate interpretable and user-aligned results?
+A. Dataset and Evaluation Protocols
+We evaluated our method on four widely used datasets, which cover various product domain including Movie [16], Music [17], Sport[18], and POI [19]. Table I summarizes the statistics of the two datasets. Among them, the Redial dataset provides explicit user queries, while the remaining datasets only contain user-item interaction histories. The diversity in data availability enables us to validate the robustness of our proposed framework across different recommendation scenarios. More notably, we do not consider cross-domain recommendation in this work and each user's interaction history contains only items from a single domain. We assume that the recommendation domain is known at the time of the user request, either inferred from the query itself or specified by the application context. Additionally, in our cloud-device setting, only item embeddings from relevant domains are selectively cached on the device, allowing efficient local access during inference. This approach reduces transmission latency and enhances responsiveness, while avoiding the burden of storing the full embedding matrix on resource-constrained devices.
+For each dataset, we randomly select 10% of users and their entire interaction histories to be excluded from training, in order to evaluate the model's few-shot recommendation capability (RQ4). The remaining 90% of users are used for standard training, validation, and testing. For evaluation, we use each user's last interaction as the test instance, the second-to-last for validation, and the remaining interactions for training. To ensure tractability and focus on recent behaviors, we set the maximum sequence length to 200. During testing, we rank the ground-truth item against all items, except in POI recommendation where only POIs within a 5km radius of the user are considered. On this basis, we leverage two ranking metrics, namely Hit Ratio at Rank k (HR@k) and Normalized Discounted Cumulative Gain at Rank k (NDCG@k) at k  {5, 10} [20]. HR@k measures whether the ground truth item appears in the top-k results, while NDCG@k further
+
+7
+
+TABLE I: Dataset Statistics
+
+Domain Dataset
+#User #Item #Interactions #Interactions/user #Tags
+
+Movie ReDial
+1,482 33,834 300,401 202.70
+37
+
+Music Music4All
+14,127 109,269 5,109,592 361.69
+57
+
+Sport Amazon
+25,598 18,357 296,337 11.58
+42
+
+POI Foursquare
+1,083 38,333 227,428 210.00
+38
+
+accounts for the position of the ground truth, assigning higher scores to higher-ranked correct predictions.
+In our framework, we adopt LLaMA-3.1-8B as the cloudside LLM and LLaMA-3.2-1B [21] as the device-side SLM to support cloud-device collaborative recommendation. For fair comparison, all baseline methods that require an LLM backbone are implemented using LLaMA-3-8B to ensure consistency in model capacity. For hyperparameters, we set the dimension size to 1024, the learning rate to 0.0002, the dropout to 0.2, the batch size to 64, and the maximum training epoch to 20.
+B. Baselines
+We compare CDA4Rec against three types of recommendation frameworks, categorized based on their inference paradigms. Cloud-side Inference:
+� GRU4Rec [22]: It is a classic sequential recommendation model that leverages gated recurrent units (GRUs) to capture user behavior patterns over time.
+� SASRec [13]: It is a self-attention based sequential recommendation model that adaptively captures both short-term and long-term user preferences by selectively attending to relevant past interactions.
+� LightGCN [4]:It is a simplified graph-based collaborative filtering model that removes feature transformation and nonlinear activation, focusing solely on neighborhood aggregation to learn user and item embeddings with improved efficiency and performance.
+� SURGE [14]: It is a graph-based sequential recommendation framework that reconstructs user behavior sequences into interest-aware item graphs and performs cluster-aware and query-aware graph reasoning to dynamically extract users' core preferences from noisy and long interaction histories.
+� RARec [23]: It is a novel LLM-based recommendation framework that introduces an ID representation paradigm by aligning pre-trained ID embeddings with LLMs through soft prompts, achieving superior performance with minimal training data. In addition to the original cloud-based RARec (using LLaMA-8B), we also implement a lightweight version using LLaMA-1B as the on-device SLM baseline, denoted as RARec*.
+� TransRec [24]: It is a novel LLM-based recommendation paradigm that bridges items and language by using multi-facet identifiers (ID, title, attributes) and a structured grounding mechanism to enable accurate, semantic, and distinct item generation and ranking. Similarly, we include
+
+a lightweight variant with LLaMA-1B deployed on-device, denoted as TransRec*.
+Device-side Inference:
+� LLRec [25]: It is a lightweight sequential recommender deployed on mobile devices, distilled from a powerful cloudside teacher model.
+� PREFER [26]: It is a privacy-preserving and efficient federated framework for sequential recommendation that offloads training to user devices and aggregates model updates on edge servers.
+� DCCL [27]: It is a device-cloud collaborative learning framework that personalizes on-device models via MetaPatch and updates the centralized cloud model through a novel model-over-models distillation, enabling mutual enhancement across cloud and edge with strong performance on long-tailed users.
+Cloud-Device Collaborative Inference:
+� DUET [28]: It is a cloud-device collaborative framework for device model generalization that eliminates on-device finetuning by generating device-specific parameters through forward propagation, enabling efficient and accurate adaptation without incurring high computational costs.
+� LSC4Rec [29]: It is a device-cloud collaborative recommendation framework that combines LLMs for semantic reasoning and SRMs for real-time adaptation, enabling efficient training and inference through collaborative training, inference, and intelligent request strategies.
+C. Overall Performance
+1) Recommendation Accuracy: Table II summarizes the recommendation accuracy of all sequential recommenders, where CDA4Rec consistently achieves the best performance. This clearly demonstrates the superiority of our collaborative framework, which dynamically allocates tasks between cloud and device based on user context. CDA4Rec not only leverages the powerful semantic reasoning of LLMs but also adapts to real-time device-side signals via structured modeling, achieving precise and timely personalization.
+Among cloud-side methods, RNN-based models (e.g., GRU4Rec, SASRec) and graph-based models (e.g., LightGCN, SURGE) demonstrate complementary strengths across different domains. Graph-based models generally perform better in domains like music and sports, where item-item relationships are more informative, while RNN-based models are more effective in domains with stronger sequential patterns such as movies or POIs. Furthermore, the introduction of attention mechanisms gives SASRec and SURGE an additional advantage, allowing them to better model long-range dependencies and capture nuanced user intents, resulting in more robust overall performance.
+RARec and TransRec achieve even higher accuracy than the above models by aligning item semantics with pretrained language models, enabling more expressive and generalizable user preference modeling. However, their dependence on large-scale LLMs raises concerns over inference latency and scalability, which can hinder real-time deployment. In contrast, on-device models such as LLRec, PREFER, and
+
+8
+
+Method
+GRU4Rec SASRec LightGCN SURGE RARec TransRec
+LLRec PREFER DCCL RARec* TransRec*
+DUET LSC4Rec CDA4Rec
+
+TABLE II: Performance comparison across datasets and methods
+
+Movie HR@5 NDCG@5 HR@10 NDCG@10
+
+0.0122 0.0129 0.0111 0.0118 0.0235 0.0235
+
+0.0073 0.0077 0.0069 0.0073 0.0166 0.0171
+
+0.0232 0.0247 0.0199 0.0212 0.0394 0.0403
+
+0.0112 0.0119 0.0099 0.0105 0.0240 0.0247
+
+0.0099 0.0103 0.0129 0.0141 0.0149
+
+0.0059 0.0065 0.0075 0.0081 0.0088
+
+0.0177 0.0183 0.0233 0.0247 0.0257
+
+0.0085 0.0092 0.0119 0.0126 0.0136
+
+0.0172 0.0107 0.0285 0.0242 0.0170 0.0401 0.0259 0.0182 0.0423
+
+0.0149 0.0253 0.0271
+
+Music
+
+Sports
+
+HR@5 NDCG@5 HR@10 NDCG@10 HR@5 NDCG@5 HR@10 NDCG@10
+
+Cloud-side Inference
+
+0.0105 0.0111 0.0106 0.0113 0.0212 0.0211
+
+0.0061 0.0064 0.0062 0.0066 0.0142 0.0146
+
+0.0185 0.0194 0.0187 0.0199 0.0351 0.0354
+
+0.0086 0.0091 0.0088 0.0094 0.0206 0.0212
+
+0.0089 0.0094 0.0090 0.0095 0.0128 0.0128
+
+0.0053 0.0057 0.0053 0.0056 0.0090 0.0091
+
+0.0162 0.0173 0.0167 0.0177 0.0230 0.0231
+
+0.0077 0.0081 0.0079 0.0084 0.0125 0.0129
+
+Device-side Inference
+
+0.0083 0.0090 0.0108 0.0118 0.0129
+
+0.0048 0.0053 0.0066 0.0070 0.0073
+
+0.0146 0.0157 0.0191 0.0204 0.0213
+
+0.0069 0.0074 0.0091 0.0102 0.0106
+
+0.0079 0.0083 0.0090 0.0103 0.0107
+
+0.0046 0.0050 0.0059 0.0062 0.0068
+
+0.0145 0.0151 0.0173 0.0195 0.0200
+
+0.0066 0.0070 0.0086 0.0089 0.0095
+
+Cloud-device Collaborative Inference
+
+0.0135 0.0080 0.0227 0.0218 0.0150 0.0364 0.0245 0.0171 0.0398
+
+0.0105 0.0214 0.0246
+
+0.0109 0.0069 0.0195 0.0133 0.0094 0.0236 0.0197 0.0136 0.0304
+
+0.0102 0.0130 0.0192
+
+POI HR@5 NDCG@5 HR@10 NDCG@10
+
+0.2571 0.2718 0.2536 0.2683 0.3220 0.3265
+
+0.1936 0.2070 0.1876 0.1977 0.2328 0.2396
+
+0.3678 0.3883 0.3615 0.3836 0.4489 0.4542
+
+0.2216 0.2329 0.2177 0.2315 0.2669 0.2735
+
+0.2216 0.2392 0.2315 0.2465 0.2667
+
+0.1613 0.1768 0.1751 0.1833 0.1936
+
+0.3073 0.3392 0.3295 0.3506 0.3672
+
+0.1950 0.1974 0.2112 0.2172 0.2289
+
+0.2872 0.2094 0.3908 0.3290 0.2387 0.4607 0.3589 0.2576 0.4845
+
+0.2422 0.2799 0.3046
+
+DCCL exhibit noticeable performance degradation. This is largely due to constrained model capacity and limited computing resources on edge devices, which hinder their ability to capture complex user patterns and deliver accurate predictions. To further examine this trade-off, we implement lightweight variants of RARec and TransRec using LLaMA-1B as the ondevice SLM, denoted as RARec* and TransRec*. Despite retaining their original architectural designs, these variants show a substantial drop in performance, indicating that simply downsizing LLM-based methods is insufficient for achieving high-quality recommendation under strict device constraints.
+Collaborative frameworks provide a middle ground, balancing accuracy and efficiency. DUET achieves fast adaptation by forwarding cloud-side parameters, but lacks fine-grained personalization. LSC4Rec, on the other hand, employs both LLMs and structured models across device and cloud, outperforming most baselines. However, its static pipeline and absence of adaptive user strategy planning limit its further gains. CDA4Rec outperforms LSC4Rec by introducing a context-aware strategy planner that tailors the collaboration path for each user scenario side inference for high-frequency users, thus realizing fine-grained personalization and efficient coordination.
+Furthermore, we observe notable cross-domain patterns. The POI domain exhibits relatively high accuracy across all models, likely due to inherent geographical constraints that narrow the recommendation space. In contrast, the Sport domain shows lower overall accuracy due to extreme sparsity and limited interaction history. Notably, CDA4Rec maintains strong performance even in this challenging setting, demonstrating its strength in handling sparse data through adaptive strategy planning and fine-grained user modeling.
+2) Recommendation Efficiency: Inference efficiency is crucial for real-world deployment, where low latency is essential for user experience and system scalability. As shown in Table III, We compare CDA4Rec with strong-performing baselines including RARec, TransRec and LSC4Rec. These models are selected for their competitive accuracy, while models with poor
+
+accuracy are excluded since they are not viable options in practical applications, regardless of their inference speed.
+The results show that LLM-based methods such as RARec and TransRec incur high inference latency due to autoregressive decoding and complex token grounding, particularly in large-scale domains like Music. LSC4Rec, though leveraging cloud-device collaboration, still suffers from considerable overhead caused by its static pipeline and limited device-side optimization. In contrast, CDA4Rec achieves notably lower latency (i.e., under 100 ms per sample across all domains) by offloading lightweight tasks to the device and dynamically adjusting inference paths through a context-aware planner. This design minimizes redundant computation and communication, delivering efficient recommendations without compromising accuracy, and making CDA4Rec well-suited for real-world, latency-sensitive applications.
+
+TABLE III: Inference Time Comparison (ms/sample)
+
+Model
+RARec TransRec LSC4Rec CDA4Rec
+
+Movie
+493.18 501.91 677.16 88.95
+
+Music
+1072.94 1115.98 1500.72
+93.41
+
+Sports
+392.73 411.13 531.32 70.48
+
+POI
+76.11 79.24 82.35 42.61
+
+D. Ablation Study (RQ2)
+To better understand the contribution of each component within the CDA4Rec framework, we conduct a series of ablation studies. As the core of CDA4Rec's adaptive capability, strategy planning dynamically configures the recommendation pipeline based on user context. To assess its effectiveness, we remove it (w/o. SP) and generate multiple fixed-strategy variants. The settings for these variants are summarized in Table IV, where each variant applies a static setting to the four key components of the pipeline: Semantic User Modeling, Candidate Retrieval, Structured User Modeling, and Final Ranking. In addition, we ablate the abstraction generation
+
+9
+
+module (w/o. AG) by directly feeding the raw user query and interaction history into the LLM for strategy planning, bypassing the lightweight abstraction generated by the deviceside SLM. This allows us to evaluate whether the learned user abstraction offers valuable information compared with raw context. We also disable the abstract adapter (w/o. AA) to assess its impact on abstract generation. Finally, we include LSC4Rec as a lightweight baseline for comparison. The results are shown in Table V, which records the recommendation accuracy (HR@10) and inference time (millisecond per sample).
+
+TABLE IV: Ablation Settings on CDA4Rec Components
+
+Version
+v1 v2 v3 v4 v5 v6 v7
+
+Semantic User Modeling
+ = 0.5 =1 =0  = 0.5  = 0.5  = 0.5  = 0.5
+
+Candidate Retrieval
+{5000, 20} {5000, 20} {5000, 20}
+{500, 3} {5000, 20} {5000, 20} {5000, 20}
+
+Structured User Modeling
+SASRec SASRec SASRec SASRec SURGE SASRec SASRec
+
+Final Ranking
+ = 0.5  = 0.5  = 0.5  = 0.5  = 0.5 =1 =0
+
+1) Effect of Strategy Planning: Comparing v1 ( = 0.5), v2 ( = 1), and v3 ( = 0) shows that balancing semantic and structured signals ( = 0.5) yields more stable performance across domains. Using only semantic information ( = 1) degrades accuracy, particularly in sparse domains like Music and POI. Conversely, discarding semantic signals ( = 0) also leads to performance drops, highlighting the complementarity of the two sources.
+Compared to v1, the variant v4 uses a smaller candidate pool, achieving the lowest latency but also the worst accuracy on all datasets except POI. This demonstrates a trade-off where aggressive filtering reduces computational cost but harms recommendation quality. The exception in the POI dataset is due to its geographical constraint: candidates are already limited to within 5km of the user, making further reduction less detrimental.
+A comparison between v1 and v5 indicates that replacing SASRec with SURGE brings a slight improvement on Music and Sport, but leads to minor declines on Movie and POI. This suggests that the two models exhibit different strengths across domains: SASRec is more effective in domains with clear sequential structures and stable user preferences, such as movies and location-based POIs, while SURGE performs better in dynamic domains like music and sports, where user interests shift frequently and item-item relational patterns play a larger role.
+We further assess the effect of the final ranking stage by varying . Setting  = 1 in v6 relies solely on the semantic score, while  = 0 in v7 depends only on structured behavior. v1, which uses a hybrid strategy ( = 0.5), consistently outperforms both, confirming the benefit of integrating heterogeneous signals.
+Overall, these results indicate that different users and domains require different strategies at each stage of the pipeline to achieve optimal accuracy and efficiency, underscoring the critical importance of the proposed strategy planning module.
+
+HR@10
+
+HR@10
+
+TABLE V: Ablation study results (HR@10 and inference time in ms/sample) across datasets.
+
+Method
+CDA4Rec LSC4Rec w/o AG w/o AA
+w/o SP v1 v2 v3 v4 v5 v6 v7
+
+Movie
+
+Music
+
+Sport
+
+POI
+
+HR@10 ms HR@10 ms HR@10 ms HR@10 ms
+
+0.0423 88.95 0.0398 93.41 0.0304 70.48 0.4845 82.35 0.0401 677.16 0.0364 1500.72 0.0236 531.32 0.4607 325.05 0.0415 76.12 0.0389 79.98 0.0295 62.24 0.4757 71.66 0.0380 87.44 0.0355 91.83 0.0271 69.22 0.4390 81.37
+
+0.0415 0.0409 0.0358 0.0338 0.0412 0.0393 0.0377
+
+89.16 91.03 91.17 28.82 91.81 89.33 89.76
+
+0.0379 0.0337 0.0362 0.0281 0.0385 0.0315 0.0361
+
+95.51 94.89 93.80 31.67 95.93 97.06 95.06
+
+0.0239 0.0221 0.0235 0.0207 0.0243 0.0211 0.0232
+
+70.76 71.96 71.07 24.30 72.23 73.06 71.16
+
+0.4597 0.4471 0.4512 0.4517 0.4482 0.4172 0.4511
+
+44.29 44.01 44.08 14.27 42.96 42.93 43.06
+
+RARec
+
+TransRec
+
+LSC4Rec
+
+CDA4Rec
+
+Movie
+0.048
+
+Music
+0.044
+
+0.042 0.040
+
+HR@10
+
+0.036 0.036
+
+0.032
+
+0.030 <10 10-50 >50
+
+<10
+
+10-50
+
+>50
+
+0.040 Sports
+
+POI
+0.50
+
+0.032
+
+0.48
+
+0.46
+
+HR@10
+
+0.024
+
+0.44
+
+0.42 0.016 <10 10-50 >50 0.40 <10 10-50 >50
+
+Fig. 6: Recommendation performance w.r.t different interaction sizes.
+
+This is further supported by the fact that CDA4Rec consistently outperforms LSC4Rec across all datasets.
+2) Effect of Abstract Generation: To protect user privacy, CDA4Rec employs an on-device SLM to generate abstract representations of user intent, rather than exposing raw queries and behavioral histories to the cloud. While this abstraction introduces a slight drop in recommendation accuracy, the performance degradation is minimal and well within an acceptable range. Given the strong privacy benefits brought by this design, the trade-off is both reasonable and worthwhile.
+To further enhance the quality of the generated abstractions, we incorporate a QLoRA-trained adapter into the SLM. This lightweight fine-tuning step effectively aligns the abstract outputs with the expectations of the cloud-side planner, helping to close the performance gap caused by abstraction. As a result, CDA4Rec is able to achieve strong accuracy while maintaining a privacy-preserving workflow.
+E. Effect of Different Interaction History Lengths (RQ3)
+The length of a user user's interaction history significantly impacts recommendation accuracy, making it crucial for a recommender system to maintain robustness across varying history lengths. To systematically assess this effect, we categorize user's history lengths into three groups: short (fewer than 10 interactions), medium (10-50 interactions), and long
+
+10
+
+Method
+RARec TransRec LSC4Rec CDA4Rec
+
+TABLE VI: Few-shot recommendation performance for unseen users
+
+Movie
+
+HR@5 NDCG@5 HR@10 NDCG@10
+
+0.0207 0.0207 0.0194 0.0248
+
+0.0146 0.0152 0.0139 0.0171
+
+0.0347 0.0357 0.0328 0.0404
+
+0.0215 0.0221 0.0203 0.0256
+
+Music
+
+HR@5 NDCG@5 HR@10 NDCG@10
+
+0.0208 0.0207 0.0194 0.0241
+
+0.0138 0.0142 0.0131 0.0170
+
+0.0349 0.0349 0.0322 0.0408
+
+0.0206 0.0208 0.0191 0.0239
+
+Sports
+
+HR@5 NDCG@5 HR@10 NDCG@10
+
+0.0113 0.0115 0.0109 0.0186
+
+0.0080 0.0080 0.0075 0.0129
+
+0.0203 0.0204 0.0192 0.0286
+
+0.0111 0.0115 0.0104 0.0182
+
+POI
+
+HR@5 NDCG@5 HR@10 NDCG@10
+
+0.2865 0.2910 0.2685 0.3417
+
+0.2070 0.2126 0.1943 0.2453
+
+0.3959 0.4086 0.3773 0.4610
+
+0.2396 0.2458 0.2267 0.2913
+
+(more than 50 interactions). We compare our method with three advanced baselines including RARec, TransRec, and LSC4Rec. The results are presented in Figure 6, using HR@10 as the evaluation metric.
+It is observed that recommendation accuracy improves consistently with longer interaction histories across all models, which aligns with the intuition that more behavioral signals facilitate better personalization. However, the performance gap between CDA4Rec and the baselines is particularly prominent in the short history group, which indicates CDA4Rec's strong ability to make accurate recommendations even with very limited user data. In the medium and long history groups, CDA4Rec continues to outperform RARec, TransRec, and LSC4Rec, demonstrating its robustness and adaptability across different levels of user activity. Notably, while other models rely heavily on user-item co-occurrence patterns learned from sufficient history, CDA4Rec leverages its strategy planning and semantic modeling components to generalize effectively from limited signals.
+F. Few-shot Recommendation for Unseen Users (RQ4)
+In many practical applications, recommendation systems often encounter new users whose data has never been seen during training. This settings poses a critical challenge for generalization. To evaluate CDA4Rec's generalization ability to such unseen users under limited behavioral evidence, we simulate a few-shot recommendation scenario. Specifically, we randomly hold out 10% of users from each dataset, ensuring that none of their interaction records appear during training. During testing, we provide a short history of interactions and evaluate each model's recommendation performance. We compare CDA4Rec with three advanced baselines: RARec, TransRec, and LSC4Rec, all of which are capable of handling few-shot or zero-shot scenarios to varying degrees.
+As shown in Table VI, CDA4Rec consistently outperforms all compared baselines across datasets and evaluation metrics in the few-shot user setting. These improvements can be attributed to its strategy planning mechanism and semantic user modeling, which together allow the system to effectively infer user intent even from limited interaction data. While RARec and TransRec benefit from their recurrent modeling structures, and LSC4Rec performs reasonably well through lightweight abstraction, none of these approaches achieve the same level of consistency and accuracy as CDA4Rec. The performance gap is especially notable in sparse domain (i.e., sport), where interaction signals are limited and semantic generalization becomes crucial. These findings highlight CDA4Rec's robust few-shot personalization capability, suggesting its strong potential for real-world recommendation scenarios where systems must
+
+frequently serve users whose data has not been seen during training.
+G. Case Study (RQ5)
+To further demonstrate the interpretability and adaptability of our CDA4Rec framework, we present a case study involving a real user query and interaction history. This example showcases how the device-side agent generates a privacypreserving abstract, how the cloud agent plans a personalized recommendation strategy based on both the query and longterm behavioral patterns, and how the final recommendations reflect both the user's explicit intent and implicit preferences. The case illustrates CDA4Rec's ability to dynamically tailor its recommendation pipeline while maintaining transparency throughout the decision-making process.
+V. RELATED WORK
+This section reviews recent literature on related areas including sequential recommendation, on-device recommendation, and cloud-device collaborative recommendation.
+A. Sequential Recommendation
+Sequential recommendation aims to model users' evolving preferences from their interaction histories. Early methods based on matrix factorization [30] and Markov chains [31] focused on long-term preferences and short-term transitions but struggled with complex dependencies. To better capture sequential patterns, RNN-based models [22], [1], [32] were introduced to learn local temporal dynamics through hidden state updates. Graph-based methods [33], [14], [34] further modeled item transitions as session graphs, capturing highorder and structural dependencies. Attention mechanisms [13], [35] have since been adopted as flexible modules that enhance RNNs and GNNs, or serve as standalone architectures, with self-attention particularly effective in modeling global dependencies and enabling parallel, context-aware recommendation.
+More recently, large language models (LLMs) have been applied to sequential recommendation due to their strong generative and reasoning capabilities. Some works reformulate recommendation as a natural language task, prompting pretrained LLMs with user histories and item metadata to enable zero-shot or few-shot prediction [6], [36], [37]. Additionally, ID-based LLM approaches [23], [24] directly model sequences of item IDs or embeddings without relying on textual descriptions, offering better compatibility with traditional recommendation pipelines and improved efficiency in structured domains. Building on these foundations, recent studies [38], [39] have begun exploring LLM-based agent frameworks for
+
+11
+
+Recently, I have been interested in politics and real-world stories. Could you recommend a movie based on true political events with deep characters and meaningful moral dilemmas?
+1. The Post (2017 � Political Drama) - Government leaks, press freedom, and moral courage in the face of political pressure.
+2. Official Secrets (2019 � Political Thriller) - Based on a true story of whistleblowing during the Iraq War; explores personal conscience vs. national interest.
+3. Spotlight (2015 � Investigative Drama ) - Based on real events, a team of reporters uncovers systemic abuse within a powerful institution.
+4. All the President's Men (1976 � Political Journalism) - A classic investigation of the Watergate scandal that led to President Nixon's resignation.
+5. Arrival (2016 � Sci-Fi Drama) - While not politically themed, this film reflects the user's residual interest in complex, thought-provoking science fiction and moral ambiguity.
+The user's query clearly expresses an interest in politically charged, real-world films with complex characters and moral depth. To address this, The Post, Official Secrets, and All the President's Men are recommended as top choices, each directly aligned with the query and rooted in true political events. Spotlight is included not only for its thematic fit but also because it reflects the user's long-term preference for investigative and socially conscious narratives. Lastly, Arrival is selected based on residual signals from past interactions, introducing thoughtful sci-fi to diversify recommendations while maintaining intellectual depth.
+
+User Abstract
+Query - Recently, I have been interested in politics and real-world stories. Could you recommend a movie based on true political events with deep characters and meaningful moral dilemmas?
+Behavioral Summary - The user has a total of 7 recorded interactions over the past 4 months. Among these, 1 interaction occurred within the last month, while the rest are distributed more evenly across the earlier 3 months. The user's long-term behavior reflects a consistent interest in meaningful, real-world narratives, particularly those with political or investigative themes. In contrast, the limited recent activity suggests a temporary inclination toward lighter or more entertainment-focused content.
+
+Adaptive Plan
+Semantic User Modeling: {query: 0.8, behavior: 0.2} - {The query provides a clear and timely expression of interest in politically charged, real-world stories, so we prioritize it with 0.8 weight in semantic modeling. Historical behaviors are older and less aligned, thus assigned a lower weight of 0.2.}
+Candidate Retrieval: {Political: 300, Real: 250, Moral: 200, Investigative: 150, Sci-Fi: 100} - {The query offers high informational value by clearly indicating an interest in politically themed, real-event-based films with moral complexity. While recent interactions are limited, they still reveal a residual preference for science fiction. In addition, the user's long-term interactions suggest a consistent interest in realistic and socially reflective narratives. Given above information and the static nature of the movie domain, the agent selects 5 relevant tags and retrieves 1000 candidates to ensure efficiency while covering both explicit and latent interests.The query offers high informational value by clearly indicating an interest in politically themed, real-event-based films with moral complexity. While recent interactions are limited, they still reveal a residual preference for science fiction. In addition, the user's long-term interactions suggest a consistent interest in realistic and socially reflective narratives. Given above information and the static nature of the movie domain, the agent selects 5 relevant tags and retrieves 1000 candidates to ensure efficiency while covering both explicit and latent interests.}
+Structured User Modeling: {SURGE} - {Although recent interactions are limited, the user's long-term history reveals coherent viewing patterns, warranting structured modeling. SASRec is selected for its ability to leverage sparse yet temporally ordered sequences, making it effective for modeling long-term preferences when recent activity is limited}
+Final Ranking: {semantic: 0.7, structured: 0.3} - In final ranking, semantic signals dominate (0.7) to align with the query-driven recommendation goal, while structured signals (0.3) provide complementary insights for better personalization.}
+
+Fig. 7: An example of Movie Recommendation.
+
+recommendation. These approaches decompose the recommendation process into modular sub-tasks and assign them to specialized LLM agents that collaborate through message passing or shared memory. Our work build this line of research and extend the LLM-agent paradigm to the cloud-device setting, aiming to enable flexible, personalized, and interpretable sequential recommendation under real-world constraints.
+B. On-Device Recommendation
+On-device recommendation performs the entire inference process locally on the user's device, offering the advantage of reduced latency without relying on cloud-based computation. To enable effective on-device recommendation under resource constraints, various techniques have been developed. One line of work focuses on model compression [25], [27], including knowledge distillation, pruning, and quantization, to deploy compact versions of high-capacity recommendation models. Another approach leverages federated learning [40], [41], where the model is collaboratively trained across multiple devices without transmitting raw user data, thus preserving privacy while capturing cross-user knowledge. More recent research [42], [3] explores decentralized or peer-to-peer training paradigms, where devices share updates directly with each other, enabling personalized model adaptation through local communication. Despite these advances, on-device recommendation remains limited by computational and memory constraints, making it difficult to support complex architectures or large-scale retrieval, and often leading to suboptimal personalization in practice.
+C. Cloud-Device Collaborative Recommendation
+Cloud-device collaborative recommendation aims to combine the modeling power of cloud-based systems with the low-latency and privacy benefits of on-device inference. By splitting the recommendation pipeline, these frameworks enable more responsive and context-aware recommendation. For instance, MetaController [43] introduced dynamic collaboration strategies that allow the system to switch between cloud and device recommenders based on user behavior patterns. DUET [28] and IntellectReq [44] focused on enhancing the generalization ability of device models by enabling the cloud
+
+to generate personalized parameters or determine communication needs using uncertainty estimation. Finally, LSC4Rec [29] proposed a collaborative framework that integrates a cloudbased LLM with an on-device SRM, supporting joint training and inference to leverage the strengths of both models across cloud and edge environments. However, most existing methods rely on fixed collaboration patterns and lack the flexibility to adapt to diverse user contexts. In contrast, our approach introduces a dynamic and interpretable framework that adjusts cloud-device cooperation based on user-specific signals.
+VI. CONCLUSION
+In this paper, we introduced CDA4Rec, a cloud-device collaborative framework for sequential recommendation that addresses key challenges in personalization, efficiency, and privacy. Built upon a dual-agent architecture, CDA4Rec assigns semantic modeling and candidate retrieval to the cloud agent, while delegating structured modeling and final ranking to the device agent. A strategy planning mechanism orchestrates this collaboration by generating personalized execution plans based on user context. This design enables adaptive task division and partial parallelism across agents, significantly improving system responsiveness. Extensive experiments across multiple domains validate the superiority of CDA4Rec over strong baselines, particularly under diverse user states and real-world constraints.
+REFERENCES
+[1] C. Xu, J. Feng, P. Zhao, F. Zhuang, D. Wang, Y. Liu, and V. S. Sheng, "Long-and short-term self-attention network for sequential recommendation," Neurocomputing, vol. 423, pp. 580-589, 2021.
+[2] J. Han, Y. Ma, Q. Mei, and X. Liu, "Deeprec: On-device deep learning for privacy-preserving sequential recommendation in mobile commerce," in Proceedings of the Web Conference 2021, 2021, pp. 900-911.
+[3] J. Long, T. Chen, Q. V. H. Nguyen, G. Xu, K. Zheng, and H. Yin, "Model-agnostic decentralized collaborative learning for on-device poi recommendation," in Proceedings of the 46th international ACM SIGIR conference on research and development in information retrieval, 2023, pp. 423-432.
+[4] X. He, K. Deng, X. Wang, Y. Li, Y. Zhang, and M. Wang, "Lightgcn: Simplifying and powering graph convolution network for recommendation," in Proceedings of the 43rd International ACM SIGIR conference on research and development in Information Retrieval, 2020, pp. 639- 648.
+
+12
+
+[5] C. Gao, X. Wang, X. He, and Y. Li, "Graph neural networks for recommender system," in Proceedings of the fifteenth ACM international conference on web search and data mining, 2022, pp. 1623-1625.
+[6] X. Lin, W. Wang, Y. Li, S. Yang, F. Feng, Y. Wei, and T.-S. Chua, "Dataefficient fine-tuning for llm-based recommendation," in Proceedings of the 47th international ACM SIGIR conference on research and development in information retrieval, 2024, pp. 365-374.
+[7] J. Zhao, W. Wang, C. Xu, Z. Ren, S.-K. Ng, and T.-S. Chua, "Llm-based federated recommendation," arXiv preprint arXiv:2402.09959, 2024.
+[8] Y. Shu, H. Gu, P. Zhang, H. Zhang, T. Lu, D. Li, and N. Gu, "Rah! recsys-assistant-human: A human-central recommendation framework with large language models," CoRR, 2023.
+[9] Z. Wang, Y. Yu, W. Zheng, W. Ma, and M. Zhang, "Macrec: A multiagent collaboration framework for recommendation," in Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, 2024, pp. 2760-2764.
+[10] X. Xia, H. Yin, J. Yu, Q. Wang, G. Xu, and Q. V. H. Nguyen, "On-device next-item recommendation with self-supervised knowledge distillation," in Proceedings of the 45th International ACM SIGIR Conference on Research and Development in Information Retrieval, 2022, pp. 546- 555.
+[11] J. Xu, Z. Li, W. Chen, Q. Wang, X. Gao, Q. Cai, and Z. Ling, "On-device language models: A comprehensive review," arXiv preprint arXiv:2409.00088, 2024.
+[12] C. Shao, X. Hu, Y. Lin, and F. Xu, "Division-of-thoughts: Harnessing hybrid language model synergy for efficient on-device agents," in Proceedings of the ACM on Web Conference 2025, 2025, pp. 1822- 1833.
+[13] W.-C. Kang and J. McAuley, "Self-attentive sequential recommendation," in 2018 IEEE international conference on data mining (ICDM). IEEE, 2018, pp. 197-206.
+[14] J. Chang, C. Gao, Y. Zheng, Y. Hui, Y. Niu, Y. Song, D. Jin, and Y. Li, "Sequential recommendation with graph neural networks," in Proceedings of the 44th international ACM SIGIR conference on research and development in information retrieval, 2021, pp. 378-387.
+[15] T. Dettmers, A. Pagnoni, A. Holtzman, and L. Zettlemoyer, "Qlora: Efficient finetuning of quantized llms," Advances in neural information processing systems, vol. 36, pp. 10 088-10 115, 2023.
+[16] R. Li, S. E. Kahou, H. Schulz, V. Michalski, L. Charlin, and C. Pal, "Towards deep conversational recommendations," in Advances in Neural Information Processing Systems 31 (NIPS 2018), 2018.
+[17] I. A. P. Santana, F. Pinhelli, J. Donini, L. Catharin, R. B. Mangolin, V. D. Feltrim, M. A. Domingues et al., "Music4all: A new music database and its applications," in 2020 International Conference on Systems, Signals and Image Processing (IWSSIP). IEEE, 2020, pp. 399-404.
+[18] J. Ni, J. Li, and J. McAuley, "Justifying recommendations using distantly-labeled reviews and fine-grained aspects," in Proceedings of the 2019 conference on empirical methods in natural language processing and the 9th international joint conference on natural language processing (EMNLP-IJCNLP), 2019, pp. 188-197.
+[19] D. Yang, B. Qu, J. Yang, and P. Cudre-Mauroux, "Revisiting user mobility and social relationships in lbsns: a hypergraph embedding approach," in The world wide web conference, 2019, pp. 2147-2157.
+[20] M. Weimer, A. Karatzoglou, Q. V. Le, and A. Smola, "Cofirank maximum margin matrix factorization for collaborative ranking," in Proceedings of the 21st International Conference on Neural Information Processing Systems, ser. NIPS'07. Red Hook, NY, USA: Curran Associates Inc., 2007, p. 1593-1600.
+[21] H. Touvron, T. Lavril, G. Izacard, X. Martinet, M.-A. Lachaux, T. Lacroix, B. Rozie`re, N. Goyal, E. Hambro, F. Azhar et al., "Llama: Open and efficient foundation language models," arXiv preprint arXiv:2302.13971, 2023.
+[22] B. Hidasi, A. Karatzoglou, L. Baltrunas, and D. Tikk, "Sessionbased recommendations with recurrent neural networks," arXiv preprint arXiv:1511.06939, 2015.
+[23] X. Yu, L. Zhang, X. Zhao, Y. Wang, and Z. Ma, "Ra-rec: An efficient id representation alignment framework for llm-based recommendation," arXiv preprint arXiv:2402.04527, 2024.
+[24] X. Lin, W. Wang, Y. Li, F. Feng, S.-K. Ng, and T.-S. Chua, "Bridging items and language: A transition paradigm for large language modelbased recommendation," in Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, 2024, pp. 1816- 1826.
+[25] Q. Wang, H. Yin, T. Chen, Z. Huang, H. Wang, Y. Zhao, and N. Q. Viet Hung, "Next point-of-interest recommendation on resourceconstrained mobile devices," in Proceedings of the Web conference 2020, 2020, pp. 906-916.
+
+[26] Y. Guo, F. Liu, Z. Cai, H. Zeng, L. Chen, T. Zhou, and N. Xiao, "Prefer: Point-of-interest recommendation with efficiency and privacypreservation via federated edge learning," Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies, vol. 5, no. 1, pp. 1-25, 2021.
+[27] J. Yao, F. Wang, K. Jia, B. Han, J. Zhou, and H. Yang, "Device-cloud collaborative learning for recommendation," in Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery & Data Mining, 2021, pp. 3865-3874.
+[28] Z. Lv, W. Zhang, S. Zhang, K. Kuang, F. Wang, Y. Wang, Z. Chen, T. Shen, H. Yang, B. C. Ooi et al., "Duet: A tuning-free devicecloud collaborative parameters generation framework for efficient device model generalization," in Proceedings of the ACM Web Conference 2023, 2023, pp. 3077-3085.
+[29] Z. Lv, T. Zhan, W. Wang, X. Lin, S. Zhang, W. Zhang, J. Li, K. Kuang, and F. Wu, "Collaboration of large language models and small recommendation models for device-cloud recommendation," arXiv preprint arXiv:2501.05647, 2025.
+[30] R. Mehta and K. Rana, "A review on matrix factorization techniques in recommender systems," in 2017 2nd International Conference on Communication Systems, Computing and IT Applications (CSCITA). IEEE, 2017, pp. 269-274.
+[31] S. Rendle, C. Freudenthaler, and L. Schmidt-Thieme, "Factorizing personalized markov chains for next-basket recommendation," in Proceedings of the 19th international conference on World wide web, 2010, pp. 811-820.
+[32] Q. Cui, S. Wu, Q. Liu, W. Zhong, and L. Wang, "Mv-rnn: A multiview recurrent neural network for sequential recommendation," IEEE Transactions on Knowledge and Data Engineering, vol. 32, no. 2, pp. 317-331, 2018.
+[33] Y. Liu, L. Xia, and C. Huang, "Selfgnn: Self-supervised graph neural networks for sequential recommendation," in Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, 2024, pp. 1609-1618.
+[34] M. Zhang, S. Wu, X. Yu, Q. Liu, and L. Wang, "Dynamic graph neural networks for sequential recommendation," IEEE Transactions on Knowledge and Data Engineering, vol. 35, no. 5, pp. 4741-4753, 2022.
+[35] J. Li, Y. Wang, and J. McAuley, "Time interval aware self-attention for sequential recommendation," in Proceedings of the 13th international conference on web search and data mining, 2020, pp. 322-330.
+[36] S. Geng, S. Liu, Z. Fu, Y. Ge, and Y. Zhang, "Recommendation as language processing (rlp): A unified pretrain, personalized prompt & predict paradigm (p5)," in Proceedings of the 16th ACM conference on recommender systems, 2022, pp. 299-315.
+[37] L. Li, Y. Zhang, and L. Chen, "Prompt distillation for efficient llmbased recommendation," in Proceedings of the 32nd ACM International Conference on Information and Knowledge Management, 2023, pp. 1348-1357.
+[38] Y. Shu, H. Zhang, H. Gu, P. Zhang, T. Lu, D. Li, and N. Gu, "Rah! recsys-assistant-human: A human-centered recommendation framework with llm agents," IEEE Transactions on Computational Social Systems, 2024.
+[39] A. Zhang, Y. Chen, L. Sheng, X. Wang, and T.-S. Chua, "On generative agents in recommendation," in Proceedings of the 47th international ACM SIGIR conference on research and development in Information Retrieval, 2024, pp. 1807-1817.
+[40] L. Yang, B. Tan, V. W. Zheng, K. Chen, and Q. Yang, "Federated recommendation systems," in Federated Learning: Privacy and Incentive. Springer, 2020, pp. 225-239.
+[41] L. Qu, W. Yuan, R. Zheng, L. Cui, Y. Shi, and H. Yin, "Towards personalized privacy: User-governed data contribution for federated recommendation," in Proceedings of the ACM Web Conference 2024, 2024, pp. 3910-3918.
+[42] J. Long, T. Chen, Q. V. H. Nguyen, and H. Yin, "Decentralized collaborative learning framework for next poi recommendation," ACM Transactions on Information Systems, vol. 41, no. 3, pp. 1-25, 2023.
+[43] J. Yao, F. Wang, X. Ding, S. Chen, B. Han, J. Zhou, and H. Yang, "Device-cloud collaborative recommendation via meta controller," in Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, 2022, pp. 4353-4362.
+[44] Z. Lv, W. Zhang, Z. Chen, S. Zhang, and K. Kuang, "Intelligent model update strategy for sequential recommendation," in Proceedings of the ACM Web Conference 2024, 2024, pp. 3117-3128.
+
+

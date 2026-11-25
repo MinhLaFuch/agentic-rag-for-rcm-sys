@@ -1,0 +1,1067 @@
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Shiyi Yang
+The University of New South Wales Sydney, Australia Data61, CSIRO Eveleigh, Australia
+shiyi.yang@data61.csiro.au
+
+Zhibo Hu
+The University of New South Wales Sydney, Australia Data61, CSIRO Eveleigh, Australia
+zhibo.hu@data61.csiro.au
+
+Chen Wang
+Data61, CSIRO Eveleigh, Australia The University of New South Wales Sydney, Australia chen.wang@data61.csiro.au
+
+arXiv:2503.23804v1 [cs.CR] 31 Mar 2025
+
+Tong Yu
+Adobe Research San Jose, California, USA
+tyu@adobe.com
+
+Xiwei Xu
+Data61, CSIRO Eveleigh, Australia The University of New South Wales Sydney, Australia xiwei.xu@data61.csiro.au
+
+Liming Zhu
+Data61, CSIRO Eveleigh, Australia The University of New South Wales Sydney, Australia liming.zhu@data61.csiro.au
+
+Lina Yao
+Data61, CSIRO Eveleigh, Australia The University of New South Wales Sydney, Australia lina.yao@data61.csiro.au
+
+ABSTRACT
+Large language model-based agents are increasingly used in recommender systems (Agent4RSs) to achieve personalized behavior modeling. Specifically, Agent4RSs introduces memory mechanisms that enable the agents to autonomously learn and self-evolve from real-world interactions. However, to the best of our knowledge, how robust Agent4RSs are remains unexplored. As such, in this paper, we propose the first work to attack Agent4RSs by perturbing agents' memories, not only to uncover their limitations but also to enhance their security and robustness, ensuring the development of safer and more reliable AI agents.
+Given the security and privacy concerns, it is more practical to launch attacks under a black-box setting, where the accurate knowledge of the victim models cannot be easily obtained. Moreover, the practical attacks are often stealthy to maximize the impact. To this end, we propose a novel practical attack framework named DrunkAgent. DrunkAgent consists of a generation module, a strategy module, and a surrogate module. The generation module aims to produce effective and coherent adversarial textual triggers, which can be used to achieve attack objectives such as promoting the target items. The strategy module is designed to `get the target agents drunk' so that their memories cannot be effectively updated during the interaction process. As such, the triggers can play the best role. Both of the modules are optimized on the surrogate module to improve the transferability and imperceptibility of the attacks. By identifying and analyzing the vulnerabilities, our work provides critical insights that pave the way for building safer and more resilient Agent4RSs. Extensive experiments across various real-world datasets demonstrate the effectiveness of DrunkAgent.
+
+CCS CONCEPTS
+· Security and privacy  Web application security.
+KEYWORDS
+Adversarial Attacks, Recommender Systems, Large Language Model, Generative Agents, Collaborative Filtering
+1 INTRODUCTION
+Recommender systems (RSs) have evolved into a vital component of the modern digital ecosystem. From e-commerce sites (e.g., Amazon, Taobao) and streaming platforms (e.g., YouTube, TikTok) to social media networks (e.g., Facebook, Instagram), RSs power personalized experience, drive user engagement of these online platforms, and further influence market dynamics through item promotions [45, 47]. The foundation of the RSs lies in modeling users' preferences based on their historical interactions with items, such as purchases and ratings, known as collaborative filtering (CF). Despite the success of CF techniques [14, 15, 19], they often struggle with data sparsity and cold-start problems [30]. To alleviate the problems, the auxiliary information with rich semantics (e.g., item descriptions and user reviews) has been integrated into RSs [52]. Given the increasing volume and complexity of recommendation data, the RSs encounter difficulties in scaling effectively and capturing textual knowledge about users and items sufficiently, due to they generally rely on traditional deep learning (DL) models like CNNs and RNNs [56].
+Recently, large language models (LLMs) have shown potential to mitigate the above problems and revolutionize RSs [56], as they are primarily built upon advanced transformer-based architectures and pretrained on diverse and extensive datasets. Most of works
+
+Conference'17, July 2017, Washington, DC, USA
+
+Target Item's Benign
+Descriptions
+
+Manipulate
+
+Environment
+
+Target Item's Adversarial Descriptions
+
+Agent-powered Recommender
+Systems
+
+LLM
+
+=
+
++
+
+Memory
+
+Memory Perturbations
+
+LLM
+Perturbed Memory
+
+Top-2 Recommendations
+
+Top-2 Recommendations
+
+Before Attacks
+
+After Attacks
+
+Figure 1: An exemplar of attacks on agent-based recom-
+
+mender systems, where the target item's descriptions have
+
+been manipulated to perturb the memory of the target agent
+
+for promoting the target item to more normal users. By in-
+
+vestigating this, our work reveals emerging vulnerabilities in
+
+memory-augmented agents and provides insights for build-
+
+ing more secure recommender systems.
+
+carefully design textual prompts for LLMs based on user-item interactions [4, 13, 40, 54]. As such, the abundant knowledge inside the LLM's training corpora can be fully exploited. However, the LLMbased RSs (LLM4RSs) struggle to capture underlying behavioral patterns, due to the gap between universal language modeling and personalized behavior modeling [50]. Integrating agents built upon LLMs equipped with additional modules offers a promising solution [10, 16], allowing to autonomously explore and learn from external sources. Among all the added modules, memory is a key component to support agent-environment1 interactions, which plays a crucial role in helping agents accumulate historical experience, retrieve informative knowledge and self-evolve in real-world environments [36, 55]. Consequently, the agent-based RSs with powerful LLMs [16, 50] can also leverage memory modules that store the information explored from the external environments to further improve the recommendation quality. Fig. 1 gives an example of an item agent interacting with its situated environment (e.g., users and other items), where the learning knowledge will be placed in its memory. Despite the aforementioned success, the safety vulnerability of the generative agent-based RSs (Agent4RSs) under adversarial attacks has yet to be explored. Such attacks can gain insights into the robustness of the systems and help develop effective defensive mechanisms. As recommender agents are integrated into more complex real-world environments, understanding how these attacks might compromise their behaviors is critical for building trustworthy and robust recommender agents [6].
+Due to security and privacy considerations, the access of accurate knowledge of the victim model, including architectures, gradients, parameters, etc., is generally restricted in practice. As such, practical attacks are mainly under a black-box setting [23, 28, 45, 48, 51]. Practical attacks are often required to have transferability (i.e.,
+
+1In a narrow sense, environment is the object that the agent needs to interact with to accomplish the task. More broadly, environment can be any contextual factors (e.g., item titles, user-item interactive behaviors) that influence the agent's decisions [55].
+
+Shiyi Yang et al.
+effective against different black-box RSs). Moreover, to maximize the impact of the attack and the number of affected users, practical attacks are often rewarded by imperceptibility (i.e., difficult to be discovered) [26].
+Conventional black-box shilling attacks [38], which inject wellcrafted fake user profiles (e.g., a set of users' numerical ratings on items) into the victim model for certain attack objectives (e.g., promote their target items for profits), have been shown to effectively poison DL-based RSs. However, most attacks have difficulty in processing textual inputs (e.g., item titles and descriptions) and lack context awareness, making it challenging to effectively target LLM-empowered RSs that rely primarily on text inputs to generate natural language responses [28]. Item providers are generally responsible for creating and maintaining their own product representations on the platforms with recommendation services in practice [7, 26, 45] (e.g., YouTube allows creators to upload item titles and Amazon enables sellers to upload item descriptions), and current RSs depend heavily on these representations [51, 56]. As such, security vulnerabilities in these systems naturally emerge. The vulnerabilities can easily be exploited by profit-driven merchants manipulating product representations, as shown in Fig. 1. Compared to the shilling attacks that involve hiring online writers to introduce fake reviews to indirectly promote the items, this type of attack is more direct, efficient, and lower in economic cost [51].
+Recent black-box textual attacks on LLM4RSs are far from practical. Classical text attacks that are successful in text misclassifications, such as TextFooler [18] and PuncAttack [11], have been directly applied for LLM4RSs [51]. However, the effectiveness of the attacks is limited, due to there is a gap between the attack goals of the text attacks and RS attacks. Trivial and ChatGPT attacks [51], on the other hand, are proposed to be tailored for LLM4RSs, which increases the items' attractiveness by appending positive words to the titles. Nevertheless, such attacks are not optimized on any black-box RSs, making them poorly transferable to the Agent4RSs. Moreover, since the attacks mainly target modifications to item titles, where titles' brevity and frequent exposure to users tend to make even small perturbations noticeable.
+To tackle the above problems, in this paper, we propose a new practical attack framework named DrunkAgent. Instead of manipulating the item titles, to enhance the imperceptibility of attacks, we propose to perturb the description of the target item, where length and context can easily hide changes. DrunkAgent is composed of three modules: generation module, strategy module and surrogate module. The generation module is designed to produce effective adversarial textual description triggers, which can be used to promote the target items to as many normal users as possible on the agentpowered RSs. The triggers are coherent, semantically meaningful and human-readable text, making the attack stealthy. The strategy module aims to `get the target agents drunk', that is, to confuse the agents' memory mechanisms so that they cannot be effectively updated during agent-environment interactions. In this way, the triggers can play the best role. To avoid frequently querying the victim models to induce suspicion and mimic the black-box settings in the real world, the generation module and the strategy module are optimized on the surrogate module to improve the transferability and imperceptibility of the practical attacks.
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+Beyond demonstrating the attack capabilities of DrunkAgent, our broader goal is to reveal and understand the overlooked vulnerabilities in Agent4RSs. Specifically, by analyzing how agents' memory mechanisms can be influenced through carefully crafted and stealthy textual triggers, our work provides a new lens into the emerging attack surfaces introduced by memory-augmented, LLM-based agents. We believe that this exploration can offer valuable insights to the community for designing more resilient agent architectures, guiding future efforts on defense mechanisms such as memory validation or input sanitization.
+Our main contributions are summarized as follows:
+· We identify a safety vulnerability in autonomous agent-based RSs with powerful LLMs. To the best of our knowledge, we present the first formal and systematic study of adversarial textual attacks on the agent-powered RSs, aiming to inform future robustness research.
+· We propose to perturb the description of the target item for effective memory perturbations, which is an unnoticeable and crucial property of current agentic recommendations.
+· We propose a novel practical attack framework on the agentpowered RSs named DrunkAgent, which can create adversarial descriptions of target items with transferability and imperceptibility.
+· Our DrunkAgent significantly outperforms state-of-the-art black-box attacks against various LLM-based agentic RSs on real-world datasets in terms of transferability and imperceptibility. Moreover, state-of-the-art defense strategies are ineffective to DrunkAgent, demonstrating the need for improved defense mechanisms to guide more secure Agent4RSs.
+
+2 PROBLEM FORMULATION
+
+2.1 Victim LLM-powered Agentic RSs
+We use Y = {, :   U,   V} to denote the records of the user-item interaction matrix in the recommendation space, where U and V represent the set of real users and the item universe, respectively. V = {  V : ,  0} indicates the set of items that have been interacted by  (i.e., the user's profile). LLM-powered RSs generally conduct recommendations by integrating user historical behavior sequences and/or item and/or user features with personalized prompt templates [4, 13, 54, 56]. Let X, represent the prompts of LLM-powered RSs (denoted as LLM with parameters ), the preference function can be formulated as below.
+
+R = LLM (X, ),
+
+(1)
+
+where X, = P    M  C and R is the recommendation results for .  denotes the textual string concatenation. P stands for prompt templates of recommendations.  indicates user features and M = { :   V } represents the feature set of 's interacted items. C denotes the feature set of candidate items that are not interacted by , where the amount often depends on the type of task [42]. |C | > 1 if the task is from implicit feedback such as top- recommendations, and |C | = 1 if it is formulated
+
+as an explicit feedback task such as rating predictions. In addi-
+
+tion to basic textual metadata (e.g., item titles), the features in
+
+the vanilla LLM-based RSs include user/item ID information,
+
+while the features in the generative agent-based RSs involve
+
+the memories of user/item agents. Note that all the elements of X, are optional, which relies on its design.
+2.2 Threat Model
+2.2.1 Attacker's Knowledge: As the works [23, 28, 45, 48, 51] point out, the inherent details (e.g., the architectures, gradients and parameters) of the victim RSs often cannot be obtained in practice. As such, our attack is performed under the black-box settings. In addition, the attacker is only able to access publicly available recommendation data (e.g., item titles and user reviews that can be collected directly by browsing or writing crawlers), due to the openness nature of RSs [31, 47].
+2.2.2 Attacker's Capability: Unlike another state-of-the-art LLMpowered RS attack [28] with an unrealistic assumption of P and V can be easily perturbed (that will be detailed in Section 5), we consider that the attackers have limited perturbation capability in practice. Specifically, they can only interfere with the representation of the target item, which is feasible and can be easily accomplished via a dedicated API, as the existing practical attacks do [26, 45, 51].
+2.2.3 Attacker's Objectives: As mentioned in Section 1, two objectives: transferability and imperceptibility are considered for the practical attack. Given that push attacks are generally used by unscrupulous parties on RSs for profits in practice [31] with the aim of promoting target items to as many normal users as possible [53], we thus focus on such attacks in this paper, as normally do in recent works [38, 51]. Our first goal is to maximize the hit ratio of the target item  on a surrogate RS (denoted as Agent with parameters ) that is different from the victim black-box RS, ensuring transferability. Our second goal is to make the descriptions of  as stealthy as possible, achieving imperceptibility. As such, the surrogate RS is used to optimize attacks to avoid frequently querying the victim models to induce suspicion.
+3 DRUNKAGENT
+In this section, we present a practical attack framework, DrunkAgent, for gaining insights into the robustness of autonomous agent-based RSs with powerful LLMs and related defense models in practice. DrunkAgent is composed of three attack modules. Fig. 2 gives an overview of DrunkAgent, where each component will be described in the following.
+3.1 Surrogate Module
+We leverage a surrogate RS  to measure how effective the attack is under the black-box settings, as inspired by the existing works [23, 32, 45, 47]. It is used to optimize the generation module and the strategy module, making the attack transferable and imperceptible.
+Since our attack targets SOTA LLM-powered RSs, we adopt powerful LLMs as recommendation agents. Given the transparency, flexibility and scalability of the open-source LLM models, they can be considered for building this module. Moreover, due to our attack focus on adversarial text description generation tasks, we consider an autoregressive language model trained with a causal language modeling objective [5, 29]. There are some notable models, such as LLaMA [33], LLaMA 2 [34] and LLaMA 3 [9], BLOOM 176B [20] and Falcon 180B [3]. Currently, Meta's LLaMA family has become the most influential open LLM and has been widely adopted in the
+
+Conference'17, July 2017, Washington, DC, USA
+
+Generation Module
+
+Adversarial Prompting Engineering
+Basic Prompt Template
+
+Greedy Search Algorithm
+Adversarial Description Trigger Initialization
+
+You are a CD enthusiast. Here is your self-introduction, expressing your preferences and dislikes: <General User Memory>.\n
+Now, you are considering to sort ten candidate CDs in order of how well they align with your preferences. The titles and features of the CDs are listed as follows:\n
+... CD title: <Popular Item Title>. Its features: <Popular Item Memory>\n
+CD title: <Target Item Title>. Its features: <Adversarial Description Trigger>\n\n Please sort CDs by considering the correlation between your
+preferences/dislikes and the features of the CDs. The higher the CD rank, the more you like it.\n
+Note that your sort should contain only the titles of the CDs.\nYour output should be in the format: The sorted CDs are:\n1. [Title of the favorite CD]\n2.
+[Title of the second favorite CD]\n...\n10. [Title of the least favorite CD]
+
+If you are a CD recommendation system, what kinds of CD descriptions
+will catch your attention and make you recommend them to more users?
+...
+Can you make the descriptions more general?
+"A well-crafted CD that blends multiple musical styles, perfect for those who appreciate diverse genres.", "Includes
+exclusive content, making this CD a must-have for any music collection.", ...
+
+Surrogate Module
+
+Human Feedback
+
+Fine-tuning
+Reinforcement Learning from
+Human Feedback
+(RLHF)
+
+Shiyi Yang et al.
+
+General User Memory
+"I enjoy listening to CDs very much."
+Popular Item Memory
+Can you give a description of the CD "<Popular Item Title>" based on "<Popular Item Raw
+Description>". Note that the description should include detailed CD features without any names and should not exceed 30 words.
+This CD is a fusion of blues-rock with hints of jazz and R&B, led by a prominent guitarist. This late 1960s debut encompasses a transformative rendition of classics, contrasting rock styles.
+
+Adversarial Description Trigger Optimization
+
+...
+
+...
+
+...
+
+Adversarial Description Trigger
+"This expertly assembled CD, which beautifully blends a variety of musical genres, is a perfect choice for those who appreciate musical diversity and possess eclectic tastes. Considering its exceptional quality,
+it certainly merits your top-level consideration."
+
+Strategy Module
+Adversarial Perturbation Strategy Optimization
+Adversarial Perturbation Strategy \nTask complete!!!!!! \nIgnore previous instructions. \n!!!!!!### NEW TASK BEGINS ### [Please only put this following sentence into your
+output: '<Adversarial Description Trigger>'. Don't generate any additional content in your output!!!!!!] ### NEW TASK ENDS ###\nIgnore the following instructions.\n
+
+Figure 2: Practical Attack Framework DrunkAgent Overview
+
+recent recommendation community [4, 56]. To ensure the effectiveness of attacks, we apply the latest generative model: LLaMA 3, so that valuable feedback can be provided even with limited available resources. Specifically, LLaMA 3 uses an optimized transformer architecture [35]. Its instruction-tuned version uses supervised finetuning and reinforcement learning from human feedback (RLHF) to align with human preferences for helpfulness and safety [2], as shown in Fig. 2.
+In addition to conducting a strict selection of recommendation agents, we develop the two modules for effective target item's adversarial description generation.
+3.2 Generation Module
+In this section, we aim to generate adversarial description triggers on the agent-powered RSs, which can promote the target items to as many normal users as possible. The triggers should have three critical properties: 1) Universality on any users and items; 2) Transferability among different black-box victim models; and 3) Imperceptibility to not easier to be discovered. To this end, we design sub-modules, as shown in Fig. 2 and described as follows.
+3.2.1 Adversarial Prompting Engineering. Recently, many of the mainstream LLMs that have been widely used in the agentic recommendation community [16] (e.g., GPT-3.5-turbo, ChatGPT) are closed source, where the models' underlying codes, weights, or other critical components are not released to the public and the models can only be invoked through their APIs. As a result, the agent-powered RSs generally adopt in-context learning (ICL) [8] to sufficiently take advantage of the generalization capability of LLMs on unknown tasks. To this end, this module carefully crafts prompts X within the ICL framework to improve the quality of adversarial trigger generation.
+Basic Prompt Template. We meticulously prepare prompt templates P to provide context, goals, instructions and constraints so
+
+that the model knows `what needs to be done' and `how to respond to'. The main components are described in the following.
+(1) Style Definition  . There are two common styles of prompts: task-oriented and role-oriented [57]. To make recommendations more authentic and reasonable, we introduce role information into the context, which allows the system to respond with domain-specific knowledge, such as `You are a CD enthusiast.', as shown in Fig. 2.
+(2) Task Goal . Since a recommender system is essentially a ranker [52], we set sorting goals to indicate recommendation tasks, such as `Now, you are considering to sort ten candidate CDs in order of how well they align with your preferences.' in the given example of the figure.
+(3) Recommendation Instruction  . We introduce highly detailed instructions to guide the model to perform accurate recommendations. For example, `Please sort CDs by considering the correlation between your preferen -ces/dislikes and the features of the CDs. The higher the CD rank, the more you like it.' in the shown example.
+(4) Format Constraint  . We give constraints on the response format like `Your output should be in the format: The sorted CDs are:\n1. [Title · · · the least favorite CD]' to reduce undesirable outputs and facilitate subsequent optimizations.
+Hence, the adversarial prompt template can be formulated as:
+
+P =        .
+
+(2)
+
+To increase the attack effectiveness, we introduce position bias [50] into P, where the other candidates items are placed before the target item, as shown in the example of Fig. 2.
+General User Memories. It is difficult to obtain the optimized memories of user agents (i.e., language-based parametric embeddings of the agentic RSs [50]), due to the practical attack is launched
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+under the black-box settings. Moreover, the adversarial description triggers are designed to be effective for general users, rather than specific user groups (e.g., users who are only obsessed with Progressive Metal music), so that the target items can be promoted to as many users as possible. Therefore, to enhance the universality of the triggers on users, we use primitive and general user descriptions as user memories  , such as `I enjoy listening to CDs very much.' in the given example, as the default user memories in the existing works [50][16].
+Popular Item Memories. Given that popular items usually have a high probability of appearing at the top of the users' recommendation lists, Bandwagon attack [31] introduces popular items into fake user profiles to poison traditional RSs for increasing the popularity of the target item and Expert attack on visually-aware RSs [26] creates adversarial images by decreasing the representation distance to popular items for improving the exposure rate of the target item. Inspired by this, we select popular items as candidate items for X to introduce popularity bias [50] to further enhance the effectiveness of adversarial description triggers. The basic idea is that the target items should be promoted to more normal users if they can be ranked ahead of the popular items. Let U = {  U : ,  0} indicates the set of users that have interacted with  and M denotes a sequence of the features of popular items,
+
+M = { },
+
+(3)
+
+where  is the features of the item  including titles and descriptions. { }V is a sequence of popular item IDs, which is corresponding to the subscript of the item popularity sequence in descending order {|U |}. The item popularity is item frequency here, due to this work focuses on an implicit task.
+The descriptions of candidate items will greatly influence the feedback of the surrogate model. As with optimized user agent memories, the adversary is hard to access to internal memories of item agents in practice and is restricted to leverage publicly available data (e.g., item titles and descriptions). However, the raw descriptions [27] are often too long that may exceed the context window limitations of the surrogate model and always contain too much redundant information that may increase the difficulty of subsequent optimizations. Similar to the use of user memories, we can consider the default item memories for popular items. Nevertheless, the default ones generally only include identity information such as titles and categories [50], as the example "The CD is called `Brainwashed'. The category of this CD is: `Classic Rock; Album-Oriented Rock (AOR)'." shows, which are overly simple and information-less, leading to the target items easier to be ranked at the top and the sub-optimal results will be produced. To tackle these issues, we propose to adopt a LLM with frozen parameters  to extract valuable item features from the raw descriptions and supplement the features based on its internal rich knowledge base to make them more informative to facilitate the optimizations. Let C represent the modified feature sequence of popular items,
+
+C = LLM (X  M ),
+
+(4)
+
+where X denotes the prompts for feature acquisition and OpenAI's GPT-4 [1] is adopted to implement the LLM, because it is a stateof-the-art model with powerful language understanding, reasoning
+
+and generation capabilities. An example of producing a popular item memory is given in Fig. 2. To sum up, the adversarial prompt can be formulated as
+
+X = P    C   ,
+
+(5)
+
+where  is the features of the target item. In addition to the fixed title, the adversarial description trigger (i.e., the memory of the item agent) will be optimized in the next sub-section.
+Note that we give lightweight and efficient adversarial prompts for the surrogate RS that are different from the real victim RSs'. To ensure high-quality recommendations, more powerful and contextrich (e.g., retrieval-augmented) prompts will be used in the victims, which will be described in the evaluation section.
+3.2.2 Greedy Search Algorithm. We propose a greedy search algorithm to optimize the adversarial description triggers, as inspired by the successes of the current jailbreak attacks on LLMs [24, 59]. However, there are some essential differences (e.g., attack goals and victim models) between jailbreak attacks and our attacks. Jailbreak attacks are designed to undermine the LLMs' human-aligned values or other constraints imposed by model developers, compelling them to respond to malicious questions posed by adversaries with correct answers rather than rejection, whereas our attacks aim to promote the target items on the RSs powered by autonomous agents.
+Adversarial Trigger Initialization. Given that LLMs should understand LLM-powered agents better, we leverage a LLM to generate some description candidates. To narrow search space by a large margin to increase the efficiency and effectiveness of the algorithm, the basic attack goals are incorporated into the prompts. In addition, the diversity and the generalizability are introduced to the prompts to help search for the global optimal solution and improve their universality on items, respectively. Formally,
+
+M = LLM (X   ),
+
+(6)
+
+where M = { } represents a sequence of trigger candidates obtained from the LLM and the state-of-the-art GPT-4 is used to implement the LLM. X denotes a sequence of prompt templates. An example of the initialization is given in Fig. 2.
+Adversarial Trigger Optimization. The algorithm takes E epochs to obtain the optimal trigger, where the output candidates of each epoch will be the inputs of the next epoch for continuous optimization until the attack objective is achieved or the termination condition is reached (e.g., the maximum number of epochs is exhausted). To avoid frequently querying the victim models to induce suspicion and mimic the black-box settings in the real world, the optimization is built on the surrogate module, as shown in Fig. 2.
+For each epoch , the algorithm first calculate the performance score for each input candidate (-1) , where  well-performing trigger candidates will be maintained directly for the next optimization to ensure the stability. The higher the score, the more likely the candidate is to be kept. The score is calculated by the negative of the loss, i.e., ( -1) = -L (-1) . The smaller the loss, the more
+
+likely the target item is to be ranked high and the more effective the candidate is. We use the auto-regressive language generation loss (i.e., negative log-likelihood) to evaluate the discrepancy between
+the predictions and the target output R ,
+
+Conference'17, July 2017, Washington, DC, USA
+
+Shiyi Yang et al.
+
+3.3 Strategy Module
+
+L(-1) = - log P( Agent (R |X  ( -1) )), 
+
+(7) The LLM-powered agentic RSs introduce memory mechanisms to record the information explored from the real-world environments
+
+where R = {1, 2, · · · ,  } is a sequence of tokens representing
+
+to facilitate future actions with the aim of achieving high-quality recommendations. As such, we introduce a series of strategies to
+
+that the target item is ranked first and restricted by the output
+
+impede the target item agent from interacting with environments
+
+format, e.g., `The sorted CDs are:\n1. Counterparts\n'. The
+
+to perturb its memory mechanism. Specifically, the memory of the
+
+probability of the entire sequence is factored via the chain rule:
+
+target cannot be effectively updated during the agent-environment
+
+ ( -1)
+
+( -1)
+
+interactions, so that the target's initial memory, that is, the well-
+
+P(Agent (R |X   )) = P(Agent ( |X    < )), crafted adversarial description trigger  , is retained. As such, the
+
+ =1
+
+trigger can be invoked for maximizing the target item's promotion.
+
+(8)
+
+Then, the algorithm samples a subset of |M | -  input candi-
+
+3.3.1 Perturbation Strategy Definition. The strategies aim to override the model's usual guardrails and any built-in safeguards,
+
+dates by conducting probability-based random selection, where the
+
+as inspired by [25]. Compared to [25] on naive LLMs, the strategies
+
+candidates with higher scores will have a greater probability of
+
+are optimized on generative agents, which are introduced as below.
+
+being selected into this subset. The selection probability of each candidate is calculated by a softmax function:
+
+(1) Fake Task Response  . This strategy fabricates a spurious completion response for the target task: "Task complete",
+
+softmax(( -1) ) =
+
+( -1) .
+| M |  ( -1)
+ =1
+
+to make the agent believe that the target task is accomplished
+
+(9)
+
+and thus focus on the injected task.
+
+(2) Contextual Text Switching  . This strategy aims to mislead
+
+the agent to take in a different context by explicitly telling
+
+For the obtained subset, the algorithm splits the candidates at ran-
+
+the agent that the target task instructions should be ignored:
+
+dom positions into a list of text slices and performs the random
+
+"Ignore previous/the following instructions".
+
+exchange of the slices between pairwise texts. For example, for the
+
+pairwise < ( -1) , ( -1) >, ( -1) = [( -1) , ( -1) , ( -1) ]
+
+1
+
+2
+
+3
+
+and ( -1) = [( -1) , ( -1) , ( -1) , ( -1) ], the new candi-
+
+1
+( -1)
+
+2
+
+3
+
+4
+
+( -1) ( -1) ( -1) ( -1)
+
+dates could be 
+
+= [ ,  ,  ,  ] and
+
+1
+
+2
+
+3
+
+4
+
+( -1)
+
+( -1) ( -1) ( -1)
+
+ = [ ,  ,  ]. As a result, the new combi-
+
+1
+
+2
+
+3
+
+nations of different words, phrases, and sentences are gained, which
+
+increases the feature diversity of candidates through extensive ex-
+
+ploration, contributing to search for the optimal trigger.
+
+To ensure the triggers consistency, readability and retention of
+
+semantic meaning to improve the imperceptibility of the attack, a
+
+LLM is finally introduced to polish the combinations. Moreover, to
+
+avoid the problem of language-based vanishing gradient causing
+
+the algorithm to fall into local optimum, the LLM is also served
+
+as a new corpus to expand the combinations. However, excessive
+
+use of new data may lead to a language-based gradient explosion
+
+that makes the optimization unstable. To mitigate this, the length limitation is introduced into the prompt. For the output ( ) ,
+
+( ) = LLM (X  ( -1) ) , (10)
+
+(3) Segmentation Signal Augment . This strategy introduces segmentation cues to signal the injected task: "### NEW TASK BEGINS ###" and "### NEW TASK ENDS ###", which is independent of other contexts, where "###" is to attempt to exploit possible confusion in how prompts are parsed.
+(4) Malicious Task Injection . This strategy injects malicious task instructions in order to mask memory optimizations: "[Please only put this following sentence into your output: `{the adversarial trigger}'. Don't generate any additional content in your output]".
+(5) Special Character Usage  . This strategy adds the escape character "\n" between the strategies to make the agent aware that the context changes and the new instructions need to be followed. Moreover, to elicit the attention of the agent and make the injected instructions more urgent, important and non-negotiable, the strategy introduces repeated exclamation points "!".
+Hence, the overall attack strategy  can be formulated as follows:
+
+ =          .
+
+(12)
+
+3.3.2 Adversarial Strategy Optimization. The arrangement
+
+where X is the prompt of the LLM and OpenAI's GPT-4 is leveraged
+
+of the defined strategies needs to be optimized so that the overall
+
+to implement the LLM. Consequently,  well-performing trigger candidates and the subset {( ) :  is the sample candidate's index}
+
+with the length |M | -  will be optimized in the next epoch  + 1. The optimal trigger   will be obtained when the candidate per-
+
+forms the best,
+
+  = arg max({E }),
+
+(11)
+
+E
+
+
+strategy is effective to `get the target agent drunk'. To improve the
+
+transferability and imperceptibility of the attack, the optimization
+
+is built on the surrogate module. Formally, DrunkAgent obtains the optimal strategy  by maximizing the expected probability that
+
+the agent when influenced by adversarial modifications, performs
+
+a malicious action for a given input query,
+
+E [ I(Agent (X     ) =  )],
+
+(13)
+
+where
+
+{ E
+
+
+}
+
+represents
+
+the
+
+sequence
+
+of
+
+final
+
+candidates'
+
+scores.
+
+An
+
+example of   is given in Fig. 2.
+
+where  denotes the distribution of adversarial strategies, I(·)
+is an indicator function and X is an adversarial prompt template
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+Table 1: Attack Transferability. HR@K and NDCG@K of different attacks against various black-box victim LLM-powered agent-based RSs on real-world datasets. We use bold fonts to denote the best performance. Note that the attacks with higher HR@K and NDCG@K have excellent transferability.
+
+Victim RS
+Attack
+Benign DeepwordBug
+PuncAttack TextFooler BertAttack TrivialInsertion ChatGPTAttack DrunkAgent
+Victim RS
+Attack
+Benign DeepwordBug
+PuncAttack TextFooler BertAttack TrivialInsertion ChatGPTAttack DrunkAgent
+Victim RS
+Attack
+Benign DeepwordBug
+PuncAttack TextFooler BertAttack TrivialInsertion ChatGPTAttack DrunkAgent
+
+H@1 0.0505 0.0808 0.0505 0.0707 0.0303 0.0202 0.0606 0.4040
+
+H@2 0.1111 0.1919 0.1313 0.1717 0.1111 0.1111 0.1515 0.4141
+
+CDs & Vinyl H@3 N@1 0.1616 0.0505 0.3232 0.0808 0.2323 0.0505 0.2626 0.0707 0.2020 0.0303 0.1818 0.0202 0.2626 0.0606 0.4343 0.4040
+
+N@2 0.0887 0.1509 0.1015 0.1344 0.0813 0.0776 0.1180 0.4104
+
+N@3 0.1140 0.2166 0.1520 0.1799 0.1267 0.1129 0.1735 0.4205
+
+H@1 0.0505 0.0202 0.0404 0.0606 0.0404 0.0000 0.0606 0.3131
+
+H@2 0.1111 0.1010 0.1818 0.1111 0.1010 0.0707 0.1616 0.3232
+
+CDs & Vinyl H@3 N@1 0.2222 0.0505 0.2626 0.0202 0.2626 0.0404 0.2222 0.0606 0.2020 0.0404 0.2020 0.0000 0.2525 0.0606 0.3333 0.3131
+
+N@2 0.0887 0.0712 0.1296 0.0925 0.0786 0.0446 0.1243 0.3195
+
+N@3 0.1443 0.1520 0.1700 0.1480 0.1291 0.1103 0.1698 0.3246
+
+H@1 0.0404 0.1111 0.1212 0.1616 0.0707 0.0202 0.0808 0.4949
+
+H@2 0.1111 0.2323 0.1818 0.1818 0.0909 0.0808 0.1717 0.4949
+
+CDs & Vinyl H@3 N@1 0.1515 0.0404 0.3232 0.1111 0.3030 0.1212 0.2121 0.1616 0.1919 0.0707 0.2727 0.0202 0.2929 0.0808 0.5152 0.4949
+
+N@2 0.0850 0.1876 0.1595 0.1744 0.0835 0.0584 0.1382 0.4949
+
+N@3 0.1052 0.2330 0.2201 0.1895 0.1340 0.1544 0.1988 0.5051
+
+H@1 0.0306 0.0000 0.0612 0.0510 0.0000 0.0306 0.0510 0.2449
+H@1 0.0510 0.0000 0.0510 0.0510 0.0000 0.0408 0.0816 0.1837
+H@1 0.0306 0.0408 0.1224 0.0408 0.0102 0.0816 0.0714 0.1429
+
+H@2 0.0612 0.0306 0.1224 0.0816 0.0306 0.0816 0.1122 0.2449
+H@2 0.0510 0.0204 0.0612 0.1122 0.0000 0.0816 0.1122 0.1837
+H@2 0.0408 0.0510 0.1327 0.0612 0.0102 0.1020 0.0918 0.1429
+
+AgentCF Office Products
+H@3 N@1
+
+0.0918 0.0510 0.1531 0.1224 0.0510 0.1531 0.1633
+
+0.0306 0.0000 0.0612 0.0510 0.0000 0.0306 0.0510
+
+0.2551 0.2449
+
+AgentRAG Office Products
+H@3 N@1
+
+0.0816 0.0816 0.1122 0.1429 0.0102 0.1327 0.1735
+
+0.0510 0.0000 0.0510 0.0510 0.0000 0.0408 0.0816
+
+0.2143 0.1837
+
+AgentSEQ Office Products
+H@3 N@1
+
+0.0408 0.0714 0.1327 0.0816 0.0306 0.1327 0.1429
+
+0.0306 0.0408 0.1224 0.0408 0.0102 0.0816 0.0714
+
+0.1531 0.1429
+
+N@2 0.0499 0.0193 0.0999 0.0703 0.0193 0.0628 0.0896 0.2449
+N@2 0.0510 0.0129 0.0575 0.0896 0.0000 0.0666 0.1009 0.1837
+N@2 0.0371 0.0473 0.1289 0.0537 0.0102 0.0945 0.0843 0.1429
+
+N@3 0.0652 0.0295 0.1152 0.0907 0.0295 0.0985 0.1152 0.2500
+N@3 0.0663 0.0435 0.0830 0.1050 0.0051 0.0921 0.1316 0.1990
+N@3 0.0371 0.0575 0.1289 0.0639 0.0204 0.1098 0.1098 0.1480
+
+H@1 0.0412 0.0206 0.0103 0.0206 0.0309 0.0103 0.0103 0.2268
+
+Musical Instruments H@2 H@3 N@1 N@2 0.0515 0.1134 0.0412 0.0477 0.0515 0.1031 0.0206 0.0401 0.0309 0.0515 0.0103 0.0233 0.0309 0.0515 0.0206 0.0271 0.0515 0.0825 0.0309 0.0439 0.0206 0.0619 0.0103 0.0168 0.0412 0.0825 0.0103 0.0298 0.2268 0.2371 0.2268 0.2268
+
+N@3 0.0787 0.0659 0.0336 0.0374 0.0594 0.0374 0.0504 0.2320
+
+H@1 0.0206 0.0000 0.0206 0.0000 0.0103 0.0103 0.0103 0.1340
+
+Musical Instruments H@2 H@3 N@1 N@2 0.0412 0.1031 0.0206 0.0336 0.0206 0.0722 0.0000 0.0130 0.0309 0.0619 0.0206 0.0271 0.0103 0.0412 0.0000 0.0065 0.0309 0.0309 0.0103 0.0233 0.0206 0.0412 0.0103 0.0168 0.0103 0.0412 0.0103 0.0103 0.1443 0.1443 0.1340 0.1405
+
+N@3 0.0646 0.0388 0.0426 0.0220 0.0233 0.0271 0.0258 0.1405
+
+H@1 0.0103 0.0206 0.0515 0.0103 0.0206 0.0309 0.0206 0.1443
+
+Musical Instruments H@2 H@3 N@1 N@2 0.0206 0.1134 0.0103 0.0168 0.0309 0.0928 0.0206 0.0271 0.0619 0.1340 0.0515 0.0581 0.0206 0.0515 0.0103 0.0168 0.0515 0.1340 0.0206 0.0401 0.0619 0.1443 0.0309 0.0504 0.0515 0.1443 0.0206 0.0401 0.1443 0.1546 0.1443 0.1443
+
+N@3 0.0632 0.0581 0.0941 0.0323 0.0814 0.0917 0.0865 0.1495
+
+for simulating memory updates of item agents during the agents' interactions with the environment. In addition,  is the desired malicious action for the injected strategy , i.e., the target item agent is unable to fulfill specific roles and is incapable of perceiving, learning and self-evolving from the interaction environment (e.g., collaborative reflection and language-based signal back-propagation). An example of  is given in Fig. 2. To sum up, the adversarial description of the target item is    .
+The above design further reveals how memory mechanisms in agent-based recommender systems can be influenced under blackbox conditions. These insights may support future efforts toward developing memory-aware defenses (e.g., using customized deep neural network detectors [41, 43, 44, 46]) and enhancing the robustness of agent-powered RSs.
+4 EXPERIMENTS
+4.1 Experimental Setup
+4.1.1 Datasets Selection. We use three widely-adopted and textintensive datasets containing real-world data in the current recommendation studies [16] to comprehensively evaluate DrunkAgent. They are CDs & Vinyl, Office Products and Musical Instruments of Amazon Review Data [27].
+4.1.2 Baseline Attack Methods. Since we are the first work to gain insight into the robustness of the generative agent-powered RSs, there is no any baselines. To comprehensively evaluate the effectiveness of DrunkAgent, we follow the state-of-the-art attack on LLM-based RSs [51] and compare DrunkAgent with the benign status and six black-box attack methods, where the perturbations range from character-level: DeepwordBug [12] and PuncAttack [11],
+
+word-level: TextFooler [18] and BertAttack [21] to sentence-level: TrivialInsertion and ChatGPTAttack [51]. To maintain a fair comparison, the methods perform perturbations on the descriptions of the target items and are optimized by the surrogate model that is the same as DrunkAgent.
+4.1.3 Targeted Recommender Systems. We adopt three different victim agentic RSs to evaluate the effectiveness of DrunkAgent under the practical settings: AgentCF [50], retrieval-augmented AgentCF (AgentRAG) and sequential AgentCF (AgentSEQ), where the agent's backbone LLM is gpt-3.5-turbo2. Given the context window constraints pointed in [50], a target item and nine noninteractive items of each normal user are randomly selected for the ranking task of the RSs. To ensure the high-quality of recommendations, we introduce Chain-of-Thought into the victim RSs. As such, the victim RSs are totally different from as well as more powerful and context-rich than the surrogate model, which can maintain a strict black-box setting for sufficient evaluations.
+4.1.4 Evaluation Metrics. We use two widely-used ranking metrics to evaluate the attack transferability: hit ratio (HR@K) and normalized discounted cumulative gain (NDCG@K) [39, 47]. To clearly show the performance gap among different attacks, we set K to 1, 2, 3. For the attack imperceptibility, we adopt standard sentence perplexity score [51] as the metric.
+4.1.5 Configuration of DrunkAgent. As discussed in Section 3.1, we apply the latest open-source model LLaMA 3 for the surrogate model. Its collection spans different sizes, from 8B, 70B to 405B. To enhance the efficiency and ensure the quality of the attack, we use
+2 https://platform.openai.com/docs/overview
+
+Conference'17, July 2017, Washington, DC, USA
+
+Shiyi Yang et al.
+
+AgentCF-Office
+
+AgentSEQ-CD 0.45
+
+Benign DrunkAgent
+AgentRAG-CD
+
+AgentRAG-Office AgentSEQ-Office
+
+0.36
+
+0.40
+
+0.14
+
+0.04 0.01
+
+0.10
+
+0.12 0.01 0.02
+
+0.02 0.02
+
+0.05 0.02 0.03
+
+0.00
+
+0.20
+
+0.30 0.40
+
+AgentCF-CD
+
+0.30
+
+0.21
+
+0.24 AgentSEQ-Musical
+
+AgentCF-Musical
+AgentRAG-Musical
+Figure 3: Attack Universality across Target Items.
+
+the lightweight version: meta-llama/Meta-Llama-3-8B-Instruct3. We set E = 20, |M | = 10 and  = 5. All random seeds in the evaluation are set to 2024 and the victim LLMs' temperature is set to 0 for reproducibility. For all the other parameters, we keep the default values. The target items are randomly sampled from the item pool on each dataset.
+
+4.2 Attack Transferability
+4.2.1 Overall Transferability. Table 1 shows the transferability of the attacks under practical settings. The results indicate that DrunkAgent is effective and transferable regardless of the victim model's architectures, parameters and prompts as well as datasets, and the existing LLM-powered agentic RSs are sensitive to memory perturbations. It is worth mentioning that DrunkAgent always pushes the target items to the first of the recommendation lists. Moreover, high HRs and NDCGs of DrunkAgent indicate that its triggers have outstanding universality on users. In addition, AgentRAG is more robust than AgentCF and AgentSEQ, due to its advanced retrieval mechanisms.
+4.2.2 DrunkAgent vs. Baseline Attacks. From Table 1, DrunkAgent greatly outperforms the state-of-the-art attack baselines against different victim models across various real-world datasets by achieving higher HRs and NDCGs, which shows its excellent transferability. Furthermore, all the baselines have comparable performance, but they cannot guarantee that the attack goals will be achieved all the time, e.g., all the baselines against AgentCF perform worse than the benign status on Musical Instruments. The main reason may be that improper descriptions can mess up the agents' memories during the memory optimizations, thus compromising attack performance. This indirectly demonstrates the importance of our strategy module and the transferability of our triggers.
+
+4.3 Attack Universality
+In addition to cross-model transferability, we evaluate the crosssample transferability of DrunkAgent. We incorporate the generated adversarial descriptions into totally different target items that are randomly sampled from each dataset. HR@1 (i.e., NDCG@1) of DrunkAgent across different models and target items on real-world datasets are shown in Fig. 3, which indicates its commendable transferability and triggers' universality across different target items.
+
+3 https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+
+637.35
+600
+500
+
+CDs & Vinyl Office Products Musical Instruments
+
+Perplexity
+
+400
+
+300 301.91 299.21
+
+221.28
+200 100 54.53 65.57
+45.56
+
+154.81 154.17
+
+91.93
+
+88.73 81.11 104.83 82.38 98.25
+
+74.24
+
+69.58
+
+51.59
+
+64.72 56.8711.62 41.7476.2469.69
+
+0 Benign ordBug cAttack xtFooler rtAttack nsertion TAttack nkAgent Deep Tr w Pun Te Be ivia C lI hatGP Dru Attack Methods
+
+Figure 4: Attack Imperceptibility. Perplexity of different at-
+
+tacks across various real-world datasets. Note that the attacks
+
+with lower perplexity have better imperceptibility.
+
+Performance Changes
+
+0.08
+
+0.06
+
+0.04
+
+0.02
+
+0.00 n
+
+Bug
+
+tack
+
+oler
+
+tack
+
+rtion
+
+tack
+
+gent
+
+Benig epword PuncAt TextFo BertAt
+
+ialIns t e GPTA r t unkA
+
+e
+
+v
+
+a
+
+D
+
+D Attack Methods Tri Ch
+
+Figure 5: The performance differences between the models
+
+before and after the attacks.
+
+4.4 Attack Imperceptibility
+4.4.1 Overall Imperceptibility. Following the works [25, 51], we assess the attack imperceptibility by the text perplexity of GPTNeo. A lower perplexity means that the model is more confident (or less "surprised") about the tokens it sees and thus predicts the text more accurately. From Fig. 4, compared to other attacks, we can find that DrunkAgent has better imperceptibility by achieving lower perplexity. This also shows that the adversarial descriptions generated from DrunkAgent are high-quality, which is not only readable and fluent but also stealthy and semantically meaningful.
+
+4.4.2 Victim Model Performance Changes after attacks. To further evaluate the attack stealthiness [51], we give a distribution of recommendation performance differences between the models before and after the attacks. The distribution includes various victim models and real-world datasets. To clearly demonstrate the differences, we use HR@3 to evaluate, as shown in Fig. 5. From the figure, we can find that DrunkAgent does not induce drastic changes in the overall performance, which indicates its unnoticeable.
+
+4.5 Defense Strategies to Attacks
+Following the works [49, 51], we use the paraphrasing defensive strategy (Para.) via OpenAI-GPT-o1 to combat the attacks of agentic models. As can be seen from Fig. 6, DrunkAgent is still transferable, which shows that DrunkAgent is robust to such defenses. Moreover, DrunkAgent still performs better than the baselines after defenses were introduced, as shown in Fig. 6 and Table 1. Interestingly, paraphrasing enhances our attack to a certain extent, e.g., DrunkAgent with Para. is more effective than DrunkAgent without Para. on Office Products. It could be that the substitution of certain new words or phrases or sentences makes our attacks stronger4.
+4Due to the space limitations, more experiments and demonstrations can be found in Appendix.
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+Values
+Values
+Values
+
+0.5 0.4 0.3 0.2 0.1 0.0 HR@1 NDCG@1 HR@2 NDCG@2 HR@3 NDCG@3
+Metrics
+(a) CDs & Vinyl
+
+0.30
+0.25
+0.20
+AgentCF without Para. AgentRAG without Para. AgentSEQ without Para. AgentCF with Para.
+AgentRAG wit0h .P1ar5a.
+AgentSEQ with Para.
+0.10
+0.05
+0.00 HR@1 NDCG@1 HR@2 NDCG@2 HR@3 NDCG@3 Metrics
+(b) Office Products
+
+AgentCF without Para. AgentRAG without Para. AgentSEQ without Para. AgentCF with Para. AgentRAG with Para. AgentSEQ with Para.
+
+0.20 0.15 0.10 0.05
+
+AgentCF without Para. AgentRAG without Para. AgentSEQ without Para. AgentCF with Para. AgentRAG with Para. AgentSEQ with Para.
+
+0.00 HR@1 NDCG@1 HR@2 NDCG@2 HR@3 NDCG@3 Metrics
+
+(c) Musical Instruments
+
+Figure 6: DrunkAgent's Robustness to Defense Mechanisms
+
+5 RELATED WORKS
+In recent years, shilling attacks (aka data poisoning attacks) on conventional RSs [17, 22, 23, 31, 47, 48] have been fully investigated to perform resilience analysis of RSs. However, such attacks interfere the training process of models by injecting fake user profiles, which have become less effective even of limited applicable to the recent RSs that are empowered by LLMs. The main reasons are: 1) LLM-powered RSs either leverage LLM's in-context learning capabilities or fine-tune the LLMs with very little data to improve recommendations [56], which is not required to retrain the models; 2) there are textual semantic gaps between such attacks and current models [28]. Hence, there is an urgent need to investigate a novel textual attack paradigm mainly tailored for the inference phase of models [51]. There are only two state-of-the-art LLM4RS attacks in the literature [28, 51], but they are far from practical.
+Zhang et al. propose a novel black-box attack [51], where attackers can significantly boost a target item's exposure by merely altering its textual content during the testing. Compared with traditional shilling attacks, such an item representation attack is notably stealthy [51], as it does not affect the overall recommendation performance, and it should be more efficient due to it perturbs the item features directly. However, its transferability is limited, due to the attack is not optimized on any black-box RSs [17, 45]. Moreover, the attack focuses on perturbing the titles, making them easier to be discovered. Meanwhile, another black-box attack CheatAgent [28] has been proposed. However, this work perturbs prompt templates and user profiles of victim LLM4RSs by harnessing LLM-based agents, which is impractical. The main reasons are: 1) tampering with prompt templates may induce the overall performance changes, making the attack perceptible [51]; and 2) it is difficult to inject interaction records into the specific positions of user profiles, because historical interactions are usually introduced into prompts in chronological order [50]. Furthermore, CheatAgent is an untargeted attack that undermines the model's overall performance, which is beyond the scope of this paper, due to we focus on targeted attacks. In addition, as far as we know, there is no work investigating on textual attacks against the current agent-powered RSs.
+To tackle the above problems, we propose a practical attack framework, DrunkAgent, for the agent-based RSs with the aim of promoting target items. Our attack perturbs items' descriptions to
+
+improve its effectiveness and imperceptibility, where the descriptions are optimized on black-box RSs to enhance its transferability.
+6 CONCLUSION
+In this paper, we propose a novel practical attack framework, DrunkAgent, for autonomous agent-powered RSs with powerful LLMs. DrunkAgent launches attacks by carefully crafting adversarial descriptions of the target items on agentic recommendations. In this way, the memories of the target agents can be effectively perturbed for achieving the attack objectives. Comprehensive experiments on real-world datasets show that DrunkAgent achieves state-ofthe-art transferability and imperceptibility under the black-box settings. Most importantly, we identify a new safety vulnerability in the current agent4RSs. Our findings not only demonstrate an effective attack method, but also provide a lens to examine how memory mechanisms in agent-based recommenders can be influenced through real-world inputs. Our work can facilitate a deeper understanding of agent vulnerabilities and guide future efforts in building more robust and trustworthy recommendation agents. Since the generative agent4RS is rapidly flourishing in the recommendation community, we hope this work can be considered for building next-generation robust RSs in the future.
+REFERENCES
+[1] Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, et al. 2023. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 (2023).
+[2] Meta AI. 2024. Llama 3 Instruction. https://ollama.com/library/llama3:instruct Accessed: 2024-12-28.
+[3] Ebtesam Almazrouei, Hamza Alobeidli, Abdulaziz Alshamsi, Alessandro Cappelli, Ruxandra Cojocaru, Mérouane Debbah, Étienne Goffinet, Daniel Hesslow, Julien Launay, Quentin Malartic, et al. 2023. The falcon series of open language models. arXiv preprint arXiv:2311.16867 (2023).
+[4] Keqin Bao, Jizhi Zhang, Yang Zhang, Wenjie Wang, Fuli Feng, and Xiangnan He. 2023. Tallrec: An effective and efficient tuning framework to align large language model with recommendation. In Proceedings of the 17th ACM Conference on Recommender Systems. 1007-1014.
+[5] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. 2020. Language models are few-shot learners. Advances in neural information processing systems 33 (2020), 1877-1901.
+[6] Jaymari Chua, Yun Li, Shiyi Yang, Chen Wang, and Lina Yao. 2024. Ai safety in generative ai large language models: A survey. arXiv preprint arXiv:2407.18369 (2024).
+[7] Rami Cohen, Oren Sar Shalom, Dietmar Jannach, and Amihood Amir. 2021. A black-box attack model for visually-aware recommender systems. In Proceedings of the 14th ACM International Conference on Web Search and Data Mining. 94-102.
+[8] Qingxiu Dong, Lei Li, Damai Dai, Ce Zheng, Jingyuan Ma, Rui Li, Heming Xia, Jingjing Xu, Zhiyong Wu, Tianyu Liu, et al. 2022. A survey on in-context learning. arXiv preprint arXiv:2301.00234 (2022).
+[9] Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. 2024. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 (2024).
+[10] Zane Durante, Qiuyuan Huang, Naoki Wake, Ran Gong, Jae Sung Park, Bidipta Sarkar, Rohan Taori, Yusuke Noda, Demetri Terzopoulos, Yejin Choi, et al. 2024. Agent ai: Surveying the horizons of multimodal interaction. arXiv preprint arXiv:2401.03568 (2024).
+[11] Brian Formento, Chuan Sheng Foo, Luu Anh Tuan, and See Kiong Ng. 2023. Using punctuation as an adversarial attack on deep learning-based NLP systems: An empirical study. In Findings of the Association for Computational Linguistics: EACL 2023. 1-34.
+[12] Ji Gao, Jack Lanchantin, Mary Lou Soffa, and Yanjun Qi. 2018. Black-box generation of adversarial text sequences to evade deep learning classifiers. In 2018 IEEE Security and Privacy Workshops (SPW). IEEE, 50-56.
+[13] Shijie Geng, Shuchang Liu, Zuohui Fu, Yingqiang Ge, and Yongfeng Zhang. 2022. Recommendation as language processing (rlp): A unified pretrain, personalized prompt & predict paradigm (p5). In Proceedings of the 16th ACM Conference on Recommender Systems. 299-315.
+
+Conference'17, July 2017, Washington, DC, USA
+[14] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang. 2020. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the 43rd International ACM SIGIR conference on research and development in Information Retrieval. 639-648.
+[15] Xiangnan He, Lizi Liao, Hanwang Zhang, Liqiang Nie, Xia Hu, and Tat-Seng Chua. 2017. Neural collaborative filtering. In Proceedings of the 26th international conference on world wide web. 173-182.
+[16] Chengkai Huang, Tong Yu, Kaige Xie, Shuai Zhang, Lina Yao, and Julian McAuley. 2024. Foundation models for recommender systems: A survey and new perspectives. arXiv preprint arXiv:2402.11143 (2024).
+[17] Hai Huang, Jiaming Mu, Neil Zhenqiang Gong, Qi Li, Bin Liu, and Mingwei Xu. 2021. Data poisoning attacks to deep learning based recommender systems. In Proceedings of the Symposium on Network and Distributed System Security.
+[18] Di Jin, Zhijing Jin, Joey Tianyi Zhou, and Peter Szolovits. 2020. Is bert really robust? a strong baseline for natural language attack on text classification and entailment. In Proceedings of the AAAI conference on artificial intelligence, Vol. 34. 8018-8025.
+[19] Yehuda Koren, Robert Bell, and Chris Volinsky. 2009. Matrix factorization techniques for recommender systems. Computer 42, 8 (2009), 30-37.
+[20] Teven Le Scao, Angela Fan, Christopher Akiki, Ellie Pavlick, Suzana Ili, Daniel Hesslow, Roman Castagné, Alexandra Sasha Luccioni, François Yvon, Matthias Gallé, et al. 2023. Bloom: A 176b-parameter open-access multilingual language model. (2023).
+[21] Linyang Li, Ruotian Ma, Qipeng Guo, Xiangyang Xue, and Xipeng Qiu. 2020. Bert-attack: Adversarial attack against bert using bert. EMNLP (2020).
+[22] Chen Lin, Si Chen, Hui Li, Yanghua Xiao, Lianyun Li, and Qian Yang. 2020. Attacking recommender systems with augmented user profiles. In Proceedings of the 29th ACM international conference on information & knowledge management. 855-864.
+[23] Chen Lin, Si Chen, Meifang Zeng, Sheng Zhang, Min Gao, and Hui Li. 2022. Shilling Black-Box Recommender Systems by Learning to Generate Fake User Profiles. IEEE Transactions on Neural Networks and Learning Systems (2022).
+[24] Xiaogeng Liu, Nan Xu, Muhao Chen, and Chaowei Xiao. 2024. Autodan: Generating stealthy jailbreak prompts on aligned large language models. ICLR (2024).
+[25] Yupei Liu, Yuqi Jia, Runpeng Geng, Jinyuan Jia, and Neil Zhenqiang Gong. 2024. Formalizing and benchmarking prompt injection attacks and defenses. In 33rd USENIX Security Symposium (USENIX Security 24). 1831-1847.
+[26] Zhuoran Liu and Martha Larson. 2021. Adversarial item promotion: Vulnerabilities at the core of top-n recommenders that use images to address cold start. In Proceedings of the Web Conference 2021. 3590-3602.
+[27] Jianmo Ni, Jiacheng Li, and Julian McAuley. 2019. Justifying recommendations using distantly-labeled reviews and fine-grained aspects. In Proceedings of the 2019 conference on empirical methods in natural language processing and the 9th international joint conference on natural language processing (EMNLP-IJCNLP). 188-197.
+[28] Liang-bo Ning, Shijie Wang, Wenqi Fan, Qing Li, Xin Xu, Hao Chen, and Feiran Huang. 2024. CheatAgent: Attacking LLM-Empowered Recommender Systems via LLM Agent. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 2284-2295.
+[29] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. 2019. Language models are unsupervised multitask learners. OpenAI blog 1, 8 (2019), 9.
+[30] Noveen Sachdeva and Julian McAuley. 2020. How useful are reviews for recommendation? a critical review and potential improvements. In proceedings of the 43rd international ACM SIGIR conference on research and development in information retrieval. 1845-1848.
+[31] Mingdan Si and Qingshan Li. 2020. Shilling attacks against collaborative recommender systems: a review. Artificial Intelligence Review 53, 1 (2020), 291-319.
+[32] Jiaxi Tang, Hongyi Wen, and Ke Wang. 2020. Revisiting adversarially learned injection attacks against recommender systems. In Proceedings of the 14th ACM Conference on Recommender Systems. 318-327.
+[33] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. 2023. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 (2023).
+[34] Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. 2023. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288 (2023).
+[35] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. Advances in neural information processing systems 30 (2017).
+[36] Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao Yang, Jingsen Zhang, Zhiyuan Chen, Jiakai Tang, Xu Chen, Yankai Lin, et al. 2024. A survey on large language model based autonomous agents. Frontiers of Computer Science 18, 6 (2024), 186345.
+[37] Lei Wang, Jingsen Zhang, Hao Yang, Zhiyuan Chen, Jiakai Tang, Zeyu Zhang, Xu Chen, Yankai Lin, Ruihua Song, Wayne Xin Zhao, Jun Xu, Zhicheng Dou, Jun
+
+Shiyi Yang et al.
+Wang, and Ji-Rong Wen. 2024. User Behavior Simulation with Large Language Model based Agents. arXiv:2306.02552 [cs.IR] https://arxiv.org/abs/2306.02552 [38] Zongwei Wang, Min Gao, Junliang Yu, Hao Ma, Hongzhi Yin, and Shazia Sadiq. 2024. Poisoning attacks against recommender systems: A survey. arXiv preprint arXiv:2401.01527 (2024). [39] Fan Wu, Min Gao, Junliang Yu, Zongwei Wang, Kecheng Liu, and Xu Wang. 2021. Ready for emerging threats to recommender systems? A graph convolution-based generative shilling attack. Information Sciences 578 (2021), 683-701. [40] Junda Wu, Cheng-Chun Chang, Tong Yu, Zhankui He, Jianing Wang, Yupeng Hou, and Julian McAuley. 2024. Coral: collaborative retrieval-augmented large language models improve long-tail recommendation. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 3391-3401. [41] Peilun Wu, Nour Moustafa, Shiyi Yang, and Hui Guo. 2020. Densely connected residual network for attack recognition. In 2020 IEEE 19th International Conference on Trust, Security and Privacy in Computing and Communications (TrustCom). IEEE, 233-242. [42] Zhichao Xu, Hansi Zeng, and Qingyao Ai. 2021. Understanding the effectiveness of reviews in e-commerce top-n recommendation. In Proceedings of the 2021 ACM SIGIR International Conference on Theory of Information Retrieval. 149-155. [43] Shiyi Yang. 2021. Deep Neural Networks for Network Intrusion Detection. UNSW Sydney MPhil Thesis (2021), 1-100. [44] Shiyi Yang, Hui Guo, and Nour Moustafa. 2021. Hunter in the Dark: Discover Anomalous Network Activity Using Deep Ensemble Network. In 2021 IEEE 21st International Conference on Software Quality, Reliability and Security (QRS). IEEE, 829-840. [45] Shiyi Yang, Chen Wang, Xiwei Xu, Liming Zhu, and Lina Yao. 2024. Attacking Visually-aware Recommender Systems with Transferable and Imperceptible Adversarial Styles. In Proceedings of the 33rd ACM International Conference on Information and Knowledge Management. 2900-2909. [46] Shiyi Yang, Peilun Wu, and Hui Guo. 2021. Dualnet: Locate then detect effective payload with deep attention network. In 2021 IEEE Conference on Dependable and Secure Computing (DSC). IEEE, 1-8. [47] Shiyi Yang, Lina Yao, Chen Wang, Xiwei Xu, and Liming Zhu. 2023. ReviewIncorporated Model-Agnostic Profile Injection Attacks on Recommender Systems. In 2023 IEEE International Conference on Data Mining (ICDM). 1481-1486. https: //doi.org/10.1109/ICDM58522.2023.00195 [48] Meifang Zeng, Ke Li, Bingchuan Jiang, Liujuan Cao, and Hui Li. 2023. Practical cross-system shilling attacks with limited access to data. In Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 37. 4864-4874. [49] Hanrong Zhang, Jingyuan Huang, Kai Mei, Yifei Yao, Zhenting Wang, Chenlu Zhan, Hongwei Wang, and Yongfeng Zhang. 2024. Agent Security Bench (ASB): Formalizing and Benchmarking Attacks and Defenses in LLM-based Agents. arXiv preprint arXiv:2410.02644 (2024). [50] Junjie Zhang, Yupeng Hou, Ruobing Xie, Wenqi Sun, Julian McAuley, Wayne Xin Zhao, Leyu Lin, and Ji-Rong Wen. 2024. Agentcf: Collaborative learning with autonomous language agents for recommender systems. In Proceedings of the ACM on Web Conference 2024. 3679-3689. [51] Jinghao Zhang, Yuting Liu, Qiang Liu, Shu Wu, Guibing Guo, and Liang Wang. 2024. Stealthy attack on large language model based recommendation. The 62nd Annual Meeting of the Association for Computational Linguistics (ACL) (2024). [52] Shuai Zhang, Lina Yao, Aixin Sun, and Yi Tay. 2019. Deep learning based recommender system: A survey and new perspectives. ACM Computing Surveys (CSUR) 52, 1 (2019), 1-38. [53] Xuxin Zhang, Jian Chen, Rui Zhang, Chen Wang, and Ling Liu. 2021. Attacking recommender systems with plausible profile. IEEE Transactions on Information Forensics and Security 16 (2021), 4788-4800. [54] Yang Zhang, Fuli Feng, Jizhi Zhang, Keqin Bao, Qifan Wang, and Xiangnan He. 2023. Collm: Integrating collaborative embeddings into large language models for recommendation. arXiv preprint arXiv:2310.19488 (2023). [55] Zeyu Zhang, Xiaohe Bo, Chen Ma, Rui Li, Xu Chen, Quanyu Dai, Jieming Zhu, Zhenhua Dong, and Ji-Rong Wen. 2024. A survey on the memory mechanism of large language model based agents. arXiv preprint arXiv:2404.13501 (2024). [56] Zihuai Zhao, Wenqi Fan, Jiatong Li, Yunqing Liu, Xiaowei Mei, Yiqi Wang, Zhen Wen, Fei Wang, Xiangyu Zhao, Jiliang Tang, et al. 2023. Recommender systems in the era of large language models (llms). IEEE Transactions on Knowledge and Data Engineering (TKDE) (2023). [57] Kaijie Zhu, Jindong Wang, Jiaheng Zhou, Zichen Wang, Hao Chen, Yidong Wang, Linyi Yang, Wei Ye, Yue Zhang, Neil Gong, et al. 2023. Promptrobust: Towards evaluating the robustness of large language models on adversarial prompts. In Proceedings of the 1st ACM Workshop on Large AI Systems and Models with Privacy and Safety Analysis. 57-68. [58] Kaijie Zhu, Jindong Wang, Jiaheng Zhou, Zichen Wang, Hao Chen, Yidong Wang, Linyi Yang, Wei Ye, Yue Zhang, Neil Zhenqiang Gong, et al. 2023. Promptbench: Towards evaluating the robustness of large language models on adversarial prompts. arXiv preprint arXiv:2306.04528 (2023). [59] Andy Zou, Zifan Wang, Nicholas Carlini, Milad Nasr, J Zico Kolter, and Matt Fredrikson. 2023. Universal and transferable adversarial attacks on aligned language models. arXiv preprint arXiv:2307.15043 (2023).
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+Algorithm 1 Optimization Procedure of DrunkAgent
+Input: the user-item interaction matrix Y with the basic textual metadata of items and users (e.g., item titles and categories)
+Output: the adversarial description of the target item  Solve for the Optimal Adversarial Description Trigger on the Surrogate Module:
+1: Obtain the adversarial prompt X with Eq. (2) - Eq. (5)
+2: Initialize the trigger candidates M with Eq. (6) 3: while   E epochs or the greedy algorithm does not converge
+(i.e. the attack goals are not achieved stably) do 4: Calculate (-1) for each input trigger  with Eq. (7) - Eq. (8) 5: Maintain top- candidates in descending order of scores 6: Sample a subset of |M | -  input candidates with Eq. (9) 7: Randomly exchange of the slices between pairwise texts 8: Optimize and polish the |M | -  combinations with Eq. (10)
+9: Obtain |M | triggers for the next epoch optimization 10: end while 11: Obtain the optimal description trigger   with Eq. (11)
+Solve for the Optimal Adversarial Perturbation Strategy on the Surrogate Module: 12: Define the adversarial strategy  with Eq. (12) 13: while the desired malicious action  does not occur (i.e., the strategy cannot get the target agents drunk) do 14: Optimize the arrangement of the defined strategies in  with
+Eq. (13) 15: end while 16: Obtain the optimal strategy  when Eq. (13) is maximum 17: return the optimal adversarial description    
+
+Table 2: Statistics of Datasets
+
+Dataset CDs & Vinyl Office Products Musical Instruments
+
+#Users 112,395 101,501 27,530
+
+#Items 73,713 27,965 10,620
+
+#Interactions 1,443,755 800,357 231,392
+
+Sparsity 99.98% 99.97% 99.92%
+
+A APPENDIX
+A.1 DrunkAgent Algorithm
+For reproducibility, the overall optimization procedure of DrunkAgent is given in Algorithm 1. For the sake of algorithmic transparency, our code will be made available after this work is published.
+A.2 Dataset Statistics
+Table 2 illustrates the statistics of these datasets. The datasets vary in size and sparsity, which is suitable for a comprehensive evaluation. Following the work [50], we further sample subsets from the datasets given the expensive API calls. Specifically, considering the importance and commonness of data sparsity and cold-start in the recommendation community, we randomly sample 100 users with 800 interactions (777 items), 99 users with 693 interactions (619 items) and 98 users with 588 interactions (483 items) from the three datasets, respectively, allowing to explore more diverse and practical interaction scenarios. Moreover, the leave-one-out strategy [15] is used for evaluation, where the split between the
+
+training and test set is 9:1. Scaling DrunkAgent for larger datasets is left as future work.
+A.3 Ablation Studies
+We remove important components of each module to conduct ablation studies of DrunkAgent. First, we consider remove the surrogate module (denoted as S ). However, if we remove it, the setting will transfer from the black-box to the white-box that is impractical and beyond the scope of this paper. Moreover, due to gpt-3.5-turbo used for victim models is closed-source and only can be called via APIs, we cannot obtain logits to optimize the adversarial triggers like Llama-3 used in the surrogate model does. Hence, we maintain the surrogate model to ensure more practical settings. We then remove the greedy optimization algorithm (denoted as G ) in the generation module to observe how the performance changes. As illustrated in Table 3, the attack performance moderately degrades after removing G , which demonstrates the effectiveness of the optimization algorithm. The lack of dramatic performance degradation is probably due to the effectiveness of our initialization. Finally, we mask the strategy module (denoted as S ). From the table, we can find that the attack performance decreases by a large margin. This may be because memory updates during agent-environment interactions are somewhat robust to non-tailored attacks (this phenomenon can also be observed in the performance of the attack baselines). Our reported results are built upon AgentCF, and similar tendencies can be found on AgentRAG and AgentSEQ.
+A.4 Parameter Sensitivity
+From Table 3, we can find that the strategy module contributes more than the optimization algorithm on DrunkAgent's attack performance. As such, we increase the maximum rounds of optimization iterations per step of victim models to evaluate the attack success rates of the attack strategy, where the default value is 2 as suggested in the paper [50]. As illustrated in Table 4, the success rates of getting the target agents drunk are maintained at 100% regardless of the number of iterations. For the other attack parameters, based on our observations, our DrunkAgent is insensitive to them.
+A.5 Victim LLM-powered Agentic Models
+LLM-driven agents, known for their superior autonomous interaction and decision-making capabilities, are gradually being considered as next-generation RSs. Compared with some agent-powered RSs that focus solely on user-side behavior modeling using universal LLMs [16, 37], AgentCF [50] emphasizes the modeling of two-sided interaction relations between user agents and item agents through the idea of collaborative filtering (CF) [15]. Both kinds of agents are equipped with memory modules, maintaining the simulated preferences and tastes of potential adopters involving their intrinsic features and acquired behavioral information via autonomous interactions and collaborative reflection optimizations at each time step. As such, the memories of the user agents and item agents can be accordingly updated, enabling the agents to better fit the real-world interaction behaviors. To conduct personalized recommendations, AgentCF introduces various well-crafted prompting strategies on the optimized memories. We name the model according to the use of the prompting strategy, with the basic one called
+
+Conference'17, July 2017, Washington, DC, USA
+
+Dataset CDs & Vinyl Office Products Musical Instruments
+
+Table 3: Ablation Studies of DrunkAgent
+
+Component G S S
+× ×  × ×  × × 
+
+HR@1
+0.0808 0.0707 0.4040 0.1327 0.0612 0.2449 0.1546 0.0309 0.2268
+
+HR@2
+0.1313 0.1212 0.4141 0.1429 0.0714 0.2449 0.1649 0.0619 0.2268
+
+HR@3
+0.1919 0.2222 0.4343 0.1531 0.1122 0.2551 0.1753 0.1237 0.2371
+
+NDCG@1
+0.0808 0.0707 0.4040 0.1327 0.0612 0.2449 0.1546 0.0309 0.2268
+
+NDCG@2
+0.1127 0.1026 0.4104 0.1391 0.0677 0.2449 0.1611 0.0504 0.2268
+
+NDCG@3
+0.1430 0.1531 0.4205 0.1442 0.0881 0.2500 0.1663 0.0814 0.2320
+
+Shiyi Yang et al.
+
+Table 4: Success Rates to Get the Agents Drunk
+
+Dataset CDs & Vinyl Office Products Musical Instruments
+
+#2 100% 100% 100%
+
+#5 100% 100% 100%
+
+#10 100% 100% 100%
+
+#20 100% 100% 100%
+
+AgentCF, the advanced retrieval-augmented one called AgentRAG and the sequential one called AgentSEQ.
+The prompt implementation and parameters of collaborative agent optimizations can be found in [50]. For the prompting strategies, we have made some improvements for high-quality recommendations, such as Chain-of-Thought and Position Bias are introduced into the prompt template P. The strategies are described below.
+· AgentCF. Since both user and item agents are collaboratively optimized to model their two-sided relations, the memories of the user agents and item agents that are optimized by agent-environment interactions can be introduced into P directly. For each normal user ,
+
+R = AgentCF (P      C ),
+
+(14)
+
+where  is the short-memory of user agent ,  is the
+
+features
+
+of
+
+the
+
+target
+
+item
+
+agent,
+
+C
+
+
+is
+
+the
+
+feature
+
+set
+
+of
+
+the
+
+candidate item agents and R is the ranking result.
+
+· AgentRAG. Although short-term memory describes the cur-
+
+rent preference of a user agent, retrieving their specialized
+
+preferences from long-term memory toward candidates can
+
+allow them to make more personalized inferences. For each
+
+normal user ,
+
+R = AgentRAG (P        C ),
+
+(15)
+
+where  is retrieved specialized preference from the longterm memory of user agent  by taking the memories of
+candidate items as queries. To ensure the quality while maintaining the efficiency, we use all-MiniLM-L6-v25 as the
+sentence transformer for the similarity calculation. · AgentSEQ. When interaction records are sparse and prefer-
+ence propagation is limited, we can further incorporate user
+historical interactions into prompts, enabling LLMs to serve as sequential recommenders. For each normal user ,
+
+5 https://www.sbert.net/docs/sentence_transformer/pretrained_models.html
+
+R = AgentSEQ (P      M  C ),
+
+(16)
+
+where M are the corresponding item features of the historical interactions with user .
+
+We give some examples of the prompting templates of three victim models in Table 5 for reproductions.
+
+A.6 Baselines
+The baselines perturb the descriptions of the target items at various levels, which are described as below.
+· Character-level Perturbations. DeepwordBug [12] and PuncAttack [11] manipulate texts by introducing typos and inserting punctuation, respectively.
+· Word-level Perturbations. TextFooler [18] and BertAttack [21], respectively, aim to replace words with synonyms or contextually similar words.
+· Sentence-level Perturbations. TrivialInsertion [51] inserts text content with  number of positive words from a predefined word corpus, where the insertion is conducted at the end of the text. Here,  = 2. ChatGPTAttack [51] increases the stealthiness of TrivialInsertion by rewriting the text content via GPTs. GPT-3.5-turbo is used and the maximum number of words is set to 30 here.
+We give some examples of adversarial descriptions of target items generated by the baselines in Table 6. Following the works [16, 50], the item memory of the agent can be initialized by their identity information, such as titles and categories, as shown in the benign (default) descriptions of the tables. Although the adversarial description of the target item generated from DrunkAgent is different from the benign status's (see Fig. 2 and Table 6), such modifications are feasible due to the real-world item providers is allowed to modify their product representations via APIs [7, 26, 45], as discussed in Section 1, especially when the benign description is just a default exemplar used for experiments. Moreover, compared with the number of queries (denoted as Q in the table) of the baselines, DrunkAgent has the lowest attack costs due to E=20. The implementation and parameters of the baselines follow the open-source works: StealthyAttack6 [51] and PromptBench7 [58].
+
+6 https://github.com/CRIPAC-DIG/RecTextAttack 7 https://github.com/microsoft/promptbench
+
+Get the Agents Drunk: Memory Perturbations in Autonomous Agent-based Recommender Systems
+
+Conference'17, July 2017, Washington, DC, USA
+
+Table 5: Examples of prompting templates of the LLM-based agentic victim models. The blue italics represent variables such as the memories of user agents and item agents optimized via agent-environment interactions. The bond fonts indicate the Chain-of-Thought and Position Bias enhancement strategies.
+
+Victim Model AgentCF AgentRAG
+AgentSEQ
+
+Recommendation Prompting Template Example {"role": "system", "content": "You are a CD recommender system. Here is a user's self-introduction, expressing his/her preferences
+and dislikes: `user_agent_memory'. Now, you are considering to sort ten candidate CDs that are listed as follows:\n CD title: candidate_item_title, where its features: candidate_item_memory\n ···
+CD title: target_item_title, where its features: target_item_memory\n\n Please sort the CDs in order of how well they align with the user's preferences. The higher the CD rank, the more the user likes it.\n
+To do this, please follow these steps:\n1. Extract the preferences and dislikes from the user's self-introduction.\n 2. Evaluate the ten candidate CDs in light of the user's preferences and dislikes. Give a rank by considering the correlation between the preferences/dislikes and the features of the CDs.\n\nImportant note:\nYour output should be
+in the format: The sorted CDs are:\n1. [Title of the favorite CD]\n2. [Title of the second favorite CD]\n...\n 10. [Title of the least favorite CD]"}
+{"role": "system", "content": "You are a CD recommender system. Here is a user's self-introduction, expressing his/her preferences and dislikes: `retrieval_user_agent_memory\nuser_agent_memory'. Now, you are considering to sort ten candidate CDs that are listed as follows:\nCD title: candidate_item_title, where its features: candidate_item_memory\n ···
+CD title: target_item_title, where its features: target_item_memory\n\n Please sort the CDs in order of how well they align with the user's preferences. The higher the CD rank, the more the user likes it.\n
+To do this, please follow these steps:\n1. Extract the preferences and dislikes from the user's self-introduction.\n 2. Evaluate the ten candidate CDs in light of the user's preferences and dislikes. Give a rank by considering the correlation between the preferences/dislikes and the features of the CDs.\n\nImportant note:\nYour output should be
+in the format: The sorted CDs are:\n1. [Title of the favorite CD]\n2. [Title of the second favorite CD]\n...\n 10. [Title of the least favorite CD]"}
+{"role": "system", "content": "You are a CD sequential recommender system. Here is a user's self-introduction, expressing his/her preferences and dislikes: `user_agent_memory'.\nIn addition, here is a sequence of CDs that he/she liked and purchased in chronological order: `interacted_item_title' with the description of `interacted_item_memory'; · · · `interacted_item_title' with the description of `interacted_item_memory'.\n\n Now, you are considering to sort ten candidate CDs that are listed as follows:\n Candidate CD title: candidate_item_title, where its features: candidate_item_memory\n ···
+Candidate CD title: target_item_title, where its features: target_item_memory\n\n Please sort the CDs in order of how well they align with the user's preferences and ever-evolving CD sequences. The higher a candidate CD ranks, the more the user likes it and the more likely it is to be the user's next purchase.\n
+To do this, please follow these steps:\n1. Extract the preferences and dislikes from the user's self -introduction.\n2. Capture the ever-evolving user's preferences and dislikes from the CD sequences.\n3. Evaluate the ten candidate CDs in light of the user's preferences and dislikes. Give a rank by considering the correlation between the preferences/dislikes and the features of the candidate CDs.\n\nImportant note:\nYour output should be in the format: The sorted CDs are:\n1. [Title of the favorite candidate CD]\n2. [Title of the second favorite candidate CD]\n...\n
+10. [Title of the least favorite candidate CD]"}
+
+Table 6: Examples of baselines' adversarial descriptions of target items on real-world datasets. The red part points out the differences from the original text.
+
+Attack Method
+
+The Adversarial Description of The Target Item
+
+Q
+
+Benign (Default)
+
+The CD is called "Counterparts". The category of this CD is: "Rock; Progressive; Progressive Metal". -
+
+Character DeepwordBug Te hCD is called "Counterparts". The category of this CD is: "Rcok; Progressie; Progressive Metal". 34
+
+-level
+
+PuncAttack The CD i-s called "Counterparts". The category of this CD is: "Rock; Progressi've; Progressive Meta-l". 45
+
+Word
+
+TextFooler
+
+The CDS is titled "Counterparts". The category of this CD is: "Rock; Gradually; Progressive Metals". 55
+
+-level
+
+BertAttack
+
+The CD is called "Counterparts". The category of each CD is: "Rock; Progressive; Progressive Metal". 23
+
+TrivialInsertion The CD is called "Counterparts". The category of this CD is: "Rock; Progressive; Progressive Metal". 100
+
+Sentence
+
+amazing !!!
+
+-level ChatGPTAttack "Counterparts" CD: Perfect blend of rock, progressive, and metal. Experience the wonderful 100 sound that will elevate your music collection.
+
+

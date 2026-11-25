@@ -1,0 +1,747 @@
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+Yubo Shu
+School of Computer Science, Fudan University
+Shanghai, China ybshu20@fudan.edu.cn
+
+Haonan Zhang
+School of Computer Science, Fudan University
+Shanghai, China hnzhang23@m.fudan.edu.cn
+
+Hansu Gu
+Seattle United States hansug@acm.org
+
+arXiv:2308.09904v2 [cs.IR] 17 Oct 2023
+
+Peng Zhang
+Shanghai Key Laboratory of Data Science, Fudan University Shanghai, China zhangpeng_@fudan.edu.cn
+
+Tun Lu
+School of Computer Science, Fudan University
+Shanghai, China lutun@fudan.edu.cn
+
+Dongsheng Li
+Microsoft Research Asia Shanghai, China
+dongshengli@fudan.edu.cn
+
+Ning Gu
+School of Computer Science, Fudan University
+Shanghai, China ninggu@fudan.edu.cn
+
+ABSTRACT
+The rapid evolution of the web has led to an exponential growth in content. Recommender systems play a crucial role in HumanComputer Interaction (HCI) by tailoring content based on individual preferences. Despite their importance, challenges persist in balancing recommendation accuracy with user satisfaction, addressing biases while preserving user privacy, and solving coldstart problems in cross-domain situations. This research argues that addressing these issues is not solely the recommender systems' responsibility, and a human-centered approach is vital. We introduce the RAH (Recommender system, Assistant, and Human) framework, an innovative solution with LLM-based agents such as Perceive, Learn, Act, Critic, and Reflect, emphasizing the alignment with user personalities. The framework utilizes the Learn-Act-Critic loop and a reflection mechanism for improving user alignment. Using the real-world data, our experiments demonstrate the RAH framework's efficacy in various recommendation domains, from reducing human burden to mitigating biases and enhancing user control. Notably, our contributions provide a human-centered recommendation framework that partners effectively with various recommendation models.
+Corresponding author.
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. XXX'24, 2024, Singapore © 2024 Association for Computing Machinery. ACM ISBN 978-1-4503-XXXX-X/18/06. . . $15.00 https://doi.org/XXXXXXX.XXXXXXX
+
+1 INTRODUCTION
+Recommender systems hold a pivotal role in Human-Computer Interaction (HCI) by personalizing content and services to individual preferences, thereby enriching user experience and aiding in decision-making [29]. They efficiently filter information, effectively managing overload and assisting users in locating relevant content. However, there remain notable challenges. Striking the delicate balance between recommendation accuracy and user satisfaction is a fundamental objective [12, 20]. Addressing biases in recommendations [4] and empowering users with control while preserving their privacy remains a pressing concern [8]. Additionally, simplifying transitions into new domains and alleviating user burden stand as ongoing challenges [41], typically revealing themselves as a cold start problem.
+While much of the pioneering research primarily focuses on addressing challenges from the perspective of the recommender system, we argue that solving these issues is not the sole responsibility of recommender systems. Addressing challenges from the human perspective presents a new and promising angle. For instance, employing advanced user modeling techniques to capture user behavior and preferences allows for a delicate balance between user satisfaction and recommendation precision. Engaging users in a cooperative manner within the recommendation process enables them to define profiles, tailor preferences, and provide explicit feedback. This not only helps mitigate biases but also empowers users, enhancing their control over recommendations and protecting privacy. When confronted with the cold-start challenge, understanding user preferences and effectively generalizing them in uncharted domains can significantly alleviate the burden on users entering unfamiliar territories. These human-centered strategies represent orthogonal efforts to complement existing recommender systems.
+
+XXX'24, 2024, Singapore
+We propose a comprehensive framework RAH, which stands for Recommender system, Assistant, and Human. Within this framework, the assistant acts as an intelligent and personalized helper, leveraging LLM to learn and comprehend a user's personality from their behaviors. The assistant then provides tailored actions in line with the user's personality. Operating within this framework, RAH opens up avenues to alleviate user burden, mitigate biases, and enhance user control over recommended outcomes and personal privacy. Each assistant comprises several LLM-based agents. (1) Perceive Agent: Understands and interprets information within recommendations, including item features and user feedback implications. (2) Learn Agent: Assimilates user personalities from their behaviors and stores them in personality libraries. (3) Act Agent: Executes actions based on the learned personality, such as filtering out disliked items for the user. (4) Critic Agent: Validates if the executed action aligns with the user's preferences and analyzes adjustments to reduce discrepancies. (5) Reflect Agent: Scrutinizes and optimizes the accumulated learned personality, addressing issues like duplication and conflicts. Furthermore, we enhance our proposed assistant with the Learn-Act-Critic loop and a reflection mechanism to enhance alignment with the user. Within the Learn-Act-Critic loop, the Learn, Act, and Critic Agents work collaboratively to process user actions, refining their understanding of the user's personality. This iterative loop continues until the Act Agent accurately mirrors the learned personality, ensuring alignment with user interactions validated by the Critic Agent. Meanwhile, the reflection mechanism employs the Reflect Agent to periodically revise the learned personality, maintaining an up-to-date and accurate representation.
+In our experiment, we evaluate the RAH framework using realworld data in three recommendation domains. Firstly, we observe that the Learn-Act-Critic loop and reflection mechanism significantly enhance the alignment of the assistant with the user's personality. Post-learning from users, the assistant is capable of generating proxy actions across various recommender systems, effectively reducing human burden. The second experiment demonstrates that these proxy actions lead to a notable improvement in recommender systems, achieving enhanced efficiency with reduced user interactions. Moreover, in the third part of the experiment, we investigate the use of well-learned assistants to express users' feedback on less popular items, mitigating bias within the system. Finally, we delve into additional strategies within the RAH framework to tackle human-centered concerns regarding user control. The assistant comprehends users' intentions, delivers more detailed recommended results to fulfill them, and implements control strategies to safeguard users' privacy.
+Our contributions can be summarized as follows: · We utilize LLM from the human perspective and propose a more human-centered recommendation framework, RAH. · Within the RAH framework, our assistant is designed with the Learn-Act-Critic loop and a reflection mechanism to achieve a nuanced understanding and alignment with user personalities. · Through experimentation, we validate the RAH framework's performance in addressing recommendation challenges partnered with various recommendation models, including coldstart in cross-domain recommendation, popularity bias, and user control and privacy.
+
+Yubo Shu, et al.
+2 RAH (RECSYS-ASSISTANT-HUMAN)
+2.1 Overall
+The principle behind RAH's design is taking a human-centered approach to address recommender system challenges. As shown in Figure 1, RAH comprises three components - the recommender system, the intelligent assistant, and the human user. Unlike traditional recommendations solely between systems and users, RAH introduces an assistant as an intermediary. This assistant acts as a personalized helper for the user. It utilizes large language models (LLMs) to comprehend user personalities based on their behaviors. The assistant then provides actions tailored to each user's personality.
+Within this framework, the assistant facilitates two key workflows:
+RecSysAssistantHuman This workflow focuses on the assistant filtering personalized recommendations for the end user, as shown by the solid black arrow in Figure 1.
+· Recommender systems initially generate candidate items spanning different domains such as books, movies, and games.
+· The assistant aggregates these cross-domain recommendations. It retrieves the user's learned personality from its memory. Using the user's personality profile, the assistant further filters the candidate items to create a tailored list.
+· Finally, the user receives a unified personalized set of filtered recommendations from the assistant.
+To enable effective filtering across diverse items, the assistant incorporates powerful LLMs. They provide the reasoning skills and real-world knowledge needed to comprehend various item features.
+HumanAssistantRecSys This workflow enables the assistant to learn from user feedback and accordingly tune recommender systems, as depicted by the dotted black arrow in Figure 1.
+· The user first provides feedback on items, e.g., indicating "Like" or "Dislike", and the assistant receives this initial feedback instead of the recommender systems.
+· The assistant will then start to learn the user's personality from the user's feedback.
+· Lastly, the assistant will process the user's feedback into the assistant's feedback. This allows it to selectively forward user preferences to recommender systems.
+By introducing an intermediary assistant focused on the human, RAH opens up new possibilities to address human-centered challenges. The assistant's capabilities in learning and acting upon user personalities strengthen these human-centered aspects. It facilitates key functionalities like mitigating user burden and bias while enhancing user control and privacy.
+2.2 Human-Centered Design Goals
+As stated earlier, the key goal of RAH is to address human-centered challenges in recommender systems. This subsection introduces three pivotal design goals for addressing human-centered challenges. (Our methods to achieve the design goals can be found in Section 3.3)
+Reduce User Burden. In recommendation, the user burden can come from the initial interactions in a new domain and the redundant feedback across domains. In the RAH framework, the
+
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+XXX'24, 2024, Singapore
+
+Figure 1: The figure demonstrates an overall view of the RAH framework. Core workflows can be divided into RecSysAssistantHuman(the black solid arrow) and HumanAssistantRecSys(the black dotted arrow).
+
+assistant should serve as a personal helper to reduce user burden in multiple ways. In both a single domain and across domains, the assistant should comprehend user tendencies from limited interactions and learn a unified user personality. The assistant should be able to express a unified personality to new recommender systems, alleviating the cold start issue and reducing user burden. Besides, the assistant should provide proxy feedback to refine recommender systems, minimizing unnecessary user interactions.
+Mitigate bias. Biased recommended results can cause unfairness problems and harm the user experience. In the RAH framework, we design the assistant to represent users, generating more feedback on unseen items and thus mitigating the user's selection bias.
+Enhance User Control. Considering the pattern that the recommender system actively interacts with users, it is necessary to address user control in recommendation [26, 27]. However, the majority of the current recommender systems are uncontrollable, and users can only passively receive the recommendation results [8]. Therefore, in the RAH framework, the assistant should enhance user control of the recommendation results they receive and what the recommender systems learn about them, such as non-privacy data.
+3 ASSISTANT
+In this section, we first provide an overview of the assistant's components and inner mechanisms. We then elaborate on how the assistant achieves human-centered goals.
+3.1 Components
+3.1.1 Perceive Agent. The Perceive Agent functions as the initial processing point for incoming information. Specifically, in the context of recommendations, its primary task is to augment the features associated with a given item, thereby enhancing the assistant's overall comprehension. For instance, when provided with a movie name, the Perceive agent can supply additional relevant information about the movie. As illustrated in Figure 2(a), this additional information generally consists of two components: (1) a concise description of the item, such as a plot summary of the movie,
+
+and (2) a set of specific attributes related to the item, like the movie tags. Additionally, this information enriched by the Perceive agent can further aid other agents, such as assisting the Learn Agent in extracting personalities from user behaviors.
+3.1.2 Learn Agent. The Learn Agent's mission is to identify human personalities based on interactions with items, such as "Like", "Dislike", and user ratings. Drawing inspiration from established research in recommender systems [9, 14, 24], we conceptualize human personalities as a combination of likes and dislikes. In our implementation, we input items, human feedback on items, and insights from the Perceive Agent into the Learn Agent. As depicted in Figure 2(b), the Learn Agent then generates the learned preferences in response to positive feedback and the dislikes for negative feedback. Moreover, instead of direct learning, we require the agent to address two key questions: "Why might some individuals like the item?" and "Why might some individuals dislike the item?" These responses aid the agent in filtering out invalid characteristics and promoting a more nuanced understanding of personalities.
+3.1.3 Act Agent. The Act Agent is responsible for generating actions based on the learned personality. The Act Agent receives an item's information and a user's personality as input. Subsequently, it generates a predicted action, such as "Like" when the item aligns with the user's preferences and "Dislike" when it aligns with their dislikes. As shown in Figure 2(c), we incorporate a chainof-thoughts [35] approach in our implementation: (1) hypothesizing reasons for potential preference or dislikes towards the item, (2) analyzing the likely perception of the item by a human with the given personality, (3) simulating comments on the item from the perspective of the human [15, 45], and finally, (4) predicting the human's reaction to the item, categorized as either "like" or "dislike."
+3.1.4 Critic Agent. The core function of the Critic Agent is to evaluate the correctness of actions predicted by Act Agents. A match between the predicted action and the ground truth action (true user actions) suggests that the learned personality model aligns with the user. However, in cases of incorrect predictions, the
+
+XXX'24, 2024, Singapore
+
+Yubo Shu, et al.
+
+Item: Harry Potter and the Sorcerer's Stone (Movie)
+Description: Harry Potter and the Sorcerer's Stone is the first film in the Harry Potter series based on the novels by J.K. Rowling. The story follows Harry Potter, a young wizard who discovers his magical heritage as ......
+Characteristic: Fantasy, Adventure, Family-friendly, Magic, Wizardry, Coming-of-age, British film, ...... Analyze User Comment: In the user comment, the mention of the plot being "very mysterious" suggests the user appreciates the suspense and intrigue in the narrative. However, the user also points out some imprecise plots in ......
+Analyze User Action: The user's action indicates liking.
+(a) Perceive Agent
+
+Reflection: If directly add newly learned personalities into the personality library, there will be some duplications in User Preference; there is no duplication in User Dispreference; there exit conflicts between User Preference and User Dispreference. Need Optimize Preference: Yes Need Optimize Dispreference: Yes How to Optimize Preference : Merge similar preferences to avoid redundancy How to Optimize Dispreference : Split the dispreference into more pieces to avoid conflicts. Results: {Optimized Preference} & {Optimized Dispreference}
+(e) Reflect Agent
+
+User Action on an Item
+
+Perceive Agent
+
+Enriched Features
+
+Learn Agent
+
+Failure Reason and Suggestion
+
+Candidate Personality
+
+Act Agent
+
+Assistant Action on the Item
+
+×
+Critic Agent
+
+Existing Personality
+
+Reflect Agent
+
+Optimized Personality
+
+New Personality
+
+
+Personality Library
+
+(f) The process of the assistant to learn personalities from user actions.
+
+Analyze Why Like: The movie offers an engaging storyline featuring magic, adventure, and coming-of-age themes, which could appeal to ......
+Analyze Why Dislike: Some people might not like the movie if they are not fans of fantasy or magic-themed narratives. The movie's focus on a young protagonist and his friends might not be appealing to ......
+Learned Preference: | Fantasy and Adventure themes | Mysterious and engaging plot | ......
+Learned Dispreference: | Plot loophole | ......
+(b) Learn Agent
+
+Guess Like: The user may like the movie because it is a fantasy and adventure film based on a novel, with ......
+Guess Dislike: The user may dislike the movie if they are not a fan of the specific style of British films or if they ......
+Analysis: Based on the user`s preferences for fantasy and adventure themes, the user may like the movie. However, since the user may also dislike the movie because ......
+User Comment (Predicted) : The fantasy and adventure elements kept me engaged, while ......
+User Action: { Like, Dislike or Neutral }
+(c) Act Agent
+
+Critic: The predicted action is correct
+×Critic: The predicted action is wrong
+Reasons: The possible reason is that the user's preference is too general and thus can not provide an strong evidence regarding to the item. And the dispreference can be ......
+Suggestions: Learn from the user interaction again, extract more specific preferences, and ......
+(d) Critic Agent
+
+Figure 2: The components of the assistant and their work pattern.
+
+Critic Agent not only identifies the discrepancy between predictions and labels but also analyzes potential reasons for the failure to facilitate corrective measures. As depicted in Figure 2(d), this process can be compared to a code compiler detecting a bug in code and generating an error log, enabling the programmer to identify and rectify the issue. As a result, the reasons for failure are conveyed to the Learn Agent, prompting a reevaluation of previous attempts and a relearning of the personality [32]. This iterative collaboration between the Learn, Act, and Critic Agents enhances the inference of human personality based on observed actions.
+3.1.5 Reflect Agent. The Reflect Agent's role is to periodically review the learned personality. As illustrated in Figure 2(e), the Reflect Agent's input comprises the combination of newly acquired learned personality and existing personalities. The Reflect Agent then evaluates the combined personalities, identifying duplicate likes, duplicate dislikes, and conflicts between likes and dislikes. The rationale behind employing the Reflect Agent is to ensure the rationality of the learned personalities throughout the continuous learning process.
+
+3.2 Enhance Alignment
+Given the critical importance of aligning with the user, we further implement a Learn-Act-Critic loop and a reflection mechanism to reinforce this alignment.
+Learn-Act-Critic Loop. As shown in Figure 2(f), our Learn Agent collaborates with the Act and Critic Agents in an iterative process to grasp the user's personality. Upon receiving user action or feedback, the Learn Agent extracts an initial personality as a candidate. Then, the Act Agent utilizes this candidate as input to predict the user's actual action in reverse. The Critic Agent then assesses the accuracy of this prediction. If the prediction proves inaccurate, the Critic Agent delves into the underlying reasons and offers suggestions for corrections. The Learn Agent then incorporates these suggestions, refining the candidate's personality until it meets the Critic Agent's evaluation.
+Reflecting on personality. To attain more accurate and comprehensive personalities, the assistant must seamlessly integrate the newly acquired personality with existing ones, rather than merely accumulating them. Inspired from [22], our reflection mechanism addresses issues arising from duplication and conflicts in learned personalities (preferences and aversions). Regarding duplication, the assistant can effortlessly merge duplicates without requiring additional information. However, handling conflicts may require a more delicate strategy. The Reflect Agent initiates by deconstructing
+
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+XXX'24, 2024, Singapore
+
+conflicting traits into finer details to minimize overlaps. If conflicts persist after this step, the Reflect Agent formulates queries for users, seeking their input to resolve the conflicts.
+3.3 Human-Centered Approaches
+In this section, we discuss key human-centered approaches employed within the RAH framework to reduce user burden, mitigate biases, and enhance user control.
+Reduce user burden. The assistant reduces user burden through its learning and acting capabilities. It employs the Learn Agent to learn a unified user personality from diverse domain interactions in the user's history. This unified personality is then extrapolated across domains using the Act Agent, resulting in personalized proxy feedback to instruct recommender systems. This process helps users avoid abundant interactions and thus reduces user burden. Within a single domain, the assistant utilizes powerful LLMs to comprehend user personalities with fewer actions. Across domains, this unified personality alleviates the 'cold start' issue and reduces the initial feedback burden. Additionally, the assistant can analyze user behavior across mixed domains, gradually constructing a more comprehensive personality that aligns better with the user.
+Mitigate bias. To mitigate bias, the assistant leverages the Act Agent to act on items and generate proxy feedback. Human feedback, limited by time and energy, tends to be biased towards popular or seen items. The Act Agent addresses this limitation by offering expanded feedback on less popular or unseen items, thus reducing selection bias. This broader interaction history leads to less biased recommendations from the recommender systems. The Action Agent, based on LLMs, provides nuanced feedback, such as proxy comments, allowing for a deeper understanding of explicit user preferences. This enables recommender systems to focus on genuine user preferences rather than simply fitting to the training data, thus reducing inference bias.
+Enhance user control. Different from the traditional framework consisting of users and a remote recommendation system, the assistant is designed to prioritize users' intentions and objectives. With the integration of LLMs, the assistant can operate on personal devices [30], empowering users and providing a more human-centered experience. The Act Agent plays a crucial role in enhancing user control through content filtering and tailored recommendations:
+· Control recommendation results: Equipped with LLM, the Learn Agent comprehends complex human intentions effectively. The Act Agent then filters items and tailors recommender systems to ensure recommended results align with user intentions. For instance, if a user instructs the assistant to exclude horrifying elements, the assistant filters out such movies, books, and games from recommendations and generates proxy actions such as "Dislike" for items containing these elements.
+· Control privacy: Beyond operating on personal devices, the assistant employs strategies to enhance privacy and personalized recommendations. The assistant limits data sharing with recommender platforms and employs obfuscation strategies, such as providing obfuscated proxy feedback to mask
+
+a user's identity. For example, if a patient expresses interest in a treatment-related book, the assistant could provide extra proxy feedback, such as "Likes Professional Medical Literature", to the recommender system, thereby masking the patient's identity and suggesting they might be a medical professional. In response, the recommender system might suggest a mix of treatment-focused books and advanced medical literature. The assistant then uses the Act Agent to filter out the specialist literature, presenting only the relevant treatment-related options to the user. This strategy ensures privacy while delivering personalized recommendations tailored to the user's needs.
+4 EXPERIMENTS SETTING
+In this section, we outline the specifics of our experiments and dataset preparation. Our evaluation of the RAH framework involves three experiments to assess: (1) the assistant's alignment with the user preference. (2) the performance of reducing user burden among various domains, and (3) the assistant's capability to mitigate bias. For all experiments, we utilize the GPT-4-0613 version of the LLM from OpenAI in our assistant.
+Our datasets are sourced from three domains on Amazon: Movies, Books, and Video Games. Following the guidelines of previous research [19], we initially filter out users and items with fewer than five interactions. We then retain users who have interactions in more than one domain, allowing us to additionally evaluate RAH's performance in cross-domain situations (e.g., Movie&Book). Subsequently, to strike a balance between GPT-4 API calls and the training demands of the recommender system, we split the dataset into two parts:
+· Cross1k. We randomly select 1,000 users from the processed data, capturing their interactions to form a concise dataset. For these users, 1,000 personalized LLM-based assistants are created to learn from and act to them individually. For the following experiments, we further partition the interactions of Cross1k into three sets (Learn Set, Proxy Set, and Unseen Set) using an equal ratio of 1:1:1.
+· Cross221k. The rest of the dataset includes 221,861 users and 4,624,903 interactions, and it can be used for training a stable recommender system without the challenges tied to insufficient training data.
+The statistics of Cross1k and Cross221k can be found in Appendix 8.1. To test RAH's role in reducing bias, we follow the protocols with previous de-bias research [2, 31, 46] to simulate unbiased data for offline evaluation by sampling interactions according to the propensity scores of items.
+5 RESULTS AND DISCUSSION
+In this section, we first showcase our experimental results focusing on alignment, burden reduction, and bias mitigation. Subsequently, we explore case studies emphasizing enhanced user control over recommended outcomes and personal privacy.
+
+XXX'24, 2024, Singapore
+
+Yubo Shu, et al.
+
+Act Learn
+0.90 0.80 0.70
+Movie 0.60
+0.50
+0.90 0.80 0.70
+Book 0.60
+0.50
+0.90 0.80 0.70
+Game 0.60
+0.50
+0.90 0.80 0.70
+Mixed 0.60
+0.50
+
+Movie
+
+0.78 0.81
+
+0.72
+
+0.74
+
+L L_C L_R L_C_R
+
+0.55 0.58 0.56 0.61 L L_C L_R L_C_R
+0.56 0.59 0.62 0.64 L L_C L_R L_C_R
+0.83 0.77 0.80 0.84
+
+L L_C L_R L_C_R
+
+Book
+
+Game
+
+0.90 0.80 0.57 0.70 0.62 0.59 0.63 0.60 0.50
+L L_C L_R L_C_R
+0.90 0.82 0.85 0.79 0.80 0.76 0.70 0.60 0.50
+L L_C L_R L_C_R
+
+0.90 0.80 0.70 0.58 0.63 0.61 0.65 0.60 0.50
+L L_C L_R L_C_R
+0.90 0.80 0.70 0.60 0.54 0.56 0.55 0.59 0.50
+L L_C L_R L_C_R
+
+0.90 0.80 0.70 0.60 0.53 0.55 0.55 0.58 0.50
+L L_C L_R L_C_R
+
+0.90 0.80 0.75 0.79 0.83 0.76 0.70 0.60 0.50
+L L_C L_R L_C_R
+
+0.90 0.82 0.87 0.86 0.90 0.80
+
+0.90 0.86 0.80 0.84 0.88 0.80
+
+0.70
+
+0.70
+
+0.60
+
+0.60
+
+0.50
+
+0.50
+
+L L_C L_R L_C_R
+
+L L_C L_R L_C_R
+
+Mixed
+
+0.90
+
+0.80 0.68 0.70
+
+0.70 0.63
+
+0.65
+
+0.60
+
+0.50 L L_C L_R L_C_R
+
+0.90
+0.80 0.70 0.62 0.66 0.64 0.69 0.60
+0.50 L L_C L_R L_C_R
+
+0.90 0.80 0.70 0.60 0.50
+0.90 0.80 0.70 0.60 0.50
+
+0.60 0.63 0.64 0.67 L L_C L_R L_C_R 0.85 0.83 0.88
+0.80
+L L_C L_R L_C_R
+
+Figure 3: Performance evaluation of the assistant's ability to align with users across singular, cross, and mixed domains. Histogram values represent the F1-Score against user actions. L for Learn Only, C for using Learn-Act-Critic loop, and R for the reflection mechanism.
+
+5.1 Assistants' Alignment with Users
+For the first alignment-focused experiment, we task the assistant with assimilating personalities from the Learn Set and then generating proxy actions for items within the Proxy Set in Cross1k. In order to evaluate our assistant's alignment with users, an intuitive measure is whether an assistant can take consistent actions with a user. Therefore, the evaluation process is: (1) We instruct the assistant to extract users' personalities from their interactions in the Learn Set, such as ratings and comments on items. (2) The assistant is then tasked with predicting actions on items in the Proxy Set. We then examine if these predicted actions align with the actual behaviors of users.
+To gain a more comprehensive evaluation, we conduct the experiment to include both cross-domains and mixed domains. For comparison, we have four tasks for personality learning:
+· Learn Only: We directly append learned new likes or dislikes into users' personalities without Critic Agent or Reflect Agent.
+· Learn+Reflect: After appending new likes or dislikes to users' personalities, we employ the reflection mechanism to resolve potential duplication and conflicts.
+· Learn+Critic: After acquiring new likes or dislikes from a particular user action, we input the new likes or dislikes and assess if the Act Agent can accurately infer the original user action in reverse. If not successful, the assistant should attempt another Learn-Act-Critic loop.
+· Learn+Critic+Reflect: Both the Learn-Act-Critic loop and reflection mechanism are engaged for optimization.
+
+Figure 3 presents the F1-score of the personality learning experiment. Overall, compared with Learn Only, either the learn-actcritic loop or reflection mechanism is helpful in aligning with users. Moreover, their combined application yields even more significant improvements.
+Learning and acting within the same domain yields better results compared to cross-domain operations. Furthermore, the results demonstrate that learning from a mixed domain outperforms learning from any single domain, such as movies, books, or games when considered independently. This suggests that LLM-based assistants possess the capability to reason and extrapolate users' personalities across different domains.
+5.2 Reduce Human Burden
+In the second experiment, we connect the assistant with traditional recommender systems within the RAH framework. To evaluate whether the assistant can reduce user burden, we measure how effectively the assistant can represent users and provide proxy feedback to calibrate the recommender systems using the RAH framework. We perform comparison experiments for various recommendation algorithms, both with and without assistants.
+Without assistants, we train recommendation algorithms on Cross221k and the Learn Set of Cross1k. Lastly, we calculate the recommendation metric on the Unseen Set. With assistants, we initially use assistants to learn each user's personality on Learn Set and let the assistant make proxy feedback on Proxy Set (same as the first experiment). Then we train recommendation models on
+
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+XXX'24, 2024, Singapore
+
+Table 1: The performance of proxying user feedback and adjusting recommender systems.
+
+Method
+LightGCN LightGCN
+PLMRec PLMRec
+FM FM
+MF MF
+ENMF ENMF
+NeuralMF NeuralMF
+ItemKNN ItemKNN
+
+Assistant
+No Yes
+No Yes
+No Yes
+No Yes
+No Yes
+No Yes
+No Yes
+
+Movie
+
+NDCG@10
+
+Recall@10
+
+0.5202 0.5524(+0.0322)
+
+0.5142 0.5339(+0.0197)
+
+0.0993 0.1200(+0.0207)
+
+0.1316 0.1692(+0.0376)
+
+0.3492 0.3919(+0.0427)
+
+0.3871 0.4257(+0.0386)
+
+0.3737 0.4300(+0.0563)
+
+0.4450 0.4781(+0.0331)
+
+0.4320 0.5200(+0.0880)
+
+0.3953 0.4831(+0.0878)
+
+0.4720 0.4856(+0.0136)
+
+0.4878 0.4906(+0.0028)
+
+0.1211 0.2131(+0.0920)
+
+0.1035 0.1860(+0.0825)
+
+Book
+
+NDCG@10
+
+Recall@10
+
+0.1283 0.1830(+0.0547)
+
+0.1439 0.1912(+0.0473)
+
+0.0092 0.0162(+0.0070)
+
+0.0143 0.0197(+0.0054)
+
+0.1216 0.1474(+0.0258)
+
+0.1299 0.1603(+0.0304)
+
+0.1143 0.1520(+0.0377)
+
+0.1275 0.1593(+0.0318)
+
+0.0994 0.1224(+0.0230)
+
+0.0997 0.1217(+0.0220)
+
+0.1364 0.1631(+0.0267)
+
+0.1385 0.1658(+0.0273)
+
+0.0889 0.1517(+0.0628)
+
+0.0694 0.1171(+0.0477)
+
+Game
+
+NDCG@10
+
+Recall@10
+
+0.3459 0.4330(+0.0871)
+
+0.4309 0.4974(+0.0665)
+
+0.3693 0.3981(+0.0288)
+
+0.4630 0.4790(+0.0160)
+
+0.2917 0.2937(+0.0020)
+
+0.3586 0.3624(+0.0038)
+
+0.2074 0.2998(+0.0924)
+
+0.2622 0.3706(+0.1084)
+
+0.0652 0.0788(+0.0136)
+
+0.1036 0.1247(+0.0211)
+
+0.2160 0.3507(+0.1347)
+
+0.2704 0.4086(+0.1382)
+
+0.2242 0.2660(+0.0418)
+
+0.3074 0.3125(+0.0051)
+
+Mixed
+
+NDCG@10
+
+Recall@10
+
+0.3403 0.4058(+0.0655)
+
+0.1696 0.2033(+0.0337)
+
+0.1075 0.1378(+0.0303)
+
+0.0656 0.0766(+0.0110)
+
+0.2421 0.2549(+0.0128)
+
+0.1262 0.1340(+0.0078)
+
+0.1933 0.2651(+0.0718)
+
+0.1054 0.1487(+0.0433)
+
+0.2630 0.3224(+0.0594)
+
+0.1227 0.1531(+0.0304)
+
+0.2891 0.3451(+0.0560)
+
+0.1507 0.1742(+0.0235)
+
+0.1657 0.2567(+0.0910)
+
+0.0790 0.1170(+0.0380)
+
+Cross221k, Learn Set and the assistant's proxy feedback, and likewise test on Unseen Set. The involved recommendation algorithms are as follows:
+· LightGCN[10]: A model that enhances recommender systems by simplifying neighborhood aggregation, and learns embeddings through linear propagation on the interaction graph.
+· PLMRec[36]: A recommendation model that uses PLMs like Bert to embed the content of items for deeper semantic mining.
+· FM[23]: Model that combines SVM advantages with factorization models, using factorized parameters to model interactions in sparse data.
+· MF[13]: Use matrix factorization techniques for recommendation systems to generate product recommendations by using historical data.
+· ENMF[3]: Based on simple neural matrix factorization, it optimizes model parameters from the entire training data without sampling.
+· NeuralMF[11]: A framework that uses deep neural networks modeling collaborative filtering based on implicit feedback and user-item feature interactions.
+· ItemKNN[5]: An item-based Top-N recommendation algorithm that uses item similarities to determine the recommendation set.
+Table 1 presents the results of our comparison. The data suggest that, conditioned on an equal number of user interactions, the performance of various recommender systems can be improved when the assistant is integrated. Namely, after learning user personalities, the assistant can effectively calibrate recommender systems using proxy feedback. These outcomes resonate with the non-invasion design of the RAH framework. The assistant preserves the inherent pattern between the recommender system (which recommends items and gathers feedback) and the user (who receives recommendations and provides feedback). As a result, the RAH framework demonstrates remarkable adaptability across various recommender systems.
+
+5.3 Mitigate Bias
+
+Table 2: The performance of alleviating bias.
+
+Method
+MF MF+IPS MF+RAH MF+IPS+RAH
+
+NDCG@10
+0.1835 0.2148 0.5017 0.5196
+
+Recall@10
+0.2085 0.2424 0.4326 0.4554
+
+In the RAH framework, the assistant provides an opportunity to address the bias problem. The above experiments demonstrate the capability of assistants to learn from user actions and make proxy feedback on items. Therefore, the assistant can also represent human users to provide proxy feedback on unpopular items and alleviate the bias in the system. To conduct the experiment, we select unpopular items (associated with less than ten reviews) in the Cross1k dataset and randomly sample user assistants to make proxy feedback on unpopular items until these items own no less than ten reviews. For comparison, we also compare a de-biasing method, Inverse Propensity Scoring (IPS) [25]. The IPS method in recommender systems adjusts for selection bias by reweighting observed data based on the likelihood of an item being recommended.
+Subsequently, we evaluate the performance on simulated unbiased test data derived from sampling. Specifically, the probability of sampling a user-item interaction is formulated to be inversely proportional to the frequency of the involved item [31]. Table 2 shows that both IPS and RAH are effective in mitigating bias compared with the baseline. Remarkably, when combined, the IPS and RAH approach emerges as a particularly robust de-biasing technique [4], showing a greater efficacy in bias reduction.
+5.4 Increase User Control
+5.4.1 Control Recommendation Results. The first case, as illustrated in Figure 4(a), demonstrates how the assistant can enhance user control over recommended results. In this case, since the user often watches movies with a child, the user expresses dissatisfaction
+
+XXX'24, 2024, Singapore
+[Human] # User Action: Dislike the Incredibles (Pixar film) # User Comment: Usually watch films with my kid. The film is too dark for children, yet too childish for adults. It's pretty much for the most part just mindless violence throughout the film. [Assistant] # Learn: | Prefer: family movies | Disprefer: heavy dark elements, too childish, lots of violence | ...... [Rec System] # Recommend: (1) Coco (2) Ironman (3) Batman: The Dark Knight [Assistant] # Act (1) Like, pass to the user (2) Not Sure, pass to the user to learn from human feedback (3) Dislike, proxy feedback to the recommender system
+(a) Control Recommendation Results
+[Human] # User Action: Like The Depression Cure: The 6-Step Program to Beat Depression without Drugs [Assistant] # It can have a potential risk of privacy leakage. Suggest two personality confusion strategies. · Strategy I (pretend a psychologist) Assistant will automatically express more Like on
+professional psychology textbooks to the recommender system. · Strategy II (pretend a shared account) Assistant will automatically express random Like and
+Dislike. [Human] (select and enable a protection strategy) [Rec System] (recommend several items) [Assistant] # Act · For the user: filter recommended items from the recommender systems to remain accurate. · For the recommender system: selectively express user real feedback and create some extra
+feedback to protect privacy.
+(b) Control Personal Privacy
+Figure 4: The case study.
+with the movie The Incredibles citing reasons such as it being "too childish for adults" and "too dark for children." From this feedback, the assistant discerns that the user favors family movies that strike a balance in content, avoiding extremes in themes.
+Subsequently, the recommender system suggests three movies: Coco, Ironman, and Batman: The Dark Knight. Leveraging the reasoning capabilities and real-world knowledge of LLMs, the assistant can make informed decisions on items to align with user intentions. For Coco, the assistant identifies it as a likely match for the user due to its family-friendly nature and passes the recommendation to the user. Regarding Ironman, the assistant, uncertain of its suitability, also passes this recommendation to the user, seeking additional feedback. In contrast, Batman: The Dark Knight, known for its dark and potentially violent content, is deemed possibly unsuitable based on the user's preferences. The assistant decides to "Dislike" this recommendation on behalf of the user, supplying proxy feedback to the recommender system for future refinement.
+5.4.2 Control Privacy. The second case, depicted in Figure 4(b), highlights how the assistant can bolster user control concerning personal privacy. In this case, A user expresses interest in a specific book titled The Depression Cure: The 6-Step Program to Beat Depression without Drugs. The assistant identifies that such an action might lead to potential privacy leakages-expressing a preference for content on mental health might disclose sensitive information about the user. The assistant offers two personality confusion strategies to help control privacy.
+
+Yubo Shu, et al.
+Strategy I (Pretend a Psychologist): The assistant, mimicking the behavior of a psychologist, will express more "Like" on professional psychology textbooks within the recommender system. This action serves to dilute the user's preference, making it ambiguous whether the original interest in the depression-related book was due to personal reasons or professional curiosity.
+Strategy II (Pretend a Shared Account): The assistant will automatically generate a mix of random likes and dislikes. This strategy gives the impression of multiple users sharing on a single account, thereby obfuscating individual preferences and adding a layer of ambiguity to the user's actions.
+If the user adopts one strategy, the assistant selectively provides real user feedback and creates additional feedback, further protecting privacy. Besides, the assistant can also filter items from the recommender system to ensure that recommendations remain personalized despite the noise introduced by the selected strategy.
+6 RELATED WORK
+6.1 Human-Centered Recommendation
+The human-centered recommender system [12] focuses on understanding the characteristics and complex relationships between the recommender system and users in the recommendation scenario. Unlike the "accuracy-only" approach in traditional recommender systems, the human-centered recommender system pays more attention to user experience, taking user satisfaction and needs as optimization goals, such as privacy protection. Recent works have shown that this field has attracted researchers from social sciences and computational fields to participate in research together. [39] proposed a new federal recommendation framework called Federal Mask Matrix Factorization (FedMMF), which can protect data privacy in federal recommender systems without sacrificing efficiency and effectiveness. EANA [21] improves the training speed and effectiveness of large-scale recommender systems while protecting user privacy through an embedding-aware noise addition method. [42] proposed a new human-centered dialogue recommendation method, which provides more helpful recommendations to users by understanding and adapting to user needs during the dialogue process.
+6.2 LLM For Recommendation
+Large Language Models (LLMs) in Natural Language Processing (NLP) are now employed in recommender systems due to their vast knowledge and logical reasoning. LLMs for Recommendation (LLM4Rec) are mainly used in two ways: enhancing features and directly recommending. The first approach leverages LLMs for feature extraction, enhancing traditional systems. Notable works include encoding news[17, 36, 37, 40, 43] and tweets[44] for recommendations. The second approach forms input sequences for LLMs, letting them directly recommend. [16, 33] relied on prompts for recommendations. [1] proposed a two-stage method: fine-tuning LLMs with recommendation data and then using them for recommendations. Works like [6, 7, 34] delved into LLM's role in conversational recommender systems.
+
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+XXX'24, 2024, Singapore
+
+6.3 LLM-based Agent
+With the emergence of Large Language Models (LLMs), their Autonomy, Reactivity, and Pro-activeness have brought hope and made some progress in the realization of intelligent agents [38]. This is a system that can engage in dialogue, complete tasks, reason, and exhibit a certain degree of autonomous action. Work [22] has demonstrated the feasibility of LLM-based Agents by building an intelligent town supported by LLMs, showing that LLM-based Agents have strong credibility and adaptability. Work [32] has built an LLM-Based Agent on the Minecraft game platform and proposed an iterative prompt mechanism of environmental feedback  execution error  self-verification, proving that LLM-based Agents have lifelong learning ability in scenarios and strong generalization ability to solve new tasks. Similarly, work [28] divides the LLMbased Agent into three modules: control end, perception end, and action end from the perspective of cognitive science. Work [18] proposes a training paradigm that allows LLM to learn social norms and values from simulated social interactions.
+7 CONCLUSION AND FUTURE WORK
+From the perspective of humans, we introduce the RAH framework for recommendations, incorporating the design of the assistant using LLM Agents. Our experiments highlight the efficacy of the Learn-Act-Critic loop and reflection mechanisms in enabling the assistant to align more closely with user personalities. Besides, we evaluate the RAH framework on different recommender systems in reducing user burden and find the generalization capability of the framework, which echoes the non-invasion role of the assistant. Additionally, we measure the assistant's capability to provide proxy feedback on unpopular items to mitigate selection bias. Finally, we explore potential solutions to increase user control of recommended results and personal privacy through the assistant.
+One constraint of our current approach is its reliance on offline evaluations. In the future, we plan to conduct online assessments of the RAH framework, focusing on the sustained influence of the assistant on users and recommender systems. Moreover, we will explore the collaborative relationship between the assistant and humans, such as whether personalities learned from subjective tasks like recommendations can be translated into content creation scenarios that align with user preferences.
+REFERENCES
+[1] Keqin Bao, Jizhi Zhang, Yang Zhang, Wenjie Wang, Fuli Feng, and Xiangnan He. 2023. Tallrec: An effective and efficient tuning framework to align large language model with recommendation. arXiv preprint arXiv:2305.00447 (2023).
+[2] Stephen Bonner and Flavian Vasile. 2018. Causal embeddings for recommendation. In Proceedings of the 12th ACM conference on recommender systems. 104-112.
+[3] Chong Chen, Min Zhang, Yongfeng Zhang, Yiqun Liu, and Shaoping Ma. 2020. Efficient neural matrix factorization without sampling for recommendation. ACM Transactions on Information Systems (TOIS) 38, 2 (2020), 1-28.
+[4] Jiawei Chen, Hande Dong, Xiang Wang, Fuli Feng, Meng Wang, and Xiangnan He. 2023. Bias and debias in recommender system: A survey and future directions. ACM Transactions on Information Systems 41, 3 (2023), 1-39.
+[5] Mukund Deshpande and George Karypis. 2004. Item-based top-n recommendation algorithms. ACM Transactions on Information Systems (TOIS) 22, 1 (2004), 143-177.
+[6] Luke Friedman, Sameer Ahuja, David Allen, Terry Tan, Hakim Sidahmed, Changbo Long, Jun Xie, Gabriel Schubiner, Ajay Patel, Harsh Lara, et al. 2023. Leveraging Large Language Models in Conversational Recommender Systems. arXiv preprint arXiv:2305.07961 (2023).
+
+[7] Yunfan Gao, Tao Sheng, Youlin Xiang, Yun Xiong, Haofen Wang, and Jiawei
+Zhang. 2023. Chat-rec: Towards interactive and explainable llms-augmented recommender system. arXiv preprint arXiv:2303.14524 (2023). [8] Yingqiang Ge, Shuchang Liu, Zuohui Fu, Juntao Tan, Zelong Li, Shuyuan Xu,
+Yunqi Li, Yikun Xian, and Yongfeng Zhang. 2022. A survey on trustworthy recommender systems. arXiv preprint arXiv:2207.12515 (2022). [9] Shijie Geng, Shuchang Liu, Zuohui Fu, Yingqiang Ge, and Yongfeng Zhang. 2022.
+Recommendation as language processing (rlp): A unified pretrain, personalized prompt & predict paradigm (p5). In Proceedings of the 16th ACM Conference on Recommender Systems. 299-315. [10] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng
+Wang. 2020. Lightgcn: Simplifying and powering graph convolution network for recommendation. In Proceedings of the 43rd International ACM SIGIR conference on research and development in Information Retrieval. 639-648. [11] Xiangnan He, Lizi Liao, Hanwang Zhang, Liqiang Nie, Xia Hu, and Tat-Seng Chua. 2017. Neural collaborative filtering. In Proceedings of the 26th international conference on world wide web. 173-182. [12] Joseph Konstan and Loren Terveen. 2021. Human-centered recommender systems: Origins, advances, challenges, and opportunities. AI Magazine 42, 3 (2021), 31-42. [13] Yehuda Koren, Robert Bell, and Chris Volinsky. 2009. Matrix factorization techniques for recommender systems. Computer 42, 8 (2009), 30-37. [14] Hoyeop Lee, Jinbae Im, Seongwon Jang, Hyunsouk Cho, and Sehee Chung. 2019.
+Melu: Meta-learned user preference estimator for cold-start recommendation. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. 1073-1082. [15] Yujie Lin, Pengjie Ren, Zhumin Chen, Zhaochun Ren, Jun Ma, Maarten de Rijke,
+et al. 2018. Explainable fashion recommendation with joint outfit matching and comment generation. arXiv preprint arXiv:1806.08977 2 (2018). [16] Junling Liu, Chao Liu, Renjie Lv, Kang Zhou, and Yan Zhang. 2023. Is chatgpt a good recommender? a preliminary study. arXiv preprint arXiv:2304.10149 (2023). [17] Qijiong Liu, Jieming Zhu, Quanyu Dai, and Xiaoming Wu. 2022. Boosting deep
+ctr prediction with a plug-and-play pre-trainer for news recommendation. In Proceedings of the 29th International Conference on Computational Linguistics. 2823-2833.
+[18] Ruibo Liu, Ruixin Yang, Chenyan Jia, Ge Zhang, Denny Zhou, Andrew M Dai,
+Diyi Yang, and Soroush Vosoughi. 2023. Training Socially Aligned Language Models in Simulated Human Society. arXiv preprint arXiv:2305.16960 (2023). [19] Weiming Liu, Xiaolin Zheng, Mengling Hu, and Chaochao Chen. 2022. Collab-
+orative filtering with attribution alignment for review-based non-overlapped cross domain recommendation. In Proceedings of the ACM Web Conference 2022. 1181-1190.
+[20] Sean M McNee, John Riedl, and Joseph A Konstan. 2006. Being accurate is not enough: how accuracy metrics have hurt recommender systems. In CHI'06 extended abstracts on Human factors in computing systems. 1097-1101.
+[21] Lin Ning, Steve Chien, Shuang Song, Mei Chen, Yunqi Xue, and Devora Berlowitz.
+2022. EANA: Reducing privacy risk on large-scale recommendation models. In Proceedings of the 16th ACM Conference on Recommender Systems. 399-407. [22] Joon Sung Park, Joseph C O'Brien, Carrie J Cai, Meredith Ringel Morris, Percy
+Liang, and Michael S Bernstein. 2023. Generative agents: Interactive simulacra of human behavior. arXiv preprint arXiv:2304.03442 (2023). [23] Steffen Rendle. 2010. Factorization machines. In 2010 IEEE International conference on data mining. IEEE, 995-1000. [24] Scott Sanner, Krisztian Balog, Filip Radlinski, Ben Wedin, and Lucas Dixon. 2023.
+Large Language Models are Competitive Near Cold-start Recommenders for Language-and Item-based Preferences. arXiv preprint arXiv:2307.14225 (2023). [25] Tobias Schnabel, Adith Swaminathan, Ashudeep Singh, Navin Chandak, and
+Thorsten Joachims. 2016. Recommendations as treatments: Debiasing learning and evaluation. In international conference on machine learning. PMLR, 1670- 1679.
+[26] Donghee Shin. 2020. How do users interact with algorithm recommender systems? The interaction of users, algorithms, and performance. Computers in human behavior 109 (2020), 106344.
+[27] Piotr Sulikowski, Tomasz Zdziebko, Dominik Turzyski, and Eliasz Katoch. 2018. Human-website interaction monitoring in recommender systems. Procedia Computer Science 126 (2018), 1587-1596.
+[28] Theodore Sumers, Shunyu Yao, Karthik Narasimhan, and Thomas L Griffiths. 2023. Cognitive architectures for language agents. arXiv preprint arXiv:2309.02427 (2023).
+[29] Kirsten Swearingen and Rashmi Sinha. 2001. Beyond algorithms: An HCI perspective on recommender systems. In ACM SIGIR 2001 workshop on recommender systems, Vol. 13. 1-11.
+[30] MLC team. 2023. MLC-LLM. https://github.com/mlc-ai/mlc-llm [31] Qi Wan, Xiangnan He, Xiang Wang, Jiancan Wu, Wei Guo, and Ruiming Tang.
+2022. Cross pairwise ranking for unbiased item recommendation. In Proceedings of the ACM Web Conference 2022. 2370-2378. [32] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu,
+Linxi Fan, and Anima Anandkumar. 2023. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291 (2023).
+
+XXX'24, 2024, Singapore
+
+[33] Lei Wang and Ee-Peng Lim. 2023. Zero-Shot Next-Item Recommendation using Large Pretrained Language Models. ArXiv abs/2304.03153 (2023). https://api. semanticscholar.org/CorpusID:257985012
+[34] Xiaolei Wang, Kun Zhou, Ji-Rong Wen, and Wayne Xin Zhao. 2022. Towards unified conversational recommender systems via knowledge-enhanced prompt learning. In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining. 1929-1937.
+[35] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems 35 (2022), 24824-24837.
+[36] Chuhan Wu, Fangzhao Wu, Tao Qi, and Yongfeng Huang. 2021. Empowering news recommendation with pre-trained language models. In Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval. 1652-1656.
+[37] Chuhan Wu, Fangzhao Wu, Tao Qi, Chao Zhang, Yongfeng Huang, and Tong Xu. 2022. Mm-rec: Visiolinguistic model empowered multimodal news recommendation. In Proceedings of the 45th International ACM SIGIR Conference on Research and Development in Information Retrieval. 2560-2564.
+[38] Zhiheng Xi, Wenxiang Chen, Xin Guo, Wei He, Yiwen Ding, Boyang Hong, Ming Zhang, Junzhe Wang, Senjie Jin, Enyu Zhou, et al. 2023. The rise and potential of large language model based agents: A survey. arXiv preprint arXiv:2309.07864 (2023).
+[39] Liu Yang, Junxue Zhang, Di Chai, Leye Wang, Kun Guo, Kai Chen, and Qiang Yang. 2022. Practical and Secure Federated Recommendation with Personalized Mask. In International Workshop on Trustworthy Federated Learning. Springer, 33-45.
+[40] Yang Yu, Fangzhao Wu, Chuhan Wu, Jingwei Yi, and Qi Liu. 2021. Tinynewsrec: Effective and efficient plm-based news recommendation. arXiv preprint arXiv:2112.00944 (2021).
+[41] Tianzi Zang, Yanmin Zhu, Haobing Liu, Ruohan Zhang, and Jiadi Yu. 2022. A survey on cross-domain recommendation: taxonomies, methods, and future directions. ACM Transactions on Information Systems 41, 2 (2022), 1-39.
+[42] Gangyi Zhang. 2023. User-Centric Conversational Recommendation: Adapting the Need of User with Large Language Models. In Proceedings of the 17th ACM Conference on Recommender Systems. 1349-1354.
+[43] Qi Zhang, Jingjie Li, Qinglin Jia, Chuyuan Wang, Jieming Zhu, Zhaowei Wang, and Xiuqiang He. 2021. UNBERT: User-News Matching BERT for News Recommendation.. In IJCAI. 3356-3362.
+[44] Xinyang Zhang, Yury Malkov, Omar Florez, Serim Park, Brian McWilliams, Jiawei Han, and Ahmed El-Kishky. 2022. TwHIN-BERT: a socially-enriched pretrained language model for multilingual Tweet representations. arXiv preprint arXiv:2209.07562 (2022).
+[45] Yongfeng Zhang, Xu Chen, et al. 2020. Explainable recommendation: A survey and new perspectives. Foundations and Trends® in Information Retrieval 14, 1 (2020), 1-101.
+[46] Yu Zheng, Chen Gao, Xiang Li, Xiangnan He, Yong Li, and Depeng Jin. 2021. Disentangling user interest and conformity for recommendation with causal embedding. In Proceedings of the Web Conference 2021. 2980-2991.
+8 APPENDICES
+8.1 The statistics of datasets
+The number of users, items and interactions in different domains for both Cross1k and Cross221k.
+Table 3: Cross1k.
+
+Domain Movie Book Game
+
+#Users 1,045 1,046 1,044
+
+#Items 10,679 20,159 8,984
+
+#Interactions 21,024 24,035 17,169
+
+Yubo Shu, et al.
+
+Table 4: Cross221k.
+
+Domain Movie Book Game
+
+#Users 221,861 94,407 7,149
+
+#Items 49,791 12,898 12,196
+
+#Interactions 2,313,890 2,240,010 71,003
+
+be seen that, with limited user interaction history and after learning about the user's personality, the assistant can effectively act on behalf of the user, optimizing various recommendation systems while reducing repetitive user operations. However, there might be a potential issue that predicting on the user's Proxy Set could leak the data distribution. Therefore, we conducted additional experiments to investigate whether the assistant truly helps in reducing the user's burden.
+In Table 5, we included an additional experiment: we used a program that randomly decides whether to like or dislike to simulate a non-intelligent assistant. Experimental results show that even randomly guessing likes and dislikes on the proxy dataset can improve the effect of the recommendation system in most experiments, indicating potential data distribution leakage risks. However, overall, the assistant designed based on our method outperformed the random program. This further validates our findings that the assistant can indeed be relatively intelligent to help users more easily optimize the recommendation system through proxy feedback.
+
+8.2 Expansion Experiments of Burden
+Reduction
+In our Section 5.2, we have compared the assistant's generation of feedback on behalf of users in the Proxy Set, and then passed this feedback to the recommendation system to help users further optimize the recommendation system. From our previous results, it can
+
+RAH! RecSys-Assistant-Human: A Human-Centered Recommendation Framework with LLM Agents
+
+XXX'24, 2024, Singapore
+
+Table 5: The performance of proxying user feedback and adjusting recommender systems with the additional comparison.
+
+Method
+LightGCN LightGCN-Random LightGCN-Assistant
+PLMRec PLMRec-Random PLMRec-Assistant
+FM FM-Random FM-Assistant
+MF MF-Random MF-Assistant
+ENMF ENMF-Random ENMF-Assistant
+NeuMF NeuMF-Random NeuMF-Assistant
+ItemKNN ItemKNN-Random ItemKNN-Assistant
+
+Movie
+
+NDCG@10
+
+Recall@10
+
+0.5202 0.5341(+0.0139) 0.5524(+0.0322)
+
+0.5142 0.5240(+0.0098) 0.5339(+0.0197)
+
+0.0993 0.1171(+0.0178) 0.1200(+0.0207)
+
+0.1316 0.1610(+0.0294) 0.1692(+0.0376)
+
+0.3492 0.3897(+0.0405) 0.3919(+0.0427)
+
+0.3871 0.4200(+0.0329) 0.4257(+0.0386)
+
+0.3737 0.4122(+0.0385) 0.4300(+0.0563)
+
+0.4450 0.4714(+0.0264) 0.4781(+0.0331)
+
+0.4320 0.4931(+0.0611) 0.5200(+0.0880)
+
+0.3953 0.4544(+0.0591) 0.4831(+0.0878)
+
+0.4720 0.4464(-0.0256) 0.4856(+0.0136)
+
+0.4878 0.4517(-0.0361) 0.4906(+0.0028)
+
+0.1211 0.1900(+0.0689) 0.2131(+0.0920)
+
+0.1035 0.1698(+0.0663) 0.1860(+0.0825)
+
+Book
+
+NDCG@10
+
+Recall@10
+
+0.1283 0.1527(+0.0244) 0.1830(+0.0547)
+
+0.1439 0.1711(+0.0272) 0.1912(+0.0473)
+
+0.0092 0.0149(+0.0057) 0.0162(+0.0070)
+
+0.0143 0.0181(+0.0038) 0.0197(+0.0054)
+
+0.1216 0.1443(+0.0227) 0.1474(+0.0258)
+
+0.1299 0.1561(+0.0262) 0.1603(+0.0304)
+
+0.1143 0.1434(+0.0291) 0.1520(+0.0377)
+
+0.1275 0.1484(+0.0209) 0.1593(+0.0318)
+
+0.0994 0.1195(+0.0201) 0.1224(+0.0230)
+
+0.0997 0.1199(+0.0202) 0.1217(+0.0220)
+
+0.1364 0.1559(+0.0195) 0.1631(+0.0267)
+
+0.1385 0.1578(+0.0193) 0.1658(+0.0273)
+
+0.0889 0.1326(+0.0437) 0.1517(+0.0628)
+
+0.0694 0.1051(+0.0357) 0.1171(+0.0477)
+
+Game
+
+NDCG@10
+
+Recall@10
+
+0.3459 0.4163(+0.0704) 0.4330(+0.0871)
+
+0.4309 0.4934(+0.0625) 0.4974(+0.0665)
+
+0.3693 0.3964(+0.0271) 0.3981(+0.0288)
+
+0.4630 0.4743(+0.0113) 0.4790(+0.0160)
+
+0.2917 0.2903(-0.0014) 0.2937(+0.0020)
+
+0.3586 0.3529(-0.0057) 0.3624(+0.0038)
+
+0.2074 0.2618(+0.0544) 0.2998(+0.0924)
+
+0.2622 0.3422(+0.0800) 0.3706(+0.1084)
+
+0.0652 0.0751(+0.0099) 0.0788(+0.0136)
+
+0.1036 0.1156(+0.0120) 0.1247(+0.0211)
+
+0.2160 0.3301(+0.1141) 0.3507(+0.1347)
+
+0.2704 0.3913(+0.1209) 0.4086(+0.1382)
+
+0.2242 0.2500(+0.0258) 0.2660(+0.0418)
+
+0.3074 0.3035(-0.0039) 0.3125(+0.0051)
+
+Mixed
+
+NDCG@10
+
+Recall@10
+
+0.3403 0.3790(+0.0387) 0.4058(+0.0655)
+
+0.1696 0.1900(+0.0204) 0.2033(+0.0337)
+
+0.1075 0.1346(+0.0271) 0.1378(+0.0303)
+
+0.0656 0.0739(+0.0083) 0.0766(+0.0110)
+
+0.2421 0.2533(+0.0112) 0.2549(+0.0128)
+
+0.1262 0.1336(+0.0074) 0.1340(+0.0078)
+
+0.1933 0.2302(+0.0369) 0.2651(+0.0718)
+
+0.1054 0.1279(+0.0225) 0.1487(+0.0433)
+
+0.2630 0.3056(+0.0426) 0.3224(+0.0594)
+
+0.1227 0.1446(+0.0219) 0.1531(+0.0304)
+
+0.2891 0.3220(+0.0329) 0.3451(+0.0560)
+
+0.1507 0.1603(+0.0096) 0.1742(+0.0235)
+
+0.1657 0.2338(+0.0681) 0.2567(+0.0910)
+
+0.0790 0.1090(+0.0300) 0.1170(+0.0380)
+
+
