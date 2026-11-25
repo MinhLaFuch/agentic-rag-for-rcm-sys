@@ -250,9 +250,20 @@ can't express the request.
    queries ready, eval pending — needs LLM key); (b) category-level scoring;
    (c) accept ceiling, optimize `task_success`. Supersedes embedding urgency
    for the *eval* question (still relevant for demo VI queries).
-   **descriptive_kind eval RUNNING 2026-11-25** (`descriptive_kind/
-   exp_1/run_1`, 348 requests = 152 standard + 196 VI descriptions,
-   shipped config).
+   **descriptive_kind exp_1 DONE 2026-11-25 — request-content gap is
+   REAL**: descriptive task_success **0.010**, tool_err 0.709 (141/196
+   SearchTool SQL timeouts on ~58-char NL queries; 80 LookupTool
+   bad_reference cascades). Spec extractor worked perfectly (196/196
+   correct specs) — failure is planner behavior, not retrieval.
+   Secondary: planner passed spec `category_leaf` ("Nintendo Switch
+   Games") to categories_any — not a catalog label (distill fuzzy
+   fallback at 0.8 passes labels tools reject). **Fix committed
+   `5e5e22c`**: planner prompt now requires short SearchTool queries +
+   FilterTool-driven retrieval from spec for descriptive requests +
+   warns spec labels are unverified guesses. **exp_2 RUNNING**
+   (`descriptive_kind/exp_2/run_1`, same 348 requests). Standard kinds
+   held: exclusion 1.000, cold_text 0.950, personalized ok 1.000 —
+   combined config is stable under the bigger request mix.
 2. **distill_spec flag-default — DECIDED 2026-11-25: ON** — exp_4 met all
    pre-staged criteria (unanswerable 1.00 ≥0.33, cold_text 0.95 ≥0.95, no
    kind regression >10pp); `agent_eval.distill_spec: true` committed.
