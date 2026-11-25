@@ -14,6 +14,8 @@ FILTER_KEYS = {
     "min_rating_number",
     "categories_any",
     "categories_all",
+    "exclude_categories_any",
+    "exclude_categories_all",
     "store",
     "title_contains",
     "exclude_item_ids",

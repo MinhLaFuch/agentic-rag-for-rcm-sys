@@ -1,0 +1,34 @@
+# Combined-default eval: both shipped flags ON (distill_spec +
+# availability_dates are config defaults since d11e07b/ea04a9d; set
+# explicitly here for reproducibility). Fresh experiment_dir/trajectory
+# — this is the "what ships" metric, compared against
+# prompt_fix/exp_2/run_1 baseline and the single-flag arms.
+agent/agent_eval:
+  agent_eval:
+    agents:
+    - planner
+    allow_missing_corpus_sources: true
+    trajectory_file: combined_run1_trajectories.jsonl
+    campaign_id: null
+    per_segment: 20
+    request_scope: all
+    multi_turn:
+      enabled: false
+    jev:
+      enabled: false
+    experiment_dir: C:\Users\ph181\Documents\Repositories\agentic-rag-for-rcm-sys\src\experiments\agent_eval\combined\exp_1\run_1
+    item_knn_reuse_cache: true
+    distill_spec: true
+    availability_dates: true
+path/data_paths:
+  paths:
+    item_knn_dir: experiments/agent_eval/campaigns/campaign_005/item_knn
+agent/inference:
+  inference:
+    mode: template
+agent/agent:
+  agent:
+    reflect_rounds: 0
+eval/baselines:
+  baselines:
+    seed: 42

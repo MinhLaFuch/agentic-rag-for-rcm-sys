@@ -56,6 +56,8 @@ class SearchTool(Tool):
             "min_rating_number": "int",
             "categories_any": "list[str]  -- item has at least one (empty list = no filter)",
             "categories_all": "list[str]  -- item has all (empty list = no filter)",
+            "exclude_categories_any": "list[str]  -- item has NONE of these ('not in category X')",
+            "exclude_categories_all": "list[str]  -- item does not have ALL of these",
             "store": "str | list[str]  -- case-insensitive match (empty string/list = no filter)",
             "title_contains": "str",
             "exclude_item_ids": "list[str]",

@@ -314,6 +314,51 @@ def compile_filters(
             params += cats + [len(cats)]
             normalized["categories_all"] = cats
 
+    if filters.get("exclude_categories_any"):
+        cats = _as_list(filters["exclude_categories_any"], "exclude_categories_any")
+        if cats:
+            non_string = [c for c in cats if not isinstance(c, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"exclude_categories_any must be string(s), got non-string values: {non_string}"
+                )
+            if corpus is not None:
+                validated_cats, normalized_map = _validate_and_normalize_categories(cats, corpus, domains_known)
+                if normalized_map and any(k != v for k, v in normalized_map.items()):
+                    normalized["_note"] = "categories normalized to exact catalog names"
+                cats = validated_cats
+            # Same uncorrelated rewrite as categories_any, negated: the planner's
+            # hand-written `NOT EXISTS (correlated)` anti-join blows the SQL time
+            # budget on full-catalog exclusion scans; NOT IN over the materialized
+            # category set is the fast equivalent.
+            clauses.append(
+                "items.item_id NOT IN (SELECT c.item_id FROM item_categories c "
+                f"WHERE c.category IN ({','.join('?' * len(cats))}))"
+            )
+            params += cats
+            normalized["exclude_categories_any"] = cats
+    if filters.get("exclude_categories_all"):
+        cats = list(dict.fromkeys(_as_list(filters["exclude_categories_all"], "exclude_categories_all")))
+        if cats:
+            non_string = [c for c in cats if not isinstance(c, str)]
+            if non_string:
+                raise ToolInputError(
+                    f"exclude_categories_all must be string(s), got non-string values: {non_string}"
+                )
+            if corpus is not None:
+                validated_cats, normalized_map = _validate_and_normalize_categories(cats, corpus, domains_known)
+                if normalized_map and any(k != v for k, v in normalized_map.items()):
+                    normalized["_note"] = "categories normalized to exact catalog names"
+                cats = validated_cats
+            clauses.append(
+                "items.item_id NOT IN (SELECT c.item_id FROM item_categories c "
+                f"WHERE c.category IN ({','.join('?' * len(cats))}) "
+                "GROUP BY c.item_id "
+                "HAVING COUNT(DISTINCT c.category) = ?)"
+            )
+            params += cats + [len(cats)]
+            normalized["exclude_categories_all"] = cats
+
     if filters.get("store"):
         stores = _as_list(filters["store"], "store")
         if stores:

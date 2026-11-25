@@ -40,6 +40,16 @@ def test_sql_empty_list_and_string_handling(corpus):
     assert len(result_whitespace.data["candidates"]) == 5
 
 
+def test_sql_exclude_categories_any_and_all(corpus):
+    tool = FilterTool(corpus)
+    # exclude_categories_any: items having ANY listed category are removed
+    assert set(_ids(tool(filters={"exclude_categories_any": ["Video Games"]}))) == {VG_C, EL_A, EL_D}
+    # exclude_categories_all: only items having ALL listed categories are removed
+    assert set(_ids(tool(filters={"exclude_categories_all": ["Accessories", "Electronics"]}))) == {VG_A, VG_B, VG_C}
+    # combined with a positive filter
+    assert set(_ids(tool(filters={"categories_any": ["Accessories"], "exclude_categories_any": ["Electronics"]}))) == {VG_C}
+
+
 def test_sql_price_min_greater_than_max_suggests_fix(corpus):
     """Test that price_min > price_max returns a helpful error message."""
     tool = FilterTool(corpus)
