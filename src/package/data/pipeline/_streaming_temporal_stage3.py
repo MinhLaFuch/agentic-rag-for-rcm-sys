@@ -288,7 +288,7 @@ def _run_streaming_temporal_stage3(
             connection.commit()
             core_iterations = 0
             core_started = time.perf_counter()
-            for core_iterations in range(1, 21):
+            for core_iterations in range(1, 101):
                 connection.execute("DELETE FROM next_users")
                 connection.execute("DELETE FROM next_items")
                 active_join = "FROM train_pairs p JOIN fit_users u USING(user_idx) JOIN fit_items i USING(item_idx)"
@@ -315,7 +315,7 @@ def _run_streaming_temporal_stage3(
                 if old_counts == new_counts:
                     break
             else:
-                raise RuntimeError("train-core filtering did not converge within 20 iterations")
+                raise RuntimeError("train-core filtering did not converge within 100 iterations")
 
             fit_user_count = int(connection.execute("SELECT COUNT(*) FROM fit_users").fetchone()[0])
             fit_item_count = int(connection.execute("SELECT COUNT(*) FROM fit_items").fetchone()[0])
@@ -474,7 +474,7 @@ def _run_streaming_temporal_stage3(
                        "fit_core_counts": "unique_train_user_item_pairs",
                        "fit_core_min_user_pairs": int(min_user_pairs),
                        "fit_core_min_item_pairs": int(min_item_pairs),
-                       "fit_core_max_iterations": 20,
+                       "fit_core_max_iterations": 100,
                        "sparse_max_history": int(sparse_max),
                        "streaming_batch_rows": _BATCH_SIZE},
                 warnings=manifest_warnings, mapping_hash_overrides=mapping_hashes,

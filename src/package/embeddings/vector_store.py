@@ -92,8 +92,13 @@ class VectorStore:
             return []
 
         if candidate_ids is not None:
-            cand_set = set(candidate_ids)
-            valid_indices = [idx for idx, cid in enumerate(self.item_ids) if cid in cand_set]
+            valid_indices: list[int] = []
+            seen_idx: set[int] = set()
+            for cid in candidate_ids:
+                idx = self.id2idx.get(cid)
+                if idx is not None and idx not in seen_idx:
+                    seen_idx.add(idx)
+                    valid_indices.append(idx)
             if not valid_indices:
                 return []
             sub_vecs = self.embeddings[valid_indices]
@@ -103,7 +108,13 @@ class VectorStore:
             return pairs[:top_k]
 
         scores = self.embeddings @ q
-        pairs = [(str(self.item_ids[i]), float(scores[i])) for i in range(len(self.item_ids))]
+        n_items = len(self.item_ids)
+        if n_items > top_k:
+            kth = np.partition(scores, n_items - top_k)[n_items - top_k]
+            top_indices = np.flatnonzero(scores >= kth)
+        else:
+            top_indices = np.arange(n_items)
+        pairs = [(str(self.item_ids[i]), float(scores[i])) for i in top_indices]
         pairs.sort(key=lambda x: (-x[1], x[0]))
         return pairs[:top_k]
 

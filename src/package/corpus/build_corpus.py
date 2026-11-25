@@ -88,23 +88,23 @@ def build_corpus(
         before_counts = meta.groupby("domain").size().to_dict()
         fields = [field for field in meta.columns if field not in {"parent_asin", "domain"}]
 
-        def completeness(row: pd.Series) -> int:
-            score = 0
-            for field in fields:
-                value = row[field]
-                if value is None or (isinstance(value, str) and not value.strip()):
-                    continue
-                try:
-                    if pd.isna(value):
-                        continue
-                except (TypeError, ValueError):
-                    pass
-                if isinstance(value, (list, tuple, dict, set)) and not value:
-                    continue
-                score += 1
-            return score
+        def _field_present(value: object) -> int:
+            if value is None:
+                return 0
+            if isinstance(value, str):
+                return 1 if value.strip() else 0
+            if isinstance(value, (list, tuple, dict, set)):
+                return 1 if value else 0
+            try:
+                return 0 if pd.isna(value) else 1
+            except (TypeError, ValueError):
+                return 1
 
-        meta["_completeness"] = meta.apply(completeness, axis=1)
+        scores = [0] * len(meta)
+        for field in fields:
+            for idx, value in enumerate(meta[field].tolist()):
+                scores[idx] += _field_present(value)
+        meta["_completeness"] = scores
         meta = meta.sort_values("_completeness", ascending=False, kind="stable")
         meta = meta.drop_duplicates(["domain", "parent_asin"], keep="first")
         meta = meta.drop(columns="_completeness").reset_index(drop=True)

@@ -11,7 +11,7 @@ def k_core_filter(
     interactions: pd.DataFrame,
     min_user_interactions: int,
     min_item_interactions: int,
-    max_iterations: int = 20,
+    max_iterations: int = 100,
 ) -> pd.DataFrame:
     """
     Lặp lại việc loại user/item có ít hơn ngưỡng interaction cho đến khi
