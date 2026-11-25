@@ -643,7 +643,10 @@ class CampaignRunner:
             # lives under the campaign dir — never the shared resource/item_knn
             # pool — so a campaign cannot clobber pipeline artifacts.
             src_root = Path(get_data_paths().src_root)
-            knn_root = os.path.relpath(campaign_dir / "item_knn", src_root)
+            try:
+                knn_root = os.path.relpath(campaign_dir / "item_knn", src_root)
+            except ValueError:  # Windows: campaign and sources can be on different drives.
+                knn_root = str((campaign_dir / "item_knn").resolve())
             overlay["path/data_paths"] = {"paths": {"item_knn_dir": Path(knn_root).as_posix()}}
             agent_eval["item_knn_reuse_cache"] = True
 

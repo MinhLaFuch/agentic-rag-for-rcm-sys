@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 import numpy as np
+from ..retrieval.candidate_trace import record_generation
 from scipy import sparse
 
 from ..base import Tool, ToolCallLogger, ToolInputError, check_top_k, validate_list_like
@@ -103,7 +104,10 @@ class SimilarTool(Tool):
         seed_idx = [self.item2id[s] for s in seeds if is_row(s)]
         unknown = [s for s in seeds if not is_row(s)]
         if not seed_idx:
-            return {"candidates": [], "unknown_items": unknown, "note": "no seed item is known to the CF model"}
+            return record_generation(
+                {"candidates": [], "unknown_items": unknown, "note": "no seed item is known to the CF model"},
+                "seed_neighbors",
+            )
 
         # sum the seeds' similarity rows without densifying to n_items
         coo = self.similarity[seed_idx].tocoo()
@@ -142,4 +146,7 @@ class SimilarTool(Tool):
             else:
                 note = "no similar items found"
 
-        return {"candidates": candidates, "unknown_items": unknown, "note": note}
+        return record_generation(
+            {"candidates": candidates, "unknown_items": unknown, "note": note},
+            "seed_neighbors", item_ids=ids,
+        )

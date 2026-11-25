@@ -42,6 +42,10 @@ def environment(tmp_path, monkeypatch):
                          "title":["Pok\u00e9mon keyboard"]*7})
     monkeypatch.setattr(script,"get_data_paths",lambda *a,**k:paths)
     monkeypatch.setattr(script,"get_domains",lambda:["D"])
+    # Bind the synthetic bundle at its public resolver; real domain validation stays enabled.
+    import importlib
+    resolver = importlib.import_module("package.config.resolve_bundle_paths")
+    monkeypatch.setattr(resolver,"resolve_bundle_paths",lambda **kwargs:paths)
     monkeypatch.setattr(script,"load_mappings",lambda *a:(user2id,item2id))
     monkeypatch.setattr(script,"build_corpus",lambda *a,**k:(ItemCorpus.from_dataframe(meta),meta,1.))
     # ranking_eval resolves bundles via package.config.resolve_bundle_paths (local import in main),
@@ -178,7 +182,9 @@ def test_failed_baseline_confirmation_stops_tuning(environment,monkeypatch):
     original=script.BaselineScorer
     called=[]
     def record(*a,**k):
-        called.append(k["popularity_weight"])
+        # The shared feature scorer is not a tuned variant.
+        if "popularity_weight" in k:
+            called.append(k["popularity_weight"])
         return original(*a,**k)
     monkeypatch.setattr(script,"BaselineScorer",record)
     with pytest.raises(ValueError,match="baseline confirmation failed"):

@@ -29,6 +29,7 @@ from ._helper import _tokenize
 from package.embeddings import VectorStore
 from .indexed_bm25_rows import indexed_bm25_rows
 from .vietnamese_query_translator import VietnameseQueryTranslator
+from .candidate_trace import record_generation
 
 
 class SearchTool(Tool):
@@ -156,6 +157,8 @@ class SearchTool(Tool):
         # Tokens are \w-only and double-quoted, so user text cannot inject FTS5 syntax.
         match = " OR ".join(f'"{t}"' for t in tokens)
         cols = ", ".join(f"items.{c}" for c in ITEM_COLUMNS)
+        lexical_probe = None
+        indexed_ids = ()
         if self.bm25_index is not None:
             exclude_set = set(normalized_filters.get("exclude_item_ids") or [])
             rows = []
@@ -182,6 +185,7 @@ class SearchTool(Tool):
                         item_row = dict(found_meta[iid])
                         item_row["score"] = float(score_map[iid])
                         rows.append(item_row)
+                indexed_ids = found_meta
                 if len(rows) >= limit or len(scored) < fetch or fetch >= max_fetch:
                     truncated = len(rows) > limit or len(scored) >= fetch
                     rows = rows[:limit]
@@ -189,6 +193,9 @@ class SearchTool(Tool):
                 fetch = min(fetch * 2, max_fetch)
             total_matches = None if not self.exact_count else len(rows)
         else:
+            lexical_probe = (self.corpus,
+                "SELECT items.item_id FROM items_fts JOIN items ON items.rowid = items_fts.rowid "
+                f"WHERE items_fts MATCH ? AND ({where}) AND items.item_id = ?", [match, *params])
             # Secondary tie-breaker: rating_number DESC for equal BM25 scores
             sql = (
                 f"SELECT {cols}, -bm25(items_fts) AS score "  # bm25() is lower-is-better -> negate
@@ -224,7 +231,8 @@ class SearchTool(Tool):
             }
             if translation_info is not None:
                 out["translated_query"] = effective_query
-            return out
+            return record_generation(out, "fts_matches" if lexical_probe else "bm25_fetch",
+                                     item_ids=indexed_ids, query=lexical_probe)
 
         try:
             encoded = self.query_encoder.encode([effective_query]) if hasattr(self.query_encoder, "encode") else self.query_encoder([effective_query])
@@ -234,14 +242,30 @@ class SearchTool(Tool):
             if query_vec.ndim != 1 or not np.all(np.isfinite(query_vec)) or float(np.linalg.norm(query_vec)) <= 0.0:
                 raise RuntimeError("query encoder returned invalid vector")
             fetch_k = max(limit * 2, limit)
-            if self.dense_search is not None:
-                raw_dense = self.dense_search(query_vec, fetch_k)
-                dense_ids = [r[0] if isinstance(r, tuple) else str(r) for r in raw_dense]
-                dense_backend = "ann"
-            else:
-                dense_rows = self.vector_store.search(query_vec, fetch_k)
-                dense_ids = [item_id for item_id, _ in dense_rows]
-                dense_backend = "exact"
+            max_fetch = max(fetch_k, min(4000, limit * 32))
+            metadata = {}
+            while True:
+                if self.dense_search is not None:
+                    raw_dense = self.dense_search(query_vec, fetch_k)
+                    dense_ids = [r[0] if isinstance(r, tuple) else str(r) for r in raw_dense]
+                    dense_backend = "ann"
+                else:
+                    dense_rows = self.vector_store.search(query_vec, fetch_k)
+                    dense_ids = [item_id for item_id, _ in dense_rows]
+                    dense_backend = "exact"
+                dense_ids = list(dict.fromkeys(dense_ids))
+                for start in range(0, len(dense_ids), 500):
+                    chunk = dense_ids[start:start + 500]
+                    placeholders = ",".join("?" for _ in chunk)
+                    dense_sql = f"SELECT {cols} FROM items WHERE items.item_id IN ({placeholders}) AND {where}"
+                    dense_meta, _ = self.corpus.select(dense_sql, [*chunk, *params], max_rows=len(chunk))
+                    metadata.update({row["item_id"]: row for row in dense_meta})
+                surviving_ids = [iid for iid in dense_ids if iid in metadata]
+                if len(surviving_ids) >= limit or len(dense_ids) < fetch_k or fetch_k >= max_fetch:
+                    dense_fetch_limited = len(surviving_ids) < limit and len(dense_ids) >= fetch_k
+                    dense_ids = surviving_ids
+                    break
+                fetch_k = min(fetch_k * 2, max_fetch)
         except Exception as exc:
             if self.fallback_to_bm25:
                 out = {
@@ -256,15 +280,9 @@ class SearchTool(Tool):
                 }
                 if translation_info is not None:
                     out["translated_query"] = effective_query
-                return out
+                return record_generation(out, "fts_matches" if lexical_probe else "bm25_fetch",
+                                         item_ids=indexed_ids, query=lexical_probe)
             raise
-        metadata = {}
-        if dense_ids:
-            placeholders = ",".join("?" for _ in dense_ids)
-            dense_sql = f"SELECT {cols} FROM items WHERE items.item_id IN ({placeholders}) AND {where}"
-            dense_meta, _ = self.corpus.select(dense_sql, [*dense_ids, *params], max_rows=len(dense_ids))
-            metadata = {row["item_id"]: row for row in dense_meta}
-        dense_ids = [item_id for item_id in dense_ids if item_id in metadata]
         lexical_rank = {row["item_id"]: rank for rank, row in enumerate(rows, 1)}
         dense_rank = {item_id: rank for rank, item_id in enumerate(dense_ids, 1)}
         union = set(lexical_rank) | set(dense_rank)
@@ -288,7 +306,10 @@ class SearchTool(Tool):
             "retrieval": "rrf",
             "dense_backend": dense_backend,
             "dense_candidates": len(dense_ids),
+            "dense_fetch_k": fetch_k,
+            "dense_fetch_limited": dense_fetch_limited,
         }
         if translation_info is not None:
             out["translated_query"] = effective_query
-        return out
+        return record_generation(out, "lexical_matches_and_dense_fetch", query=lexical_probe,
+                                 item_ids=(*indexed_ids, *dense_ids))

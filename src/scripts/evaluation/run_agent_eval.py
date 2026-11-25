@@ -77,6 +77,7 @@ from package.api import build_llm_provider
 from package.api import LLMProviderError
 from package.inference import compose_answer, get_inference_limits, outcome_from_plan_results, outcome_from_type1
 from package.tools import BaselineScorer, HybridScorer, LearnedScorer, ToolCallLogger
+from package.tools.retrieval.candidate_trace import attach_candidate_trace, trace_candidates
 from package.recommenders.offline.hybrid_item_knn_recommender import HybridItemKNNRecommender
 from package.recommenders.offline.item_knn_matrix_recommender import ItemKNNMatrixRecommender
 from package.corpus.build_corpus import build_corpus
@@ -84,7 +85,7 @@ from package.corpus.load_corpus import load_corpus
 from package.evaluation.recommender.experiment import next_experiment_dir, save_experiment
 from package.evaluation.recommender.config import segment_users_by_history, select_fit_target
 from package.evaluation.recommender.utils import sha256_file
-from package.embeddings.build_dense_retrieval import build_dense_retrieval
+from package.embeddings.build_runtime_retrieval import build_runtime_retrieval
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared import item_knn_data_hash, mapping_hash
 from package.recommenders.shared.load_item_knn import load_item_knn
@@ -548,11 +549,15 @@ def main() -> None:
     # scripts/data_pipeline/build_item_availability.py. Absent file simply
     # leaves first_seen_ts as the only visibility gate, as before.
     availability = None
+    availability_sha256 = None
     if bool(cfg.get("availability_dates")):
         avail_path = _corpus_file.parent / "item_availability.parquet" \
             if _corpus_file is not None else None
         if avail_path is not None and avail_path.exists():
-            avail_df = pd.read_parquet(avail_path, columns=["item_id", "avail_ts"])
+            with avail_path.open("rb") as source:
+                availability_sha256 = hashlib.file_digest(source, "sha256").hexdigest()
+                source.seek(0)
+                avail_df = pd.read_parquet(source, columns=["item_id", "avail_ts"])
             availability = {
                 r.item_id: int(r.avail_ts) for r in avail_df.itertuples(index=False)
             }
@@ -571,6 +576,8 @@ def main() -> None:
         target_df=target_df, user2id=user2id, item2id=item2id, segments=seg_of,
         sampled={}, metadata_policy=metadata_policy, evaluation_kind="agent",
         cohort_policy=cohort_policy_for_paths(data_paths))
+    if availability_sha256 is not None:
+        protocol_manifest["availability_sha256"] = availability_sha256
 
     knn_k = int(baselines["item_knn"]["k"])
     fit_pairs = fit_df[["user_idx", "item_idx"]]
@@ -654,33 +661,27 @@ def main() -> None:
     }
     protocol_manifest["scorer"] = scorer_provenance
 
-    # Optional dense retrieval leg for SearchTool (configs/eval/dense_retrieval.yaml).
-    # enabled=true with missing/invalid artifacts raises — never silently BM25-only.
+    # Use the same retrieval assembly as the demo; evaluation never silently falls back.
+    retrieval_cfg = dict(load_config("agent/demo")["demo"])
+    retrieval_cfg["fallback_to_bm25"] = False
     dense_cfg = load_config("eval/dense_retrieval")["dense_retrieval"]
-    vector_store = query_encoder = None
-    dense_provenance: dict[str, Any] | None = None
-    if dense_cfg.get("enabled"):
-        src_root = Path(__file__).resolve().parents[2]
-        if not dense_cfg.get("artifacts_dir") or not dense_cfg.get("encoder_lock"):
-            raise SystemExit(
-                "dense_retrieval.enabled=true requires artifacts_dir and encoder_lock "
-                "in configs/eval/dense_retrieval.yaml"
-            )
-        vector_store, query_encoder, dense_provenance = build_dense_retrieval(
-            src_root / dense_cfg["artifacts_dir"],
-            src_root / dense_cfg["encoder_lock"],
-            rrf_k=int(dense_cfg.get("rrf_k", 60)),
+    if dense_cfg.get("enabled") and (not dense_cfg.get("artifacts_dir") or not dense_cfg.get("encoder_lock")):
+        raise SystemExit(
+            "dense_retrieval.enabled=true requires artifacts_dir and encoder_lock "
+            "in configs/eval/dense_retrieval.yaml"
         )
-        print(
-            f"Dense retrieval: {dense_provenance['valid_rows']}/{dense_provenance['rows']} items, "
-            f"encoder={dense_provenance['encoder_model_id']}@{str(dense_provenance['encoder_revision'])[:12]}"
-        )
-    protocol_manifest["dense_retrieval"] = dense_provenance or {"enabled": False}
+    retrieval_options, dense_provenance = build_runtime_retrieval(
+        retrieval_cfg,
+        dense_cfg,
+        corpus_path=data_paths.corpus_path,
+        default_embeddings=data_paths.corpus_dir / f"item_embeddings_{data_paths.tag}.npz",
+    )
+    protocol_manifest["dense_retrieval"] = dense_provenance
     protocol_manifest["distill_spec"] = {"enabled": distill_spec}
 
     tools = build_tools(
         knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=as_of,
-        vector_store=vector_store, query_encoder=query_encoder, rrf_k=int(dense_cfg.get("rrf_k", 60)),
+        **retrieval_options,
     )
 
     runners: dict[str, Any] = {}
@@ -719,10 +720,21 @@ def main() -> None:
     # eval sets that cannot be produced by build_requests (e.g. LLM-descriptive queries).
     requests_file = cfg.get("requests_file")
     if requests_file:
-        requests = [
-            AgentRequest(**json.loads(line))
-            for line in Path(requests_file).read_text(encoding="utf-8").splitlines() if line.strip()
-        ]
+        requests = []
+        request_id_lines: dict[str, int] = {}
+        with Path(requests_file).open(encoding="utf-8") as source:
+            for line_number, line in enumerate(source, start=1):
+                if not line.strip():
+                    continue
+                request = AgentRequest(**json.loads(line))
+                if request.request_id in request_id_lines:
+                    first_line = request_id_lines[request.request_id]
+                    raise ValueError(
+                        f"{requests_file}:{line_number}: duplicate request_id "
+                        f"{request.request_id!r} (first seen on line {first_line})"
+                    )
+                request_id_lines[request.request_id] = line_number
+                requests.append(request)
         print(f"Loaded {len(requests)} requests from {requests_file}", flush=True)
     else:
         descriptive_queries = None
@@ -816,16 +828,22 @@ def main() -> None:
                 if key in done:
                     trajectories.append(done[key])
                     continue
-                if agent in PLANNER_AGENTS:
-                    traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=session_enabled)
-                elif agent == "type1":
-                    traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
+                if agent in PLANNER_AGENTS or agent == "type1":
+                    with trace_candidates(id2item[t] for t in request.targets if t in id2item) as trace:
+                        if agent in PLANNER_AGENTS:
+                            traj = run_planner(runners[agent], request, agent, k, answerer=answerer, inference_mode=inference_mode, session_enabled=session_enabled)
+                        else:
+                            traj = run_type1(runners["type1"], request, k, answerer=answerer, inference_mode=inference_mode)
+                    attach_candidate_trace(traj["steps"], trace)
                 else:
+                    assert request.user_idx is not None
                     traj = empty_trajectory(request, agent, [])
                     started = time.perf_counter()
-                    predicted = (baseline_model.recommend(request.user_idx, k, exclude=knn.user_items)
-                                 if scorer_mode == "hybrid" else baseline_model.recommend(request.user_idx, k))
-                    traj["recommended"] = [id2item[i] for i in predicted[:k] if i in id2item]
+                    if isinstance(baseline_model, HybridItemKNNRecommender):
+                        predicted = baseline_model.recommend(request.user_idx, k, exclude=knn.user_items)
+                    else:
+                        predicted = baseline_model.recommend(request.user_idx, k)
+                    traj["recommended"] = [id2item[int(i)] for i in predicted[:k] if int(i) in id2item]
                     traj["wall_seconds"] = round(time.perf_counter() - started, 3)
                 logger.records.clear()
                 traj["evaluation_protocol_hash"] = protocol_hash

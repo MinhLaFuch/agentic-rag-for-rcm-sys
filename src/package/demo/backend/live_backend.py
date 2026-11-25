@@ -24,14 +24,15 @@ from package.inference import compose_answer, get_inference_limits, MODES, outco
 from package.corpus import ItemCorpus
 from package.tools.base import ToolCallLogger
 from package.tools.scoring import BaselineScorer, HybridScorer
-from pathlib import Path
 from package.corpus import build_corpus
 from package.corpus.load_corpus import load_corpus
 from package.data._shared.select_fit_target import select_fit_target
+from package.embeddings.build_runtime_retrieval import build_runtime_retrieval
 from package.recommenders.runtime.item_knn_recommender import ItemKNNRecommender
 from package.recommenders.shared.load_item_knn import load_item_knn
 from package.recommenders.shared.provenance import fit_provenance
 from package.recommenders.shared import item_knn_data_hash
+from package.evaluation.recommender.analysis.build_core_model import build_core_model
 from .._profile_builder import build_profiles
 from ..adapter import adapt_from_inference, adapt_from_plan_executor, adapt_from_plan_executor_error
 from ..samples import IDENTITY_INJECTION_EN, IDENTITY_INJECTION_VI
@@ -150,41 +151,50 @@ class LiveBackend:
         print("Đang nạp ItemKNN...")
         knn_k = int(baselines_cfg["item_knn"]["k"])
         fit_pairs = fit_df[["user_idx", "item_idx"]]
-        if self._use_prebuilt:
-            item_knn_path = data_paths.item_knn_path(self._eval_on)
-            if not item_knn_path.exists():
-                raise RuntimeError(
-                    f"ItemKNN file not found: {item_knn_path}\n"
-                    f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4\n"
-                    f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
-                )
-            print(f"Load ItemKNN from {item_knn_path}")
-            try:
-                knn = load_item_knn(item_knn_path, knn_k, fit_pairs, user2id=user2id,
-                                     item2id=item2id, eval_on=self._eval_on, tag=data_paths.tag)
-                self._knn_provenance = {"status": "validated_cache", **knn._provenance}
-                fit_time = getattr(knn, "_fit_time", None)
-                print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
-            except ValueError as exc:
-                print(f"  ItemKNN cache rejected ({exc}); fitting from current fit split and mappings")
-                self._knn_provenance = {"status": "refit_cache_rejected", "reason": str(exc)}
+        core_knn = build_core_model(data_paths, self._eval_on, knn_k, fit_df, user2id, item2id)
+        if core_knn is not None:
+            knn = core_knn
+            self._knn_provenance = {
+                "status": knn._evaluation_artifact_status,
+                **knn._evaluation_fit_provenance,
+            }
+        else:
+            if self._use_prebuilt:
+                item_knn_path = data_paths.item_knn_path(self._eval_on)
+                if not item_knn_path.exists():
+                    raise RuntimeError(
+                        f"ItemKNN file not found: {item_knn_path}\n"
+                        f"Run: python scripts/data_pipeline/run_pipeline.py --stages 4\n"
+                        f"Or set use_prebuilt_corpus: false in configs/agent/demo.yaml (slower, for debug or small datasets)"
+                    )
+                print(f"Load ItemKNN from {item_knn_path}")
+                try:
+                    knn = load_item_knn(item_knn_path, knn_k, fit_pairs, user2id=user2id,
+                                         item2id=item2id, eval_on=self._eval_on, tag=data_paths.tag)
+                    self._knn_provenance = {"status": "validated_cache", **knn._provenance}
+                    fit_time = getattr(knn, "_fit_time", None)
+                    print(f"ItemKNN: loaded from {item_knn_path} (fit took {fit_time:.1f}s when saved)" if fit_time else f"ItemKNN: loaded from {item_knn_path}")
+                except ValueError as exc:
+                    print(f"  ItemKNN cache rejected ({exc}); fitting from current fit split and mappings")
+                    self._knn_provenance = {"status": "refit_cache_rejected", "reason": str(exc)}
+                    t0 = time.perf_counter()
+                    knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
+                    knn._fit_time = time.perf_counter() - t0
+                    print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
+            else:
+                self._knn_provenance = {"status": "refit_requested"}
+                print("Fit ItemKNN on fit data (use_prebuilt_corpus=false)")
                 t0 = time.perf_counter()
                 knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
                 knn._fit_time = time.perf_counter() - t0
                 print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
-        else:
-            self._knn_provenance = {"status": "refit_requested"}
-            print("Fit ItemKNN on fit data (use_prebuilt_corpus=false)")
-            t0 = time.perf_counter()
-            knn = ItemKNNRecommender(knn_k).fit(fit_pairs)
-            knn._fit_time = time.perf_counter() - t0
-            print(f"ItemKNN: fitted in {knn._fit_time:.1f}s")
 
         if not hasattr(knn, "_fit_data_hash"):
             knn._fit_data_hash = item_knn_data_hash(fit_pairs)
-        self._knn_provenance.update(
-            fit_provenance(fit_pairs, user2id=user2id, item2id=item2id,
-                           eval_on=self._eval_on, tag=data_paths.tag))
+        if core_knn is None:
+            self._knn_provenance.update(
+                fit_provenance(fit_pairs, user2id=user2id, item2id=item2id,
+                               eval_on=self._eval_on, tag=data_paths.tag))
         self._knn_provenance.update(data_hash=knn._fit_data_hash, neighbors=knn_k)
 
         # Build tools
@@ -198,78 +208,17 @@ class LiveBackend:
             "popularity_weight": scorer_weight if scorer_mode == "hybrid" else scorer.popularity_weight,
         }
 
-        retrieval_mode = str(demo_cfg.get("retrieval_mode", "bm25"))
-        fallback_to_bm25 = bool(demo_cfg.get("fallback_to_bm25", True))
-        translate_vietnamese = bool(demo_cfg.get("translate_vietnamese", True))
-        vector_store = None
-        query_encoder = None
-        dense_search = None
-        bm25_index = None
-        bm25_raw = demo_cfg.get("bm25_index_path")
-        if bm25_raw:
-            try:
-                from package.embeddings import SparseBM25Index
-                bm25_index = SparseBM25Index.load(Path(bm25_raw))
-                print(f"[runtime bm25] active=sparse_bm25 ({len(bm25_index):,} items)")
-            except Exception as exc:
-                if not fallback_to_bm25:
-                    raise RuntimeError(f"SparseBM25Index load failed: {exc}") from exc
-                print(f"[runtime bm25] fallback=sqlite_fts5 reason={type(exc).__name__}: {exc}")
-        if retrieval_mode == "hybrid":
-            emb_raw = demo_cfg.get("embeddings_path")
-            emb_path = Path(emb_raw) if emb_raw else (data_paths.corpus_dir / f"item_embeddings_{data_paths.tag}.npz")
-            try:
-                from scripts.data_pipeline.build_item_embeddings import load_validated_embeddings
-                from package.embeddings import TextEncoder
-                vector_store, encoder_impl, emb_prov = load_validated_embeddings(emb_path, data_paths.corpus_path)
-                query_encoder = TextEncoder(encoder_impl.encode, dimension=vector_store.dimension)
-                ann_raw = demo_cfg.get("ann_index_path")
-                if ann_raw:
-                    from scripts.evaluation.ann_validation import build_ann_search
-                    import numpy as np
-                    ann_fn = build_ann_search(vector_store, {
-                        "index": "hnsw_sq8", "m": 32, "ef_search": 1024, "warmup_queries": 100,
-                        "index_path": str(Path(ann_raw)),
-                        "expected_embedding_build_id": emb_prov.get("build_id"),
-                    })
-                    all_valid = np.ones(len(vector_store.item_ids), dtype=bool)
-                    dense_search = lambda vec, k, _fn=ann_fn, _v=all_valid: _fn(vec, _v, set(), k)
-                self._retrieval_provenance = {
-                    "requested": "hybrid",
-                    "active": "hybrid",
-                    "dense_backend": "ann" if dense_search is not None else "exact",
-                    "bm25_backend": "sparse_bm25" if bm25_index is not None else "sqlite_fts5",
-                    "fallback_to_bm25": fallback_to_bm25,
-                    "embeddings_path": str(emb_path),
-                    "provider": emb_prov.get("provider"),
-                    "model_name": emb_prov.get("model_name"),
-                    "build_id": emb_prov.get("build_id"),
-                }
-                print(f"[runtime retrieval] active=hybrid dense={self._retrieval_provenance['dense_backend']} bm25={self._retrieval_provenance['bm25_backend']} ({len(vector_store):,} vectors)")
-            except Exception as exc:
-                if not fallback_to_bm25:
-                    raise RuntimeError(f"Hybrid retrieval initialization failed (fallback disabled): {exc}") from exc
-                vector_store = None
-                query_encoder = None
-                self._retrieval_provenance = {
-                    "requested": "hybrid",
-                    "active": "bm25_fallback",
-                    "fallback_to_bm25": True,
-                    "embeddings_path": str(emb_path),
-                    "reason": f"{type(exc).__name__}: {exc}",
-                }
-                print(f"[runtime retrieval] fallback=bm25_fallback reason={type(exc).__name__}: {exc}")
-        else:
-            self._retrieval_provenance = {"requested": "bm25", "active": "bm25", "fallback_to_bm25": fallback_to_bm25}
-            print("[runtime retrieval] active=bm25")
+        retrieval_options, self._retrieval_provenance = build_runtime_retrieval(
+            demo_cfg, load_config("eval/dense_retrieval")["dense_retrieval"],
+            corpus_path=data_paths.corpus_path,
+            default_embeddings=data_paths.corpus_dir / f"item_embeddings_{data_paths.tag}.npz",
+        )
         print(f"[runtime scorer] active={self._scorer_provenance['name']} (mode={scorer_mode})")
 
         logger = ToolCallLogger()
         tools = build_tools(
             knn, scorer, user2id, item2id, fit_df, corpus, logger=logger, as_of_timestamp=None,
-            vector_store=vector_store, query_encoder=query_encoder, dense_search=dense_search,
-            fallback_to_bm25=fallback_to_bm25, bm25_index=bm25_index,
-            translate_vietnamese=translate_vietnamese,
+            **retrieval_options,
         )
 
         # Reuse the same MemoryTool instance for snapshots (it is stateless,

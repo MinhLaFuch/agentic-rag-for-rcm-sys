@@ -94,7 +94,7 @@ class MemoryTool(Tool):
 
         # Get recent items: sort by timestamp descending if available, otherwise original order
         if "timestamp" in hist.columns:
-            hist_sorted = hist.sort_values("timestamp", ascending=False)
+            hist_sorted = hist.sort_values("timestamp", ascending=False, kind="stable")
         else:
             hist_sorted = hist
         recent_hist_idx = hist_sorted["item_idx"].head(self.limits.recent_items).tolist()
@@ -127,29 +127,19 @@ class MemoryTool(Tool):
         hated_items_sorted = []
 
         if "rating" in hist.columns:
-            # Compute category-level love/hate based on ratings
-            hist_with_rating = hist.merge(
-                hist.groupby("item_idx")["rating"].mean().reset_index(),
-                on="item_idx",
-                suffixes=("", "_avg")
-            )
-            
             # Get categories for each item
             cat_rows_all, _ = self.corpus.select(
                 f"SELECT item_id, category FROM item_categories WHERE item_id IN ({placeholders})", tuple(item_ids)
             )
-            item_to_cats = {}
+            item_to_cats: dict[str, list[str]] = {}
             for row in cat_rows_all:
                 item_to_cats.setdefault(row["item_id"], []).append(row["category"])
 
-            # Build love/hate lists
-            for _, row in hist.iterrows():
-                item_id = self.id2item.get(row["item_idx"])
+            for item_idx_val, rating in zip(hist["item_idx"].tolist(), hist["rating"].tolist()):
+                item_id = self.id2item.get(item_idx_val)
                 if item_id is None:
                     continue
-                rating = row["rating"]
                 cats = item_to_cats.get(item_id, [])
-                
                 if rating >= self.limits.love_min_rating:
                     love_categories.extend(cats)
                     loved_items.append(item_id)
@@ -157,10 +147,9 @@ class MemoryTool(Tool):
                     hate_categories.extend(cats)
                     hated_items.append(item_id)
 
-            # Deduplicate and limit
             love_categories = list(dict.fromkeys(love_categories))[:top_n_categories]
             hate_categories = list(dict.fromkeys(hate_categories))[:top_n_categories]
-            
+
             # Sort loved/hated items by rating and limit
             item_ratings = hist.groupby("item_idx")["rating"].mean().to_dict()
             loved_items_sorted = sorted(
