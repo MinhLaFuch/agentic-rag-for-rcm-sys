@@ -228,8 +228,8 @@ can't express the request.
 - **Commits on `tools-building`**: `1bc8f78` avail_extra fix, `899a880`
   review probe, `d4867b8` category_unverified + wrapper + analyses,
   `ca9e74e` materialized items + dep-direction exception, `3d680ed`
-  exp_3 verdict + wrapper fatal-abort. `distill_spec` default now ON;
-  `availability_dates` still OFF pending decision (§6.2).
+  exp_3 verdict + wrapper fatal-abort. Both A/B flags now default ON
+  (`distill_spec`, `availability_dates`) — see §6.2.
 
 ## 6. Open decisions (priority order)
 
@@ -248,8 +248,9 @@ can't express the request.
    planner sampling; heavy NOT EXISTS timeouts occur on any access
    path). Pre-staged criterion was non-inferiority ≥−5pp — strictly
    read it fails on exclusion, but the failure is not feature-caused.
-   Recommendation: flip ON (correctness fix + replicated gains); a
-   replicate would only re-roll clarify luck, not isolate the feature.
+   **DECIDED 2026-11-25: ON** (user call) — `agent_eval.
+   availability_dates: true` committed; materialized-items implementation
+   means the flag now also makes catalog scans FASTER than the old view.
 3. **Commit/PR scope (Q21/Q22)** — large uncommitted WIP across the whole arc;
    `configs/historical/.../baselines.yaml` LF fix must be included;
    `stash@{0}` must not be touched. Run GitNexus `detect_changes` first.
@@ -274,8 +275,8 @@ can't express the request.
    prompt_fix exp_2). **A/B DONE (exp_2 view-perf bug → materialized
    items fix → exp_3 clean)**: gains replicate (cold_text 1.00, spec_
    precision +0.20 CI excl. 0, personalized ok 1.00); exclusion −7.5pp
-   proven planner-sampling confound, not feature-caused. Flag decision
-   pending user call — see §6.2.
+   proven planner-sampling confound, not feature-caused. Flag flipped
+   ON by user decision — see §6.2.
    **features/description enrichment PROBED — no headroom for this eval**
    (`investigations/dropped_fields_probe.py/.json`): 195 missed targets,
    100% have dropped fields, but new query-token signal from them is
