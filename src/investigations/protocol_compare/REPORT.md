@@ -238,25 +238,42 @@ H@1=0.5 trên pool-10, câu hỏi đúng là "nó có hơn popularity baseline
 
 ---
 
-## 7. Đề xuất báo cáo công bằng cho project (không sửa code)
+## 7. Đề xuất khung đánh giá 2 Protocol cho project
 
-1. **Baseline bắt buộc đi kèm mọi con số:** `popularity` (causal fit-count,
+1. **Thiết kế 2 Protocol bổ trợ (thay vì phụ thuộc vào sampled negative pool):**
+   - **Protocol 1 — Full-Catalog Evaluation (Hard / Deployment Setting):**
+     Giữ nguyên toàn bộ visible universe (`first_seen_ts <= as_of`, ~2.00M items)
+     làm không gian tìm kiếm. Đo đồng thời khả năng retrieval toàn cục,
+     chọn công cụ của agent và chống nhiễu liên miền.
+   - **Protocol 2 — Category-Constrained Evaluation (Category-level Setting):**
+     Giới hạn tập ứng viên theo **toàn bộ visible items thuộc một category
+     xác định** (loại bỏ `fit` history, **không dùng random negative sampling**),
+     tránh hoàn toàn bias `uniform` vs `popneg`. Trong `protocol_emulation.py`
+     đã chuẩn hóa 3 biến thể kiểm soát bias:
+     - `category_coarse`: toàn bộ `(domain, main_category)` của target chính
+       (fallback `domain` nếu thiếu). Phù hợp cho bài toán constraint-given.
+     - `category_fine_min100`: leaf category (`item_categories`), tự động lùi
+       lên `(domain, main_category)` rồi `domain` khi `|pool| < 100` để tránh
+       các category siêu nhỏ cho `Recall@10 = 1.0` một cách tầm thường.
+     - `category_history_coarse`: biến thể **non-oracle** (zero target leakage)
+       chỉ suy ra `(domain, main_category)` từ lịch sử `fit` của user (cold
+       user fallback về `full_catalog`).
+     Mỗi biến thể đều ghi kèm `pool_stats` (`min`, `p25`, `median`, `mean`, `max`
+     và `targets_in_pool_rate`).
+2. **Baseline bắt buộc đi kèm mọi con số:** `popularity` (causal fit-count,
    đúng proxy dc100d1) và `same_category_as_history` — cả hai đã có
-   implementation tham chiếu trong `protocol_emulation.py`. Báo cả
-   "lift vs popularity" lẫn "lift vs random-expected".
-2. **Giữ full-catalog làm metric chính.** Nếu muốn so literature, thêm
-   **một chế độ phụ "sampled-pool"** (vd pool-100 uniform + popularity-
-   sampled negatives) chạy trên cùng 196 target — chi phí thấp (emulator
-   đã có), và báo rõ "đây là metric phụ để đối chiếu paper, không phải
-   metric deployment".
-3. **Khi trích số paper:** luôn kèm (a) kích thước pool, (b) cách sample
-   negative, (c) metric có đo retrieval không, (d) cỡ catalog. Một dòng
+   implementation tham chiếu trong `protocol_emulation.py` (tính theo request
+   với loại `fit` history và `std` theo seed). Báo cả "lift vs popularity" lẫn
+   "lift vs random-expected".
+3. **Khi trích số paper (sampled-pool):** luôn kèm (a) kích thước pool, (b) cách
+   sample negative, (c) metric có đo retrieval không, (d) cỡ catalog. Một dòng
    checklist đủ — vd "ItemRAG H@1=49.1 trên pool-10 uniform, không đo
    retrieval, catalog ~vài chục nghìn".
 4. **Cảnh báo cụ thể:** mọi claim "HR@1 > 0.4" trên pool ≤20 uniform
    nên mặc định nghi ngờ — trên data ta popularity baseline đã đạt 0.43–0.53.
    Ngưỡng có nghĩa chỉ xuất hiện khi method vượt popularity baseline rõ
-   rệt (vd >0.7 trên pool-10) hoặc khi negative khó hơn (popneg/catneg).
+   rệt (vd >0.7 trên pool-10) hoặc khi negative khó hơn (`popneg`/`catneg`
+   hoặc `category_constrained` ở Protocol 2).
 5. **Với InteRecAgent nói riêng:** chỉ bước retrieval (Recall@5 full
    catalog) là so được với project; ranking NDCG@20 của họ đo re-rank
    trên pool 20 — tương đương "oracle retrieval" của ta, không phải

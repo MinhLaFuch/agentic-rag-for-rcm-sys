@@ -12,15 +12,25 @@ Data anchors (same as run_agent_eval, eval_on=validation):
                  as_of = 1617737606549)
   - universe   = corpus items with first_seen_ts <= as_of (visibility gate)
 
-Emulated protocols (per target, S seeds):
-  pool10_uniform / pool20_uniform / pool100_uniform : 1 positive + (N-1)
-      uniform negatives over the visible universe
-  pool10_popneg / pool100_popneg                    : negatives sampled prop. to
-      fit interaction count (zero-count items never drawn)
-  pool10_catneg / pool100_catneg                    : negatives from the
-      target's deepest category (fallback uniform if too few)
-  full_catalog                                      : rank the whole visible
-      universe (~2.0M items)
+Emulated / Evaluated protocols (per request, S seeds):
+  Protocol 1 (Hard / Full-catalog):
+    full_catalog                                      : rank the whole visible
+        universe (~2.0M items)
+
+  Protocol 2 (Category-constrained, zero negative-sampling bias):
+    category_coarse                                   : all visible items in the
+        primary target's (domain, main_category), fallback to domain if missing
+    category_fine_min100                              : all visible items in the
+        primary target's leaf category; steps up to (domain, main_category) then
+        domain whenever pool size < 100 (prevents degenerate Recall@10=1.0)
+    category_history_coarse                           : non-oracle variant using
+        only the user's majority (domain, main_category) from fit history
+        (cold users fall back to full visible universe)
+
+  Literature sampled-pool references (1+neg, offline sampled):
+    pool10_uniform / pool20_uniform / pool100_uniform : positives + uniform negs
+    pool10_popneg / pool100_popneg                    : negatives prop. to pop
+    pool10_catneg / pool100_catneg                    : negatives from leaf cat
 
 Baselines under every protocol: random, popularity (causal fit count,
 item_idx tiebreak), same_category_as_history (user's majority deepest
@@ -105,8 +115,17 @@ def main() -> None:
 
     # ---------- corpus: visible universe + categories ----------
     conn = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
-    vis_names = [r[0] for r in conn.execute(
-        "SELECT item_id FROM items WHERE first_seen_ts <= ?", (AS_OF,))]
+    vis_names: list[str] = []
+    main_cat_map: dict[str, tuple[str, str]] = {}
+    domain_map: dict[str, str] = {}
+    for iid, ts, mc, dom in conn.execute(
+            "SELECT item_id, first_seen_ts, main_category, domain FROM items"):
+        if dom:
+            domain_map[iid] = dom
+            if mc:
+                main_cat_map[iid] = (dom, mc)
+        if ts is not None and ts <= AS_OF:
+            vis_names.append(iid)
     # deepest category = last row per item (browse-path order, root -> leaf)
     cat_map: dict[str, str] = {}
     cur_item, cur_cat = None, None
@@ -118,24 +137,39 @@ def main() -> None:
             cur_cat = cat
         cat_map[cur_item] = cur_cat
     conn.close()
-    print(f"visible items: {len(vis_names)}  with category: {len(cat_map)}", flush=True)
+    print(
+        f"visible items: {len(vis_names)}  leaf_cat: {len(cat_map)}  "
+        f"main_cat: {len(main_cat_map)}  domain: {len(domain_map)}",
+        flush=True,
+    )
 
     univ_idx = np.array([name2idx[n] for n in vis_names if n in name2idx],
                         dtype=np.int64)
     N = len(univ_idx)
     print(f"universe (mapped): {N}", flush=True)
 
-    # deepest-category code per universe item (-1 = no category)
+    # deepest-category, (domain, main_category), and domain indices over univ_idx
     cat_code: dict[str, int] = {}
     univ_cat = np.empty(N, dtype=np.int64)
+    main_buckets: dict[tuple[str, str], list[int]] = {}
+    domain_buckets: dict[str, list[int]] = {}
     for p, i in enumerate(univ_idx):
-        c = cat_map.get(idx2name[int(i)])
+        iid = idx2name[int(i)]
+        c = cat_map.get(iid)
         if c is None:
             univ_cat[p] = -1
         else:
             if c not in cat_code:
                 cat_code[c] = len(cat_code)
             univ_cat[p] = cat_code[c]
+        mc = main_cat_map.get(iid)
+        if mc is not None:
+            main_buckets.setdefault(mc, []).append(int(i))
+        dom = domain_map.get(iid)
+        if dom is not None:
+            domain_buckets.setdefault(dom, []).append(int(i))
+    main_members = {k: np.array(v, dtype=np.int64) for k, v in main_buckets.items()}
+    domain_members = {k: np.array(v, dtype=np.int64) for k, v in domain_buckets.items()}
     code2cat = {v: k for k, v in cat_code.items()}
 
     # ---------- fit split: popularity + user histories ----------
@@ -156,25 +190,31 @@ def main() -> None:
     def cat_of_idx(item_idx: int) -> str | None:
         return cat_map.get(idx2name.get(int(item_idx), ""))
 
-    # user majority category: most frequent deepest cat over fit history;
-    # ties -> category of the most recent item that has one.
-    user_cat: dict[int, str | None] = {}
-    for u, rows_ in hist.items():
+    def main_cat_of_idx(item_idx: int) -> tuple[str, str] | None:
+        return main_cat_map.get(idx2name.get(int(item_idx), ""))
+
+    def domain_of_idx(item_idx: int) -> str | None:
+        return domain_map.get(idx2name.get(int(item_idx), ""))
+
+    def _majority_attr(rows_: list[tuple[int, int]], attr_fn):
         cnt = Counter()
         for _, it in rows_:
-            c = cat_of_idx(it)
-            if c:
-                cnt[c] += 1
+            val = attr_fn(it)
+            if val is not None:
+                cnt[val] += 1
         if not cnt:
-            user_cat[u] = None
-            continue
+            return None
         best = max(cnt.values())
-        tied = [c for c, n in cnt.items() if n == best]
+        tied = {v for v, n in cnt.items() if n == best}
         if len(tied) == 1:
-            user_cat[u] = tied[0]
-        else:
-            user_cat[u] = next((cat_of_idx(it) for _, it in reversed(rows_)
-                                if cat_of_idx(it) in tied), tied[0])
+            return next(iter(tied))
+        return next((attr_fn(it) for _, it in reversed(rows_) if attr_fn(it) in tied), next(iter(tied)))
+
+    # user majority leaf category and majority (domain, main_category) over fit history;
+    # ties -> attribute of the most recent item that has one.
+    user_cat: dict[int, str | None] = {u: _majority_attr(r_, cat_of_idx) for u, r_ in hist.items()}
+    user_main_cat: dict[int, tuple[str, str] | None] = {u: _majority_attr(r_, main_cat_of_idx) for u, r_ in hist.items()}
+    user_domain: dict[int, str | None] = {u: _majority_attr(r_, domain_of_idx) for u, r_ in hist.items()}
 
     user_hist_items: dict[int, set[int]] = {
         u: {int(it) for _, it in rows_} for u, rows_ in hist.items()
@@ -372,6 +412,156 @@ def main() -> None:
                 rows_by_seed[b].append(seed_rows[b])
         return {b: agg(v) for b, v in rows_by_seed.items()}
 
+    # ---------- category-constrained protocol (Protocol 2, deterministic) ----------
+    def category_constrained_protocol(mode: str, *, min_pool_size: int = 100) -> dict:
+        """Rank within the deterministic category pool (no random negative sampling).
+
+        Modes:
+          - 'coarse': target's (domain, main_category), fallback to domain if missing.
+          - 'fine': target's leaf category; steps up to (domain, main_category) then
+            domain when pool size < min_pool_size (avoids degenerate pools).
+          - 'history_coarse': non-oracle; user's majority (domain, main_category) from
+            fit history (fallback to user's majority domain, then full_catalog if cold).
+        """
+        pool_cache: dict[tuple, tuple[np.ndarray, dict[int, int]]] = {}
+        in_cat_cache: dict[tuple[tuple, str], list[int]] = {}
+
+        def get_pool_sorted(key: tuple, mem: np.ndarray) -> tuple[np.ndarray, dict[int, int]]:
+            if key not in pool_cache:
+                o = np.lexsort((mem, -pop[mem]))
+                mem_s = mem[o]
+                pool_cache[key] = (mem_s, {int(i): r for r, i in enumerate(mem_s)})
+            return pool_cache[key]
+
+        def get_cat_ranks(key: tuple, cat: str, pool_rank_of: dict[int, int]) -> list[int]:
+            ckey = (key, cat)
+            if ckey not in in_cat_cache:
+                in_cat_cache[ckey] = sorted(
+                    pool_rank_of[int(x)] for x in members_of(cat) if int(x) in pool_rank_of
+                )
+            return in_cat_cache[ckey]
+
+        def select_pool_for_request(c: dict) -> tuple[tuple, np.ndarray, str]:
+            primary_t = c["targets"][0]
+            if mode == "history_coarse":
+                mc = user_main_cat.get(c["user_idx"])
+                if mc is not None and len(main_members.get(mc, ())) > 0:
+                    return ("main", mc), main_members[mc], "history_main_category"
+                dom = user_domain.get(c["user_idx"])
+                if dom is not None and len(domain_members.get(dom, ())) > 0:
+                    return ("domain", dom), domain_members[dom], "history_domain_fallback"
+                return ("full",), univ_idx, "cold_full_catalog_fallback"
+
+            if mode == "fine":
+                lc = target_cats.get(primary_t)
+                lmem = members_of(lc) if lc is not None else np.empty(0, dtype=np.int64)
+                if lc is not None and len(lmem) >= min_pool_size:
+                    return ("leaf", lc), lmem, "leaf_category"
+                mc = main_cat_of_idx(primary_t)
+                mmem = main_members.get(mc, np.empty(0, dtype=np.int64)) if mc is not None else np.empty(0, dtype=np.int64)
+                if mc is not None and len(mmem) >= min_pool_size:
+                    return ("main", mc), mmem, "fallback_main_category"
+                dom = domain_of_idx(primary_t)
+                if dom is not None and len(domain_members.get(dom, ())) > 0:
+                    return ("domain", dom), domain_members[dom], "fallback_domain"
+                return ("full",), univ_idx, "fallback_full_catalog"
+
+            # mode == "coarse"
+            mc = main_cat_of_idx(primary_t)
+            mmem = main_members.get(mc, np.empty(0, dtype=np.int64)) if mc is not None else np.empty(0, dtype=np.int64)
+            if mc is not None and len(mmem) > 0:
+                return ("main", mc), mmem, "main_category"
+            dom = domain_of_idx(primary_t)
+            if dom is not None and len(domain_members.get(dom, ())) > 0:
+                return ("domain", dom), domain_members[dom], "fallback_domain"
+            return ("full",), univ_idx, "fallback_full_catalog"
+
+        pool_sizes: list[int] = []
+        resolution_counts: Counter = Counter()
+        targets_total = 0
+        targets_in_pool = 0
+        req_selections = []
+        for c in cases:
+            key, mem, res_kind = select_pool_for_request(c)
+            pool_s, pool_rank_of = get_pool_sorted(key, mem)
+            u_hist = user_hist_items.get(c["user_idx"], set())
+            hist_in_pool = [h for h in u_hist if h in pool_rank_of]
+            n_avail = max(1, len(pool_s) - len(hist_in_pool))
+            pool_sizes.append(n_avail)
+            resolution_counts[res_kind] += 1
+            for t in c["targets"]:
+                targets_total += 1
+                if t in pool_rank_of:
+                    targets_in_pool += 1
+            req_selections.append((c, key, pool_s, pool_rank_of, hist_in_pool, n_avail))
+
+        rows_by_seed = {b: [] for b in ("random", "popularity", "same_category")}
+        for seed in SEEDS:
+            rng = np.random.default_rng(3000 + seed)
+            seed_rows = {b: [] for b in ("random", "popularity", "same_category")}
+            for c, key, pool_s, pool_rank_of, hist_in_pool, n_avail in req_selections:
+                targets = c["targets"]
+                n_pool = len(pool_s)
+                # random inside pool
+                rand_pos = rng.choice(n_avail, size=min(len(targets), n_avail), replace=False).tolist()
+                if len(rand_pos) < len(targets):
+                    rand_pos.extend([n_avail] * (len(targets) - len(rand_pos)))
+                seed_rows["random"].append(metrics_from_positions(rand_pos, KS))
+
+                # popularity inside pool (excluding fit history)
+                pop_positions = []
+                for t in targets:
+                    if t not in pool_rank_of:
+                        pop_positions.append(n_pool)
+                    else:
+                        r = pool_rank_of[t]
+                        hist_above = sum(1 for h in hist_in_pool if pool_rank_of[h] < r)
+                        pop_positions.append(r - hist_above)
+                seed_rows["popularity"].append(metrics_from_positions(pop_positions, KS))
+
+                # same_category: boost user's majority leaf category inside the pool
+                C = user_cat.get(c["user_idx"])
+                if C is None:
+                    cat_positions = pop_positions
+                else:
+                    c_ranks = get_cat_ranks(key, C, pool_rank_of)
+                    nC = len(c_ranks)
+                    hist_in_C = [h for h in hist_in_pool if cat_of_idx(h) == C]
+                    hist_out_C = [h for h in hist_in_pool if cat_of_idx(h) != C]
+                    nC_avail = nC - len(hist_in_C)
+                    cat_positions = []
+                    for t in targets:
+                        if t not in pool_rank_of:
+                            cat_positions.append(n_pool)
+                            continue
+                        r = pool_rank_of[t]
+                        c_above = bisect_left(c_ranks, r)
+                        if target_cats.get(t) == C:
+                            hist_c_above = sum(1 for h in hist_in_C if pool_rank_of[h] < r)
+                            cat_positions.append(c_above - hist_c_above)
+                        else:
+                            hist_out_above = sum(1 for h in hist_out_C if pool_rank_of[h] < r)
+                            cat_positions.append(nC_avail + max(0, (r - c_above) - hist_out_above))
+                seed_rows["same_category"].append(metrics_from_positions(cat_positions, KS))
+            for b in rows_by_seed:
+                rows_by_seed[b].append(seed_rows[b])
+
+        out = {b: agg(v) for b, v in rows_by_seed.items()}
+        out["pool_stats"] = {
+            "min_pool_size_threshold": min_pool_size if mode == "fine" else None,
+            "pool_size_min": int(np.min(pool_sizes)),
+            "pool_size_p25": float(np.percentile(pool_sizes, 25)),
+            "pool_size_median": float(np.median(pool_sizes)),
+            "pool_size_mean": float(np.mean(pool_sizes)),
+            "pool_size_p75": float(np.percentile(pool_sizes, 75)),
+            "pool_size_max": int(np.max(pool_sizes)),
+            "targets_total": targets_total,
+            "targets_in_pool": targets_in_pool,
+            "targets_in_pool_rate": float(targets_in_pool / targets_total) if targets_total else 0.0,
+            "resolution_counts": dict(resolution_counts),
+        }
+        return out
+
     # ---------- run ----------
     results = {"meta": {
         "as_of": AS_OF, "seeds": SEEDS,
@@ -400,8 +590,16 @@ def main() -> None:
         print(f"running {name} ...", flush=True)
         results["protocols"][name] = pool_protocol(ps, var)
 
-    print("running full_catalog ...", flush=True)
+    print("running full_catalog (Protocol 1) ...", flush=True)
     results["protocols"]["full_catalog"] = full_catalog_protocol()
+
+    for name, mode, min_ps in [
+        ("category_coarse", "coarse", 1),
+        ("category_fine_min100", "fine", 100),
+        ("category_history_coarse", "history_coarse", 1),
+    ]:
+        print(f"running {name} (Protocol 2) ...", flush=True)
+        results["protocols"][name] = category_constrained_protocol(mode, min_pool_size=min_ps)
 
     OUT.write_text(json.dumps(results, ensure_ascii=False, indent=2),
                    encoding="utf-8")
@@ -409,7 +607,17 @@ def main() -> None:
 
     for pname, prot in results["protocols"].items():
         print(f"\n== {pname} ==")
+        if "pool_stats" in prot:
+            ps = prot["pool_stats"]
+            print(
+                f"  [pool_stats] median={ps['pool_size_median']:.0f} "
+                f"(min={ps['pool_size_min']}, max={ps['pool_size_max']}) "
+                f"in_pool={ps['targets_in_pool']}/{ps['targets_total']} "
+                f"resolutions={ps['resolution_counts']}"
+            )
         for b, mets in prot.items():
+            if b == "pool_stats":
+                continue
             line = f"  {b:14s}"
             for k in ("HR@1", "Recall@5", "Recall@10", "NDCG@10"):
                 if k in mets:
