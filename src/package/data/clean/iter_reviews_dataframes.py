@@ -9,7 +9,11 @@ import pandas as pd
 
 
 def iter_reviews_dataframes(
-    path: str | Path, *, columns: list[str] | None = None, chunksize: int
+    path: str | Path,
+    *,
+    columns: list[str] | None = None,
+    optional_columns: list[str] | None = None,
+    chunksize: int,
 ) -> Iterator[pd.DataFrame]:
     """Yield review rows in bounded-size DataFrames.
 
@@ -33,5 +37,8 @@ def iter_reviews_dataframes(
             missing = set(columns) - set(df.columns)
             if missing:
                 raise ValueError(f"Requested columns not found in file: {missing}")
-            df = df[columns]
+            selected = list(columns)
+            if optional_columns:
+                selected.extend(col for col in optional_columns if col in df.columns and col not in selected)
+            df = df[selected]
         yield df

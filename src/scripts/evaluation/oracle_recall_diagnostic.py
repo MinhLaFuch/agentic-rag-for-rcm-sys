@@ -94,7 +94,7 @@ def main() -> None:
     emb_path = Path(emb_prov.get("artifact_dir") or emb_prov.get("path") or "")
     # fall back to the known artifact used by exp_003
     if not emb_path.exists():
-        emb_path = Path("experiments/embedding_builds/multi_domain_full")
+        emb_path = data_paths.experiments_dir / "embedding_builds" / "multi_domain_full"
     from scripts.data_pipeline.build_item_embeddings import load_validated_embeddings
     from package.embeddings import TextEncoder
     vector_store, encoder_impl, _ = load_validated_embeddings(

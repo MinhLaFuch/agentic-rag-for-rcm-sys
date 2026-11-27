@@ -155,15 +155,23 @@ def _fetch_items_for_embedding(conn: sqlite3.Connection) -> list[tuple[str, str]
     Text protocol: title_store_main_category_categories_sorted_v2
     """
     # Fetch categories separately so we can sort them before formatting.
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(items)")}
+    brand_expr = "brand" if "brand" in cols else "NULL AS brand"
+    release_expr = "release_date" if "release_date" in cols else "NULL AS release_date"
+    features_expr = "features" if "features" in cols else "NULL AS features"
     item_rows: dict[str, dict] = {}
     cur = conn.execute(
-        "SELECT item_id, title, store, main_category FROM items ORDER BY item_id"
+        f"SELECT item_id, title, store, main_category, {brand_expr}, {release_expr}, {features_expr} "
+        "FROM items ORDER BY item_id"
     )
-    for item_id, title, store, main_cat in cur.fetchall():
+    for item_id, title, store, main_cat, brand, release_date, features in cur.fetchall():
         item_rows[str(item_id)] = {
             "title": title or "",
             "store": store or "",
             "main": main_cat or "",
+            "brand": brand or "",
+            "release_date": release_date or "",
+            "features": features or "",
             "categories": [],
         }
     cur = conn.execute(
@@ -176,7 +184,15 @@ def _fetch_items_for_embedding(conn: sqlite3.Connection) -> list[tuple[str, str]
     rows = []
     for item_id in sorted(item_rows):
         r = item_rows[item_id]
-        text = format_catalog_text(r["title"], r["store"], r["main"], r["categories"])
+        text = format_catalog_text(
+            r["title"],
+            r["store"],
+            r["main"],
+            r["categories"],
+            brand=r["brand"],
+            release_date=r["release_date"],
+            features=r["features"],
+        )
         rows.append((item_id, text))
     return rows
 

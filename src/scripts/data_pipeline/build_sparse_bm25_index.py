@@ -22,18 +22,21 @@ from package.utils import ensure_utf8_stdout
 
 def _iter_corpus_docs(conn: sqlite3.Connection, batch_size: int = 20000):
     """Yield (item_id, concatenated_text) in stable item_id order using bounded range scans."""
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(items)")}
+    brand_expr = "brand" if "brand" in cols else "NULL AS brand"
+    release_expr = "release_date" if "release_date" in cols else "NULL AS release_date"
+    features_expr = "features" if "features" in cols else "NULL AS features"
     last_id = ""
     while True:
         rows = conn.execute(
-            "SELECT item_id, title, store, main_category FROM items "
-            "WHERE item_id > ? ORDER BY item_id ASC LIMIT ?",
+            f"SELECT item_id, title, store, main_category, {brand_expr}, {release_expr}, {features_expr} "
+            "FROM items WHERE item_id > ? ORDER BY item_id ASC LIMIT ?",
             (last_id, batch_size),
         ).fetchall()
         if not rows:
             break
         ids = [r[0] for r in rows]
         last_id = ids[-1]
-        marks = ",".join("?" for _ in ids)
         cat_map: dict[str, list[str]] = {}
         # Query categories in bounded chunks of 500 to stay below SQLite's variable limit.
         for start in range(0, len(ids), 500):
@@ -45,11 +48,15 @@ def _iter_corpus_docs(conn: sqlite3.Connection, batch_size: int = 20000):
             ):
                 if cat:
                     cat_map.setdefault(iid, []).append(str(cat))
-        for iid, title, store, main_cat in rows:
-            parts = [p for p in (title, store, main_cat) if p]
+        for iid, title, store, main_cat, brand, release_date, features in rows:
+            parts = [str(p) for p in (title, store, brand, main_cat) if p]
             cats = cat_map.get(iid)
             if cats:
                 parts.extend(cats)
+            if features:
+                parts.append(str(features))
+            if release_date:
+                parts.append(str(release_date))
             yield str(iid), " ".join(parts)
 
 

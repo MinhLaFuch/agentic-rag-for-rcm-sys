@@ -6,11 +6,9 @@ import argparse
 import json
 from pathlib import Path
 
-from package.config import get_data_paths, get_domains
+from package.config import get_domains
 from package.data.manifest import verify_tag_manifest
-from package.config import PROJECT_ROOT
 from package.config.resolve_bundle_paths import resolve_bundle_paths
-from package.evaluation.recommender.utils import sha256_file
 
 
 def main() -> None:

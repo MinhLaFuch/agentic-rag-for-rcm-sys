@@ -69,7 +69,7 @@ def merge_filter_domains(
     force: bool = False,
     cold_start_report: bool = False,
     allow_manifest_mismatch: bool = False,
-    legacy_kcore_before_split: bool = True,
+    legacy_kcore_before_split: bool | None = None,
 ) -> dict:
     """Merge/deduplicate domains; optionally preserve legacy pre-split k-core.
 
@@ -78,6 +78,9 @@ def merge_filter_domains(
         domains: List of domain names to merge.
         force: Overwrite existing output.
         cold_start_report: Print cold-start statistics (expensive).
+        legacy_kcore_before_split: Whether to apply k-core filtering before
+            splitting. ``None`` reads ``split.data_protocol`` from
+            ``configs/data/split.yaml`` (matching Stage 3 / ``run_pipeline.py``).
 
     Returns:
         Report dictionary with statistics.
@@ -88,6 +91,10 @@ def merge_filter_domains(
     filtering_config = load_config("data/filtering")
     min_user = filtering_config["filtering"]["min_user_interactions"]
     min_item = filtering_config["filtering"]["min_item_interactions"]
+    if legacy_kcore_before_split is None:
+        split_cfg = load_config("data/split")["split"]
+        data_protocol = str(split_cfg.get("data_protocol", "temporal_train_core"))
+        legacy_kcore_before_split = data_protocol == "legacy_kcore_before_split"
     output_path = paths.filtered_path
     for domain in domains:
         cleaned_path = paths.cleaned_path(domain)

@@ -13,7 +13,7 @@ from package.data.loader import load_item_metadata
 
 from .item_corpus import ItemCorpus
 from package.data._schema import ITEM_COLUMNS
-from ._helper import normalize_categories, numeric_column
+from ._helper import normalize_categories, prepare_item_columns
 from ._sql import (
     CATEGORIES_INDEXES,
     CATEGORIES_TABLE_SCHEMA,
@@ -134,15 +134,7 @@ def build_corpus(
     if first_seen_ts is not None:
         df["first_seen_ts"] = df["item_id"].map(first_seen_ts)
 
-    for col in ITEM_COLUMNS:
-        if col not in df.columns:
-            df[col] = None
-    df["first_seen_ts"] = pd.to_numeric(df["first_seen_ts"], errors="coerce")
-    df["price"] = pd.to_numeric(
-        df["price"].astype("string").str.replace(r"[$,]", "", regex=True), errors="coerce"
-    )
-    df["average_rating"] = numeric_column(df["average_rating"], "average_rating")
-    df["rating_number"] = numeric_column(df["rating_number"], "rating_number")
+    df = prepare_item_columns(df)
 
     conn = sqlite3.connect(":memory:")
     conn.execute(ITEMS_TABLE_SCHEMA)

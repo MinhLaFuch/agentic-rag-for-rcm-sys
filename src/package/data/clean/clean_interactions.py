@@ -5,6 +5,21 @@ from __future__ import annotations
 import pandas as pd
 from .._schema import REQUIRED_COLUMNS
 
+def _is_verified_purchase_series(series: pd.Series) -> pd.Series:
+    def _is_true(value: object) -> bool:
+        if value is None or pd.isna(value):
+            return False
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return value == 1
+        if isinstance(value, str):
+            return value.strip().lower() in {"true", "1", "yes"}
+        return bool(value)
+
+    return pd.Series([_is_true(v) for v in series.tolist()], index=series.index, dtype=bool)
+
+
 def clean_interactions(
     df: pd.DataFrame,
     *,
@@ -13,6 +28,7 @@ def clean_interactions(
     max_timestamp_ms: int = 1704067200000,
     max_invalid_timestamp_fraction: float = 0.01,
     duplicate_keep: str = "last",
+    require_verified_purchase: bool = False,
 ) -> tuple[pd.DataFrame, dict]:
     """
     Làm sạch interaction data (mục V):
@@ -37,6 +53,12 @@ def clean_interactions(
     missing = df[list(REQUIRED_COLUMNS)].isna().any(axis=1)
     report["num_dropped_missing_required_fields"] = int(missing.sum())
     df = df.loc[~missing].copy()
+
+    report["num_dropped_unverified"] = 0
+    if require_verified_purchase and "verified_purchase" in df.columns:
+        verified = _is_verified_purchase_series(df["verified_purchase"])
+        report["num_dropped_unverified"] = int((~verified).sum())
+        df = df.loc[verified].copy()
 
     report["num_dropped_invalid_rating"] = 0
     report["num_dropped_invalid_timestamp"] = 0

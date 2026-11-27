@@ -43,7 +43,7 @@ def map_split(paths: DataPaths, force: bool = False, allow_manifest_mismatch: bo
     val_ratio = split_config["split"]["validation_ratio"]
     test_ratio = split_config["split"]["test_ratio"]
     if data_protocol is None:
-        data_protocol = str(split_config["split"].get("data_protocol", "legacy_kcore_before_split"))
+        data_protocol = str(split_config["split"].get("data_protocol", "temporal_train_core"))
 
     print(f"=== STAGE 3: ID mapping + temporal split + leakage check (tag={paths.tag}) ===")
     upstream = [paths.filtered_path.parent / "stage_2.manifest.json"]

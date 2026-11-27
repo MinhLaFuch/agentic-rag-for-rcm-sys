@@ -66,6 +66,11 @@ def main() -> None:
         help="Skip corpus building in stage 4.",
     )
     parser.add_argument(
+        "--skip-availability",
+        action="store_true",
+        help="Skip item_availability.parquet building in stage 4.",
+    )
+    parser.add_argument(
         "--skip-item-knn",
         action="store_true",
         help="Skip ItemKNN building in stage 4.",
@@ -84,7 +89,7 @@ def main() -> None:
     split_cfg = load_config("data/split")["split"]
     # Splits cho stage 4 ItemKNN lấy từ split.item_knn_splits; giao thức stage 2/3 từ split.data_protocol.
     eval_on_list = [str(s) for s in split_cfg["item_knn_splits"]]
-    data_protocol = str(split_cfg.get("data_protocol", "legacy_kcore_before_split"))
+    data_protocol = str(split_cfg.get("data_protocol", "temporal_train_core"))
 
     # Fail-fast checks before running any stage
     errors = []
@@ -129,6 +134,9 @@ def main() -> None:
                 errors.append(f"Stage 4 input missing: {paths.mapped_dir}")
         if not args.skip_corpus and paths.corpus_path.exists() and not args.force:
             errors.append(f"Stage 4 output exists (use --force): {paths.corpus_path}")
+        availability_path = getattr(paths, "availability_path", paths.corpus_dir / "item_availability.parquet")
+        if not args.skip_corpus and not args.skip_availability and availability_path.exists() and not args.force:
+            errors.append(f"Stage 4 output exists (use --force): {availability_path}")
         if not args.skip_item_knn:
             for split in eval_on_list:
                 item_knn_path = paths.item_knn_path(split)
@@ -172,6 +180,7 @@ def main() -> None:
 
         if 4 in stages:
             stage_start = time.time()
+            stage4_kwargs = {"skip_availability": True} if args.skip_availability else {}
             build_artifacts(
                 paths,
                 domains=domains,
@@ -180,6 +189,7 @@ def main() -> None:
                 skip_item_knn=args.skip_item_knn,
                 force=args.force,
                 allow_manifest_mismatch=args.allow_manifest_mismatch,
+                **stage4_kwargs,
             )
             stage_times[4] = time.time() - stage_start
 

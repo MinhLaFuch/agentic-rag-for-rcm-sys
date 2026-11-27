@@ -96,7 +96,7 @@ def test_parse_stages_rejects_garbage():
 def _patch_verify_tag(monkeypatch, tmp_path, manifest_result=None, manifest_exc=None):
     paths = _fake_paths(tmp_path)
     monkeypatch.setattr(verify_tag, "get_domains", lambda: ["DomainA"])
-    monkeypatch.setattr(verify_tag, "get_data_paths", lambda domains=None: paths)
+    monkeypatch.setattr(verify_tag, "resolve_bundle_paths", lambda tag=None, domains=None: paths)
     fake = MagicMock()
     if manifest_exc is not None:
         fake.side_effect = manifest_exc

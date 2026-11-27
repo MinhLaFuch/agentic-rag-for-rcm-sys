@@ -144,15 +144,9 @@ class ItemCorpus:
         if df["item_id"].duplicated().any():
             raise ValueError("duplicate item_id in metadata; de-duplicate before building the corpus")
 
-        for col in ITEM_COLUMNS:
-            if col not in df.columns:
-                df[col] = None
-        df["first_seen_ts"] = pd.to_numeric(df["first_seen_ts"], errors="coerce")
-        df["price"] = pd.to_numeric(
-            df["price"].astype("string").str.replace(r"[$,]", "", regex=True), errors="coerce"
-        )  # "19.99" -> 19.99 ; null / ranges -> NaN -> NULL
-        df["average_rating"] = numeric_column(df["average_rating"], "average_rating")
-        df["rating_number"] = numeric_column(df["rating_number"], "rating_number")
+        from ._helper import prepare_item_columns
+
+        df = prepare_item_columns(df)
 
         conn = sqlite3.connect(":memory:")
         conn.execute(ITEMS_TABLE_SCHEMA)

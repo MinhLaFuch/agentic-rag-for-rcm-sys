@@ -29,6 +29,7 @@ def build_artifacts(
     eval_on: list[str] = ("validation", "test"),
     skip_corpus: bool = False,
     skip_item_knn: bool = False,
+    skip_availability: bool | None = None,
     force: bool = False,
     allow_manifest_mismatch: bool = False,
 ) -> dict:
@@ -78,6 +79,9 @@ def build_artifacts(
     }
     knn_k = int(baselines_cfg["item_knn"]["k"])
 
+    effective_skip_availability = skip_corpus if skip_availability is None else skip_availability
+    availability_path = getattr(paths, "availability_path", paths.corpus_dir / "item_availability.parquet")
+
     # Check input dependencies
     if not paths.mapped_dir.exists():
         raise FileNotFoundError(
@@ -86,6 +90,8 @@ def build_artifacts(
 
     if not skip_corpus and paths.corpus_path.exists() and not force:
         raise FileExistsError(f"{paths.corpus_path} đã tồn tại. Dùng --force để ghi đè.")
+    if not effective_skip_availability and availability_path.exists() and not force:
+        raise FileExistsError(f"{availability_path} đã tồn tại. Dùng --force để ghi đè.")
     if not skip_item_knn:
         for split in eval_on:
             if paths.item_knn_path(split).exists() and not force:
@@ -147,6 +153,25 @@ def build_artifacts(
     else:
         print("Skip corpus (skip_corpus=True)")
 
+    # Build item_availability.parquet
+    availability_report = {}
+    if not effective_skip_availability:
+        from package.corpus.build_item_availability import build_item_availability
+
+        if availability_path.exists() and not force:
+            raise FileExistsError(f"{availability_path} đã tồn tại. Dùng --force để ghi đè.")
+        print("Build item availability")
+        availability_report = build_item_availability(
+            meta_files,
+            availability_path,
+            valid_item_ids=set(item2id.keys()),
+        )
+        print(
+            f"Item availability: {availability_report['items_with_avail_ts']:,} items written to {availability_path}"
+        )
+    else:
+        print("Skip item availability (skip_availability=True)")
+
     # Build ItemKNN for each eval_on split
     item_knn_reports = {}
     if not skip_item_knn:
@@ -194,12 +219,15 @@ def build_artifacts(
         stage_inputs += [fit_core_path, fit_mapping_dir / USER2ID_FILE, fit_mapping_dir / ITEM2ID_FILE]
     if not skip_item_knn:
         stage_inputs += [split_path(paths.splits_dir, name) for name in ("train", "validation", "test")]
-    if not skip_corpus:
+    if not skip_corpus or not effective_skip_availability:
         stage_inputs += [path for _, raw_path in meta_files if (path := Path(raw_path)).is_file()]
+    if not skip_corpus:
         stage_inputs += [paths.cleaned_path(domain) for domain, _ in meta_files]
     stage_outputs = []
     if not skip_corpus:
         stage_outputs.extend([paths.corpus_path, paths.corpus_path.with_suffix(".meta.json")])
+    if not effective_skip_availability:
+        stage_outputs.append(availability_path)
     if not skip_item_knn:
         for split in eval_on:
             item_knn_path = paths.item_knn_path(split)
@@ -222,8 +250,10 @@ def build_artifacts(
         counts={"num_rows": split_rows, "num_users": int(num_users), "num_items": int(len(item2id)),
                 "num_metadata_sources": len(meta_files),
                 "metadata_coverage_by_domain": corpus_report.get("coverage_by_domain", {}),
-                "metadata_duplicates_dropped_by_domain": corpus_report.get("metadata_duplicates_dropped_by_domain", {})},
-        flags={"domains": domains, "eval_on": eval_on, "skip_corpus": bool(skip_corpus), "skip_item_knn": bool(skip_item_knn), "force": bool(force), "item_knn_k": int(knn_k)},
+                "metadata_duplicates_dropped_by_domain": corpus_report.get("metadata_duplicates_dropped_by_domain", {}),
+                "availability_items": availability_report.get("items_with_avail_ts", 0)},
+        flags={"domains": domains, "eval_on": eval_on, "skip_corpus": bool(skip_corpus), "skip_item_knn": bool(skip_item_knn),
+               "skip_availability": bool(effective_skip_availability), "force": bool(force), "item_knn_k": int(knn_k)},
         warnings=manifest_warnings,
     )
 
@@ -233,6 +263,8 @@ def build_artifacts(
     print("\nArtifact paths:")
     if not skip_corpus:
         print(f"  corpus: {paths.corpus_path}")
+    if not effective_skip_availability:
+        print(f"  availability: {availability_path}")
     if not skip_item_knn:
         for split in eval_on:
             print(f"  item_knn ({split}): {paths.item_knn_path(split)}")
@@ -246,5 +278,6 @@ def build_artifacts(
 
     return {
         "corpus": corpus_report,
+        "availability": availability_report,
         "item_knn": item_knn_reports,
     }

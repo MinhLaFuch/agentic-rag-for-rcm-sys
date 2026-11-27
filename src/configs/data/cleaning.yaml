@@ -5,3 +5,4 @@ cleaning:
   min_timestamp_ms: 788918400000   # 1995-01-01T00:00:00Z inclusive; milliseconds
   max_timestamp_ms: 1704067200000  # 2024-01-01T00:00:00Z exclusive; milliseconds
   max_invalid_timestamp_fraction: 0.01
+  only_verified_purchase: true

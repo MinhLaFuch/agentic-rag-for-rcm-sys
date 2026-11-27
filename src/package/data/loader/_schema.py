@@ -9,4 +9,6 @@ META_FIELDS = [
     "rating_number",
     "main_category",
     "categories",
+    "features",
+    "details",
 ]

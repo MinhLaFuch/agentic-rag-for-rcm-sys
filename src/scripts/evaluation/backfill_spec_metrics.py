@@ -28,6 +28,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from package.config import get_data_paths  # noqa: E402
 from package.evaluation.spec import (  # noqa: E402
     COARSE_MIN_ITEMS,
     ItemSpecView,
@@ -37,8 +38,6 @@ from package.evaluation.spec import (  # noqa: E402
     paired_bootstrap_diff,
 )
 
-CORPUS = "resource/corpus/multi_domain/corpus_multi_domain.sqlite"
-ITEM2ID = "resource/mapped/multi_domain/item2id.json"
 OUT_DIR = Path("investigations/distill_phase2")
 KINDS = ("cold_text", "similar", "exclusion")
 TOP_POPULAR = 1000  # popularity baseline pool: top-N by rating_number
@@ -278,10 +277,17 @@ def main() -> None:
                     help="name=run_dir (repeatable)")
     ap.add_argument("--baseline", default=None, help="arm name for paired diffs")
     ap.add_argument("--out", type=Path, default=OUT_DIR)
+    ap.add_argument("--tag", default=None, help="Data bundle tag for default corpus/item2id paths.")
+    ap.add_argument("--corpus", type=Path, default=None, help="Override corpus SQLite path.")
+    ap.add_argument("--item2id", type=Path, default=None, help="Override item2id.json path.")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    conn = sqlite3.connect(f"file:{CORPUS}?mode=ro", uri=True)
+    paths = get_data_paths(tag=args.tag)
+    corpus_path = args.corpus if args.corpus is not None else paths.corpus_path
+    item2id_path = args.item2id if args.item2id is not None else (paths.mapped_dir / "item2id.json")
+
+    conn = sqlite3.connect(f"file:{corpus_path}?mode=ro", uri=True)
     counts = label_counts(conn)
 
     view_path = args.out / "item_spec_view.parquet"
@@ -312,7 +318,8 @@ def main() -> None:
         if v and v.coarse:
             top_pop_coarse[v.coarse] += 1
 
-    i2i = json.load(open(ITEM2ID, encoding="utf-8"))
+    with open(item2id_path, encoding="utf-8") as f_i2i:
+        i2i = json.load(f_i2i)
     idx2item = {v: k for k, v in i2i.items()}
 
     all_rows: list[dict] = []

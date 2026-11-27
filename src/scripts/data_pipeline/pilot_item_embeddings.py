@@ -102,15 +102,23 @@ def _sample_ids(conn, limit, seed):
 
 def _texts_for_ids(conn, item_ids):
     """Sorted categories make text bytes independent of category insertion order."""
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(items)")}
+    brand_expr = "brand" if "brand" in cols else "NULL AS brand"
+    release_expr = "release_date" if "release_date" in cols else "NULL AS release_date"
+    features_expr = "features" if "features" in cols else "NULL AS features"
     rows = {}
     for start in range(0, len(item_ids), 256):
         chunk = item_ids[start:start + 256]
         marks = ','.join('?' for _ in chunk)
-        for item_id, domain, title, store, main in conn.execute(
-            f"SELECT item_id, domain, title, store, main_category FROM items WHERE item_id IN ({marks})", chunk
+        for item_id, domain, title, store, main, brand, release_date, features in conn.execute(
+            f"SELECT item_id, domain, title, store, main_category, {brand_expr}, {release_expr}, {features_expr} "
+            f"FROM items WHERE item_id IN ({marks})",
+            chunk,
         ):
             rows[item_id] = {"item_id": item_id, "domain": domain, "title": title or "",
-                             "store": store or "", "main": main or "", "categories": []}
+                             "store": store or "", "main": main or "",
+                             "brand": brand or "", "release_date": release_date or "",
+                             "features": features or "", "categories": []}
         for item_id, category in conn.execute(
             f"SELECT item_id, category FROM item_categories WHERE item_id IN ({marks}) ORDER BY item_id, category", chunk
         ):
@@ -119,9 +127,21 @@ def _texts_for_ids(conn, item_ids):
     for item_id in item_ids:
         row = rows[item_id]
         cats = ', '.join(row['categories'])
-        text = format_catalog_text(row['title'], row['store'], row['main'], row['categories'])
+        text = format_catalog_text(
+            row['title'],
+            row['store'],
+            row['main'],
+            row['categories'],
+            brand=row['brand'],
+            release_date=row['release_date'],
+            features=row['features'],
+        )
+        has_sig = bool(
+            row['title'] or row['store'] or row['brand'] or row['release_date']
+            or row['main'] or cats or row['features']
+        )
         result.append({"item_id": item_id, "domain": row['domain'], "text": text,
-                       "has_metadata_signal": bool(row['title'] or row['store'] or row['main'] or cats)})
+                       "has_metadata_signal": has_sig})
     return result
 
 

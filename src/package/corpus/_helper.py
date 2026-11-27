@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import sqlite3
 import warnings
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from package.data._schema import ITEM_COLUMNS
 
 
 def read_only_authorizer():
@@ -86,3 +88,89 @@ def numeric_column(series: pd.Series, name: str) -> pd.Series:
     if invalid:
         warnings.warn(f"{invalid} non-numeric {name} value(s) were stored as NULL", UserWarning, stacklevel=3)
     return numeric
+
+
+def _clean_text(value: Any) -> str | None:
+    if _is_missing(value):
+        return None
+    if not isinstance(value, str):
+        value = str(value)
+    text = value.strip()
+    return text or None
+
+
+def extract_details_field(details: Any, candidate_keys: Sequence[str]) -> str | None:
+    """Extract the first non-empty string field from a metadata ``details`` mapping."""
+    if not isinstance(details, Mapping):
+        return None
+    for key in candidate_keys:
+        val = _clean_text(details.get(key))
+        if val is not None:
+            return val
+    lowered = {str(k).strip().lower(): v for k, v in details.items()}
+    for key in candidate_keys:
+        val = _clean_text(lowered.get(key.lower()))
+        if val is not None:
+            return val
+    return None
+
+
+def normalize_features(value: Any) -> str | None:
+    """Turn a metadata ``features`` cell (string or iterable of strings) into clean text."""
+    if _is_missing(value):
+        return None
+    if isinstance(value, str):
+        return _clean_text(value)
+    if isinstance(value, (dict, bytes, bytearray)) or not isinstance(value, Iterable):
+        return None
+    parts: list[str] = []
+    for entry in value:
+        text = _clean_text(entry)
+        if text is not None:
+            parts.append(text)
+    if not parts:
+        return None
+    return "; ".join(dict.fromkeys(parts))
+
+
+def prepare_item_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize and populate all ``ITEM_COLUMNS`` on a corpus metadata DataFrame."""
+    details_col = df["details"] if "details" in df.columns else None
+
+    if "brand" in df.columns:
+        brands = [_clean_text(v) for v in df["brand"].tolist()]
+    else:
+        brands = [None] * len(df)
+    if details_col is not None:
+        for i, det in enumerate(details_col.tolist()):
+            if brands[i] is None:
+                brands[i] = extract_details_field(det, ("Brand", "brand", "Brand Name"))
+    df["brand"] = brands
+
+    if "release_date" in df.columns:
+        rel_dates = [_clean_text(v) for v in df["release_date"].tolist()]
+    else:
+        rel_dates = [None] * len(df)
+    if details_col is not None:
+        for i, det in enumerate(details_col.tolist()):
+            if rel_dates[i] is None:
+                rel_dates[i] = extract_details_field(
+                    det, ("Release date", "Release Date", "release_date", "Date First Available")
+                )
+    df["release_date"] = rel_dates
+
+    if "features" in df.columns:
+        df["features"] = [normalize_features(v) for v in df["features"].tolist()]
+    else:
+        df["features"] = None
+
+    for col in ITEM_COLUMNS:
+        if col not in df.columns:
+            df[col] = None
+    df["first_seen_ts"] = pd.to_numeric(df["first_seen_ts"], errors="coerce")
+    df["price"] = pd.to_numeric(
+        df["price"].astype("string").str.replace(r"[$,]", "", regex=True), errors="coerce"
+    )
+    df["average_rating"] = numeric_column(df["average_rating"], "average_rating")
+    df["rating_number"] = numeric_column(df["rating_number"], "rating_number")
+    return df

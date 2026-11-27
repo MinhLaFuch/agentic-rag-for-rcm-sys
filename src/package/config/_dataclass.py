@@ -29,6 +29,10 @@ class DataPaths:
     def corpus_path(self) -> Path:
         return self.corpus_dir / f"corpus_{self.tag}.sqlite"
 
+    @property
+    def availability_path(self) -> Path:
+        return self.corpus_dir / "item_availability.parquet"
+
     def output_dir(self, key: str) -> Path:
         """Experiment/log output dir from ``outputs:`` in data_paths.yaml (relative to experiments_dir)."""
         from .load_config import load_config  # lazy: keep config import-light and cycle-free

@@ -15,19 +15,42 @@ from package.data.pipeline import clean_domain, map_split, merge_filter_domains
 
 
 def _create_synthetic_review_data(tmp_dir: Path, domain: str, num_rows: int = 100) -> Path:
-    """Create synthetic review data for testing."""
+    """Create synthetic review data spanning temporal_train_core cutoffs for testing."""
+    cutoffs = load_config("data/split")["split"]["temporal_train_core"]
+    train_end = int(cutoffs["train_end_inclusive_ms"])
+    val_end = int(cutoffs["validation_end_inclusive_ms"])
+
     rows = []
+    # Dense train interactions (before train_end) so temporal train_core stays populated.
     for i in range(num_rows):
         rows.append({
-            "user_id": f"u{((i // 5) % 10)}",  # Some users with sparse interactions
-            "parent_asin": f"i{i % 20}",  # Some items with sparse interactions
+            "user_id": f"u{i % 10}",
+            "parent_asin": f"i{(i // 10) % 10}",
             "rating": 5.0 if i % 2 == 0 else 4.0,
-            "timestamp": 900000000000 + i * 10,
-            "title": f"Title {i}",
+            "timestamp": train_end - (num_rows - i) * 1000,
+            "title": f"Train Title {i}",
+        })
+    # Validation interactions in (train_end, val_end]
+    for i in range(10):
+        rows.append({
+            "user_id": f"u{i}",
+            "parent_asin": f"i{i}",
+            "rating": 4.0,
+            "timestamp": train_end + (i + 1) * 1000,
+            "title": f"Val Title {i}",
+        })
+    # Test interactions > val_end
+    for i in range(10):
+        rows.append({
+            "user_id": f"u{i}",
+            "parent_asin": f"i{(i + 1) % 10}",
+            "rating": 5.0,
+            "timestamp": val_end + (i + 1) * 1000,
+            "title": f"Test Title {i}",
         })
     # Add some problematic rows
-    rows.append({"user_id": "u_bad", "parent_asin": "i1", "rating": None, "timestamp": 900000000000, "title": "bad"})  # missing rating
-    rows.append({"user_id": "u1", "parent_asin": "i1", "rating": 5.0, "timestamp": 900000000000, "title": "dup"})  # duplicate
+    rows.append({"user_id": "u_bad", "parent_asin": "i1", "rating": None, "timestamp": train_end - 1, "title": "bad"})  # missing rating
+    rows.append({"user_id": "u0", "parent_asin": "i0", "rating": 5.0, "timestamp": train_end - 10, "title": "dup"})  # duplicate
 
     path = tmp_dir / f"{domain}.jsonl.gz"
     with gzip.open(path, "wt", encoding="utf-8") as f:
@@ -301,6 +324,6 @@ def test_pipeline_k_core_blocked():
 
         clean_domain(paths, domain, chunk_size=50, force=True)
 
-        # Stage 2 should exit with BLOCKED message
+        # Stage 2 should exit with BLOCKED message under legacy pre-split k-core
         with pytest.raises(SystemExit, match="BLOCKED"):
-            merge_filter_domains(paths, [domain], force=True)
+            merge_filter_domains(paths, [domain], force=True, legacy_kcore_before_split=True)

@@ -46,6 +46,7 @@ def clean_domain(
     review_path = Path(review_path) if review_path else paths.review_path(domain)
     cleaning_cfg = load_config("data/cleaning")["cleaning"]
     chunk_size = chunk_size or cleaning_cfg["chunk_size"]
+    only_verified_purchase = bool(cleaning_cfg.get("only_verified_purchase", False))
 
     if not review_path.exists():
         raise FileNotFoundError(f"Không tìm thấy {review_path} — tải review của '{domain}' về trước.")
@@ -65,6 +66,7 @@ def clean_domain(
     report = {
         "num_input": 0,
         "num_dropped_missing_required_fields": 0,
+        "num_dropped_unverified": 0,
         "num_dropped_invalid_rating": 0,
         "num_dropped_invalid_timestamp": 0,
         "num_dropped_duplicates": 0,
@@ -99,6 +101,7 @@ def clean_domain(
             iter_reviews_dataframes(
                 review_path,
                 columns=["user_id", "parent_asin", "rating", "timestamp"],
+                optional_columns=["verified_purchase"] if only_verified_purchase else None,
                 chunksize=chunk_size,
             ),
             start=1,
@@ -125,11 +128,13 @@ def clean_domain(
                 # Enforce the configured rate over the whole source, not per chunk.
                 max_invalid_timestamp_fraction=1.0,
                 duplicate_keep="last",
+                require_verified_purchase=only_verified_purchase,
             )
             report["num_input"] += chunk_report["num_input"]
             report["num_dropped_missing_required_fields"] += chunk_report[
                 "num_dropped_missing_required_fields"
             ]
+            report["num_dropped_unverified"] += chunk_report.get("num_dropped_unverified", 0)
             report["num_dropped_invalid_rating"] += chunk_report["num_dropped_invalid_rating"]
             report["num_dropped_invalid_timestamp"] += chunk_report["num_dropped_invalid_timestamp"]
 
@@ -140,7 +145,7 @@ def clean_domain(
             connection.executemany(
                 "INSERT INTO interactions VALUES (?, ?, ?, ?) "
                 "ON CONFLICT(user_id, parent_asin, timestamp) DO UPDATE SET rating=excluded.rating",
-                cleaned_chunk.itertuples(index=False, name=None),
+                cleaned_chunk[["user_id", "parent_asin", "rating", "timestamp"]].itertuples(index=False, name=None),
             )
             print(
                 f"chunk={chunk_number} raw_rows={len(raw_chunk)} clean_rows={len(cleaned_chunk)} "
@@ -150,8 +155,11 @@ def clean_domain(
 
         report["num_output"] = int(connection.execute("SELECT COUNT(*) FROM interactions").fetchone()[0])
         report["num_dropped_duplicates"] = (
-            report["num_input"] - report["num_dropped_missing_required_fields"]
-            - report["num_dropped_invalid_rating"] - report["num_dropped_invalid_timestamp"]
+            report["num_input"]
+            - report["num_dropped_missing_required_fields"]
+            - report["num_dropped_unverified"]
+            - report["num_dropped_invalid_rating"]
+            - report["num_dropped_invalid_timestamp"]
             - report["num_output"]
         )
         report["num_user_timestamp_multiple_items"] = int(connection.execute(
@@ -211,6 +219,7 @@ def clean_domain(
         counts={key: int(value) for key, value in report.items()},
         flags={"domain": domain, "chunk_size": int(chunk_size), "force": bool(force),
                "duplicate_policy": "keep_last_valid_row_by_source_order",
+               "only_verified_purchase": only_verified_purchase,
                "timestamp_unit": "milliseconds",
                "timestamp_range": [int(cleaning_cfg["min_timestamp_ms"]), int(cleaning_cfg["max_timestamp_ms"])],
                "max_invalid_timestamp_fraction": float(cleaning_cfg["max_invalid_timestamp_fraction"])},
@@ -237,6 +246,7 @@ def clean_domain(
     print(
         f"cleaned input={report['num_input']} "
         f"dropped_missing={report['num_dropped_missing_required_fields']} "
+        f"dropped_unverified={report['num_dropped_unverified']} "
         f"dropped_invalid_rating={report['num_dropped_invalid_rating']} "
         f"dropped_invalid_timestamp={report['num_dropped_invalid_timestamp']} "
         f"dropped_duplicates={report['num_dropped_duplicates']} "

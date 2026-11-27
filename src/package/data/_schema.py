@@ -12,15 +12,19 @@ ITEM_COLUMNS = (
     "first_seen_ts",  # earliest cleaned interaction; proxy, not actual launch date
     "title",
     "store",  # closest field to "brand" in Amazon Reviews 2023
+    "brand",  # extracted from details["Brand"]
+    "release_date",  # extracted from details["Release date"] / "Date First Available"
     "price",  # REAL, NULL when missing (~55% in Video_Games)
     "average_rating",
     "rating_number",
     "main_category",
+    "features",  # normalized bullet features text from metadata
 )
 
 SCHEMA_HINT = (
     "items(item_id TEXT, domain TEXT, original_item_id TEXT, first_seen_ts INTEGER, title TEXT, store TEXT, "
-    "price REAL NULL, average_rating REAL, rating_number REAL, main_category TEXT); "
+    "brand TEXT, release_date TEXT, price REAL NULL, average_rating REAL, rating_number REAL, main_category TEXT, "
+    "features TEXT); "
     "item_categories(item_id TEXT, category TEXT)  -- multi-label, one row per (item, category); "
-    "items_fts(title, store, main_category, categories)  -- FTS5 table for full-text search"
+    "items_fts(title, store, brand, main_category, categories, features)  -- FTS5 table for full-text search"
 )

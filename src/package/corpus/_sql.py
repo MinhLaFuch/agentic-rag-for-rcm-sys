@@ -18,10 +18,13 @@ CREATE TABLE items (
     first_seen_ts INTEGER,
     title TEXT,
     store TEXT,
+    brand TEXT,
+    release_date TEXT,
     price REAL,
     average_rating REAL,
     rating_number REAL,
-    main_category TEXT
+    main_category TEXT,
+    features TEXT
 )
 """
 
@@ -33,10 +36,10 @@ CREATE TABLE item_categories (
 )
 """
 
-# FTS5 full-text search table for title, store, main_category, and categories
+# FTS5 full-text search table for title, store, brand, main_category, categories, and features
 FTS_TABLE_SCHEMA = """
 CREATE VIRTUAL TABLE items_fts USING fts5(
-    title, store, main_category, categories, tokenize='porter unicode61'
+    title, store, brand, main_category, categories, features, tokenize='porter unicode61'
 )
 """
 
@@ -61,17 +64,18 @@ CATEGORIES_INDEXES = [
 # SQL to populate FTS5 table from items and item_categories
 # External-content FTS cannot include categories directly, so we copy rowids
 FTS_POPULATE_SQL = """
-INSERT INTO items_fts(rowid, title, store, main_category, categories)
-SELECT i.rowid, i.title, i.store, i.main_category,
+INSERT INTO items_fts(rowid, title, store, brand, main_category, categories, features)
+SELECT i.rowid, i.title, i.store, i.brand, i.main_category,
        COALESCE((SELECT group_concat(c.category, ' ') FROM item_categories c
-                 WHERE c.item_id = i.item_id), '')
+                 WHERE c.item_id = i.item_id), ''),
+       i.features
 FROM items i
 """
 
 # ---- schema fingerprint ------------------------------------------------- #
 
 # Version of the from_dataframe logic - increment when changing construction logic
-CORPUS_LOGIC_VERSION = 2
+CORPUS_LOGIC_VERSION = 3
 
 # Fingerprint of the schema (CREATE TABLE, CREATE INDEX, FTS) - used to detect outdated corpus files
 # This hash is computed from the SQL strings above; if _sql.py changes, regenerate this hash.
