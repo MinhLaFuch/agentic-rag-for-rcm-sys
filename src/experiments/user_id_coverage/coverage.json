@@ -1,0 +1,176 @@
+{
+  "split_tag": "multi_domain_v2_audit_20261030",
+  "train_cutoff_inclusive_ms": 1617737606134,
+  "cleaned_before_filter": {
+    "users_per_domain": {
+      "Video_Games": 2234952,
+      "Toys_and_Games": 6107487,
+      "Electronics": 14666681
+    },
+    "overlap_counts": {
+      "Video_Games": {
+        "Video_Games": 2234952,
+        "Toys_and_Games": 630653,
+        "Electronics": 1305963
+      },
+      "Toys_and_Games": {
+        "Toys_and_Games": 6107487,
+        "Video_Games": 630653,
+        "Electronics": 2800940
+      },
+      "Electronics": {
+        "Electronics": 14666681,
+        "Video_Games": 1305963,
+        "Toys_and_Games": 2800940
+      }
+    },
+    "overlap_fraction_by_row": {
+      "Video_Games": {
+        "Video_Games": 1.0,
+        "Toys_and_Games": 0.2821774248395491,
+        "Electronics": 0.5843360394317193
+      },
+      "Toys_and_Games": {
+        "Video_Games": 0.10325899997822345,
+        "Toys_and_Games": 1.0,
+        "Electronics": 0.458607607351436
+      },
+      "Electronics": {
+        "Video_Games": 0.08904284479903804,
+        "Toys_and_Games": 0.19097299518548197,
+        "Electronics": 1.0
+      }
+    },
+    "exact_domain_counts": {
+      "1": 14948328,
+      "2": 3323236,
+      "3": 471440
+    },
+    "exact_domain_fractions": {
+      "1": 0.7975417387735712,
+      "2": 0.17730540952773632,
+      "3": 0.025152851698692483
+    },
+    "unique_users": 18743004,
+    "multidomain_users": 3794676,
+    "multidomain_fraction": 0.2024582612264288,
+    "leave_one_domain_out": {
+      "Video_Games": {
+        "unique_users": 17973228,
+        "multidomain_users": 2800940,
+        "multidomain_fraction": 0.15583956315470987,
+        "lost_unique_users": 769776,
+        "lost_multidomain_users": 993736
+      },
+      "Toys_and_Games": {
+        "unique_users": 15595670,
+        "multidomain_users": 1305963,
+        "multidomain_fraction": 0.08373881981344822,
+        "lost_unique_users": 3147334,
+        "lost_multidomain_users": 2488713
+      },
+      "Electronics": {
+        "unique_users": 7711786,
+        "multidomain_users": 630653,
+        "multidomain_fraction": 0.08177781385531185,
+        "lost_unique_users": 11031218,
+        "lost_multidomain_users": 3164023
+      }
+    }
+  },
+  "train_core": {
+    "users_per_domain": {
+      "Video_Games": 646969,
+      "Toys_and_Games": 1116274,
+      "Electronics": 1905964
+    },
+    "overlap_counts": {
+      "Video_Games": {
+        "Video_Games": 646969,
+        "Toys_and_Games": 354123,
+        "Electronics": 611283
+      },
+      "Toys_and_Games": {
+        "Toys_and_Games": 1116274,
+        "Video_Games": 354123,
+        "Electronics": 1011717
+      },
+      "Electronics": {
+        "Electronics": 1905964,
+        "Video_Games": 611283,
+        "Toys_and_Games": 1011717
+      }
+    },
+    "overlap_fraction_by_row": {
+      "Video_Games": {
+        "Video_Games": 1.0,
+        "Toys_and_Games": 0.5473569831011996,
+        "Electronics": 0.9448412520538079
+      },
+      "Toys_and_Games": {
+        "Video_Games": 0.31723662828302013,
+        "Toys_and_Games": 1.0,
+        "Electronics": 0.9063339287665931
+      },
+      "Electronics": {
+        "Video_Games": 0.3207211678709566,
+        "Toys_and_Games": 0.5308164267530762,
+        "Electronics": 1.0
+      }
+    },
+    "exact_domain_counts": {
+      "1": 699507,
+      "2": 992577,
+      "3": 328182
+    },
+    "exact_domain_fractions": {
+      "1": 0.34624499942086834,
+      "2": 0.4913100552105515,
+      "3": 0.16244494536858017
+    },
+    "unique_users": 2020266,
+    "multidomain_users": 1320759,
+    "multidomain_fraction": 0.6537550005791316,
+    "leave_one_domain_out": {
+      "Video_Games": {
+        "unique_users": 2010521,
+        "multidomain_users": 1011717,
+        "multidomain_fraction": 0.503211356658299,
+        "lost_unique_users": 9745,
+        "lost_multidomain_users": 309042
+      },
+      "Toys_and_Games": {
+        "unique_users": 1941650,
+        "multidomain_users": 611283,
+        "multidomain_fraction": 0.314826565034893,
+        "lost_unique_users": 78616,
+        "lost_multidomain_users": 709476
+      },
+      "Electronics": {
+        "unique_users": 1409120,
+        "multidomain_users": 354123,
+        "multidomain_fraction": 0.2513079084818894,
+        "lost_unique_users": 611146,
+        "lost_multidomain_users": 966636
+      }
+    }
+  },
+  "test_coverage": {
+    "Video_Games": {
+      "test_users": 325231,
+      "users_with_other_domain_train_core": 49333,
+      "fraction": 0.15168603238928638
+    },
+    "Toys_and_Games": {
+      "test_users": 1422768,
+      "users_with_other_domain_train_core": 135054,
+      "fraction": 0.09492341688876893
+    },
+    "Electronics": {
+      "test_users": 3255836,
+      "users_with_other_domain_train_core": 258993,
+      "fraction": 0.07954731135106313
+    }
+  },
+  "candidate_trios_before_filter": []
+}
